@@ -1,0 +1,30 @@
+# JavaScript
+*.js linguist-language=JavaScript
+*.jsx linguist-language=JavaScript
+
+# TypeScript
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TypeScript
+
+# JSON
+*.json linguist-language=JSON
+
+# CSS
+*.css linguist-language=CSS
+
+# SCSS / SASS
+*.scss linguist-language=SCSS
+
+# HTML
+*.html linguist-language=HTML
+*.htm linguist-language=HTML
+
+# Markdown
+*.md linguist-language=Markdown
+
+# YAML / Configuration files
+*.yml linguist-language=YAML
+*.yaml linguist-language=YAML
+
+# Shell scripts
+*.sh linguist-language=Shell
