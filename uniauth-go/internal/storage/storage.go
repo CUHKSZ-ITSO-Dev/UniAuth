@@ -2,7 +2,9 @@ package storage
 
 import (
 	"fmt"
-	"uniauth/internal/models"
+	billingModel "uniauth/internal/modules/billing/model"
+	rbacModel "uniauth/internal/modules/rbac/model"
+	userModel "uniauth/internal/modules/user/model"
 
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/glebarez/sqlite"
@@ -33,18 +35,18 @@ func NewDatabaseConnection(dbType, dsn string) (*gorm.DB, error) {
 // AutoMigrateTables 运行GORM的自动迁移，为所有需要的模型创建或更新表结构。
 func AutoMigrateTables(db *gorm.DB) error {
 	if err := db.AutoMigrate(
-		&models.ChatUserAccount{},
+		&billingModel.ChatUserAccount{},
 	); err != nil {
 		return fmt.Errorf("数据库迁移失败 (第一阶段): %w", err)
 	}
 
 	if err := db.AutoMigrate(
-		&models.ChatUserCategory{},
-		&models.ChatUserCostRecord{},
+		&billingModel.ChatUserCategory{},
+		&billingModel.ChatUserCostRecord{},
 		&gormadapter.CasbinRule{},
-		&models.UserInfo{},
-		&models.AbstractGroup{},
-		&models.ChatQuotaPool{},
+		&userModel.UserInfo{},
+		&rbacModel.AbstractGroup{},
+		&billingModel.ChatQuotaPool{},
 	); err != nil {
 		return fmt.Errorf("数据库迁移失败 (第二阶段): %w", err)
 	}

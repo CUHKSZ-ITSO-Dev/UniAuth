@@ -9,8 +9,10 @@ import (
 	"uniauth/internal/app"
 	"uniauth/internal/config"
 	"uniauth/internal/middleware"
-	"uniauth/internal/services"
 	"uniauth/internal/storage"
+	rbacService "uniauth/internal/modules/rbac/service"
+	userService "uniauth/internal/modules/user/service"
+	billingService "uniauth/internal/modules/billing/service"
 	"uniauth/routes"
 
 	"github.com/gin-gonic/gin"
@@ -59,7 +61,7 @@ func initPolicies(csvFile string) error {
 	}
 
 	// 创建服务实例
-	authService, err := services.NewAuthService(db)
+	authService, err := rbacService.NewAuthService(db)
 	if err != nil {
 		return fmt.Errorf("创建服务实例失败: %w", err)
 	}
@@ -93,13 +95,13 @@ func startServer() error {
 	}
 
 	// 创建服务实例
-	authService, err := services.NewAuthService(db)
+	authService, err := rbacService.NewAuthService(db)
 	if err != nil {
 		return fmt.Errorf("创建统一鉴权服务实例失败: %w", err)
 	}
-	userInfoService := services.NewUserInfoService(db)
-	abstractGroupService := services.NewAbstractGroupService(db, authService, userInfoService)
-	chatService := services.NewChatService(db, abstractGroupService)
+	userInfoService := userService.NewUserInfoService(db)
+	abstractGroupService := rbacService.NewAbstractGroupService(db, authService, userInfoService)
+	chatService := billingService.NewChatService(db, abstractGroupService)
 
 	// 创建应用
 	app := app.NewApp(authService, abstractGroupService, chatService, userInfoService)
