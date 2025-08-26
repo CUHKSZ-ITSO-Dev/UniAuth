@@ -94,3 +94,37 @@ go run main.go init configs/policy_kb_and_deny.csv
 
 - [项目结构说明](./docs/STRUCTURE.md)
 - [前端开发指南](./uniauth-admin/README.md)
+
+---
+
+## 目录重构总结
+
+### 📋 完成的工作
+
+✅ **分析现有代码结构** - 识别了所有文件的功能归属
+✅ **文件分类映射** - 将现有文件正确映射到对应模块
+✅ **移动认证相关文件到 RBAC 模块** - 包括认证、管理、审计等功能
+✅ **移动用户管理文件到 User 模块** - 用户信息相关功能
+✅ **移动计费文件到 Billing 模块** - 聊天计费相关功能
+✅ **删除旧文件** - 清理原始位置的文件
+✅ **验证目录结构** - 确认重构正确完成
+
+### 🏗️ 新的模块结构
+
+**💰 Billing 模块（计费）**
+- `handler/chat.go` - 聊天计费处理器
+- `model/chat.go` - 计费相关模型（ChatUserAccount, ChatUserCategory, 等）
+- `service/chat_service.go` - 聊天计费服务
+
+**🔐 RBAC 模块（鉴权）**
+- `handler/` - 认证、管理员、审计、规则管理、抽象组处理器
+- `model/abstract_group.go` - 抽象组模型
+- `service/` - 认证服务、抽象组服务、文档服务
+
+**👤 User 模块（用户信息管理）**
+- `model/userinfo.go` - 用户信息模型
+- `service/userinfo_service.go` - 用户信息服务
+
+**⚙️ Config 模块（配置中心）** - 预留结构，待后续开发
+
+**🌐 Gateway 模块（网关）** - 预留结构，待后续开发

@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"encoding/csv"
@@ -9,19 +9,19 @@ import (
 	"strings"
 	"time"
 
-	"uniauth/internal/services"
+	"uniauth/internal/modules/rbac/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 // RuleManagementHandler 规则管理处理器
 type RuleManagementHandler struct {
-	Service      *services.AuthService
+	Service      *service.AuthService
 	AuditHandler *AuditHandler
 }
 
 // NewRuleManagementHandler 创建规则管理处理器
-func NewRuleManagementHandler(service *services.AuthService, auditHandler *AuditHandler) *RuleManagementHandler {
+func NewRuleManagementHandler(service *service.AuthService, auditHandler *AuditHandler) *RuleManagementHandler {
 	return &RuleManagementHandler{
 		Service:      service,
 		AuditHandler: auditHandler,

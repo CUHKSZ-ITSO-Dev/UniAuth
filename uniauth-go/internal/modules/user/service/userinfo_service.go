@@ -1,9 +1,10 @@
-package services
+package service
 
 import (
 	"fmt"
 	"strings"
-	"uniauth/internal/models"
+	"uniauth/internal/modules/rbac/model"
+	userModel "uniauth/internal/modules/user/model"
 
 	"gorm.io/gorm"
 )
@@ -46,9 +47,9 @@ func NewUserInfoService(db *gorm.DB) *UserInfoService {
 }
 
 // 根据给定的抽象规则去Userinfo中匹配
-func (s *UserInfoService) GetUserUPNsByRule(rule *models.IttoolsRule) ([]string, error) {
+func (s *UserInfoService) GetUserUPNsByRule(rule *model.IttoolsRule) ([]string, error) {
 	var upns []string
-	query := s.DB.Model(&models.UserInfo{})
+	query := s.DB.Model(&userModel.UserInfo{})
 
 	if rule == nil || len(rule.Conditions) == 0 {
 		return []string{}, nil

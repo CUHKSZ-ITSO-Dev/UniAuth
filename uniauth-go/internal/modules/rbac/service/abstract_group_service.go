@@ -1,28 +1,30 @@
-package services
+package service
 
 import (
 	"fmt"
 	"log"
-	"uniauth/internal/models"
+	"uniauth/internal/modules/rbac/model"
+	billingModel "uniauth/internal/modules/billing/model"
+	userService "uniauth/internal/modules/user/service"
 
 	"gorm.io/gorm"
 )
 
 // AbstractGroupWithCategory 结合了抽象组和其关联的用户组信息。
 type AbstractGroupWithCategory struct {
-	models.AbstractGroup
-	ChatCategory *models.ChatUserCategory `json:"chatCategory"`
+	model.AbstractGroup
+	ChatCategory *billingModel.ChatUserCategory `json:"chatCategory"`
 }
 
 // AbstractGroupService 提供了管理抽象组的服务。
 type AbstractGroupService struct {
 	DB              *gorm.DB
 	AuthService     *AuthService
-	UserInfoService *UserInfoService
+	UserInfoService *userService.UserInfoService
 }
 
 // NewAbstractGroupService 创建一个新的 AbstractGroupService 实例。
-func NewAbstractGroupService(db *gorm.DB, authService *AuthService, userInfoService *UserInfoService) *AbstractGroupService {
+func NewAbstractGroupService(db *gorm.DB, authService *AuthService, userInfoService *userService.UserInfoService) *AbstractGroupService {
 	return &AbstractGroupService{
 		DB:              db,
 		AuthService:     authService,
@@ -31,7 +33,7 @@ func NewAbstractGroupService(db *gorm.DB, authService *AuthService, userInfoServ
 }
 
 // CreateAbstractGroup 创建一个新的抽象组及其关联的资源。
-func (s *AbstractGroupService) CreateAbstractGroup(newGroup *models.AbstractGroup, creatorUPN string) error {
+func (s *AbstractGroupService) CreateAbstractGroup(newGroup *model.AbstractGroup, creatorUPN string) error {
 	// 使用事务确保操作的原子性
 	if err := s.DB.Transaction(func(tx *gorm.DB) error {
 		// 1. 保存到数据库
@@ -40,7 +42,7 @@ func (s *AbstractGroupService) CreateAbstractGroup(newGroup *models.AbstractGrou
 		}
 
 		// 2. 同步创建 ChatUserCategory
-		chatCategory := models.ChatUserCategory{
+		chatCategory := billingModel.ChatUserCategory{
 			Name: newGroup.Name,
 		}
 		if result := tx.Create(&chatCategory); result.Error != nil {
@@ -57,7 +59,7 @@ func (s *AbstractGroupService) CreateAbstractGroup(newGroup *models.AbstractGrou
 	if err := s.SetupPermissionsForNewAbstractGroup(newGroup, creatorUPN); err != nil {
 		// 尝试回滚（删除已创建的组和分类），但这可能不是最佳实践
 		s.DB.Delete(newGroup)
-		s.DB.Where("name = ?", newGroup.Name).Delete(&models.ChatUserCategory{})
+		s.DB.Where("name = ?", newGroup.Name).Delete(&billingModel.ChatUserCategory{})
 		return fmt.Errorf("权限设置失败，已回滚初始创建: %w", err)
 	}
 
@@ -65,7 +67,7 @@ func (s *AbstractGroupService) CreateAbstractGroup(newGroup *models.AbstractGrou
 }
 
 // SetupPermissionsForNewAbstractGroup 为新的抽象组设置权限
-func (s *AbstractGroupService) SetupPermissionsForNewAbstractGroup(group *models.AbstractGroup, creatorUpn string) error {
+func (s *AbstractGroupService) SetupPermissionsForNewAbstractGroup(group *model.AbstractGroup, creatorUpn string) error {
 	// 1. 定义管理员角色名称
 	adminRole := "role:abstract-group:" + group.Name + ":admin"
 
@@ -86,7 +88,7 @@ func (s *AbstractGroupService) SetupPermissionsForNewAbstractGroup(group *models
 }
 
 // CleanupCasbinForAbstractGroup 清理与抽象组相关的所有Casbin规则
-func (s *AbstractGroupService) CleanupCasbinForAbstractGroup(group *models.AbstractGroup) error {
+func (s *AbstractGroupService) CleanupCasbinForAbstractGroup(group *model.AbstractGroup) error {
 	// 1. 移除所有属于该组的用户成员 (e.g., g, user1, my-group-name)
 	// group.Name 是casbin中的角色/组名
 	_, err := s.AuthService.Enforcer.RemoveFilteredGroupingPolicy(1, group.Name)
@@ -114,14 +116,14 @@ func (s *AbstractGroupService) CleanupCasbinForAbstractGroup(group *models.Abstr
 }
 
 // GetUserAbstractGroups 获取一个用户所属的所有抽象组
-func (s *AbstractGroupService) GetUserAbstractGroups(upn string) ([]*models.AbstractGroup, error) {
+func (s *AbstractGroupService) GetUserAbstractGroups(upn string) ([]*model.AbstractGroup, error) {
 	// 1. 获取用户在Casbin中的所有角色
 	userRoles, err := s.AuthService.Enforcer.GetRolesForUser(upn)
 	if err != nil {
 		return nil, fmt.Errorf("从Casbin获取用户角色失败: %w", err)
 	}
 	if len(userRoles) == 0 {
-		return []*models.AbstractGroup{}, nil // 用户不属于任何角色
+		return []*model.AbstractGroup{}, nil // 用户不属于任何角色
 	}
 
 	// 2. 将角色列表转换为map以便快速查找
@@ -131,13 +133,13 @@ func (s *AbstractGroupService) GetUserAbstractGroups(upn string) ([]*models.Abst
 	}
 
 	// 3. 从数据库获取所有抽象组的定义
-	var allAbstractGroups []*models.AbstractGroup
+	var allAbstractGroups []*model.AbstractGroup
 	if err := s.DB.Find(&allAbstractGroups).Error; err != nil {
 		return nil, fmt.Errorf("从数据库获取所有抽象组失败: %w", err)
 	}
 
 	// 4. 找出交集
-	var userAbstractGroups []*models.AbstractGroup
+	var userAbstractGroups []*model.AbstractGroup
 	for _, group := range allAbstractGroups {
 		// 抽象组的Name字段对应Casbin中的role名
 		if _, ok := userRolesMap[group.Name]; ok {
@@ -149,8 +151,8 @@ func (s *AbstractGroupService) GetUserAbstractGroups(upn string) ([]*models.Abst
 }
 
 // GetAbstractGroupByID 通过ID获取单个抽象组。
-func (s *AbstractGroupService) GetAbstractGroupByID(id string) (*models.AbstractGroup, error) {
-	var group models.AbstractGroup
+func (s *AbstractGroupService) GetAbstractGroupByID(id string) (*model.AbstractGroup, error) {
+	var group model.AbstractGroup
 	if result := s.DB.First(&group, "id = ?", id); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("找不到抽象组")
@@ -162,18 +164,18 @@ func (s *AbstractGroupService) GetAbstractGroupByID(id string) (*models.Abstract
 
 // GetAllAbstractGroups 获取所有抽象组，并附带其关联的 UserCategory 信息。
 func (s *AbstractGroupService) GetAllAbstractGroups() ([]AbstractGroupWithCategory, error) {
-	var groups []models.AbstractGroup
+	var groups []model.AbstractGroup
 	if result := s.DB.Order("name").Find(&groups); result.Error != nil {
 		return nil, fmt.Errorf("获取抽象组列表失败: %w", result.Error)
 	}
 
-	var categories []models.ChatUserCategory
+	var categories []billingModel.ChatUserCategory
 	if result := s.DB.Preload("QuotaPool").Find(&categories); result.Error != nil {
 		return nil, fmt.Errorf("获取聊天分类列表失败: %w", result.Error)
 	}
 
 	// 为了高效查找，将 categories 转换为 map
-	categoryMap := make(map[string]*models.ChatUserCategory)
+	categoryMap := make(map[string]*billingModel.ChatUserCategory)
 	for i := range categories {
 		categoryMap[categories[i].Name] = &categories[i]
 	}
@@ -195,8 +197,8 @@ func (s *AbstractGroupService) GetAllAbstractGroups() ([]AbstractGroupWithCatego
 }
 
 // UpdateAbstractGroup 更新一个已存在的抽象组。
-func (s *AbstractGroupService) UpdateAbstractGroup(id string, updatedInfo *models.AbstractGroup) (*models.AbstractGroup, error) {
-	var group models.AbstractGroup
+func (s *AbstractGroupService) UpdateAbstractGroup(id string, updatedInfo *model.AbstractGroup) (*model.AbstractGroup, error) {
+	var group model.AbstractGroup
 	if result := s.DB.First(&group, "id = ?", id); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("找不到抽象组")
@@ -208,7 +210,7 @@ func (s *AbstractGroupService) UpdateAbstractGroup(id string, updatedInfo *model
 	// 更新字段
 	group.Name = updatedInfo.Name
 	group.Description = updatedInfo.Description
-	group.Type = updatedInfo.Type 
+	group.Type = updatedInfo.Type
 	group.Rule = updatedInfo.Rule
 
 	// 开启事务
@@ -220,7 +222,7 @@ func (s *AbstractGroupService) UpdateAbstractGroup(id string, updatedInfo *model
 
 		// 2. 如果组名发生变化，则同步更新 ChatUserCategory 的名称
 		if originalName != group.Name {
-			result := tx.Model(&models.ChatUserCategory{}).Where("name = ?", originalName).Update("name", group.Name)
+			result := tx.Model(&billingModel.ChatUserCategory{}).Where("name = ?", originalName).Update("name", group.Name)
 			if result.Error != nil {
 				return fmt.Errorf("更新聊天用户组名称失败: %w", result.Error)
 			}
@@ -243,7 +245,7 @@ func (s *AbstractGroupService) UpdateAbstractGroup(id string, updatedInfo *model
 func (s *AbstractGroupService) DeleteAbstractGroup(id string) error {
 	return s.DB.Transaction(func(tx *gorm.DB) error {
 		// 1. 先从数据库找到这个组的定义
-		var group models.AbstractGroup
+		var group model.AbstractGroup
 		if result := tx.First(&group, "id = ?", id); result.Error != nil {
 			return fmt.Errorf("找不到抽象组: %w", result.Error)
 		}
@@ -254,12 +256,12 @@ func (s *AbstractGroupService) DeleteAbstractGroup(id string) error {
 		}
 
 		// 3. 从数据库中删除 ChatUserCategory
-		if result := tx.Where("name = ?", group.Name).Delete(&models.ChatUserCategory{}); result.Error != nil {
+		if result := tx.Where("name = ?", group.Name).Delete(&billingModel.ChatUserCategory{}); result.Error != nil {
 			return fmt.Errorf("删除聊天用户组失败: %w", result.Error)
 		}
 
 		// 4. 最后再从数据库中删除抽象组的定义
-		if result := tx.Delete(&models.AbstractGroup{}, "id = ?", id); result.Error != nil {
+		if result := tx.Delete(&model.AbstractGroup{}, "id = ?", id); result.Error != nil {
 			return fmt.Errorf("删除抽象组失败: %w", result.Error)
 		}
 
@@ -272,7 +274,7 @@ func (s *AbstractGroupService) SyncAbstractGroup(groupID string) (int, error) {
 	// 返回值为（同步了多少个人，错误）
 
 	// 1. 获取组定义
-	var group models.AbstractGroup
+	var group model.AbstractGroup
 	if result := s.DB.First(&group, "id = ?", groupID); result.Error != nil {
 		return 0, fmt.Errorf("找不到抽象组: %s", groupID)
 	}
@@ -328,7 +330,7 @@ func (s *AbstractGroupService) SyncAbstractGroup(groupID string) (int, error) {
 }
 
 // 从手动规则中获取UPN
-func (s *AbstractGroupService) getUpnsFromManualRule(group *models.AbstractGroup) ([]string, error) {
+func (s *AbstractGroupService) getUpnsFromManualRule(group *model.AbstractGroup) ([]string, error) {
 	if group.Rule.Manual == nil {
 		return []string{}, nil
 	}
