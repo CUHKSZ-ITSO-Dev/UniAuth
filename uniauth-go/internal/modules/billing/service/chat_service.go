@@ -28,7 +28,7 @@ func NewChatService(db *gorm.DB, service *rbacService.AbstractGroupService) *Cha
 // ========== 服务接口 ==========
 
 // Bill 对指定用户进行扣费
-func (s *ChatService) Bill(upn string, cost decimal.Decimal, model string, tokens int64) error {
+func (s *ChatService) Bill(upn string, cost decimal.Decimal, modelName string, tokens int64) error {
 	// 1. 获取计费上下文
 	userAccount, categories, err := s.getBillingContext(upn)
 	if err != nil {
@@ -47,7 +47,7 @@ func (s *ChatService) Bill(upn string, cost decimal.Decimal, model string, token
 		record := model.ChatUserCostRecord{
 			UPN:    userAccount.UPN,
 			Cost:   cost,
-			Model:  model,
+			Model:  modelName,
 			Source: source,
 			Tokens: tokens,
 			Kind:   kind,

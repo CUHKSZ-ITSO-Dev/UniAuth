@@ -8,8 +8,10 @@ import (
 	"sync"
 	"time"
 
+	billingModel "uniauth/internal/modules/billing/model"
 	"uniauth/internal/modules/rbac/model"
 	"uniauth/internal/modules/rbac/service"
+	userModel "uniauth/internal/modules/user/model"
 	userService "uniauth/internal/modules/user/service"
 
 	"math"
@@ -61,7 +63,7 @@ func (h *AdminHandler) GetUserPermissionTree(c *gin.Context) {
 	var primaryGroup string
 	if len(abstractGroups) > 0 {
 		// 获取对应的ChatUserCategory
-		var categories []*model.ChatUserCategory
+		var categories []*billingModel.ChatUserCategory
 		if err := h.Service.DB.Preload("QuotaPool").Where("name IN ?", abstractGroups).Find(&categories).Error; err == nil {
 			// 使用getPrimaryCategory函数获取主要组
 			primaryCategory := h.getPrimaryCategory(categories)
@@ -339,7 +341,7 @@ func (h *AdminHandler) fetchUserDetailsFromUserInfo(upns []string) (map[string]U
 	}
 
 	// 从数据库查询用户信息
-	var userInfos []model.UserInfo
+	var userInfos []userModel.UserInfo
 	if err := h.UserInfoService.DB.Where("upn IN ?", upns).Find(&userInfos).Error; err != nil {
 		return nil, fmt.Errorf("从数据库获取用户信息失败: %w", err)
 	}
@@ -445,7 +447,7 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 			// 获取主要组（通过ChatUserCategory的优先级判断）
 			if len(abstractGroups) > 0 {
 				// 获取对应的ChatUserCategory
-				var categories []*model.ChatUserCategory
+				var categories []*billingModel.ChatUserCategory
 				if err := h.Service.DB.Preload("QuotaPool").Where("name IN ?", abstractGroups).Find(&categories).Error; err == nil {
 					// 使用getPrimaryCategory函数获取主要组
 					primaryCategory := h.getPrimaryCategory(categories)
@@ -713,7 +715,7 @@ func (h *AdminHandler) ExplainPermission(c *gin.Context) {
 }
 
 // 获取用户的主要组
-func (h *AdminHandler) getPrimaryCategory(categories []*model.ChatUserCategory) *model.ChatUserCategory {
+func (h *AdminHandler) getPrimaryCategory(categories []*billingModel.ChatUserCategory) *billingModel.ChatUserCategory {
 	if len(categories) == 0 {
 		return nil
 	}
@@ -725,7 +727,7 @@ func (h *AdminHandler) getPrimaryCategory(categories []*model.ChatUserCategory) 
 		}
 	}
 	// 如果有多个相同的最小优先级的组，则挑最大的defaultQuota
-	var primaryCategory *model.ChatUserCategory
+	var primaryCategory *billingModel.ChatUserCategory
 	var maxQuota decimal.Decimal = decimal.Zero
 	for i := range categories {
 		if categories[i].Priority == minPriority {
@@ -757,11 +759,11 @@ func (h *AdminHandler) GetUserCostRecords(c *gin.Context) {
 	}
 
 	// 查询用户消费记录
-	var costRecords []model.ChatUserCostRecord
+	var costRecords []billingModel.ChatUserCostRecord
 	var total int64
 
 	// 获取总数
-	h.Service.DB.Model(&model.ChatUserCostRecord{}).Where("upn = ?", upn).Count(&total)
+	h.Service.DB.Model(&billingModel.ChatUserCostRecord{}).Where("upn = ?", upn).Count(&total)
 
 	// 获取分页数据
 	offset := (page - 1) * pageSize

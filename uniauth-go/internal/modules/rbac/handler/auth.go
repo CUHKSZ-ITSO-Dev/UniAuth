@@ -3,6 +3,7 @@ package handler
 import (
 	"strings"
 
+	billingModel "uniauth/internal/modules/billing/model"
 	"uniauth/internal/modules/rbac/model"
 	"uniauth/internal/modules/rbac/service"
 
@@ -134,7 +135,7 @@ func (h *AuthHandler) GetUserGroups(c *gin.Context) {
 	var primaryGroup string
 	if len(abstractGroups) > 0 {
 		// 获取对应的ChatUserCategory
-		var categories []*model.ChatUserCategory
+		var categories []*billingModel.ChatUserCategory
 		if err := h.Service.DB.Preload("QuotaPool").Where("name IN ?", abstractGroups).Find(&categories).Error; err == nil {
 			// 使用getPrimaryCategory函数获取主要组
 			primaryCategory := h.getPrimaryCategory(categories)
@@ -152,7 +153,7 @@ func (h *AuthHandler) GetUserGroups(c *gin.Context) {
 }
 
 // 获取用户的主要组
-func (h *AuthHandler) getPrimaryCategory(categories []*model.ChatUserCategory) *model.ChatUserCategory {
+func (h *AuthHandler) getPrimaryCategory(categories []*billingModel.ChatUserCategory) *billingModel.ChatUserCategory {
 	if len(categories) == 0 {
 		return nil
 	}
@@ -164,7 +165,7 @@ func (h *AuthHandler) getPrimaryCategory(categories []*model.ChatUserCategory) *
 		}
 	}
 	// 如果有多个相同的最小优先级的组，则挑最大的defaultQuota
-	var primaryCategory *model.ChatUserCategory
+	var primaryCategory *billingModel.ChatUserCategory
 	var maxQuota decimal.Decimal = decimal.Zero
 	for i := range categories {
 		if categories[i].Priority == minPriority {
