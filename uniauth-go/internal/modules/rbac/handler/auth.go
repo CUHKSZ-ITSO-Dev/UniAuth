@@ -1,10 +1,11 @@
-package handlers
+package handler
 
 import (
 	"strings"
 
-	"uniauth/internal/models"
-	"uniauth/internal/services"
+	billingModel "uniauth/internal/modules/billing/model"
+	"uniauth/internal/modules/rbac/model"
+	"uniauth/internal/modules/rbac/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
@@ -12,11 +13,11 @@ import (
 
 // AuthHandler 认证处理器
 type AuthHandler struct {
-	Service *services.AuthService
+	Service *service.AuthService
 }
 
 // NewAuthHandler 创建认证处理器
-func NewAuthHandler(service *services.AuthService) *AuthHandler {
+func NewAuthHandler(service *service.AuthService) *AuthHandler {
 	return &AuthHandler{
 		Service: service,
 	}
@@ -120,7 +121,7 @@ func (h *AuthHandler) GetUserGroups(c *gin.Context) {
 
 	for _, group := range allGroups {
 		// 检查是否为抽象组（通过查询数据库）
-		var abstractGroup models.AbstractGroup
+		var abstractGroup model.AbstractGroup
 		if err := h.Service.DB.Where("name = ?", group).First(&abstractGroup).Error; err == nil {
 			// 找到对应的抽象组，这是抽象组
 			abstractGroups = append(abstractGroups, group)
@@ -134,7 +135,7 @@ func (h *AuthHandler) GetUserGroups(c *gin.Context) {
 	var primaryGroup string
 	if len(abstractGroups) > 0 {
 		// 获取对应的ChatUserCategory
-		var categories []*models.ChatUserCategory
+		var categories []*billingModel.ChatUserCategory
 		if err := h.Service.DB.Preload("QuotaPool").Where("name IN ?", abstractGroups).Find(&categories).Error; err == nil {
 			// 使用getPrimaryCategory函数获取主要组
 			primaryCategory := h.getPrimaryCategory(categories)
@@ -152,7 +153,7 @@ func (h *AuthHandler) GetUserGroups(c *gin.Context) {
 }
 
 // 获取用户的主要组
-func (h *AuthHandler) getPrimaryCategory(categories []*models.ChatUserCategory) *models.ChatUserCategory {
+func (h *AuthHandler) getPrimaryCategory(categories []*billingModel.ChatUserCategory) *billingModel.ChatUserCategory {
 	if len(categories) == 0 {
 		return nil
 	}
@@ -164,7 +165,7 @@ func (h *AuthHandler) getPrimaryCategory(categories []*models.ChatUserCategory) 
 		}
 	}
 	// 如果有多个相同的最小优先级的组，则挑最大的defaultQuota
-	var primaryCategory *models.ChatUserCategory
+	var primaryCategory *billingModel.ChatUserCategory
 	var maxQuota decimal.Decimal = decimal.Zero
 	for i := range categories {
 		if categories[i].Priority == minPriority {

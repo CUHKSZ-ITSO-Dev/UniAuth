@@ -1,21 +1,21 @@
-package handlers
+package handler
 
 import (
 	"encoding/json"
 	"net/http"
-	"uniauth/internal/models"
-	"uniauth/internal/services"
+	"uniauth/internal/modules/rbac/model"
+	"uniauth/internal/modules/rbac/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 // AbstractGroupHandler 抽象组管理处理器
 type AbstractGroupHandler struct {
-	Service *services.AbstractGroupService
+	Service *service.AbstractGroupService
 }
 
 // NewAbstractGroupHandler 创建抽象组管理处理器
-func NewAbstractGroupHandler(service *services.AbstractGroupService) *AbstractGroupHandler {
+func NewAbstractGroupHandler(service *service.AbstractGroupService) *AbstractGroupHandler {
 	return &AbstractGroupHandler{
 		Service: service,
 	}
@@ -42,7 +42,7 @@ func (h *AbstractGroupHandler) CreateAbstractGroup(c *gin.Context) {
 		return
 	}
 
-	var newGroup models.AbstractGroup
+	var newGroup model.AbstractGroup
 	newGroup.Name = requestBody.Name
 	newGroup.Description = requestBody.Description
 	newGroup.Type = requestBody.Type
@@ -50,7 +50,7 @@ func (h *AbstractGroupHandler) CreateAbstractGroup(c *gin.Context) {
 	// 根据类型处理 Rule 字段
 	switch newGroup.Type {
 	case "ittools":
-		var ittoolsRule models.IttoolsRule
+		var ittoolsRule model.IttoolsRule
 		if err := json.Unmarshal(requestBody.Rule, &ittoolsRule); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "无效的 ittools 规则格式", "details": err.Error()})
 			return
@@ -59,7 +59,7 @@ func (h *AbstractGroupHandler) CreateAbstractGroup(c *gin.Context) {
 	case "manual":
 		// 前端发送的是 { manual: { upns: [...] } } 格式
 		var ruleWrapper struct {
-			Manual *models.ManualRule `json:"manual"`
+			Manual *model.ManualRule `json:"manual"`
 		}
 		if err := json.Unmarshal(requestBody.Rule, &ruleWrapper); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "无效的 manual 规则格式", "details": err.Error()})
@@ -119,7 +119,7 @@ func (h *AbstractGroupHandler) UpdateAbstractGroup(c *gin.Context) {
 		return
 	}
 
-	var updatedInfo models.AbstractGroup
+	var updatedInfo model.AbstractGroup
 	updatedInfo.Name = requestBody.Name
 	updatedInfo.Description = requestBody.Description
 	updatedInfo.Type = requestBody.Type
@@ -127,7 +127,7 @@ func (h *AbstractGroupHandler) UpdateAbstractGroup(c *gin.Context) {
 	// 根据类型处理 Rule 字段
 	switch updatedInfo.Type {
 	case "ittools":
-		var ittoolsRule models.IttoolsRule
+		var ittoolsRule model.IttoolsRule
 		if err := json.Unmarshal(requestBody.Rule, &ittoolsRule); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "无效的 ittools 规则格式", "details": err.Error()})
 			return
@@ -136,7 +136,7 @@ func (h *AbstractGroupHandler) UpdateAbstractGroup(c *gin.Context) {
 	case "manual":
 		// 前端发送的是 { manual: { upns: [...] } } 格式
 		var ruleWrapper struct {
-			Manual *models.ManualRule `json:"manual"`
+			Manual *model.ManualRule `json:"manual"`
 		}
 		if err := json.Unmarshal(requestBody.Rule, &ruleWrapper); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "无效的 manual 规则格式", "details": err.Error()})

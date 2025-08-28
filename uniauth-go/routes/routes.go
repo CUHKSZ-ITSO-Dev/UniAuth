@@ -2,8 +2,9 @@ package routes
 
 import (
 	"uniauth/internal/app"
-	"uniauth/internal/handlers"
-	"uniauth/internal/services"
+	rbacHandler "uniauth/internal/modules/rbac/handler"
+	rbacService "uniauth/internal/modules/rbac/service"
+	billingHandler "uniauth/internal/modules/billing/handler"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,15 +12,15 @@ import (
 // SetupRoutes 设置所有路由
 func SetupRoutes(r *gin.Engine, app *app.App) {
 	// 创建处理器
-	authHandler := handlers.NewAuthHandler(app.AuthService)
-	adminHandler := handlers.NewAdminHandler(app.AuthService, app.UserInfoService)
-	auditHandler := handlers.NewAuditHandler(app.AuthService)
-	ruleManagementHandler := handlers.NewRuleManagementHandler(app.AuthService, auditHandler)
-	documentService := services.NewDocumentService(app.AuthService)
-	abstractGroupHandler := handlers.NewAbstractGroupHandler(app.AbstractGroupService)
+	authHandler := rbacHandler.NewAuthHandler(app.AuthService)
+	adminHandler := rbacHandler.NewAdminHandler(app.AuthService, app.UserInfoService)
+	auditHandler := rbacHandler.NewAuditHandler(app.AuthService)
+	ruleManagementHandler := rbacHandler.NewRuleManagementHandler(app.AuthService, auditHandler)
+	documentService := rbacService.NewDocumentService(app.AuthService)
+	abstractGroupHandler := rbacHandler.NewAbstractGroupHandler(app.AbstractGroupService)
 
 	// 创建对话计费服务和处理器
-	chatHandler := handlers.NewChatHandler(app.ChatService)
+	chatHandler := billingHandler.NewChatHandler(app.ChatService)
 
 	// 初始化审计日志表
 	auditHandler.InitAuditTable()

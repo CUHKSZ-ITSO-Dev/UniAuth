@@ -1,10 +1,10 @@
-package handlers
+package handler
 
 import (
 	"net/http"
-	"uniauth/internal/services"
+	"uniauth/internal/modules/billing/service"
 
-	"uniauth/internal/models"
+	"uniauth/internal/modules/billing/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
@@ -12,11 +12,11 @@ import (
 
 // ChatHandler 封装了与聊天计费相关的HTTP处理器
 type ChatHandler struct {
-	ChatService *services.ChatService
+	ChatService *service.ChatService
 }
 
 // NewChatHandler 创建一个新的 ChatHandler 实例
-func NewChatHandler(chatService *services.ChatService) *ChatHandler {
+func NewChatHandler(chatService *service.ChatService) *ChatHandler {
 	return &ChatHandler{ChatService: chatService}
 }
 
@@ -99,7 +99,7 @@ func (h *ChatHandler) EnsureChatAccountExists(c *gin.Context) {
 // UpdateChatCategory 更新用户组（对话类别）信息
 func (h *ChatHandler) UpdateChatCategory(c *gin.Context) {
 	id := c.Param("id")
-	var category models.ChatUserCategory
+	var category model.ChatUserCategory
 
 	if err := c.ShouldBindJSON(&category); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求体: " + err.Error()})

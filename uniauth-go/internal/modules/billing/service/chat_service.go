@@ -1,10 +1,11 @@
-package services
+package service
 
 import (
 	"errors"
 	"fmt"
 	"time"
-	"uniauth/internal/models"
+	"uniauth/internal/modules/billing/model"
+	rbacService "uniauth/internal/modules/rbac/service"
 
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -13,11 +14,11 @@ import (
 // ChatService 封装了与聊天计费相关的业务逻辑
 type ChatService struct {
 	DB      *gorm.DB
-	Service *AbstractGroupService
+	Service *rbacService.AbstractGroupService
 }
 
 // NewChatService 创建一个新的 ChatService 实例
-func NewChatService(db *gorm.DB, service *AbstractGroupService) *ChatService {
+func NewChatService(db *gorm.DB, service *rbacService.AbstractGroupService) *ChatService {
 	return &ChatService{
 		DB:      db,
 		Service: service,
@@ -27,7 +28,7 @@ func NewChatService(db *gorm.DB, service *AbstractGroupService) *ChatService {
 // ========== 服务接口 ==========
 
 // Bill 对指定用户进行扣费
-func (s *ChatService) Bill(upn string, cost decimal.Decimal, model string, tokens int64) error {
+func (s *ChatService) Bill(upn string, cost decimal.Decimal, modelName string, tokens int64) error {
 	// 1. 获取计费上下文
 	userAccount, categories, err := s.getBillingContext(upn)
 	if err != nil {
@@ -43,10 +44,10 @@ func (s *ChatService) Bill(upn string, cost decimal.Decimal, model string, token
 		}
 
 		// 步骤二：创建消费记录
-		record := models.ChatUserCostRecord{
+		record := model.ChatUserCostRecord{
 			UPN:    userAccount.UPN,
 			Cost:   cost,
-			Model:  model,
+			Model:  modelName,
 			Source: source,
 			Tokens: tokens,
 			Kind:   kind,
@@ -75,13 +76,13 @@ func (s *ChatService) EnsureChatAccountExists(upn string) error {
 		return fmt.Errorf("[对话] 用户UPN不能为空。")
 	}
 
-	var userAccount models.ChatUserAccount
+	var userAccount model.ChatUserAccount
 	err := s.DB.Where("upn = ?", upn).First(&userAccount).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// 账户不存在，创建新账户
-			if createErr := s.DB.Create(&models.ChatUserAccount{
+			if createErr := s.DB.Create(&model.ChatUserAccount{
 				UPN:           upn,
 				Balance:       decimal.Zero,
 				TokenPackage:  decimal.Zero,
@@ -107,7 +108,7 @@ func (s *ChatService) EnsureChatAccountExists(upn string) error {
 // ========== 辅助函数 ==========
 
 // getBillingContext 权限系统用户的抽象组 -> 用户系统的用户的对话用户组
-func (s *ChatService) getBillingContext(upn string) (*models.ChatUserAccount, []*models.ChatUserCategory, error) {
+func (s *ChatService) getBillingContext(upn string) (*model.ChatUserAccount, []*model.ChatUserCategory, error) {
 	// 1. 获取用户所属的抽象组
 	userAbstractGroups, err := s.Service.GetUserAbstractGroups(upn)
 	if err != nil {
@@ -122,7 +123,7 @@ func (s *ChatService) getBillingContext(upn string) (*models.ChatUserAccount, []
 	for _, group := range userAbstractGroups {
 		groupNames = append(groupNames, group.Name)
 	}
-	var categories []*models.ChatUserCategory
+	var categories []*model.ChatUserCategory
 	if err := s.DB.Preload("QuotaPool").Where("name IN ?", groupNames).Find(&categories).Error; err != nil {
 		return nil, nil, fmt.Errorf("[计费] 查询用户计费组信息失败: %w", err)
 	}
@@ -131,7 +132,7 @@ func (s *ChatService) getBillingContext(upn string) (*models.ChatUserAccount, []
 	}
 
 	// 3. 获取用户计费账户
-	var userAccount models.ChatUserAccount
+	var userAccount model.ChatUserAccount
 	if err := s.DB.Where("upn = ?", upn).First(&userAccount).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil, fmt.Errorf("[计费] 找不到UPN为 '%s' 的计费账户，请检查UPN是否传递错误或联系管理员初始化", upn)
@@ -143,8 +144,8 @@ func (s *ChatService) getBillingContext(upn string) (*models.ChatUserAccount, []
 }
 
 // UpdateChatCategory 更新一个 ChatUserCategory 的信息，包括其关联的预算池
-func (s *ChatService) UpdateChatCategory(id string, input *models.ChatUserCategory) (*models.ChatUserCategory, error) {
-	var category models.ChatUserCategory
+func (s *ChatService) UpdateChatCategory(id string, input *model.ChatUserCategory) (*model.ChatUserCategory, error) {
+	var category model.ChatUserCategory
 
 	// 在一个事务中完成所有操作
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
@@ -190,7 +191,7 @@ func (s *ChatService) UpdateChatCategory(id string, input *models.ChatUserCatego
 
 		// 4. 如果有需要，删除旧的预算池
 		if oldPoolIDToDelete != nil {
-			if err := tx.Unscoped().Delete(&models.ChatQuotaPool{}, *oldPoolIDToDelete).Error; err != nil {
+			if err := tx.Unscoped().Delete(&model.ChatQuotaPool{}, *oldPoolIDToDelete).Error; err != nil {
 				return fmt.Errorf("删除旧的预算池失败: %w", err)
 			}
 		}

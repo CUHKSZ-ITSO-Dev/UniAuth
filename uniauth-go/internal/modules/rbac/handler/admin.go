@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"fmt"
@@ -8,8 +8,11 @@ import (
 	"sync"
 	"time"
 
-	"uniauth/internal/models"
-	"uniauth/internal/services"
+	billingModel "uniauth/internal/modules/billing/model"
+	"uniauth/internal/modules/rbac/model"
+	"uniauth/internal/modules/rbac/service"
+	userModel "uniauth/internal/modules/user/model"
+	userService "uniauth/internal/modules/user/service"
 
 	"math"
 
@@ -19,12 +22,12 @@ import (
 
 // AdminHandler 管理员处理器
 type AdminHandler struct {
-	Service         *services.AuthService
-	UserInfoService *services.UserInfoService
+	Service         *service.AuthService
+	UserInfoService *userService.UserInfoService
 }
 
 // NewAdminHandler 创建管理员处理器
-func NewAdminHandler(service *services.AuthService, userInfoService *services.UserInfoService) *AdminHandler {
+func NewAdminHandler(service *service.AuthService, userInfoService *userService.UserInfoService) *AdminHandler {
 	return &AdminHandler{
 		Service:         service,
 		UserInfoService: userInfoService,
@@ -46,7 +49,7 @@ func (h *AdminHandler) GetUserPermissionTree(c *gin.Context) {
 
 	for _, group := range allGroups {
 		// 检查是否为抽象组（通过查询数据库）
-		var abstractGroup models.AbstractGroup
+		var abstractGroup model.AbstractGroup
 		if err := h.Service.DB.Where("name = ?", group).First(&abstractGroup).Error; err == nil {
 			// 找到对应的抽象组，这是抽象组
 			abstractGroups = append(abstractGroups, group)
@@ -60,7 +63,7 @@ func (h *AdminHandler) GetUserPermissionTree(c *gin.Context) {
 	var primaryGroup string
 	if len(abstractGroups) > 0 {
 		// 获取对应的ChatUserCategory
-		var categories []*models.ChatUserCategory
+		var categories []*billingModel.ChatUserCategory
 		if err := h.Service.DB.Preload("QuotaPool").Where("name IN ?", abstractGroups).Find(&categories).Error; err == nil {
 			// 使用getPrimaryCategory函数获取主要组
 			primaryCategory := h.getPrimaryCategory(categories)
@@ -338,7 +341,7 @@ func (h *AdminHandler) fetchUserDetailsFromUserInfo(upns []string) (map[string]U
 	}
 
 	// 从数据库查询用户信息
-	var userInfos []models.UserInfo
+	var userInfos []userModel.UserInfo
 	if err := h.UserInfoService.DB.Where("upn IN ?", upns).Find(&userInfos).Error; err != nil {
 		return nil, fmt.Errorf("从数据库获取用户信息失败: %w", err)
 	}
@@ -434,7 +437,7 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 			var abstractGroups []string
 			for _, group := range groups {
 				// 检查是否为抽象组（通过查询数据库）
-				var abstractGroup models.AbstractGroup
+				var abstractGroup model.AbstractGroup
 				if err := h.Service.DB.Where("name = ?", group).First(&abstractGroup).Error; err == nil {
 					// 找到对应的抽象组，这是抽象组
 					abstractGroups = append(abstractGroups, group)
@@ -444,7 +447,7 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 			// 获取主要组（通过ChatUserCategory的优先级判断）
 			if len(abstractGroups) > 0 {
 				// 获取对应的ChatUserCategory
-				var categories []*models.ChatUserCategory
+				var categories []*billingModel.ChatUserCategory
 				if err := h.Service.DB.Preload("QuotaPool").Where("name IN ?", abstractGroups).Find(&categories).Error; err == nil {
 					// 使用getPrimaryCategory函数获取主要组
 					primaryCategory := h.getPrimaryCategory(categories)
@@ -581,7 +584,7 @@ func (h *AdminHandler) GetStats(c *gin.Context) {
 
 	// 统计抽象组数量
 	var abstractGroupCount int64
-	h.Service.DB.Model(&models.AbstractGroup{}).Count(&abstractGroupCount)
+	h.Service.DB.Model(&model.AbstractGroup{}).Count(&abstractGroupCount)
 
 	// 生成模拟的活动趋势数据
 	recentActivity := []gin.H{}
@@ -712,7 +715,7 @@ func (h *AdminHandler) ExplainPermission(c *gin.Context) {
 }
 
 // 获取用户的主要组
-func (h *AdminHandler) getPrimaryCategory(categories []*models.ChatUserCategory) *models.ChatUserCategory {
+func (h *AdminHandler) getPrimaryCategory(categories []*billingModel.ChatUserCategory) *billingModel.ChatUserCategory {
 	if len(categories) == 0 {
 		return nil
 	}
@@ -724,7 +727,7 @@ func (h *AdminHandler) getPrimaryCategory(categories []*models.ChatUserCategory)
 		}
 	}
 	// 如果有多个相同的最小优先级的组，则挑最大的defaultQuota
-	var primaryCategory *models.ChatUserCategory
+	var primaryCategory *billingModel.ChatUserCategory
 	var maxQuota decimal.Decimal = decimal.Zero
 	for i := range categories {
 		if categories[i].Priority == minPriority {
@@ -756,11 +759,11 @@ func (h *AdminHandler) GetUserCostRecords(c *gin.Context) {
 	}
 
 	// 查询用户消费记录
-	var costRecords []models.ChatUserCostRecord
+	var costRecords []billingModel.ChatUserCostRecord
 	var total int64
 
 	// 获取总数
-	h.Service.DB.Model(&models.ChatUserCostRecord{}).Where("upn = ?", upn).Count(&total)
+	h.Service.DB.Model(&billingModel.ChatUserCostRecord{}).Where("upn = ?", upn).Count(&total)
 
 	// 获取分页数据
 	offset := (page - 1) * pageSize

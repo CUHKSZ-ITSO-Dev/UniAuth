@@ -1,22 +1,22 @@
-package handlers
+package handler
 
 import (
 	"fmt"
 	"strconv"
 	"time"
 
-	"uniauth/internal/services"
+	"uniauth/internal/modules/rbac/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 // AuditHandler 审计处理器
 type AuditHandler struct {
-	Service *services.AuthService
+	Service *service.AuthService
 }
 
 // NewAuditHandler 创建审计处理器
-func NewAuditHandler(service *services.AuthService) *AuditHandler {
+func NewAuditHandler(service *service.AuthService) *AuditHandler {
 	return &AuditHandler{Service: service}
 }
 

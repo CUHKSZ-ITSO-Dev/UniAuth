@@ -1,4 +1,4 @@
-package services
+package service
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"uniauth/internal/models"
+	"uniauth/internal/modules/rbac/model"
 
 	"github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
@@ -326,7 +326,7 @@ func (s *AuthService) ExportAllRulesAsCSV() ([]byte, error) {
 	// 3. 导出抽象组定义
 	writer.Write([]string{"# === 抽象组定义 (abstract) ==="})
 	writer.Write([]string{"# 格式: abstract, id, name, type, description, rule_json"})
-	var abstractGroups []models.AbstractGroup
+	var abstractGroups []model.AbstractGroup
 	if result := s.DB.Find(&abstractGroups); result.Error != nil {
 		return nil, result.Error
 	}
