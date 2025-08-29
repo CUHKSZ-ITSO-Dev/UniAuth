@@ -25,6 +25,9 @@ def validate_pg_env() -> None:
         ("PGUSER", PGUSER),
         ("PGPASSWORD", PGPASSWORD),
         ("PGNAME", PGNAME),
+        ("QUERY_API_KEYS", QUERY_API_KEYS),
+        ("USER_QUERY_URL", USER_QUERY_URL),
+        ("ENCRYPT_PASSWORD", ENCRYPT_PASSWORD)
     ]:
         if not value:
             missing.append(name)
@@ -34,7 +37,11 @@ def validate_pg_env() -> None:
 
 
 # AD/ITTools API 配置
-QUERY_API_KEYS = json.loads(os.getenv("QUERY_API_KEYS", "[]"))
+try:
+    QUERY_API_KEYS = json.loads(os.getenv("QUERY_API_KEYS", "[]"))
+except json.JSONDecodeError as e:
+    print(f"错误：环境变量 QUERY_API_KEYS 格式无效: {e}")
+    raise SystemExit(1)
 USER_QUERY_URL = os.getenv("USER_QUERY_URL")
 ENCRYPT_PASSWORD = os.getenv("ENCRYPT_PASSWORD")
 
