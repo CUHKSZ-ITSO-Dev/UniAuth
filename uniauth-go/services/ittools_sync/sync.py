@@ -3,7 +3,7 @@ import json
 import os
 import re
 from datetime import datetime
-from typing import Any
+from typing import Any, final
 from zoneinfo import ZoneInfo
 
 import asyncpg
@@ -27,7 +27,7 @@ def validate_pg_env() -> None:
         ("PGNAME", PGNAME),
         ("QUERY_API_KEYS", QUERY_API_KEYS),
         ("USER_QUERY_URL", USER_QUERY_URL),
-        ("ENCRYPT_PASSWORD", ENCRYPT_PASSWORD)
+        ("ENCRYPT_PASSWORD", ENCRYPT_PASSWORD),
     ]:
         if not value:
             missing.append(name)
@@ -79,6 +79,7 @@ async def fetch_ad_users() -> list[dict[str, Any]]:
 async def sync_to_postgres(users: list[dict[str, Any]]) -> None:
     """将用户数据同步到 PostgreSQL"""
     print("\n--- 开始同步到 PostgreSQL ---")
+    conn = None
     try:
         conn = await asyncpg.connect(
             host=PGHOST,
@@ -91,8 +92,8 @@ async def sync_to_postgres(users: list[dict[str, Any]]) -> None:
 
         async with conn.transaction():
             print("(3/3) 正在写入数据到PostgreSQL...")
+            now = datetime.now(ZoneInfo("Asia/Shanghai"))
             for user in users:
-                now = datetime.now(ZoneInfo("Asia/Shanghai"))
                 upn = user.get("userPrincipalName")
                 if not upn:
                     # 缺少主键 UPN，跳过该记录
@@ -136,7 +137,7 @@ async def sync_to_postgres(users: list[dict[str, Any]]) -> None:
                     user.get("userPrincipalName"),
                     user.get("mail"),
                     user.get("displayName"),
-                    user.get("name"),
+                    user.get("uniqueName"),
                     user.get("samaccountname"),
                     user.get("extensionattribute5"),
                     user.get("extensionattribute7"),
@@ -162,15 +163,14 @@ async def sync_to_postgres(users: list[dict[str, Any]]) -> None:
 
         print("清理PostgreSQL过期数据...")
         result = await conn.execute(
-            "DELETE FROM user_infos WHERE updated_at < NOW() - INTERVAL '7 days'"
+            "DELETE FROM user_infos WHERE updated_at < NOW() - INTERVAL '7 days' RETURNING upn"
         )
-        deleted_count_str = result.split(" ")[-1]
-        deleted_count = int(deleted_count_str) if deleted_count_str.isdigit() else 0
-        print(f"已从PostgreSQL清理 {deleted_count} 条过期记录")
-
-        await conn.close()
+        print(f"已从PostgreSQL清理 {len(result)} 条过期记录。{result}")
     except Exception as e:
         print(f"同步到PostgreSQL时出错: {e}")
+    finally:
+        if conn:
+            await conn.close()
 
 
 async def main() -> None:
