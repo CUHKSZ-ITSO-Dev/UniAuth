@@ -8,15 +8,15 @@ import (
 	"uniauth-gf/internal/dao/internal"
 )
 
-// userInfoDao is the data access object for the table user_info.
+// userInfosDao is the data access object for the table user_infos.
 // You can define custom methods on it to extend its functionality as needed.
-type userInfoDao struct {
-	*internal.UserInfoDao
+type userInfosDao struct {
+	*internal.UserInfosDao
 }
 
 var (
-	// UserInfo is a globally accessible object for table user_info operations.
-	UserInfo = userInfoDao{internal.NewUserInfoDao()}
+	// UserInfos is a globally accessible object for table user_infos operations.
+	UserInfos = userInfosDao{internal.NewUserInfosDao()}
 )
 
 // Add your custom methods and functionality below.

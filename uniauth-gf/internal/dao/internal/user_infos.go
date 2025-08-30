@@ -11,16 +11,16 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// UserInfoDao is the data access object for the table user_info.
-type UserInfoDao struct {
+// UserInfosDao is the data access object for the table user_infos.
+type UserInfosDao struct {
 	table    string             // table is the underlying table name of the DAO.
 	group    string             // group is the database configuration group name of the current DAO.
-	columns  UserInfoColumns    // columns contains all the column names of Table for convenient usage.
+	columns  UserInfosColumns   // columns contains all the column names of Table for convenient usage.
 	handlers []gdb.ModelHandler // handlers for customized model modification.
 }
 
-// UserInfoColumns defines and stores column names for the table user_info.
-type UserInfoColumns struct {
+// UserInfosColumns defines and stores column names for the table user_infos.
+type UserInfosColumns struct {
 	Upn                        string //
 	DisplayName                string //
 	UniqueName                 string //
@@ -47,8 +47,8 @@ type UserInfoColumns struct {
 	UpdatedAt                  string //
 }
 
-// userInfoColumns holds the columns for the table user_info.
-var userInfoColumns = UserInfoColumns{
+// userInfosColumns holds the columns for the table user_infos.
+var userInfosColumns = UserInfosColumns{
 	Upn:                        "upn",
 	DisplayName:                "display_name",
 	UniqueName:                 "unique_name",
@@ -75,38 +75,38 @@ var userInfoColumns = UserInfoColumns{
 	UpdatedAt:                  "updated_at",
 }
 
-// NewUserInfoDao creates and returns a new DAO object for table data access.
-func NewUserInfoDao(handlers ...gdb.ModelHandler) *UserInfoDao {
-	return &UserInfoDao{
+// NewUserInfosDao creates and returns a new DAO object for table data access.
+func NewUserInfosDao(handlers ...gdb.ModelHandler) *UserInfosDao {
+	return &UserInfosDao{
 		group:    "default",
-		table:    "user_info",
-		columns:  userInfoColumns,
+		table:    "user_infos",
+		columns:  userInfosColumns,
 		handlers: handlers,
 	}
 }
 
 // DB retrieves and returns the underlying raw database management object of the current DAO.
-func (dao *UserInfoDao) DB() gdb.DB {
+func (dao *UserInfosDao) DB() gdb.DB {
 	return g.DB(dao.group)
 }
 
 // Table returns the table name of the current DAO.
-func (dao *UserInfoDao) Table() string {
+func (dao *UserInfosDao) Table() string {
 	return dao.table
 }
 
 // Columns returns all column names of the current DAO.
-func (dao *UserInfoDao) Columns() UserInfoColumns {
+func (dao *UserInfosDao) Columns() UserInfosColumns {
 	return dao.columns
 }
 
 // Group returns the database configuration group name of the current DAO.
-func (dao *UserInfoDao) Group() string {
+func (dao *UserInfosDao) Group() string {
 	return dao.group
 }
 
 // Ctx creates and returns a Model for the current DAO. It automatically sets the context for the current operation.
-func (dao *UserInfoDao) Ctx(ctx context.Context) *gdb.Model {
+func (dao *UserInfosDao) Ctx(ctx context.Context) *gdb.Model {
 	model := dao.DB().Model(dao.table)
 	for _, handler := range dao.handlers {
 		model = handler(model)
@@ -120,6 +120,6 @@ func (dao *UserInfoDao) Ctx(ctx context.Context) *gdb.Model {
 //
 // Note: Do not commit or roll back the transaction in function f,
 // as it is automatically handled by this function.
-func (dao *UserInfoDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
+func (dao *UserInfosDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)
 }

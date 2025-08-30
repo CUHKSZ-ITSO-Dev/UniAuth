@@ -14,7 +14,7 @@ from aiohttp import ClientError, ClientSession
 PGHOST = os.getenv("PGHOST")
 PGUSER = os.getenv("PGUSER")
 PGPASSWORD = os.getenv("PGPASSWORD")
-PGNAME = os.getenv("PGNAME")
+PGDATABASE = os.getenv("PGDATABASE")
 PGPORT = os.getenv("PGPORT", "5432")
 
 
@@ -24,7 +24,7 @@ def validate_pg_env() -> None:
         ("PGHOST", PGHOST),
         ("PGUSER", PGUSER),
         ("PGPASSWORD", PGPASSWORD),
-        ("PGNAME", PGNAME),
+        ("PGDATABASE", PGDATABASE),
         ("QUERY_API_KEYS", QUERY_API_KEYS),
         ("USER_QUERY_URL", USER_QUERY_URL),
         ("ENCRYPT_PASSWORD", ENCRYPT_PASSWORD),
@@ -86,7 +86,7 @@ async def sync_to_postgres(users: list[dict[str, Any]]) -> None:
             port=int(PGPORT),
             user=PGUSER,
             password=PGPASSWORD,
-            database=PGNAME,
+            database=PGDATABASE,
         )
         print("PostgreSQL连接成功。")
 

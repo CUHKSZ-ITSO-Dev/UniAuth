@@ -8,6 +8,7 @@ import (
 	"github.com/gogf/gf/v2/os/gcmd"
 
 	"uniauth-gf/internal/controller/hello"
+	"uniauth-gf/internal/controller/userinfos"
 )
 
 var (
@@ -21,6 +22,7 @@ var (
 				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					hello.NewV1(),
+					userinfos.NewV1(),
 				)
 			})
 			s.Run()

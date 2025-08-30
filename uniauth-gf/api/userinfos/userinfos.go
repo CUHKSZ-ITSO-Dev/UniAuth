@@ -2,14 +2,14 @@
 // Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
 // =================================================================================
 
-package userinfo
+package userinfos
 
 import (
 	"context"
 
-	"uniauth-gf/api/userinfo/v1"
+	"uniauth-gf/api/userinfos/v1"
 )
 
-type IUserinfoV1 interface {
-	queryUserInfo(ctx context.Context, req *v1.queryUserInfoReq) (res *v1.queryUserInfoRes, err error)
+type IUserinfosV1 interface {
+	QueryUserInfo(ctx context.Context, req *v1.QueryUserInfoReq) (res *v1.QueryUserInfoRes, err error)
 }

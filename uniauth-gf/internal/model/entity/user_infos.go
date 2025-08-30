@@ -8,8 +8,8 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
-// UserInfo is the golang structure for table user_info.
-type UserInfo struct {
+// UserInfos is the golang structure for table user_infos.
+type UserInfos struct {
 	Upn                        string      `json:"upn"                        orm:"upn"                            description:""` //
 	DisplayName                string      `json:"displayName"                orm:"display_name"                   description:""` //
 	UniqueName                 string      `json:"uniqueName"                 orm:"unique_name"                    description:""` //

@@ -9,9 +9,9 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
-// UserInfo is the golang structure of table user_info for DAO operations like Where/Data.
-type UserInfo struct {
-	g.Meta                     `orm:"table:user_info, do:true"`
+// UserInfos is the golang structure of table user_infos for DAO operations like Where/Data.
+type UserInfos struct {
+	g.Meta                     `orm:"table:user_infos, do:true"`
 	Upn                        interface{} //
 	DisplayName                interface{} //
 	UniqueName                 interface{} //
