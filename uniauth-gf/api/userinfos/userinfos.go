@@ -12,4 +12,5 @@ import (
 
 type IUserinfosV1 interface {
 	GetOne(ctx context.Context, req *v1.GetOneReq) (res *v1.GetOneRes, err error)
+	Filter(ctx context.Context, req *v1.FilterReq) (res *v1.FilterRes, err error)
 }
