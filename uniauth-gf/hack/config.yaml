@@ -6,6 +6,20 @@ gfcli:
     dao:
       - link: "pgsql:uniauth:It@73333!@tcp(127.0.0.1:5432)/uniauth"
         descriptionTag: true
+  
+  build:
+    name: "uniauth"
+    arch: "amd64,arm64"
+    system: "darwin,windows,linux"
+    path: "./bin"
+  
+  run:
+    path:  "./bin"
+    extra: ""
+    args:  "all"
+    watchPaths:
+    - api/*.go
+    - internal/controller/*.go
 
   docker:
     build: "-a amd64 -s linux -p temp -ew"
