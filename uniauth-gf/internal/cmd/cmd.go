@@ -22,6 +22,11 @@ var (
 				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					hello.NewV1(),
+				)
+			})
+			s.Group("/users", func(group *ghttp.RouterGroup) {
+				group.Middleware(ghttp.MiddlewareHandlerResponse)
+				group.Bind(
 					userinfos.NewV1(),
 				)
 			})

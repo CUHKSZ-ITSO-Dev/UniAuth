@@ -11,5 +11,5 @@ import (
 )
 
 type IUserinfosV1 interface {
-	QueryUserInfo(ctx context.Context, req *v1.QueryUserInfoReq) (res *v1.QueryUserInfoRes, err error)
+	GetOne(ctx context.Context, req *v1.GetOneReq) (res *v1.GetOneRes, err error)
 }

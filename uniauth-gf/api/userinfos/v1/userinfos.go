@@ -6,12 +6,12 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-type QueryUserInfoReq struct {
+type GetOneReq struct {
 	g.Meta `path:"/userinfo/{upn}" tags:"UserInfo" method:"get" summary:"根据upn，返回用户的所有信息。"`
 	Upn    string `v:"required" dc:"UPN"`
 }
 
-type QueryUserInfoRes struct {
+type GetOneRes struct {
 	Upn                        string    `json:"upn"`
 	DisplayName                string    `json:"displayName"`
 	UniqueName                 string    `json:"uniqueName"`

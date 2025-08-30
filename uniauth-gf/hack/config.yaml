@@ -17,9 +17,6 @@ gfcli:
     path:  "./bin"
     extra: ""
     args:  "all"
-    watchPaths:
-    - api/*.go
-    - internal/controller/*.go
 
   docker:
     build: "-a amd64 -s linux -p temp -ew"
