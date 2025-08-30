@@ -8,9 +8,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple && \
     pip install --no-cache-dir \
     aiohttp>=3.12.15 \
-    asyncio>=4.0.0 \
-    asyncpg>=0.30.0 \
-    requests>=2.32.4
+    asyncpg>=0.30.0
 
 WORKDIR /app
 
