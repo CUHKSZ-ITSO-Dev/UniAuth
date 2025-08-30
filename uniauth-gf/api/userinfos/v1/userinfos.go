@@ -7,7 +7,7 @@ import (
 )
 
 type GetOneReq struct {
-	g.Meta `path:"/userinfo/{upn}" tags:"UserInfo" method:"get" summary:"根据upn，返回用户的所有信息。"`
+	g.Meta `path:"/userinfo/:upn" tags:"UserInfo" method:"get" summary:"根据UPN，返回用户的所有信息。"`
 	Upn    string `v:"required" dc:"UPN"`
 }
 
