@@ -69,10 +69,10 @@ type PaginationReq struct {
 
 type FilterReq struct {
 	g.Meta     `path:"/userinfo/filter" tags:"UserInfo" method:"post" summary:"根据过滤条件，返回用户的所有信息。支持复杂条件查询、排序和分页。"`
-	Filter     *FilterGroup     `json:"filter" v:"required" dc:"过滤条件"`
-	Sort       []*SortCondition `json:"sort" dc:"排序条件"`
-	Pagination *PaginationReq   `json:"pagination" dc:"分页参数"`
-	Verbose    bool             `json:"verbose" dc:"是否返回详细用户信息，false时仅返回UPN列表"`
+	Filter     *FilterGroup     `v:"required#需要filter" dc:"过滤条件，支持复杂的逻辑组合查询"`
+	Sort       []*SortCondition `dc:"排序条件，支持多字段排序"`
+	Pagination *PaginationReq   `dc:"分页参数，支持分页或查询全部"`
+	Verbose    bool             `dc:"是否返回详细用户信息，false时仅返回UPN列表"`
 }
 
 type FilterRes struct {
