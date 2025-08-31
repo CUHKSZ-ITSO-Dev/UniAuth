@@ -1,21 +1,27 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"strings"
+	"syscall"
 
 	"uniauth/internal/app"
 	"uniauth/internal/config"
 	"uniauth/internal/middleware"
-	"uniauth/internal/storage"
+	adminModel "uniauth/internal/modules/admin/model"
+	adminAuthService "uniauth/internal/modules/admin/service"
+	billingService "uniauth/internal/modules/billing/service"
 	rbacService "uniauth/internal/modules/rbac/service"
 	userService "uniauth/internal/modules/user/service"
-	billingService "uniauth/internal/modules/billing/service"
+	"uniauth/internal/storage"
 	"uniauth/routes"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/term"
 )
 
 // 显示使用帮助
@@ -26,11 +32,13 @@ Copyright 2024-2025 The Chinese University of Hong Kong, Shenzhen
 用法:
   ./uniauth server [--dev]      启动服务器 (--dev以开发模式启动)
   ./uniauth init <csv_file>     从CSV文件导入权限策略到数据库
+  ./uniauth create-admin        交互式创建本地管理员账号
   ./uniauth help                显示此帮助信息
 
 示例:
   ./uniauth init configs/policy_kb_and_deny.csv
   ./uniauth server
+  ./uniauth create-admin
 
 环境变量:
   UNIAUTH_PORT                 服务器端口 (默认 9090)
@@ -38,7 +46,10 @@ Copyright 2024-2025 The Chinese University of Hong Kong, Shenzhen
   UNIAUTH_DB_HOST              数据库主机
   UNIAUTH_DB_NAME              数据库名称
   UNIAUTH_DB_USER              数据库用户
-  UNIAUTH_DB_PASSWORD          数据库密码`)
+  UNIAUTH_DB_PASSWORD          数据库密码
+  UNIAUTH_JWT_SECRET           管理后台JWT密钥 (未设置将使用默认值)
+  UNIAUTH_DEFAULT_ADMIN_USER   默认管理员用户名 (server 启动时自动创建)
+  UNIAUTH_DEFAULT_ADMIN_PASS   默认管理员密码 (server 启动时自动创建)`)
 }
 
 // 初始化策略命令
@@ -103,8 +114,26 @@ func startServer() error {
 	abstractGroupService := rbacService.NewAbstractGroupService(db, authService, userInfoService)
 	chatService := billingService.NewChatService(db, abstractGroupService)
 
+	// 管理后台本地登录服务与初始化
+	jwtSecret := os.Getenv("UNIAUTH_JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "change-this-in-prod"
+	}
+	adminService := adminAuthService.NewAdminAuthService(db, jwtSecret)
+	defaultAdminUser := os.Getenv("UNIAUTH_DEFAULT_ADMIN_USER")
+	if defaultAdminUser == "" {
+		defaultAdminUser = "admin"
+	}
+	defaultAdminPass := os.Getenv("UNIAUTH_DEFAULT_ADMIN_PASS")
+	if defaultAdminPass == "" {
+		defaultAdminPass = "admin123"
+	}
+	if err := adminService.EnsureDefaultAdmin(defaultAdminUser, defaultAdminPass); err != nil {
+		return fmt.Errorf("创建默认管理员失败: %w", err)
+	}
+
 	// 创建应用
-	app := app.NewApp(authService, abstractGroupService, chatService, userInfoService)
+	app := app.NewApp(authService, abstractGroupService, chatService, userInfoService, adminService)
 
 	// 配置GIN服务器
 	gin.SetMode(cfg.Server.Mode)
@@ -124,6 +153,92 @@ func startServer() error {
 		return fmt.Errorf("启动服务失败: %w", err)
 	}
 
+	return nil
+}
+
+// 交互式创建本地管理员
+func createAdminInteractive() error {
+	// 加载配置
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		return fmt.Errorf("加载配置失败: %w", err)
+	}
+
+	// 初始化数据库
+	db, err := storage.NewDatabaseConnection(cfg.Database.Type, cfg.GetDSN())
+	if err != nil {
+		return fmt.Errorf("数据库连接失败: %w", err)
+	}
+	if err := storage.AutoMigrateTables(db); err != nil {
+		return fmt.Errorf("数据库迁移失败: %w", err)
+	}
+
+	// 初始化AdminAuthService
+	jwtSecret := os.Getenv("UNIAUTH_JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "change-this-in-prod"
+	}
+	adminService := adminAuthService.NewAdminAuthService(db, jwtSecret)
+
+	reader := bufio.NewReader(os.Stdin)
+
+	// 输入用户名
+	var username string
+	for {
+		fmt.Print("请输入用户名: ")
+		u, _ := reader.ReadString('\n')
+		username = strings.TrimSpace(u)
+		if username == "" {
+			fmt.Println("用户名不能为空，请重新输入。")
+			continue
+		}
+		var count int64
+		db.Model(&adminModel.AdminUser{}).Where("username = ?", username).Count(&count)
+		if count > 0 {
+			fmt.Println("该用户名已存在，请更换用户名。")
+			continue
+		}
+		break
+	}
+
+	// 输入密码
+	var password string
+	for {
+		fmt.Print("请输入密码: ")
+		b1, _ := term.ReadPassword(int(syscall.Stdin))
+		fmt.Println()
+		fmt.Print("请再次输入密码: ")
+		b2, _ := term.ReadPassword(int(syscall.Stdin))
+		fmt.Println()
+		p1 := strings.TrimSpace(string(b1))
+		p2 := strings.TrimSpace(string(b2))
+		if p1 == "" {
+			fmt.Println("密码不能为空，请重新输入。")
+			continue
+		}
+		if len(p1) < 6 {
+			fmt.Println("密码长度不能少于6位，请重新输入。")
+			continue
+		}
+		if p1 != p2 {
+			fmt.Println("两次输入的密码不一致，请重新输入。")
+			continue
+		}
+		password = p1
+		break
+	}
+
+	// 创建用户
+	hash, err := adminService.HashPassword(password)
+	if err != nil {
+		return fmt.Errorf("生成密码哈希失败: %w", err)
+	}
+	user := adminModel.AdminUser{Username: username, PasswordHash: hash, Role: "admin"}
+	if err := db.Create(&user).Error; err != nil {
+		return fmt.Errorf("创建管理员失败: %w", err)
+	}
+
+	fmt.Printf("本地管理员创建成功: %s\n", username)
 	return nil
 }
 
@@ -174,6 +289,11 @@ func main() {
 		csvFile := args[1]
 		if err := initPolicies(csvFile); err != nil {
 			log.Fatal("初始化策略失败:", err)
+		}
+
+	case "create-admin":
+		if err := createAdminInteractive(); err != nil {
+			log.Fatal("创建管理员失败:", err)
 		}
 
 	case "help":

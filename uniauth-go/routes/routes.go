@@ -2,9 +2,11 @@ package routes
 
 import (
 	"uniauth/internal/app"
+	"uniauth/internal/middleware"
+	adminAuthHandler "uniauth/internal/modules/admin/handler"
+	billingHandler "uniauth/internal/modules/billing/handler"
 	rbacHandler "uniauth/internal/modules/rbac/handler"
 	rbacService "uniauth/internal/modules/rbac/service"
-	billingHandler "uniauth/internal/modules/billing/handler"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,6 +27,14 @@ func SetupRoutes(r *gin.Engine, app *app.App) {
 	// 初始化审计日志表
 	auditHandler.InitAuditTable()
 
+	// 管理认证路由：登录和当前用户
+	adminAuth := r.Group("/api/v1/admin/auth")
+	{
+		authH := adminAuthHandler.NewAdminAuthHandler(app.AdminAuthService)
+		adminAuth.POST("/login", authH.Login)
+		adminAuth.GET("/me", middleware.JWTAdminAuth(app.AdminAuthService), authH.Me)
+	}
+
 	// 权限检查
 	auth := r.Group("/api/v1/auth")
 	{
@@ -33,8 +43,9 @@ func SetupRoutes(r *gin.Engine, app *app.App) {
 		auth.GET("/user/:upn/groups", authHandler.GetUserGroups)
 	}
 
-	// 管理接口
+	// 管理接口（受保护）
 	admin := r.Group("/api/v1/admin")
+	admin.Use(middleware.JWTAdminAuth(app.AdminAuthService))
 	{
 		admin.POST("/toggle-permission", authHandler.TogglePermission)
 		admin.POST("/permission/toggle", authHandler.TogglePermission)
@@ -58,8 +69,9 @@ func SetupRoutes(r *gin.Engine, app *app.App) {
 		admin.POST("/explain-permission", adminHandler.ExplainPermission)
 	}
 
-	// 抽象组管理接口
+	// 抽象组管理接口（受保护）
 	abstractGroups := r.Group("/api/v1/admin/abstract-groups")
+	abstractGroups.Use(middleware.JWTAdminAuth(app.AdminAuthService))
 	{
 		abstractGroups.POST("", abstractGroupHandler.CreateAbstractGroup)
 		abstractGroups.GET("", abstractGroupHandler.GetAllAbstractGroups)
@@ -69,8 +81,9 @@ func SetupRoutes(r *gin.Engine, app *app.App) {
 		abstractGroups.POST("/:id/sync", abstractGroupHandler.SyncAbstractGroup)
 	}
 
-	// 用户组（对话类别）管理接口
+	// 用户组（对话类别）管理接口（受保护）
 	chatCategories := r.Group("/api/v1/admin/chat-categories")
+	chatCategories.Use(middleware.JWTAdminAuth(app.AdminAuthService))
 	{
 		chatCategories.PUT("/:id", chatHandler.UpdateChatCategory)
 	}

@@ -13,7 +13,7 @@ import type {
 // 这样生产环境构建出的代码会使用相对路径，而本地开发时可以通过 .env 文件指定一个完整的 URL
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ apiClient.interceptors.request.use(
     // 从 localStorage 获取 token
     const token = localStorage.getItem('uniauth_token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      (config.headers as any).Authorization = `Bearer ${token}`;
     }
     return config;
   },

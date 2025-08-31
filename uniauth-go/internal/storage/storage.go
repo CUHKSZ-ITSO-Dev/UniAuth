@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	adminModel "uniauth/internal/modules/admin/model"
 	billingModel "uniauth/internal/modules/billing/model"
 	rbacModel "uniauth/internal/modules/rbac/model"
 	userModel "uniauth/internal/modules/user/model"
@@ -47,6 +48,7 @@ func AutoMigrateTables(db *gorm.DB) error {
 		&userModel.UserInfo{},
 		&rbacModel.AbstractGroup{},
 		&billingModel.ChatQuotaPool{},
+		&adminModel.AdminUser{},
 	); err != nil {
 		return fmt.Errorf("数据库迁移失败 (第二阶段): %w", err)
 	}
