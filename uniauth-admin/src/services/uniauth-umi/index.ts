@@ -2,17 +2,15 @@
 /* eslint-disable */
 // API 更新时间：
 // API 唯一标识：
-import * as abstractGroups from "./abstractGroups";
-import * as auditManagement from "./auditManagement";
-import * as billingManagement from "./billingManagement";
-import * as rulesManagement from "./rulesManagement";
-import * as permissionManagement from "./permissionManagement";
-import * as userManagement from "./userManagement";
+import * as query from "./query";
+import * as crud from "./crud";
+import * as auth from "./auth";
+import * as hello from "./hello";
+import * as userInfo from "./userInfo";
 export default {
-  abstractGroups,
-  auditManagement,
-  billingManagement,
-  rulesManagement,
-  permissionManagement,
-  userManagement,
+  query,
+  crud,
+  auth,
+  hello,
+  userInfo,
 };

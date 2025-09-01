@@ -39,7 +39,7 @@ type LogConfig struct {
 // LoadConfig 加载配置
 func LoadConfig() (*Config, error) {
 	// 首先确定运行模式
-	mode := getEnv("UNIAUTH_MODE", "release")
+	mode := getEnv("UNIAUTH_MODE", "dev")
 
 	var config *Config
 

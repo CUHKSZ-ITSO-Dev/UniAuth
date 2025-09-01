@@ -1,162 +1,245 @@
 declare namespace API {
-  type AbstractGroup = {
-    /** 创建时间 */
-    createdAt?: string;
-    /** 创建者UPN */
-    creatorUpn?: string;
-    /** 删除时间（软删除） */
-    deletedAt?: string;
-    /** 抽象组描述 */
-    description?: string;
-    /** 主键ID */
-    id?: number;
-    /** 抽象组名称 */
-    name?: string;
-    /** 抽象组规则 */
-    rule?: AbstractGroupRule;
-    /** 抽象组类型："ittools" 或 "manual" */
-    type?: string;
-    /** 更新时间 */
-    updatedAt?: string;
+  type AddPolicyReq = {
+    /** Subject */
+    sub: string;
+    /** Domain */
+    dom: string;
+    /** Object */
+    obj: string;
+    /** Action */
+    act: string;
   };
 
-  type AbstractGroupRule = {
-    /** ITTools 类型规则 */
-    ittools?: IttoolsRule;
-    /** 手动类型规则 */
-    manual?: ManualRule;
-  };
+  type AddPolicyRes = {};
 
-  type AuditLogEntry = {
-    /** 操作 */
-    action?: string;
-    /** 创建时间 */
-    createdAt?: string;
-    /** 详细信息（JSON字符串） */
-    details?: string;
-    /** 主键ID */
-    id?: number;
-    /** IP地址 */
-    ipAddress?: string;
+  type CheckAndExplainReq = {
+    /** 对象 */
+    sub: string;
+    /** 域 */
+    dom: string;
     /** 资源 */
-    resource?: string;
-    /** 是否成功 */
-    success?: boolean;
-    /** 时间戳 */
-    timestamp?: string;
-    /** 用户 */
-    user?: string;
-    /** 用户代理 */
-    userAgent?: string;
-  };
-
-  type BillRequest = {
-    /** 费用（字符串格式） */
-    cost: string;
-    /** 使用的模型 */
-    model: string;
-    /** 消耗的token数量 */
-    tokens: number;
-    /** 用户UPN */
-    upn: string;
-  };
-
-  type Condition = {
-    /** 字段名 */
-    field?: string;
-    /** 操作符 */
-    operator?: string;
-    /** 字段值 */
-    value?: string;
-  };
-
-  type EnsureChatAccountExistsRequest = {
-    /** 用户UPN */
-    upn: string;
-  };
-
-  type getAdminAbstractGroupsIdParams = {
-    /** 抽象组ID */
-    id: string;
-  };
-
-  type getAdminAuditLogsParams = {
-    /** 查询天数 */
-    days?: number;
-    /** 页码 */
-    page?: number;
-    /** 每页大小 */
-    pageSize?: number;
-    /** 用户过滤 */
-    user?: string;
-    /** 操作类型过滤 */
-    action?: string;
-  };
-
-  type getAdminRulesParams = {
-    /** 页码 */
-    page?: number;
-    /** 每页大小 */
-    pageSize?: number;
-    /** 搜索关键词 */
-    search?: string;
-    /** 规则类型 */
-    type?: "policy" | "role";
-  };
-
-  type getAdminUserUpnPermissionsParams = {
-    /** 用户UPN */
-    upn: string;
-  };
-
-  type IttoolsRule = {
-    /** 条件列表 */
-    conditions?: Condition[];
-    /** 逻辑操作符："AND" 或 "OR" */
-    logical_operator?: string;
-  };
-
-  type ManualRule = {
-    /** 用户UPN列表 */
-    upns?: string[];
-  };
-
-  type putAdminChatCategoriesIdParams = {
-    /** 对话类别ID */
-    id: string;
-  };
-
-  type ResetBalanceRequest = {
-    /** 是否强制重置 */
-    reset_anyway?: boolean;
-    /** 用户UPN */
-    upn: string;
-  };
-
-  type Rule = {
+    obj: string;
     /** 动作 */
-    action?: string;
-    /** 创建时间 */
+    act: string;
+  };
+
+  type CheckAndExplainRes = {
+    allow?: boolean;
+    /** 返回 [4]string, 按顺序依次是 sub, dom, obj, act。 */
+    reason?: string[];
+  };
+
+  type CheckReq = {
+    /** 对象 */
+    sub: string;
+    /** 域 */
+    dom: string;
+    /** 资源 */
+    obj: string;
+    /** 动作 */
+    act: string;
+  };
+
+  type CheckRes = {
+    allow?: boolean;
+  };
+
+  type DeletePolicyReq = {
+    /** Subject */
+    sub: string;
+    /** Domain */
+    dom: string;
+    /** Object */
+    obj: string;
+    /** Action */
+    act: string;
+  };
+
+  type DeletePolicyRes = {};
+
+  type EditPolicyReq = {
+    /** 旧的 Policy */
+    oldPolicy: string[];
+    /** 新的 Policy */
+    newPolicy: string[];
+  };
+
+  type EditPolicyRes = {};
+
+  type FilterCondition = {
+    /** 字段名 */
+    field: string;
+    /** 操作符: eq(等于), neq(不等于), gt(大于), gte(大于等于), lt(小于), lte(小于等于), like(模糊匹配), ilike(不区分大小写模糊匹配), in(包含), notin(不包含), contains(包含子串), notcontains(不包含子串), startswith(以...开头), endswith(以...结尾), isnull(为空), isnotnull(不为空) */
+    op:
+      | "eq"
+      | "neq"
+      | "gt"
+      | "gte"
+      | "lt"
+      | "lte"
+      | "like"
+      | "ilike"
+      | "in"
+      | "notin"
+      | "contains"
+      | "notcontains"
+      | "startswith"
+      | "endswith"
+      | "isnull"
+      | "isnotnull";
+    /** 条件值，根据操作符类型可以是字符串、数字、数组等 */
+    value?: Var;
+  };
+
+  type FilterGroup = {
+    /** 逻辑关系: and(且), or(或) */
+    logic?: "and" | "or";
+    /** 过滤条件列表 */
+    conditions?: FilterCondition[];
+    /** 嵌套的条件组，支持复杂逻辑 */
+    groups?: FilterGroup[];
+  };
+
+  type FilterGroupingsReq = {
+    /** Users 列表 */
+    users?: string[];
+    /** Roles 列表 */
+    roles?: string[];
+    /** Domains 列表 */
+    domains?: string[];
+  };
+
+  type FilterGroupingsRes = {
+    groups?: string[][];
+  };
+
+  type FilterPoliciesReq = {
+    /** Subjects 列表 */
+    subs?: string[];
+    /** Domains 列表 */
+    doms?: string[];
+    /** Objects 列表 */
+    objs?: string[];
+    /** Actions 列表 */
+    acts?: string[];
+  };
+
+  type FilterPoliciesRes = {
+    policies?: string[][];
+  };
+
+  type FilterReq = {
+    /** 过滤条件，支持复杂的逻辑组合查询 */
+    filter: FilterGroup;
+    /** 排序条件，支持多字段排序 */
+    sort?: SortCondition[];
+    /** 分页参数，支持分页或查询全部 */
+    pagination?: PaginationReq;
+    /** 是否返回详细用户信息，false时仅返回UPN列表 */
+    verbose?: boolean;
+  };
+
+  type FilterRes = {
+    /** 用户UPN列表 */
+    userUpns?: string[];
+    /** 详细用户信息（verbose=true时返回） */
+    userInfos?: GetOneRes[];
+    /** 总记录数 */
+    total?: number;
+    /** 当前页码 */
+    page?: number;
+    /** 每页条数 */
+    pageSize?: number;
+    /** 总页数 */
+    totalPages?: number;
+    /** 是否为全部数据查询 */
+    isAll?: boolean;
+  };
+
+  type GetAllActionsReq = {};
+
+  type GetAllActionsRes = {
+    /** Actions */
+    actions?: string[];
+  };
+
+  type GetAllDomainsReq = {};
+
+  type GetAllDomainsRes = {
+    /** Domains */
+    domains?: string[];
+  };
+
+  type GetAllObjectsReq = {};
+
+  type GetAllObjectsRes = {
+    /** Objects */
+    objects?: string[];
+  };
+
+  type GetAllSubjectsReq = {};
+
+  type GetAllSubjectsRes = {
+    /** Subjects */
+    subjects?: string[];
+  };
+
+  type GetOneReq = {
+    /** UPN */
+    upn: string;
+  };
+
+  type GetOneRes = {
+    upn?: string;
+    displayName?: string;
+    uniqueName?: string;
+    samAccountName?: string;
+    email?: string;
+    schoolStatus?: string;
+    identityType?: string;
+    employeeId?: string;
+    name?: string;
+    department?: string;
+    title?: string;
+    office?: string;
+    officePhone?: string;
+    employeeType?: string;
+    fundingTypeOrAdmissionYear?: string;
+    studentCategoryPrimary?: string;
+    studentCategoryDetail?: string;
+    studentNationalityType?: string;
+    residentialCollege?: string;
+    staffRole?: string;
+    mailNickname?: string;
+    tags?: string[];
     createdAt?: string;
-    /** 资源域 */
-    domain?: string;
-    /** 效果：allow/deny */
-    effect?: string;
-    /** 规则ID */
-    id?: string;
-    /** 是否启用 */
-    isActive?: boolean;
-    /** 资源对象 */
-    object?: string;
-    /** 角色（仅用于role类型） */
-    role?: string;
-    /** 来源："database" 或 "csv" */
-    source?: string;
-    /** 用户或组 */
-    subject?: string;
-    /** 规则类型："policy" 或 "role" */
-    type?: string;
-    /** 更新时间 */
     updatedAt?: string;
   };
+
+  type getUsersUserinfoUpnParams = {
+    /** UPN */
+    upn: string;
+  };
+
+  type HelloReq = {};
+
+  type HelloRes = {};
+
+  type PaginationReq = {
+    /** 页码，从1开始 */
+    page?: number;
+    /** 每页条数，最大1000 */
+    pageSize?: number;
+    /** 是否返回全部数据，true时忽略分页参数，但仍有最大限制保护 */
+    all?: boolean;
+  };
+
+  type SortCondition = {
+    /** 排序字段 */
+    field: string;
+    /** 排序方向: asc(升序), desc(降序) */
+    order?: "asc" | "desc";
+  };
+
+  type Var = {};
 }

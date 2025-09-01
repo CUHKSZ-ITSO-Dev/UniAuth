@@ -28,11 +28,17 @@ export default [
     icon: 'Smile',
     component: '@/pages/WelcomePage',
   },
+  // {
+  //   path: '/dashboard',
+  //   name: 'dashboard',
+  //   icon: 'Dashboard',
+  //   component: '@/pages/DashboardPage',
+  // },
   {
-    path: '/dashboard',
-    name: 'dashboard',
-    icon: 'Dashboard',
-    component: '@/pages/DashboardPage',
+    path: '/user-list',
+    name: 'user-list',
+    icon: 'User',
+    component: '@/pages/UserListPage',
   },
   {
     path: '/',
