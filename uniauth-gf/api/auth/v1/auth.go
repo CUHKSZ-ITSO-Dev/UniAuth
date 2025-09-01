@@ -1,6 +1,8 @@
 package v1
 
-import "github.com/gogf/gf/v2/frame/g"
+import (
+	"github.com/gogf/gf/v2/frame/g"
+)
 
 type CheckReq struct {
 	g.Meta `path:"/check" tags:"Auth" method:"post" summary:"基础权限检查" dc:"给定sub obj act dom，查询是否有权限。"`
@@ -24,4 +26,44 @@ type CheckAndExplainReq struct {
 type CheckAndExplainRes struct {
 	Allow  bool     `json:"allow"`
 	Reason []string `json:"reason" dc:"返回 [4]string, 按顺序依次是 sub, dom, obj, act。" example:"[\"alice\",\"chat_production\",\"platform\",\"entry\"]"`
+}
+
+type GetAllSubjectsReq struct {
+	g.Meta `path:"/admin/subjects/all" tags:"Auth/Admin" method:"get" summary:"获取所有Subjects"`
+}
+type GetAllSubjectsRes struct {
+	Subjects []string `json:"subjects" dc:"Subjects"`
+}
+
+type GetAllObjectsReq struct {
+	g.Meta `path:"/admin/objects/all" tags:"Auth/Admin" method:"get" summary:"获取所有Objects"`
+}
+type GetAllObjectsRes struct {
+	Objects []string `json:"objects" dc:"Objects"`
+}
+
+type GetAllActionsReq struct {
+	g.Meta `path:"/admin/actions/all" tags:"Auth/Admin" method:"get" summary:"获取所有Actions"`
+}
+type GetAllActionsRes struct {
+	Actions []string `json:"actions" dc:"Actions"`
+}
+
+type GetAllDomainsReq struct {
+	g.Meta `path:"/admin/domains/all" tags:"Auth/Admin" method:"get" summary:"获取所有Domains"`
+}
+type GetAllDomainsRes struct {
+	Domains []string `json:"domains" dc:"Domains"`
+}
+
+type FilterPoliciesReq struct {
+	g.Meta `path:"/admin/policies/filter" tags:"Auth/Admin" method:"post" summary:"筛选 Policies" dc:"根据给定的条件，返回Policy。"`
+	Subs   []string `json:"subs" dc:"Subjects 列表"`
+	Doms   []string `json:"doms" dc:"Domains 列表"`
+	Objs   []string `json:"objs" dc:"Objects 列表"`
+	Acts   []string `json:"acts" dc:"Actions 列表"`
+}
+type FilterPoliciesRes struct {
+	g.Meta   `mime:"application/json"`
+	Policies [][]string `json:"policies"`
 }

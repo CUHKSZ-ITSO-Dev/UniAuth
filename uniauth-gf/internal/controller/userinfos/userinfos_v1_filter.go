@@ -62,7 +62,7 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 	}
 
 	// 创建查询模型
-	model := g.DB().Model("user_infos").Safe()
+	model := dao.UserInfos.Ctx(ctx)
 
 	// 应用过滤条件
 	model, err = c.applyFilterGroup(model, req.Filter)
