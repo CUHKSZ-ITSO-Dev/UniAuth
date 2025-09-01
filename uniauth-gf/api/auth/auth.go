@@ -18,4 +18,5 @@ type IAuthV1 interface {
 	GetAllActions(ctx context.Context, req *v1.GetAllActionsReq) (res *v1.GetAllActionsRes, err error)
 	GetAllDomains(ctx context.Context, req *v1.GetAllDomainsReq) (res *v1.GetAllDomainsRes, err error)
 	FilterPolicies(ctx context.Context, req *v1.FilterPoliciesReq) (res *v1.FilterPoliciesRes, err error)
+	FilterGroupings(ctx context.Context, req *v1.FilterGroupingsReq) (res *v1.FilterGroupingsRes, err error)
 }

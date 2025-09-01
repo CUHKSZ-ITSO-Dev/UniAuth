@@ -67,3 +67,14 @@ type FilterPoliciesRes struct {
 	g.Meta   `mime:"application/json"`
 	Policies [][]string `json:"policies"`
 }
+
+type FilterGroupingsReq struct {
+	g.Meta  `path:"/admin/groupings/filter" tags:"Auth/Admin" method:"post" summary:"筛选 Groups" dc:"根据给定的条件，返回Group。"`
+	Users   []string `json:"users" dc:"Users 列表"`
+	Roles   []string `json:"roles" dc:"Roles 列表"`
+	Domains []string `json:"domains" dc:"Domains 列表"`
+}
+type FilterGroupingsRes struct {
+	g.Meta   `mime:"application/json"`
+	Groupings [][]string `json:"groups"`
+}
