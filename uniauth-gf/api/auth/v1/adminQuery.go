@@ -26,10 +26,17 @@ type GetAllActionsRes struct {
 }
 
 type GetAllDomainsReq struct {
-	g.Meta `path:"/admin/domains/all" tags:"Auth/Admin/Query" method:"get" summary:"获取所有Domains"`
+	g.Meta `path:"/admin/domains/all" tags:"Auth/Admin/Query" method:"get" summary:"获取所有 Domains"`
 }
 type GetAllDomainsRes struct {
 	Domains []string `json:"domains" dc:"Domains"`
+}
+
+type GetAllRolesReq struct {
+	g.Meta `path:"/admin/roles/all" tags:"Auth/Admin/Query" method:"get" summary:"获取所有 Roles"`
+}
+type GetAllRolesRes struct {
+	Roles []string `json:"roles" dc:"Roles"`
 }
 
 type FilterPoliciesReq struct {
@@ -51,6 +58,6 @@ type FilterGroupingsReq struct {
 	Domains []string `json:"domains" dc:"Domains 列表"`
 }
 type FilterGroupingsRes struct {
-	g.Meta   `mime:"application/json"`
+	g.Meta    `mime:"application/json"`
 	Groupings [][]string `json:"groups"`
 }
