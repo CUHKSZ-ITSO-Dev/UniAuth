@@ -1,8 +1,6 @@
 package v1
 
-import (
-	"github.com/gogf/gf/v2/frame/g"
-)
+import "github.com/gogf/gf/v2/frame/g"
 
 type AddPoliciesReq struct {
 	g.Meta   `path:"/admin/policies/add" tags:"Auth/Admin/CRUD" method:"post" summary:"添加 Policies"`
@@ -25,4 +23,16 @@ type DeletePoliciesReq struct {
 	Policies [][]string `json:"polices" v:"required" dc:"Polices" examples:"[['sub1', 'dom1', 'obj1', 'act1'], ['sub2', 'dom2', 'obj2', 'act2']]"`
 }
 type DeletePoliciesRes struct {
+}
+
+type FilterPoliciesReq struct {
+	g.Meta `path:"/admin/policies/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Policies" dc:"根据给定的条件，返回Policy。留空的字段（传空 Array）将被忽略。"`
+	Subs   []string `json:"subs" dc:"Subjects 列表"`
+	Doms   []string `json:"doms" dc:"Domains 列表"`
+	Objs   []string `json:"objs" dc:"Objects 列表"`
+	Acts   []string `json:"acts" dc:"Actions 列表"`
+}
+type FilterPoliciesRes struct {
+	g.Meta   `mime:"application/json"`
+	Policies [][]string `json:"policies"`
 }
