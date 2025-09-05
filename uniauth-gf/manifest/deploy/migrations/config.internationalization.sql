@@ -7,7 +7,7 @@ CREATE TABLE config.internationalization (
     description text,
 
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
     PRIMARY KEY (lang_code, key)
 )
