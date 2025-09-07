@@ -12,13 +12,12 @@
 - 字段：personal 用来记录是否是用户默认自带的、自己的配额池（区别去手动创建的配额池）
 - userinfos 规则需要在配额池里面声明。
 - quota pool对应的casbin里面的角色声明可以使用的功能。
-- 每次用户登录的时候，检查有没有自己的quota_pool，没有则新建一个quota pool，从config里面那默认配置。如果有，比对有无变化，有变化立即修改自己的quota_pool的除余额、加油包之外的参数。
+- **每次用户登录的时候，检查有没有自己的quota_pool，没有则新建一个quota pool，从config里面那默认配置。如果有，比对有无变化，有变化立即修改自己的quota_pool的除余额、加油包之外的参数。调用CheckPersonalQuotaPool**覆盖
 - 每次请求前 check balance 时，查看选择的quota_pool是否需要重置。
 - 创建quota pool流程：
     1. 每个人自带一个自己的quota pool，为自动创建
     2. 需要有批量操作quota pool属性的接口和界面
     3. 其他配额池、科研组申请的配额池，为手动创建quota pool，并配置配额池的userinfos规则，滤出对应的upn，并在casbin中新建角色，并完成g，upn，quota_pool 的角色继承设置。
-
 
 3. Casbin Auth模块，管理鉴权。
 g, upn, student-pool

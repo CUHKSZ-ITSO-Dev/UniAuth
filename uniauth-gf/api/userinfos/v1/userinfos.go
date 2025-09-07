@@ -8,7 +8,7 @@ import (
 
 // ==================== GetOne ====================
 type GetOneReq struct {
-	g.Meta `path:"/userinfo/:upn" tags:"UserInfo" method:"get" summary:"查询用户信息" dc:"根据UPN，返回用户的所有信息。"`
+	g.Meta `path:"/userinfo" tags:"UserInfo" method:"get" summary:"查询用户信息" dc:"根据UPN，返回用户的所有信息。"`
 	Upn    string `json:"upn" v:"required" dc:"UPN"`
 }
 

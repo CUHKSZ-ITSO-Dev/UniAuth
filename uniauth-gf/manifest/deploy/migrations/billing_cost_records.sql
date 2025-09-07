@@ -3,7 +3,7 @@ CREATE TABLE billing_cost_records (
     upn VARCHAR(255) NOT NULL,
     svc VARCHAR(255) NOT NULL,
     product VARCHAR(255) NOT NULL,
-    cost DECIMAL(15, 4) NOT NULL,
+    cost DECIMAL(15, 10) NOT NULL,
     plan VARCHAR(255) NOT NULL,
     source VARCHAR(255) NOT NULL,
     remark JSONB,
