@@ -10,6 +10,7 @@ import (
 	"uniauth-gf/internal/controller/billing"
 	"uniauth-gf/internal/controller/auth"
 	"uniauth-gf/internal/controller/hello"
+	"uniauth-gf/internal/controller/config"
 	"uniauth-gf/internal/controller/userinfos"
 )
 
@@ -42,6 +43,12 @@ var (
 				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					billing.NewV1(),
+				)
+			})
+			s.Group("/config", func(group *ghttp.RouterGroup) {
+				group.Middleware(ghttp.MiddlewareHandlerResponse)
+				group.Bind(
+					config.NewV1(),
 				)
 			})
 			s.SetOpenApiPath("/api.json")

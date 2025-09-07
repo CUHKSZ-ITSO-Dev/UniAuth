@@ -57,7 +57,7 @@ type EditI18nItemReq struct {
 	Key string `json:"key" v:"required" dc:"键" example:"navBar.title"`
 	Value string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
 }
-type EditI18nConfigRes struct {
+type EditI18nItemRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
 }
 
