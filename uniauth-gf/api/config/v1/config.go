@@ -35,7 +35,7 @@ type DeleteModelConfigRes struct {
 
 type GetI18nConfigReq struct {
 	g.Meta `path:"/i18n/:lang" tags:"Config/I18n" method:"get" summary:"获取i18n" dc:"获取一个语言的所有翻译配置"`
-	Lang string `json:"lang" v:"required" dc:"语言" example:"en-US"`
+	Lang   string `json:"lang" v:"required" dc:"语言" example:"en-US"`
 }
 type GetI18nConfigRes struct {
 	Config *gjson.Json `json:"config" dc:"配置"`
@@ -43,9 +43,9 @@ type GetI18nConfigRes struct {
 
 type AddI18nItemReq struct {
 	g.Meta `path:"/i18n" tags:"Config/I18n" method:"post" summary:"添加i18n" dc:"添加一项i18n一个语言的配置"`
-	Lang string `json:"lang" v:"required" dc:"语言" example:"en-US"`
-	Key string `json:"key" v:"required" dc:"键" example:"navBar.title"`
-	Value string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
+	Lang   string `json:"lang" v:"required" dc:"语言" example:"en-US"`
+	Key    string `json:"key" v:"required" dc:"键" example:"navBar.title"`
+	Value  string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
 }
 type AddI18nItemRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
@@ -53,9 +53,9 @@ type AddI18nItemRes struct {
 
 type EditI18nItemReq struct {
 	g.Meta `path:"/i18n" tags:"Config/I18n" method:"put" summary:"编辑i18n" dc:"编辑一项i18n一个语言的配置"`
-	Lang string `json:"lang" v:"required" dc:"语言" example:"en-US"`
-	Key string `json:"key" v:"required" dc:"键" example:"navBar.title"`
-	Value string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
+	Lang   string `json:"lang" v:"required" dc:"语言" example:"en-US"`
+	Key    string `json:"key" v:"required" dc:"键" example:"navBar.title"`
+	Value  string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
 }
 type EditI18nItemRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
@@ -63,7 +63,7 @@ type EditI18nItemRes struct {
 
 type DeleteI18ConfigReq struct {
 	g.Meta `path:"/i18n" tags:"Config/I18n" method:"delete" summary:"删除i18n" dc:"删除指定Key的所有语言配置。"`
-	Key string `json:"key" v:"required" dc:"键" example:"navBar.title"`
+	Key    string `json:"key" v:"required" dc:"键" example:"navBar.title"`
 }
 type DeleteI18ConfigRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
@@ -74,4 +74,34 @@ type GetAllLangsReq struct {
 }
 type GetAllLangsRes struct {
 	Langs []string `json:"langs" dc:"语言列表" example:"['en-US', 'zh-CN']"`
+}
+
+type GetAutoQuotaPoolConfigReq struct {
+	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"获取自动配额池规则"`
+}
+type GetAutoQuotaPoolConfigRes struct {
+	AutoQuotaPoolConfigs []string `json:"autoQuotaPoolConfigs" dc:"自动配额池规则"`
+}
+
+type EditAutoQuotaPoolConfigReq struct {
+	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"put" summary:"编辑自动配额池规则"`
+	// Conditions UserInfos.Filter
+	// DefaultValue
+}
+type EditAutoQuotaPoolConfigRes struct {
+	OK bool `json:"ok" dc:"是否成功"`
+}
+
+type DeleteAutoQuotaPoolConfigReq struct {
+	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"delete" summary:"删除自动配额池规则"`
+}
+type DeleteAutoQuotaPoolConfigRes struct {
+	OK bool `json:"ok" dc:"是否成功"`
+}
+
+type AddAutoQuotaPoolConfigReq struct {
+	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"新增自动配额池规则"`
+}
+type AddAutoQuotaPoolConfigRes struct {
+	OK bool `json:"ok" dc:"是否成功"`
 }

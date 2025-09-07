@@ -11,6 +11,7 @@ import (
 	"uniauth-gf/internal/controller/auth"
 	"uniauth-gf/internal/controller/hello"
 	"uniauth-gf/internal/controller/config"
+	"uniauth-gf/internal/controller/quotaPool"
 	"uniauth-gf/internal/controller/userinfos"
 )
 
@@ -49,6 +50,12 @@ var (
 				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					config.NewV1(),
+				)
+			})
+			s.Group("/quotaPool", func(group *ghttp.RouterGroup) {
+				group.Middleware(ghttp.MiddlewareHandlerResponse)
+				group.Bind(
+					quotaPool.NewV1(),
 				)
 			})
 			s.SetOpenApiPath("/api.json")

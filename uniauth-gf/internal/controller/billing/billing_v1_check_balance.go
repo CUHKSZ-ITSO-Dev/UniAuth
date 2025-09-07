@@ -9,6 +9,6 @@ import (
 	"uniauth-gf/api/billing/v1"
 )
 
-func (c *ControllerV1) GetOnesBillRecord(ctx context.Context, req *v1.GetOnesBillRecordReq) (res *v1.GetOnesBillRecordRes, err error) {
+func (c *ControllerV1) CheckBalance(ctx context.Context, req *v1.CheckBalanceReq) (res *v1.CheckBalanceRes, err error) {
 	return nil, gerror.NewCode(gcode.CodeNotImplemented)
 }
