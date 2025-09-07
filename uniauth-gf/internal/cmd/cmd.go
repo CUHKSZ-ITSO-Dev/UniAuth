@@ -7,6 +7,7 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gcmd"
 
+	"uniauth-gf/internal/controller/billing"
 	"uniauth-gf/internal/controller/auth"
 	"uniauth-gf/internal/controller/hello"
 	"uniauth-gf/internal/controller/userinfos"
@@ -35,6 +36,12 @@ var (
 				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					auth.NewV1(),
+				)
+			})
+			s.Group("/billing", func(group *ghttp.RouterGroup) {
+				group.Middleware(ghttp.MiddlewareHandlerResponse)
+				group.Bind(
+					billing.NewV1(),
 				)
 			})
 			s.SetOpenApiPath("/api.json")

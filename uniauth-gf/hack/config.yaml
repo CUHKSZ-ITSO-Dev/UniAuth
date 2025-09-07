@@ -4,7 +4,12 @@ gfcli:
   gen:
     dao:
       - link: "pgsql:uniauth:It@73333!@tcp(127.0.0.1:5432)/uniauth"
+        schema: public,billing
         descriptionTag: true
+        typeMapping:
+          decimal:
+            type: decimal.Decimal
+            import: github.com/shopspring/decimal
   
   build:
     name: "uniauth"

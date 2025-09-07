@@ -13,7 +13,7 @@ func (c *ControllerV1) FilterGroupings(ctx context.Context, req *v1.FilterGroupi
 	if err != nil {
 		return nil, err
 	}
-
+	
 	users := garray.NewStrArrayFrom(req.Users)
 	roles := garray.NewStrArrayFrom(req.Roles)
 	domains := garray.NewStrArrayFrom(req.Domains)

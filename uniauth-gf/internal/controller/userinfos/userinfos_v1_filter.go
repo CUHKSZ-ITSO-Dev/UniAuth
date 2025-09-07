@@ -16,29 +16,29 @@ import (
 
 // 字段白名单，防止用户查询任意字段
 var allowedFields = g.MapStrStr{
-	"upn":                        dao.UserInfos.Columns().Upn,
-	"email":                      dao.UserInfos.Columns().Email,
-	"displayName":                dao.UserInfos.Columns().DisplayName,
-	"schoolStatus":               dao.UserInfos.Columns().SchoolStatus,
-	"identityType":               dao.UserInfos.Columns().IdentityType,
-	"employeeId":                 dao.UserInfos.Columns().EmployeeId,
-	"name":                       dao.UserInfos.Columns().Name,
-	"tags":                       dao.UserInfos.Columns().Tags,
-	"department":                 dao.UserInfos.Columns().Department,
-	"title":                      dao.UserInfos.Columns().Title,
-	"office":                     dao.UserInfos.Columns().Office,
-	"officePhone":                dao.UserInfos.Columns().OfficePhone,
-	"employeeType":               dao.UserInfos.Columns().EmployeeType,
-	"fundingTypeOrAdmissionYear": dao.UserInfos.Columns().FundingTypeOrAdmissionYear,
-	"studentCategoryPrimary":     dao.UserInfos.Columns().StudentCategoryPrimary,
-	"studentCategoryDetail":      dao.UserInfos.Columns().StudentCategoryDetail,
-	"studentNationalityType":     dao.UserInfos.Columns().StudentNationalityType,
-	"residentialCollege":         dao.UserInfos.Columns().ResidentialCollege,
-	"staffRole":                  dao.UserInfos.Columns().StaffRole,
-	"samAccountName":             dao.UserInfos.Columns().SamAccountName,
-	"mailNickname":               dao.UserInfos.Columns().MailNickname,
-	"createdAt":                  dao.UserInfos.Columns().CreatedAt,
-	"updatedAt":                  dao.UserInfos.Columns().UpdatedAt,
+	"upn":                        dao.UserinfosUserInfos.Columns().Upn,
+	"email":                      dao.UserinfosUserInfos.Columns().Email,
+	"displayName":                dao.UserinfosUserInfos.Columns().DisplayName,
+	"schoolStatus":               dao.UserinfosUserInfos.Columns().SchoolStatus,
+	"identityType":               dao.UserinfosUserInfos.Columns().IdentityType,
+	"employeeId":                 dao.UserinfosUserInfos.Columns().EmployeeId,
+	"name":                       dao.UserinfosUserInfos.Columns().Name,
+	"tags":                       dao.UserinfosUserInfos.Columns().Tags,
+	"department":                 dao.UserinfosUserInfos.Columns().Department,
+	"title":                      dao.UserinfosUserInfos.Columns().Title,
+	"office":                     dao.UserinfosUserInfos.Columns().Office,
+	"officePhone":                dao.UserinfosUserInfos.Columns().OfficePhone,
+	"employeeType":               dao.UserinfosUserInfos.Columns().EmployeeType,
+	"fundingTypeOrAdmissionYear": dao.UserinfosUserInfos.Columns().FundingTypeOrAdmissionYear,
+	"studentCategoryPrimary":     dao.UserinfosUserInfos.Columns().StudentCategoryPrimary,
+	"studentCategoryDetail":      dao.UserinfosUserInfos.Columns().StudentCategoryDetail,
+	"studentNationalityType":     dao.UserinfosUserInfos.Columns().StudentNationalityType,
+	"residentialCollege":         dao.UserinfosUserInfos.Columns().ResidentialCollege,
+	"staffRole":                  dao.UserinfosUserInfos.Columns().StaffRole,
+	"samAccountName":             dao.UserinfosUserInfos.Columns().SamAccountName,
+	"mailNickname":               dao.UserinfosUserInfos.Columns().MailNickname,
+	"createdAt":                  dao.UserinfosUserInfos.Columns().CreatedAt,
+	"updatedAt":                  dao.UserinfosUserInfos.Columns().UpdatedAt,
 }
 
 // 支持排序的字段（加了索引的）
@@ -62,7 +62,7 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 	}
 
 	// 创建查询模型
-	model := dao.UserInfos.Ctx(ctx)
+	model := dao.UserinfosUserInfos.Ctx(ctx)
 
 	// 应用过滤条件
 	model, err = c.applyFilterGroup(model, req.Filter)
@@ -112,7 +112,7 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 		}
 	} else {
 		// 默认按创建时间倒序排列
-		model = model.OrderDesc(dao.UserInfos.Columns().CreatedAt)
+		model = model.OrderDesc(dao.UserinfosUserInfos.Columns().CreatedAt)
 	}
 
 	// 应用分页（如果不是查询全部）
@@ -148,7 +148,7 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 	} else {
 		// 仅返回UPN列表
 		var upns []string
-		err = model.Fields(dao.UserInfos.Columns().Upn).Scan(&upns)
+		err = model.Fields(dao.UserinfosUserInfos.Columns().Upn).Scan(&upns)
 		if err != nil {
 			return nil, gerror.Wrap(err, "查询用户UPN列表失败")
 		}
@@ -176,9 +176,7 @@ func (c *ControllerV1) applyFilterGroup(model *gdb.Model, group *v1.FilterGroup)
 			return nil, err
 		}
 		groupConditions = append(groupConditions, conditionStr)
-		for _, arg := range args {
-			groupArgs = append(groupArgs, arg)
-		}
+		groupArgs = append(groupArgs, args...)
 	}
 
 	// 递归处理嵌套组
@@ -227,9 +225,7 @@ func (c *ControllerV1) buildGroupCondition(group *v1.FilterGroup) (string, []int
 		}
 		if conditionStr != "" {
 			conditions = append(conditions, conditionStr)
-			for _, arg := range condArgs {
-				args = append(args, arg)
-			}
+			args = append(args, condArgs)
 		}
 	}
 
