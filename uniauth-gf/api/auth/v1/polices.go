@@ -12,7 +12,7 @@ type AddPoliciesRes struct {
 
 type EditPolicyReq struct {
 	g.Meta    `path:"/admin/policies/edit" tags:"Auth/Admin/CRUD" method:"post" summary:"编辑 Policy" dc:"编辑 Policy。需要提供老的 Policy。<br>注意顺序是 Sub Dom Obj Act。"`
-	OldPolicy []string `json:"oldPolicy" v:"required" dc:"旧的 Policy" example:"[\"alice\",\"chat_production\",\"platform\",\"entry\"]"`
+	OldPolicy []string `json:"oldPolicy" v:"required" dc:"旧的 Policy" example:"['alice','chat_production','platform','entry']"`
 	NewPolicy []string `json:"newPolicy" v:"required" dc:"新的 Policy" example:"[\"alice\",\"chat_production\",\"platform\",\"entry/no\"]"`
 }
 type EditPolicyRes struct {

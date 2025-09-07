@@ -1,41 +1,3 @@
-```mermaid
-graph TD
-    A["客户端请求<br/>POST /userinfo/filter"] --> B["API层验证<br/>v1.FilterReq"]
-    B --> C["Controller层<br/>userinfos_v1_filter.go"]
-    
-    C --> D["字段白名单验证<br/>allowedFields"]
-    C --> E["构建查询条件<br/>applyFilterGroup()"]
-    C --> F["排序与分页<br/>Sort & Pagination"]
-    
-    E --> G["递归处理嵌套组<br/>buildGroupCondition()"]
-    E --> H["构建单个条件<br/>buildCondition()"]
-    
-    H --> I["操作符处理<br/>eq, neq, gt, like, in, etc."]
-    I --> J["SQL参数绑定<br/>防止SQL注入"]
-    
-    G --> K["GoFrame ORM<br/>dao.UserInfos.Ctx()"]
-    J --> K
-    F --> K
-    
-    K --> L["PostgreSQL数据库<br/>user_infos表"]
-    L --> M["查询结果"]
-    
-    M --> N{"verbose参数"}
-    N -->|true| O["返回详细用户信息<br/>UserInfos + UserUpns"]
-    N -->|false| P["仅返回UPN列表<br/>UserUpns"]
-    
-    O --> Q["响应结果<br/>v1.FilterRes"]
-    P --> Q
-    
-    style A fill:#e1f5fe
-    style B fill:#f3e5f5
-    style C fill:#e8f5e8
-    style K fill:#fff3e0
-    style L fill:#fce4ec
-    style Q fill:#e0f2f1
-```
-
-
 # 需求文档
 1. ITTools -> userinfos
 - 指定upn，查询用户详情
@@ -58,12 +20,22 @@ graph TD
 
 3. Casbin Auth模块，管理鉴权。
 g, upn, student-pool
-- 接口：动态获取用户属于哪些用户组，可以用什么模型。
-- 接口：查询一个配额池有哪些用户，可以用什么模型。
-- 接口：基础权限查询。r = sub, dom, obj, act
-- 接口：权限查询解释。用于管理。
-- 接口、权限：一键关闭一些权限policy（关小黑屋）
-- 对话前端：更改用户组的时候，需要请求获取用户组可用的模型。
+- 接口：动态获取用户属于哪些用户组，可以用什么模型。  ok
+- 接口：查询一个配额池有哪些用户， ok
+- 接口：一个配额池可以用什么模型。    ok
+- 接口：基础权限查询。r = sub, dom, obj, act   OK
+- 接口：权限查询解释。用于管理。  OK
+- 接口、权限：一键关闭一些权限policy（关小黑屋）  OK
+- 对话前端：更改用户组的时候，需要请求获取配额池可用的模型。   已完成
+
+- uniauth前端页面设计：
+    1. 一个policy筛选页面，可以手动添加policy快速将用户关小黑屋，接口是增/减policy的接口。
+    2. 一个筛选配额池的页面，点击后的二级页面一个展示配额池权限的页面
+
+g, 122@link.cuhk.edu.cn, student_pool 是通过创建配额池是配置的userinfos规则，同步完成添加
+p, production, student_pool, platform, entry  这个是创建配置池时配置的配额池的权限
+
+p, production, 122@link.cuhk.edu.cn, platform, entry, deny  这个必须要手动添加，是一个弹窗，需要一个接口
 
 - uniauth 前后端的权限管理
 p, sub, dom, obj, act

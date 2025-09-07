@@ -51,7 +51,7 @@ type FilterReq struct {
 }
 
 type FilterRes struct {
-	UserUpns   []string    `json:"userUpns" dc:"用户UPN列表"`
+	UserUpns   []string    `json:"userUpns" dc:"用户UPN列表" example:"['122020255@link.cuhk.edu.cn']"`
 	UserInfos  []GetOneRes `json:"userInfos,omitempty" dc:"详细用户信息（verbose=true时返回）"`
 	Total      int         `json:"total" dc:"总记录数"`
 	Page       int         `json:"page" dc:"当前页码"`

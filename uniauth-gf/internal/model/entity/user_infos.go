@@ -10,7 +10,7 @@ import (
 
 // UserInfos is the golang structure for table user_infos.
 type UserInfos struct {
-	Upn                        string      `json:"upn"                        orm:"upn"                            description:"UPN - 唯一。用户名@cuhk.edu.cn 或 学号@link.cuhk.edu.cn。用户登录名。"`                                                               // UPN - 唯一。用户名@cuhk.edu.cn 或 学号@link.cuhk.edu.cn。用户登录名。
+	Upn                        string      `json:"upn"                        orm:"upn"                            description:"UPN - 唯一。用户名@cuhk.edu.cn 或 学号@link.cuhk.edu.cn。用户登录名。"  example:"122020255@link.cuhk.edu.cn"`                                                               // UPN - 唯一。用户名@cuhk.edu.cn 或 学号@link.cuhk.edu.cn。用户登录名。
 	Email                      string      `json:"email"                      orm:"email"                          description:"邮箱 - 唯一。用户名@cuhk.edu.cn。"`                                                                                            // 邮箱 - 唯一。用户名@cuhk.edu.cn。
 	DisplayName                string      `json:"displayName"                orm:"display_name"                   description:"显示名 - 显示名。"`                                                                                                          // 显示名 - 显示名。
 	SchoolStatus               string      `json:"schoolStatus"               orm:"school_status"                  description:"在校状态 - 当前在校状态：Employed | Dimission | In-School | Graduation | Withdraw | Emeritus. （在岗 | 离职 | 在校 | 毕业 | 退学 | 荣誉退休。）"` // 在校状态 - 当前在校状态：Employed | Dimission | In-School | Graduation | Withdraw | Emeritus. （在岗 | 离职 | 在校 | 毕业 | 退学 | 荣誉退休。）
