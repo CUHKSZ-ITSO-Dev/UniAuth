@@ -17,3 +17,9 @@ temp/
 temp.yaml
 bin
 **/config/config.yaml
+
+.venv/
+.python-version
+pyproject.toml
+uv.lock
+.env

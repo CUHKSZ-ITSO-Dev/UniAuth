@@ -6,6 +6,7 @@ require (
 	github.com/casbin/casbin/v2 v2.121.0
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.9.1
 	github.com/gogf/gf/v2 v2.9.1
+	github.com/shopspring/decimal v1.4.0
 )
 
 require (
@@ -28,7 +29,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/shopspring/decimal v1.4.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel v1.37.0 // indirect
 	go.opentelemetry.io/otel/metric v1.37.0 // indirect
