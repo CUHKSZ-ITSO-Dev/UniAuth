@@ -2,13 +2,20 @@ package auth
 
 import (
 	"context"
+	"strings"
 
-	"github.com/gogf/gf/v2/errors/gcode"
-	"github.com/gogf/gf/v2/errors/gerror"
-
-	"uniauth-gf/api/auth/v1"
+	v1 "uniauth-gf/api/auth/v1"
 )
 
 func (c *ControllerV1) GetAvailableModelForQuotaPool(ctx context.Context, req *v1.GetAvailableModelForQuotaPoolReq) (res *v1.GetAvailableModelForQuotaPoolRes, err error) {
-	return nil, gerror.NewCode(gcode.CodeNotImplemented)
+	policies := e.GetPermissionsForUserInDomain(req.QuotaPool, req.Dom)
+	res = &v1.GetAvailableModelForQuotaPoolRes{
+		AvailableModels: []string{},
+	}
+	for _, policy := range policies {
+		if strings.HasPrefix(policy[2], "chat/") && policy[3] == "access" && policy[4] != "deny" {
+			res.AvailableModels = append(res.AvailableModels, strings.Split(policy[2], "/")[1])
+		}
+	}
+	return
 }

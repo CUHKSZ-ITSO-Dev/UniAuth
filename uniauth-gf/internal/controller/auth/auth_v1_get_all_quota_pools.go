@@ -8,6 +8,6 @@ import (
 
 func (c *ControllerV1) GetAllQuotaPools(ctx context.Context, req *v1.GetAllQuotaPoolsReq) (res *v1.GetAllQuotaPoolsRes, err error) {
 	res = &v1.GetAllQuotaPoolsRes{}
-	res.QuotaPools = []string{req.Upn}
+	res.QuotaPools = e.GetRolesForUserInDomain(req.Upn, req.Dom)
 	return
 }

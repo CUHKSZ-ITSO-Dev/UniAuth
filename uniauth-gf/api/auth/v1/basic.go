@@ -66,6 +66,7 @@ type GetAllRolesRes struct {
 type GetAllQuotaPoolsReq struct {
 	g.Meta `path:"/quotaPools/all" tags:"Auth" method:"get" summary:"获取所属配额池" dc:"动态获取用户属于哪些配额池。"`
 	Upn    string `json:"upn" v:"required" dc:"Upn" example:"sadt@cuhk.edu.cn"`
+	Dom    string `json:"dom" v:"required" dc:"Domain" example:"production"`
 }
 type GetAllQuotaPoolsRes struct {
 	g.Meta     `resEg:"resource/interface/auth/get_all_quota_pool_res.json"`
@@ -75,15 +76,19 @@ type GetAllQuotaPoolsRes struct {
 type GetAvailableModelForQuotaPoolReq struct {
 	g.Meta    `path:"/quotaPools/models" tags:"Auth" method:"get" summary:"获取所属配额池的可用模型" dc:"动态获取指定配额池的可用模型。"`
 	QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPool" example:"student_pool"`
+	Dom       string `json:"dom" v:"required" dc:"Domain" example:"production"`
 }
 type GetAvailableModelForQuotaPoolRes struct {
-	AvailableModels []string `json:"availableModels" dc:"AvailableModel 列表" example:"['deepseek-r1-ark', 'gpt5-chat']"`
+	g.Meta          `resEg:"resource/interface/auth/get_available_model_for_quota_pool_res.json"`
+	AvailableModels []string `json:"availableModels" dc:"AvailableModel 列表"`
 }
 
 type GetAllUsersForQuotaPoolReq struct {
 	g.Meta    `path:"/quotaPools/users" tags:"Auth" method:"get" summary:"获取所属配额池的用户" dc:"动态获取指定配额池的用户。"`
 	QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPool" example:"student_pool"`
+	Dom       string `json:"dom" v:"required" dc:"Domain" example:"production"`
 }
 type GetAllUsersForQuotaPoolRes struct {
-	Users []string `json:"users" dc:"Users 列表" example:"['122@link.cuhk.edu.cn', 'sadt@cuhk.edu.cn']"`
+	g.Meta `resEg:"resource/interface/auth/get_all_users_for_quota_pool_res.json"`
+	Users  []string `json:"users" dc:"Users 列表"`
 }
