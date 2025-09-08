@@ -3,11 +3,10 @@
 gfcli:
   gen:
     dao:
-      - link: "pgsql:uniauth:It@73333!@tcp(127.0.0.1:5432)/uniauth"
-        schema: public,billing
+      - link: "pgsql:postgres:471893@tcp(127.0.0.1:5432)/uniauth"
         descriptionTag: true
         typeMapping:
-          decimal:
+          numeric:
             type: decimal.Decimal
             import: github.com/shopspring/decimal
   
