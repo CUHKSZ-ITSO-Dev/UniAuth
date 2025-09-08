@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"context"
+	"github.com/gogf/gf/v2/os/gres"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gcmd"
 
-	"uniauth-gf/internal/controller/billing"
 	"uniauth-gf/internal/controller/auth"
-	"uniauth-gf/internal/controller/hello"
+	"uniauth-gf/internal/controller/billing"
 	"uniauth-gf/internal/controller/config"
+	"uniauth-gf/internal/controller/hello"
 	"uniauth-gf/internal/controller/quotaPool"
 	"uniauth-gf/internal/controller/userinfos"
 )
@@ -21,6 +22,9 @@ var (
 		Usage: "main",
 		Brief: "start http server",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			// 加载资源文件，主要用于接口示例数据的导入
+			gres.Dump()
+
 			s := g.Server()
 			s.Group("/", func(group *ghttp.RouterGroup) {
 				group.Middleware(ghttp.MiddlewareHandlerResponse)
@@ -28,7 +32,7 @@ var (
 					hello.NewV1(),
 				)
 			})
-			s.Group("/users", func(group *ghttp.RouterGroup) {
+			s.Group("/userinfos", func(group *ghttp.RouterGroup) {
 				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					userinfos.NewV1(),

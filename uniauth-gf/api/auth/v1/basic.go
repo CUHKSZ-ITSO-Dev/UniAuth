@@ -65,14 +65,15 @@ type GetAllRolesRes struct {
 
 type GetAllQuotaPoolsReq struct {
 	g.Meta `path:"/quotaPools/all" tags:"Auth" method:"get" summary:"获取所属配额池" dc:"动态获取用户属于哪些配额池。"`
-	Upn string `json:"upn" v:"required" dc:"Upn" example:"sadt@cuhk.edu.cn"`
+	Upn    string `json:"upn" v:"required" dc:"Upn" example:"sadt@cuhk.edu.cn"`
 }
 type GetAllQuotaPoolsRes struct {
-	QuotaPools []string `json:"quotaPools" dc:"QuotaPools 列表。" example:"['student_pool', 'staff_pool']"`
+	g.Meta     `resEg:"resource/interface/auth/get_all_quota_pool_res.json"`
+	QuotaPools []string `json:"quotaPools" dc:"QuotaPools 列表。"`
 }
 
 type GetAvailableModelForQuotaPoolReq struct {
-	g.Meta `path:"/quotaPools/models" tags:"Auth" method:"get" summary:"获取所属配额池的可用模型" dc:"动态获取指定配额池的可用模型。"`
+	g.Meta    `path:"/quotaPools/models" tags:"Auth" method:"get" summary:"获取所属配额池的可用模型" dc:"动态获取指定配额池的可用模型。"`
 	QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPool" example:"student_pool"`
 }
 type GetAvailableModelForQuotaPoolRes struct {
@@ -80,7 +81,7 @@ type GetAvailableModelForQuotaPoolRes struct {
 }
 
 type GetAllUsersForQuotaPoolReq struct {
-	g.Meta `path:"/quotaPools/users" tags:"Auth" method:"get" summary:"获取所属配额池的用户" dc:"动态获取指定配额池的用户。"`
+	g.Meta    `path:"/quotaPools/users" tags:"Auth" method:"get" summary:"获取所属配额池的用户" dc:"动态获取指定配额池的用户。"`
 	QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPool" example:"student_pool"`
 }
 type GetAllUsersForQuotaPoolRes struct {
