@@ -23,10 +23,10 @@ export default [
   //   ],
   // },
   {
-    path: '/welcome',
-    name: 'welcome',
-    icon: 'Smile',
-    component: '@/pages/WelcomePage',
+    path: "/welcome",
+    name: "welcome",
+    icon: "Smile",
+    component: "@/pages/WelcomePage",
   },
   // {
   //   path: '/dashboard',
@@ -35,18 +35,30 @@ export default [
   //   component: '@/pages/DashboardPage',
   // },
   {
-    path: '/user-list',
-    name: 'user-list',
-    icon: 'User',
-    component: '@/pages/UserListPage',
+    path: "/user-list",
+    name: "user-list",
+    icon: "User",
+    component: "@/pages/UserListPage",
   },
   {
-    path: '/',
-    redirect: '/welcome',
+    path: "/quota-pool-list",
+    name: "quota-pool-list",
+    icon: "Container",
+    component: "@/pages/QuotaPoolListPage",
   },
   {
-    path: '*',
+    path: "/quota-pool-details/:id",
+    name: "quota-pool-details",
+    icon: "Container",
+    component: "@/pages/QuotaPoolDetailsPage",
+  },
+  {
+    path: "/",
+    redirect: "/welcome",
+  },
+  {
+    path: "*",
     layout: false,
-    component: '@/pages/404Page',
+    component: "@/pages/404Page",
   },
 ];
