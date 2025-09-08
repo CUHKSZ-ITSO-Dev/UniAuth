@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+
 	"github.com/gogf/gf/v2/os/gres"
+	"github.com/gogf/gf/v2/os/gtime"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -24,6 +26,11 @@ var (
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
 			// 加载资源文件，主要用于接口示例数据的导入
 			gres.Dump()
+
+			// 设置进程全局时区
+			if err := gtime.SetTimeZone("Asia/Shanghai"); err != nil {
+				panic(err)
+			}
 
 			s := g.Server()
 			s.Group("/", func(group *ghttp.RouterGroup) {

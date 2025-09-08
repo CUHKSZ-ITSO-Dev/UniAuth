@@ -1,7 +1,7 @@
 CREATE TABLE config_single_model_approach (
     model_name VARCHAR(255) PRIMARY KEY,
     price JSONB,
-    discount DECIMAL(15, 10),
+    discount NUMERIC(25, 10),
     client_type VARCHAR(255),
     client_args JSONB,
     request_args JSONB,

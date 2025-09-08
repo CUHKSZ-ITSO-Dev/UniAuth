@@ -11,72 +11,64 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// BillingCostRecordsDao is the data access object for the table billing_cost_records.
-type BillingCostRecordsDao struct {
+// ConfigExchangeRateDao is the data access object for the table config_exchange_rate.
+type ConfigExchangeRateDao struct {
 	table    string                    // table is the underlying table name of the DAO.
 	group    string                    // group is the database configuration group name of the current DAO.
-	columns  BillingCostRecordsColumns // columns contains all the column names of Table for convenient usage.
+	columns  ConfigExchangeRateColumns // columns contains all the column names of Table for convenient usage.
 	handlers []gdb.ModelHandler        // handlers for customized model modification.
 }
 
-// BillingCostRecordsColumns defines and stores column names for the table billing_cost_records.
-type BillingCostRecordsColumns struct {
-	Id        string // 自增主键
-	Upn       string // UPN
-	Svc       string // 服务名称
-	Product   string // 产品名称
-	Cost      string // 费用
-	Plan      string // 计费方案
-	Source    string // 来源
-	Remark    string // 备注信息
-	CreatedAt string // 创建时间
+// ConfigExchangeRateColumns defines and stores column names for the table config_exchange_rate.
+type ConfigExchangeRateColumns struct {
+	Date      string // 汇率日期
+	F         string // 本位货币
+	T         string // 标的货币
+	Rate      string // 1 本位货币 = rate 标的货币
+	CreatedAt string //
 }
 
-// billingCostRecordsColumns holds the columns for the table billing_cost_records.
-var billingCostRecordsColumns = BillingCostRecordsColumns{
-	Id:        "id",
-	Upn:       "upn",
-	Svc:       "svc",
-	Product:   "product",
-	Cost:      "cost",
-	Plan:      "plan",
-	Source:    "source",
-	Remark:    "remark",
+// configExchangeRateColumns holds the columns for the table config_exchange_rate.
+var configExchangeRateColumns = ConfigExchangeRateColumns{
+	Date:      "date",
+	F:         "f",
+	T:         "t",
+	Rate:      "rate",
 	CreatedAt: "created_at",
 }
 
-// NewBillingCostRecordsDao creates and returns a new DAO object for table data access.
-func NewBillingCostRecordsDao(handlers ...gdb.ModelHandler) *BillingCostRecordsDao {
-	return &BillingCostRecordsDao{
+// NewConfigExchangeRateDao creates and returns a new DAO object for table data access.
+func NewConfigExchangeRateDao(handlers ...gdb.ModelHandler) *ConfigExchangeRateDao {
+	return &ConfigExchangeRateDao{
 		group:    "default",
-		table:    "billing_cost_records",
-		columns:  billingCostRecordsColumns,
+		table:    "config_exchange_rate",
+		columns:  configExchangeRateColumns,
 		handlers: handlers,
 	}
 }
 
 // DB retrieves and returns the underlying raw database management object of the current DAO.
-func (dao *BillingCostRecordsDao) DB() gdb.DB {
+func (dao *ConfigExchangeRateDao) DB() gdb.DB {
 	return g.DB(dao.group)
 }
 
 // Table returns the table name of the current DAO.
-func (dao *BillingCostRecordsDao) Table() string {
+func (dao *ConfigExchangeRateDao) Table() string {
 	return dao.table
 }
 
 // Columns returns all column names of the current DAO.
-func (dao *BillingCostRecordsDao) Columns() BillingCostRecordsColumns {
+func (dao *ConfigExchangeRateDao) Columns() ConfigExchangeRateColumns {
 	return dao.columns
 }
 
 // Group returns the database configuration group name of the current DAO.
-func (dao *BillingCostRecordsDao) Group() string {
+func (dao *ConfigExchangeRateDao) Group() string {
 	return dao.group
 }
 
 // Ctx creates and returns a Model for the current DAO. It automatically sets the context for the current operation.
-func (dao *BillingCostRecordsDao) Ctx(ctx context.Context) *gdb.Model {
+func (dao *ConfigExchangeRateDao) Ctx(ctx context.Context) *gdb.Model {
 	model := dao.DB().Model(dao.table)
 	for _, handler := range dao.handlers {
 		model = handler(model)
@@ -90,6 +82,6 @@ func (dao *BillingCostRecordsDao) Ctx(ctx context.Context) *gdb.Model {
 //
 // Note: Do not commit or roll back the transaction in function f,
 // as it is automatically handled by this function.
-func (dao *BillingCostRecordsDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
+func (dao *ConfigExchangeRateDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)
 }
