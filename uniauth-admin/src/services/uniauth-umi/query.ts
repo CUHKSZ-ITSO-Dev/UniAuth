@@ -10,7 +10,7 @@ export async function getAuthAdminActionsAll(options?: { [key: string]: any }) {
   });
 }
 
-/** 获取所有Domains GET /auth/admin/domains/all */
+/** 获取所有 Domains GET /auth/admin/domains/all */
 export async function getAuthAdminDomainsAll(options?: { [key: string]: any }) {
   return request<API.GetAllDomainsRes>("/auth/admin/domains/all", {
     method: "GET",
@@ -52,6 +52,14 @@ export async function postAuthAdminPoliciesFilter(
       "Content-Type": "application/json",
     },
     data: body,
+    ...(options || {}),
+  });
+}
+
+/** 获取所有 Roles GET /auth/admin/roles/all */
+export async function getAuthAdminRolesAll(options?: { [key: string]: any }) {
+  return request<API.GetAllRolesRes>("/auth/admin/roles/all", {
+    method: "GET",
     ...(options || {}),
   });
 }

@@ -31,3 +31,51 @@ export async function postAuthCheckEx(
     ...(options || {}),
   });
 }
+
+/** 获取所属配额池 动态获取用户属于哪些配额池。 GET /auth/quotaPools/all */
+export async function getAuthQuotaPoolsAll(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getAuthQuotaPoolsAllParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.GetAllQuotaPoolsRes>("/auth/quotaPools/all", {
+    method: "GET",
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
+/** 获取所属配额池的可用模型 动态获取指定配额池的可用模型。 GET /auth/quotaPools/models */
+export async function getAuthQuotaPoolsModels(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getAuthQuotaPoolsModelsParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.GetAvailableModelForQuotaPoolRes>(
+    "/auth/quotaPools/models",
+    {
+      method: "GET",
+      params: {
+        ...params,
+      },
+      ...(options || {}),
+    }
+  );
+}
+
+/** 获取所属配额池的用户 动态获取指定配额池的用户。 GET /auth/quotaPools/users */
+export async function getAuthQuotaPoolsUsers(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getAuthQuotaPoolsUsersParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.GetAllUsersForQuotaPoolRes>("/auth/quotaPools/users", {
+    method: "GET",
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}

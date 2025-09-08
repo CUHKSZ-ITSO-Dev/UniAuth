@@ -2,12 +2,12 @@
 /* eslint-disable */
 import { request } from "@umijs/max";
 
-/** 添加 Policy 添加 Policy。 POST /auth/admin/policies/add */
+/** 添加 Policies POST /auth/admin/policies/add */
 export async function postAuthAdminPoliciesAdd(
-  body: API.AddPolicyReq,
+  body: API.AddPoliciesReq,
   options?: { [key: string]: any }
 ) {
-  return request<API.AddPolicyRes>("/auth/admin/policies/add", {
+  return request<API.AddPoliciesRes>("/auth/admin/policies/add", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -17,12 +17,12 @@ export async function postAuthAdminPoliciesAdd(
   });
 }
 
-/** 删除 Policy 删除 Policy。 POST /auth/admin/policies/delete */
+/** 删除 Policies 删除 Policies。原子性操作，当规则中有一条和数据库中的规则不匹配，立即回滚所有操作并返回错误。 POST /auth/admin/policies/delete */
 export async function postAuthAdminPoliciesOpenApiDelete(
-  body: API.DeletePolicyReq,
+  body: API.DeletePoliciesReq,
   options?: { [key: string]: any }
 ) {
-  return request<API.DeletePolicyRes>("/auth/admin/policies/delete", {
+  return request<API.DeletePoliciesRes>("/auth/admin/policies/delete", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
