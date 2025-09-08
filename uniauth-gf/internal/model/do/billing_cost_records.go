@@ -12,7 +12,7 @@ import (
 // BillingCostRecords is the golang structure of table billing_cost_records for DAO operations like Where/Data.
 type BillingCostRecords struct {
 	g.Meta    `orm:"table:billing_cost_records, do:true"`
-	Id        interface{} //
+	Id        interface{} // 自增主键
 	Upn       interface{} // UPN
 	Svc       interface{} // 服务名称
 	Product   interface{} // 产品名称

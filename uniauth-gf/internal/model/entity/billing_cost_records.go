@@ -11,7 +11,7 @@ import (
 
 // BillingCostRecords is the golang structure for table billing_cost_records.
 type BillingCostRecords struct {
-	Id        int64           `json:"id"        orm:"id"         description:""`     //
+	Id        int64           `json:"id"        orm:"id"         description:"自增主键"` // 自增主键
 	Upn       string          `json:"upn"       orm:"upn"        description:"UPN"`  // UPN
 	Svc       string          `json:"svc"       orm:"svc"        description:"服务名称"` // 服务名称
 	Product   string          `json:"product"   orm:"product"    description:"产品名称"` // 产品名称
