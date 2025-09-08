@@ -1,19 +1,11 @@
 {
-  "手动创建的配额池情况": {
-    "code": 0,
-    "message": "OK",
-    "data": [
-        "student_pool",
-        "staff_pool"
-    ]
-  },
-  "自动创建的配额池情况": {
-    "code": 0,
-    "message": "OK",
-    "data": [
-        "122020255@link.cuhk.edu.cn",
-        "st_itsa-noreply@link.cuhk.edu.cn"
-    ]
-  }
+  "手动创建的配额池情况": [
+    "student_pool",
+    "staff_pool"
+  ],
+  "自动创建的配额池情况": [
+    "122020255@link.cuhk.edu.cn",
+    "st_itsa-noreply@link.cuhk.edu.cn"
+  ]
 }
 
