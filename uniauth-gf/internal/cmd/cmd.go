@@ -28,7 +28,7 @@ var (
 			gres.Dump()
 
 			// 设置进程全局时区
-			if err := gtime.SetTimeZone("Asia/Tokyo"); err != nil {
+			if err := gtime.SetTimeZone("Asia/Shanghai"); err != nil {
 				panic(err)
 			}
 
