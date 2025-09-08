@@ -16,7 +16,7 @@ CREATE INDEX idx_billing_cost_records_svc_and_product ON billing_cost_records(sv
 CREATE INDEX idx_billing_cost_records_source ON billing_cost_records(source);
 CREATE INDEX idx_billing_cost_records_created_at ON billing_cost_records(created_at);
 
-COMMENT ON COLUMN billing_cost_records.id IS "自增主键";
+COMMENT ON COLUMN billing_cost_records.id IS '自增主键';
 COMMENT ON COLUMN billing_cost_records.upn IS 'UPN';
 COMMENT ON COLUMN billing_cost_records.svc IS '服务名称';
 COMMENT ON COLUMN billing_cost_records.product IS '产品名称';

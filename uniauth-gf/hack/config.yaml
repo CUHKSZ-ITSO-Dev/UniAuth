@@ -4,6 +4,7 @@ gfcli:
   gen:
     dao:
       - link: "pgsql:postgres:471893@tcp(127.0.0.1:5432)/uniauth"
+        debug: true
         descriptionTag: true
         typeMapping:
           numeric:

@@ -11,31 +11,33 @@ type BillingRecordReq struct {
 	Upn     string `json:"upn" v:"required"`
 	Service string `json:"service" v:"required"`
 	Product string `json:"product" v:"required"`
+	Plan    string `json:"plan" v:"required"`
+	Source  string `json:"source" v:"required"`
 
 	CNYCost decimal.Decimal `json:"cny_cost"`
 	USDCost decimal.Decimal `json:"usd_cost"`
 
-	Detail *gjson.Json `json:"detail"`
+	Remark *gjson.Json `json:"detail"`
 }
 type BillingRecordRes struct {
 	Ok bool `json:"ok"`
 }
 
 type CheckBalanceReq struct {
-	g.Meta `path:"/check" tags:"Billing" method:"post" summary:"检查是否可以使用某个产品" dc:"根据给定的参数，检查是否可以使用某个产品。"`
-	Upn     string `json:"upn" v:"required"`
-	Svc string `json:"svc" v:"required"`
-	Product string `json:"product" v:"required"`		
+	g.Meta    `path:"/check" tags:"Billing" method:"post" summary:"检查是否可以使用某个产品" dc:"根据给定的参数，检查是否可以使用某个产品。"`
+	Upn       string `json:"upn" v:"required"`
+	Svc       string `json:"svc" v:"required"`
+	Product   string `json:"product" v:"required"`
 	QuotaPool string `json:"quotaPool" v:"required"`
 }
 type CheckBalanceRes struct {
-	Ok bool `json:"ok"`
+	Ok  bool   `json:"ok"`
 	Err string `json:"err"`
 }
 
 type CheckTokensUsageReq struct {
-	g.Meta `path:"/checkTokensUsage" tags:"Billing" method:"post" summary:"检查Tokens使用情况" dc:"检查Tokens使用情况"`
-	Upn string `json:"upn" v:"required"`
+	g.Meta    `path:"/checkTokensUsage" tags:"Billing" method:"post" summary:"检查Tokens使用情况" dc:"检查Tokens使用情况"`
+	Upn       string `json:"upn" v:"required"`
 	QuotaPool string `json:"quotaPool" v:"required"`
 }
 type CheckTokensUsageRes struct {
