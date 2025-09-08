@@ -4,6 +4,7 @@ export default {
   "menu.home": "Home",
   "menu.admin": "Admin",
   "menu.quota-pool-list": "Quota Pool List",
+  "menu.quota-pool-details": "Quota Pool Details",
   "menu.admin.sub-page": "Sub-Page",
   "menu.login": "Login",
   "menu.register": "Register",

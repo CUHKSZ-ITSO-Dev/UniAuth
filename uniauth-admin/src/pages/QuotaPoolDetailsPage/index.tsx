@@ -1,106 +1,262 @@
+import { DingdingOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import {
+  GridContent,
   PageContainer,
-  ProCard,
-  ProForm,
-  ProFormText,
-  ProFormDigit,
-  ProFormSwitch,
-  ProFormDateTimePicker,
-  ProFormTextArea,
+  RouteContext,
 } from "@ant-design/pro-components";
-import { Typography } from "antd";
+import { useRequest } from "@umijs/max";
+import {
+  Badge,
+  Button,
+  Card,
+  Descriptions,
+  Divider,
+  Empty,
+  Popover,
+  Space,
+  Statistic,
+  Steps,
+  Table,
+  Flex,
+  Progress,
+  Tooltip,
+  Row,
+  Col,
+} from "antd";
+import classNames from "classnames";
+import type { FC } from "react";
+import React, { useState } from "react";
+import type { AdvancedProfileData } from "./data.d";
+import { queryAdvancedProfile } from "./service";
+import useStyles from "./style.style";
 
-const { Title, Text } = Typography;
+const { Step } = Steps;
+const ButtonGroup = Button.Group;
 
-// 示例数据，实际应由接口获取
-const quotaPoolDetail = {
-  id: 1,
-  quota_pool_name: "研发配额池",
-  cron_cycle: "0 0 * * *",
-  regular_quota: 1000.0,
-  remaining_quota: 800.0,
-  last_reset_at: "2024-09-01 00:00:00",
-  extra_quota: 200.0,
-  personal: false,
-  disabled: false,
-  userinfos_rules: '{"group": "研发"}',
-  created_at: "2024-08-01 10:00:00",
+const action = (
+  <RouteContext.Consumer>
+    {({ isMobile }) => {
+      return (
+        <Space>
+          <Button type="primary">禁用配额池</Button>
+        </Space>
+      );
+    }}
+  </RouteContext.Consumer>
+);
+
+const operationTabList = [
+  {
+    key: "tab1",
+    tab: "操作日志一",
+  },
+  {
+    key: "tab2",
+    tab: "操作日志二",
+  },
+  {
+    key: "tab3",
+    tab: "操作日志三",
+  },
+];
+const columns = [
+  {
+    title: "操作类型",
+    dataIndex: "type",
+    key: "type",
+  },
+  {
+    title: "操作人",
+    dataIndex: "name",
+    key: "name",
+  },
+  {
+    title: "执行结果",
+    dataIndex: "status",
+    key: "status",
+    render: (text: string) => {
+      if (text === "agree") {
+        return <Badge status="success" text="成功" />;
+      }
+      return <Badge status="error" text="驳回" />;
+    },
+  },
+  {
+    title: "操作时间",
+    dataIndex: "updatedAt",
+    key: "updatedAt",
+  },
+  {
+    title: "备注",
+    dataIndex: "memo",
+    key: "memo",
+  },
+];
+type AdvancedState = {
+  operationKey: "tab1" | "tab2" | "tab3";
+  tabActiveKey: string;
 };
+const QuotaPoolDetailsPage: FC = () => {
+  const { styles } = useStyles();
 
-const QuotaPoolDetailsPage: React.FC = () => {
-  return (
-    <PageContainer>
-      <ProCard>
-        <Title level={4}>配额池详情</Title>
-        <Text type="secondary">查看配额池的详细信息</Text>
-        <ProForm
-          layout="horizontal"
-          submitter={false}
-          initialValues={quotaPoolDetail}
+  const extra = (
+    <div className={styles.moreInfo}>
+      <Statistic title="状态" value="使用中" valueStyle={{ color: "green" }} />
+      <Statistic title="配额池余额" value={496} prefix="$" />
+    </div>
+  );
+  const description = (
+    <RouteContext.Consumer>
+      {({ isMobile }) => (
+        <Descriptions
+          className={styles.headerList}
+          size="small"
+          column={isMobile ? 1 : 2}
         >
-          <ProFormText name="id" label="ID" disabled tooltip="自增主键" />
-          <ProFormText
-            name="quota_pool_name"
-            label="配额池名称"
-            disabled
-            tooltip="配额池名称"
-          />
-          <ProFormText
-            name="cron_cycle"
-            label="刷新周期"
-            disabled
-            tooltip="cron表达式"
-          />
-          <ProFormDigit
-            name="regular_quota"
-            label="定期配额"
-            disabled
-            tooltip="定期分配的配额"
-          />
-          <ProFormDigit
-            name="remaining_quota"
-            label="剩余配额"
-            disabled
-            tooltip="当前剩余可用配额"
-          />
-          <ProFormDateTimePicker
-            name="last_reset_at"
-            label="上次刷新时间"
-            disabled
-            tooltip="上次配额重置时间"
-          />
-          <ProFormDigit
-            name="extra_quota"
-            label="加油包"
-            disabled
-            tooltip="额外分配的配额"
-          />
-          <ProFormSwitch
-            name="personal"
-            label="是否个人配额池"
-            disabled
-            tooltip="是否为个人专属配额池"
-          />
-          <ProFormSwitch
-            name="disabled"
-            label="是否禁用"
-            disabled
-            tooltip="配额池是否禁用"
-          />
-          <ProFormTextArea
-            name="userinfos_rules"
-            label="ITTools规则"
-            disabled
-            tooltip="配额池的用户规则(JSON)"
-          />
-          <ProFormDateTimePicker
-            name="created_at"
-            label="创建时间"
-            disabled
-            tooltip="配额池创建时间"
-          />
-        </ProForm>
-      </ProCard>
+          <Descriptions.Item label="创建人">IT管理员</Descriptions.Item>
+          <Descriptions.Item label="配额池类型">自建配额池</Descriptions.Item>
+          <Descriptions.Item label="创建时间">2025-9-8</Descriptions.Item>
+          <Descriptions.Item label="备注">不知道写啥随便写点</Descriptions.Item>
+        </Descriptions>
+      )}
+    </RouteContext.Consumer>
+  );
+
+  const [tabStatus, seTabStatus] = useState<AdvancedState>({
+    operationKey: "tab1",
+    tabActiveKey: "detail",
+  });
+
+  const { data = {}, loading } = useRequest<{
+    data: AdvancedProfileData;
+  }>(queryAdvancedProfile);
+  const { advancedOperation1, advancedOperation2, advancedOperation3 } = data;
+  const contentList = {
+    tab1: (
+      <Table
+        pagination={false}
+        loading={loading}
+        dataSource={advancedOperation1}
+        columns={columns}
+      />
+    ),
+    tab2: (
+      <Table
+        pagination={false}
+        loading={loading}
+        dataSource={advancedOperation2}
+        columns={columns}
+      />
+    ),
+    tab3: (
+      <Table
+        pagination={false}
+        loading={loading}
+        dataSource={advancedOperation3}
+        columns={columns}
+      />
+    ),
+  };
+  const onTabChange = (tabActiveKey: string) => {
+    seTabStatus({
+      ...tabStatus,
+      tabActiveKey,
+    });
+  };
+  const onOperationTabChange = (key: string) => {
+    seTabStatus({
+      ...tabStatus,
+      operationKey: key as "tab1",
+    });
+  };
+  return (
+    <PageContainer
+      title="配额池详情"
+      extra={action}
+      className={styles.pageHeader}
+      content={description}
+      extraContent={extra}
+      tabActiveKey={tabStatus.tabActiveKey}
+      onTabChange={onTabChange}
+      tabList={[
+        {
+          key: "config_detail",
+          tab: "配置详情",
+        },
+        {
+          key: "bill_detail",
+          tab: "账单详情",
+        },
+      ]}
+    >
+      <div className={styles.main}>
+        <GridContent>
+          <Card
+            title="详细信息"
+            style={{
+              marginBottom: 24,
+            }}
+            variant="borderless"
+          >
+            <Row>
+              <Col span={18}>
+                <Descriptions
+                  style={{
+                    marginBottom: 24,
+                  }}
+                >
+                  <Descriptions.Item label="配额池名称">
+                    example@cuhk.edu.cn
+                  </Descriptions.Item>
+                  <Descriptions.Item label="刷新周期">每周</Descriptions.Item>
+                  <Descriptions.Item label="上次刷新时间">
+                    2025-8-29 19:30:00
+                  </Descriptions.Item>
+                  <Descriptions.Item label="定期配额">
+                    $648.00
+                  </Descriptions.Item>
+                  <Descriptions.Item label="剩余配额">
+                    $328.00
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="加油包">$168.00</Descriptions.Item>
+                </Descriptions>
+              </Col>
+              <Col span={6}>
+                <Tooltip title="3 done / 3 in progress / 4 to do">
+                  <Progress
+                    percent={Number(
+                      (((328 + 168) / (648 + 168)) * 100).toFixed(1)
+                    )}
+                    success={{
+                      percent: Number(((328 / (648 + 168)) * 100).toFixed(1)),
+                    }}
+                    type="dashboard"
+                  />
+                </Tooltip>
+              </Col>
+            </Row>
+          </Card>
+          <Card
+            title="配额池关联用户"
+            style={{
+              marginBottom: 24,
+            }}
+            variant="borderless"
+          >
+            <Empty />
+          </Card>
+          <Card
+            title="配置池 ITTools 规则"
+            style={{
+              marginBottom: 24,
+            }}
+            variant="borderless"
+          >
+            <Empty />
+          </Card>
+        </GridContent>
+      </div>
     </PageContainer>
   );
 };

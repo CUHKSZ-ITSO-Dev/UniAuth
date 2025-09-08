@@ -4,6 +4,7 @@ export default {
   "menu.home": "首页",
   "menu.admin": "管理页",
   "menu.quota-pool-list": "配额池列表",
+  "menu.quota-pool-details": "配额池详情",
   "menu.admin.sub-page": "二级管理页",
   "menu.login": "登录",
   "menu.register": "注册",
