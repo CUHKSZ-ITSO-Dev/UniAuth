@@ -43,6 +43,24 @@ const ModelListPage: React.FC = () => {
   // 辅助函数 - 判断编辑状态
   const isEditing = (record: ModelConfig) => record.id === editingKey;
 
+  // 添加新模型
+  const handleAddModel = () => {
+    // 生成新ID（基于当前最大ID + 1）
+    const maxId = Math.max(
+      ...dataSource.map((item) => parseInt(item.id, 10)),
+      0,
+    );
+    const newModelId = (maxId + 1).toString();
+
+    // 将表单值设为空
+    form.setFieldsValue({ modelName: '' });
+    // 设置编辑键为新模型ID，直接进入编辑状态
+    setEditingKey(newModelId);
+
+    // 添加一个临时的空模型到数据源，用于编辑
+    setDataSource([{ id: newModelId, modelName: '' }, ...dataSource]);
+  };
+
   // 事件处理函数
   const handleEdit = (record: ModelConfig) => {
     form.setFieldsValue({ modelName: record.modelName });
@@ -50,19 +68,43 @@ const ModelListPage: React.FC = () => {
   };
 
   const handleCancel = () => {
+    // 如果当前正在编辑的是空模型（新添加但未保存的模型），则从数据源中移除它
+    if (editingKey) {
+      setDataSource((prevData) => {
+        // 检查当前编辑的项是否是空模型
+        const isEditingEmptyModel = prevData.some(
+          (item) => item.id === editingKey && !item.modelName,
+        );
+
+        // 如果是空模型，则移除它；否则保持数据源不变
+        return isEditingEmptyModel
+          ? prevData.filter((item) => item.id !== editingKey)
+          : prevData;
+      });
+    }
+
+    // 清除编辑状态
     setEditingKey('');
   };
 
   const handleSave = async (id: string) => {
     try {
       const values = await form.validateFields();
+
+      // 检查是否为空模型（新添加的模型）
+      const isNewModel = dataSource.some(
+        (item) => item.id === id && !item.modelName,
+      );
+
       setDataSource((prevData) =>
         prevData.map((item) =>
           item.id === id ? { ...item, ...values } : item,
         ),
       );
       setEditingKey('');
-      message.success('修改成功');
+
+      // 根据是否是新模型显示不同的成功消息
+      message.success(isNewModel ? '模型添加成功' : '修改成功');
     } catch (_errInfo) {
       message.error('保存失败');
     }
@@ -154,6 +196,11 @@ const ModelListPage: React.FC = () => {
       <ProCard>
         <Title level={4}>模型配置列表</Title>
         <Text type="secondary">管理系统中的所有模型配置</Text>
+        <div style={{ marginBottom: 16 }}>
+          <Button type="primary" onClick={handleAddModel}>
+            添加模型
+          </Button>
+        </div>
         <Form form={form} component={false}>
           <Table
             columns={columns}
