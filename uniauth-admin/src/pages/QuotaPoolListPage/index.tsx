@@ -6,7 +6,7 @@ import { useRef } from "react";
 const { Title, Text } = Typography;
 
 // 示例数据
-const quotaPools = [
+const quotaPoolsExampleData = [
   {
     id: 1,
     name: "研发配额池",
@@ -125,6 +125,41 @@ function handleNewQuotaPoolClick() {
   console.log("新建配额池");
 }
 
+const quotaPoolListRequest = async (params: any) => {
+  // TODO:替换为实际请求
+  let data = quotaPoolsExampleData;
+  if (params.name) {
+    data = data.filter((item) => item.name.includes(params.name));
+  }
+  if (params.manager) {
+    data = data.filter((item) => item.manager.includes(params.manager));
+  }
+  if (params.autoCreated !== undefined) {
+    data = data.filter(
+      (item) => String(item.autoCreated) === String(params.autoCreated)
+    );
+  }
+  if (
+    params.createdAt &&
+    Array.isArray(params.createdAt) &&
+    params.createdAt.length === 2
+  ) {
+    const [start, end] = params.createdAt;
+    data = data.filter((item) => {
+      const time = new Date(item.createdAt).getTime();
+      return (
+        (!start || time >= new Date(start).getTime()) &&
+        (!end || time <= new Date(end).getTime())
+      );
+    });
+  }
+  return {
+    data,
+    success: true,
+    total: data.length,
+  };
+};
+
 const QuotaPoolListPage: React.FC = () => {
   const actionRef = useRef<ActionType | null>(null);
 
@@ -145,43 +180,7 @@ const QuotaPoolListPage: React.FC = () => {
               添加新的配额池
             </Button>,
           ]}
-          request={async (params) => {
-            // 这里应该请求后端接口，下面用本地数据模拟
-            let data = quotaPools;
-            if (params.name) {
-              data = data.filter((item) => item.name.includes(params.name));
-            }
-            if (params.manager) {
-              data = data.filter((item) =>
-                item.manager.includes(params.manager)
-              );
-            }
-            if (params.autoCreated !== undefined) {
-              data = data.filter(
-                (item) =>
-                  String(item.autoCreated) === String(params.autoCreated)
-              );
-            }
-            if (
-              params.createdAt &&
-              Array.isArray(params.createdAt) &&
-              params.createdAt.length === 2
-            ) {
-              const [start, end] = params.createdAt;
-              data = data.filter((item) => {
-                const time = new Date(item.createdAt).getTime();
-                return (
-                  (!start || time >= new Date(start).getTime()) &&
-                  (!end || time <= new Date(end).getTime())
-                );
-              });
-            }
-            return {
-              data,
-              success: true,
-              total: data.length,
-            };
-          }}
+          request={quotaPoolListRequest}
         />
       </ProCard>
     </PageContainer>
