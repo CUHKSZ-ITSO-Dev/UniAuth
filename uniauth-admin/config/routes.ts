@@ -23,10 +23,10 @@ export default [
   //   ],
   // },
   {
-    path: '/welcome',
-    name: 'welcome',
-    icon: 'Smile',
-    component: '@/pages/WelcomePage',
+    path: "/welcome",
+    name: "welcome",
+    icon: "Smile",
+    component: "@/pages/WelcomePage",
   },
   // {
   //   path: '/dashboard',
@@ -35,18 +35,24 @@ export default [
   //   component: '@/pages/DashboardPage',
   // },
   {
-    path: '/user-list',
-    name: 'user-list',
-    icon: 'User',
-    component: '@/pages/UserListPage',
+    path: "/user-list",
+    name: "user-list",
+    icon: "User",
+    component: "@/pages/UserListPage",
   },
   {
-    path: '/',
-    redirect: '/welcome',
+    path: "/",
+    redirect: "/welcome",
   },
   {
-    path: '*',
+    path: "/model-list",
+    name: "model-list",
+    icon: "User",
+    component: "@/pages/ModelListPage",
+  },
+  {
+    path: "*",
     layout: false,
-    component: '@/pages/404Page',
+    component: "@/pages/404Page",
   },
 ];
