@@ -4,15 +4,22 @@ gfcli:
   gen:
     dao:
       - link: "pgsql:uniauth:It@73333!@tcp(127.0.0.1:5432)/uniauth"
-        debug: true
         descriptionTag: true
         typeMapping:
           numeric:
             type: decimal.Decimal
             import: github.com/shopspring/decimal
-        createdAt: "created_at"     
-        updatedAt: "updated_at" 
-  
+        withTime: true
+        gJsonSupport: true
+
+  database:
+    default:
+      link: "pgsql:uniauth:It@73333!@tcp(127.0.0.1:5432)/uniauth"
+      debug: true
+      timezone: "Local"
+      createdAt: "created_at"     
+      updatedAt: "updated_at" 
+
   build:
     name: "uniauth"
     arch: "amd64,arm64"

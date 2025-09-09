@@ -31,7 +31,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 			err = gerror.Wrapf(err, "计费记录流程失败，操作终止。原始请求：%v", req)
 		}
 	}()
-
+	
 	// 校验配额池 Plan 和 Source 的数据
 	value, err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields("personal").Where("quota_pool_name = ?", req.Source).Value()
 	if err != nil {

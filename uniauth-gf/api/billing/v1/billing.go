@@ -7,7 +7,9 @@ import (
 )
 
 type BillingRecordReq struct {
-	g.Meta  `path:"/record" tags:"Billing" method:"post" summary:"计费接口" dc:"xxxxxxxx计费接口"`
+	// g.Meta `path:"/record" tags:"Billing" method:"post" summary:"计费接口" dc:"上传计费请求，完成配额池的扣费。"`
+	g.Meta `path:"/record" tags:"Billing" method:"post" summary:"计费接口" dc:"上传计费请求，完成配额池的扣费。" resEg:"resource/interface/billing/billing_record_req.json"`
+
 	Upn     string `json:"upn" v:"required"`
 	Service string `json:"service" v:"required"`
 	Product string `json:"product" v:"required"`
@@ -20,7 +22,7 @@ type BillingRecordReq struct {
 	Remark *gjson.Json `json:"detail"`
 }
 type BillingRecordRes struct {
-	Ok     bool   `json:"ok"`
+	Ok bool `json:"ok"`
 }
 
 type CheckBalanceReq struct {

@@ -1,10 +1,11 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-09 16:58:44
 // =================================================================================
 
 package do
 
 import (
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 )
@@ -21,7 +22,7 @@ type QuotapoolQuotaPool struct {
 	ExtraQuota     interface{} // 加油包
 	Personal       interface{} // 是否个人配额池
 	Disabled       interface{} // 是否禁用
-	UserinfosRules interface{} // ITTools规则
+	UserinfosRules *gjson.Json // ITTools规则
 	CreatedAt      *gtime.Time // 创建时间
 	UpdatedAt      *gtime.Time // 修改时间
 }

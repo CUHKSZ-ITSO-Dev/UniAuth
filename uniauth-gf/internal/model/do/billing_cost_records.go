@@ -1,10 +1,11 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-09 16:58:44
 // =================================================================================
 
 package do
 
 import (
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 )
@@ -19,6 +20,6 @@ type BillingCostRecords struct {
 	Cost      interface{} // 费用
 	Plan      interface{} // 计费方案
 	Source    interface{} // 来源
-	Remark    interface{} // 备注信息
+	Remark    *gjson.Json // 备注信息
 	CreatedAt *gtime.Time // 创建时间
 }
