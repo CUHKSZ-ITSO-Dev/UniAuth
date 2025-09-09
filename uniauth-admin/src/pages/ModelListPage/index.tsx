@@ -1,3 +1,4 @@
+// 导入依赖组件
 import { PageContainer, ProCard } from '@ant-design/pro-components';
 import {
   Button,
@@ -11,58 +12,47 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import React, { useState } from 'react';
 
-const { Title, Text } = Typography;
-
-// 定义模型配置的类型
+// 类型定义
 interface ModelConfig {
   id: string;
   modelName: string;
 }
 
 const ModelListPage: React.FC = () => {
-  // 状态管理
-  const [dataSource, setDataSource] = useState<ModelConfig[]>([
-    { id: '1', modelName: '模型1' },
-    { id: '2', modelName: '模型2' },
-    { id: '3', modelName: '模型3' },
-    { id: '4', modelName: '模型4' },
-    { id: '5', modelName: '模型5' },
-    { id: '6', modelName: '模型6' },
-    { id: '7', modelName: '模型7' },
-    { id: '8', modelName: '模型8' },
-    { id: '9', modelName: '模型9' },
-    { id: '10', modelName: '模型10' },
-    { id: '11', modelName: '模型11' },
-    { id: '12', modelName: '模型12' },
-    { id: '13', modelName: '模型13' },
-    { id: '14', modelName: '模型14' },
-    { id: '15', modelName: '模型15' },
-    { id: '16', modelName: '模型16' },
-    { id: '17', modelName: '模型17' },
-    { id: '18', modelName: '模型18' },
-    { id: '19', modelName: '模型19' },
-    { id: '20', modelName: '模型20' },
-  ]);
-
-  // 编辑状态管理
-  const [editingKey, setEditingKey] = useState<string>('');
+  // 解构组件
+  const { Title, Text } = Typography;
   const [form] = Form.useForm();
 
-  // 判断是否为编辑状态
+  // 状态管理
+  const [dataSource, setDataSource] = useState<ModelConfig[]>(
+    Array.from({ length: 51 }, (_, i) => ({
+      id: (i + 1).toString(),
+      modelName: `模型${i + 1}`,
+    })),
+  );
+  const [editingKey, setEditingKey] = useState<string>('');
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  // 处理分页变化
+  const handleTableChange = (pagination: any) => {
+    if (pagination.pageSize !== pageSize) {
+      setPageSize(pagination.pageSize);
+    }
+  };
+
+  // 辅助函数 - 判断编辑状态
   const isEditing = (record: ModelConfig) => record.id === editingKey;
 
-  // 处理编辑
+  // 事件处理函数
   const handleEdit = (record: ModelConfig) => {
     form.setFieldsValue({ modelName: record.modelName });
     setEditingKey(record.id);
   };
 
-  // 处理取消编辑
   const handleCancel = () => {
     setEditingKey('');
   };
 
-  // 处理保存
   const handleSave = async (id: string) => {
     try {
       const values = await form.validateFields();
@@ -78,7 +68,6 @@ const ModelListPage: React.FC = () => {
     }
   };
 
-  // 处理删除
   const handleDelete = (id: string) => {
     setDataSource((prevData) => prevData.filter((item) => item.id !== id));
     message.success('删除成功');
@@ -95,9 +84,8 @@ const ModelListPage: React.FC = () => {
       title: '模型名称',
       dataIndex: 'modelName',
       key: 'modelName',
-      render: (_, record) => {
-        const editable = isEditing(record);
-        return editable ? (
+      render: (_, record) =>
+        isEditing(record) ? (
           <Form.Item
             name="modelName"
             rules={[{ required: true, message: '模型名称不能为空' }]}
@@ -107,18 +95,17 @@ const ModelListPage: React.FC = () => {
           </Form.Item>
         ) : (
           record.modelName
-        );
-      },
+        ),
     },
-    // 操作列
     {
       title: '操作',
       key: 'action',
       render: (_, record) => {
         const editable = isEditing(record);
+
         if (editable) {
           return (
-            <span>
+            <>
               <Popconfirm
                 title="确定要保存修改吗？"
                 onConfirm={() => handleSave(record.id)}
@@ -136,31 +123,32 @@ const ModelListPage: React.FC = () => {
               >
                 取消
               </Button>
-            </span>
-          );
-        } else {
-          return (
-            <span>
-              <Button size="small" onClick={() => handleEdit(record)}>
-                编辑
-              </Button>
-              <Popconfirm
-                title="确定要删除这个模型吗？"
-                onConfirm={() => handleDelete(record.id)}
-                okText="确定"
-                cancelText="取消"
-              >
-                <Button danger size="small" style={{ marginLeft: 8 }}>
-                  删除
-                </Button>
-              </Popconfirm>
-            </span>
+            </>
           );
         }
+
+        return (
+          <>
+            <Button size="small" onClick={() => handleEdit(record)}>
+              编辑
+            </Button>
+            <Popconfirm
+              title="确定要删除这个模型吗？"
+              onConfirm={() => handleDelete(record.id)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button danger size="small" style={{ marginLeft: 8 }}>
+                删除
+              </Button>
+            </Popconfirm>
+          </>
+        );
       },
     },
   ];
 
+  // 组件渲染
   return (
     <PageContainer>
       <ProCard>
@@ -171,7 +159,14 @@ const ModelListPage: React.FC = () => {
             columns={columns}
             dataSource={dataSource}
             rowKey="id"
-            pagination={false}
+            onChange={handleTableChange}
+            pagination={{
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total) => `共 ${total} 条数据`,
+              pageSize: pageSize,
+              pageSizeOptions: ['5', '10', '20', '50'],
+            }}
           />
         </Form>
       </ProCard>
