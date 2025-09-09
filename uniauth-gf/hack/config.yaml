@@ -12,14 +12,6 @@ gfcli:
         withTime: true
         gJsonSupport: true
 
-  database:
-    default:
-      link: "pgsql:uniauth:It@73333!@tcp(127.0.0.1:5432)/uniauth"
-      debug: true
-      timezone: "Local"
-      createdAt: "created_at"     
-      updatedAt: "updated_at" 
-
   build:
     name: "uniauth"
     arch: "amd64,arm64"
@@ -35,3 +27,11 @@ gfcli:
     build: "-a amd64 -s linux -p temp -ew"
     tagPrefixes:
       - my.image.pub/my-app
+
+database:
+  default:
+    link: "pgsql:uniauth:It@73333!@tcp(127.0.0.1:5432)/uniauth"
+    debug: true
+    timezone: "Local"
+    createdAt: "created_at"     
+    updatedAt: "updated_at" 

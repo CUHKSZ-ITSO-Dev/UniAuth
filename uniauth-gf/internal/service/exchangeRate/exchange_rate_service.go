@@ -15,17 +15,16 @@ import (
 )
 
 func GetExchangeRate(ctx context.Context, f string, t string) (decimal.Decimal, error) {
-	type ConfigExchangeRate struct {
-		Rate decimal.Decimal
-	}
-
-	var record ConfigExchangeRate
-	var count int
-	if err := dao.ConfigExchangeRate.Ctx(ctx).WherePri(g.Map{"F": f, "T": t, "Date": gtime.Date()}).Scan(&record, &count); err != nil {
+	rateRaw, err := g.DB().GetValue(ctx, "SELECT rate FROM config_exchange_rate WHERE f = ? AND t = ? AND date = ?", f, t, gtime.Date())
+	if err != nil {
 		return decimal.Zero, err
 	}
-	if count != 0 {
-		return record.Rate, nil
+	if !rateRaw.IsNil() {
+		rate, err := decimal.NewFromString(rateRaw.String())
+		if err != nil {
+			return decimal.Zero, err
+		}
+		return rate, nil
 	}
 
 	// 走到这里说明数据库里面没有汇率数据，需要请求API

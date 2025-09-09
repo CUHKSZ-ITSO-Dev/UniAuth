@@ -28,13 +28,14 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 	defer func() {
 		if err != nil {
 			res.Ok = false
-			err = gerror.Wrapf(err, "计费记录流程失败，操作终止。原始请求：%v", req)
+			err = gerror.Wrapf(err, "计费记录流程失败，操作终止。%v", "")
 		}
 	}()
-	
+
 	// 校验配额池 Plan 和 Source 的数据
 	value, err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields("personal").Where("quota_pool_name = ?", req.Source).Value()
 	if err != nil {
+		err = gerror.Wrap(err, "获取配额池当前的剩余余额失败")
 		return
 	}
 	if value == nil {
@@ -49,16 +50,17 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 	// 算钱
 	rate, err := exchangeRate.GetExchangeRate(ctx, "USD", "CNY")
 	if err != nil {
+		err = gerror.Wrap(err, "获取汇率失败")
 		return
 	}
 	cost := req.CNYCost.Add(req.USDCost.Mul(rate))
 
 	// 记录
 	if req.USDCost != decimal.Zero {
-		req.Remark.Set("USD", req.USDCost)
-		req.Remark.Set("USD_CNY_rate", rate)
+		req.Remark.Set("USD", req.USDCost.String())
+		req.Remark.Set("USD_CNY_rate", rate.String())
 		if req.CNYCost != decimal.Zero {
-			req.Remark.Set("CNY", req.CNYCost)
+			req.Remark.Set("CNY", req.CNYCost.String())
 		}
 	}
 	_, err = dao.BillingCostRecords.Ctx(ctx).Data(g.Map{
@@ -77,35 +79,46 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 	// 扣钱流程，使用事务
 	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 先获取基本余额和加油包的情况，用来计算应该扣多少
-		var remaining_quota decimal.Decimal
-		var extra_quota decimal.Decimal
-		targetQuotaPool := dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.Source).LockUpdate()
-
-		err := targetQuotaPool.Scan(&remaining_quota, &extra_quota)
+		type oldQuota struct {
+			RemainingQuota decimal.Decimal
+			ExtraQuota decimal.Decimal
+		}
+		var old_quota oldQuota
+		err := dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.Source).LockUpdate().Scan(&old_quota)
 		if err != nil {
 			return gerror.Wrap(err, "扣费事务中，查询当前基本余额和额外余额失败")
 		}
-		if remaining_quota.Cmp(cost) < 0 {
-			// 基本余额不够扣，需要从额外余额中扣除一部分
-			extra_quota = extra_quota.Sub(cost.Sub(remaining_quota))
-			remaining_quota = decimal.Zero
-		} else {
-			// 正常扣
+		remaining_quota := old_quota.RemainingQuota
+		extra_quota := old_quota.ExtraQuota
+		// 1. 优先扣除基本余额的正值部分
+		if remaining_quota.IsPositive() {
+			deduction := decimal.Min(remaining_quota, cost)
+			remaining_quota = remaining_quota.Sub(deduction)
+			cost = cost.Sub(deduction)
+		}
+		// 2. 如果还有剩余费用，则从额外余额中扣除
+		if cost.IsPositive() {
+			deduction := decimal.Min(extra_quota, cost)
+			extra_quota = extra_quota.Sub(deduction)
+			cost = cost.Sub(deduction)
+		}
+		// 3. 如果费用还未扣完，则计入基本余额的欠款
+		if cost.IsPositive() {
 			remaining_quota = remaining_quota.Sub(cost)
 		}
 
 		// 回写数据
-		_, err = targetQuotaPool.Data(g.Map{
+		_, err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.Source).Data(g.Map{
 			"remaining_quota": remaining_quota,
 			"extra_quota":     extra_quota,
 		}).Update()
 		if err != nil {
-			return gerror.Wrap(err, "扣费事务中，更新扣扣费后的基本余额和额外余额失败")
+			return gerror.Wrap(err, "扣费事务中，更新扣费后的基本余额和额外余额失败")
 		}
 
 		return nil
 	})
 
 	res.Ok = true
-	return 
+	return
 }
