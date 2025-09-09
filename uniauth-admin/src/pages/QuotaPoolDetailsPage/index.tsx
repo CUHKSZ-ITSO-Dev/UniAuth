@@ -10,7 +10,6 @@ import {
   Button,
   Card,
   Descriptions,
-  Empty,
   Space,
   Statistic,
   Progress,
@@ -247,7 +246,10 @@ const QuotaPoolDetailsPage: FC = () => {
       {({ isMobile }) => {
         return (
           <Space>
-            <Button type="primary">禁用配额池</Button>
+            <Button type="primary">重置配额池</Button>
+            <Button color="danger" variant="solid">
+              禁用配额池
+            </Button>
           </Space>
         );
       }}
@@ -269,10 +271,10 @@ const QuotaPoolDetailsPage: FC = () => {
           size="small"
           column={isMobile ? 1 : 2}
         >
+          <Descriptions.Item label="配额池名称">sutdent_pool</Descriptions.Item>
           <Descriptions.Item label="创建人">IT管理员</Descriptions.Item>
           <Descriptions.Item label="配额池类型">自建配额池</Descriptions.Item>
           <Descriptions.Item label="创建时间">2025-9-8</Descriptions.Item>
-          <Descriptions.Item label="备注">不知道写啥随便写点</Descriptions.Item>
         </Descriptions>
       )}
     </RouteContext.Consumer>

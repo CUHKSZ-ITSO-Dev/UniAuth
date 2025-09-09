@@ -1,6 +1,6 @@
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
-import { Typography, Button, Popconfirm } from "antd";
+import { Typography, Button, Popconfirm, Table, Space } from "antd";
 import { useRef } from "react";
 
 const { Title, Text } = Typography;
@@ -125,6 +125,21 @@ function handleNewQuotaPoolClick() {
   console.log("新建配额池");
 }
 
+function handleRefreshQuotaPoolClick() {
+  // TODO: 刷新逻辑
+  console.log("刷新配额池");
+}
+
+function handleBatchResetClick() {
+  // TODO:批量重置逻辑
+  console.log("批量重置");
+}
+
+function handleBatchDisableClick() {
+  // TODO:批量禁用逻辑
+  console.log("批量禁用");
+}
+
 const quotaPoolListRequest = async (params: any) => {
   // TODO:替换为实际请求
   let data = quotaPoolsExampleData;
@@ -175,6 +190,34 @@ const QuotaPoolListPage: React.FC = () => {
           actionRef={actionRef}
           rowKey="id"
           search={{ labelWidth: "auto" }}
+          rowSelection={{
+            selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+          }}
+          tableAlertRender={({
+            selectedRowKeys,
+            selectedRows,
+            onCleanSelected,
+          }) => {
+            console.log(selectedRowKeys, selectedRows);
+            return (
+              <Space size={24}>
+                <span>
+                  已选 {selectedRowKeys.length} 项
+                  <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
+                    取消选择
+                  </a>
+                </span>
+              </Space>
+            );
+          }}
+          tableAlertOptionRender={() => {
+            return (
+              <Space size={16}>
+                <a onClick={handleBatchResetClick}>批量重置</a>
+                <a onClick={handleBatchDisableClick}>批量禁用</a>
+              </Space>
+            );
+          }}
           toolBarRender={() => [
             <Button type="primary" key="new" onClick={handleNewQuotaPoolClick}>
               添加新的配额池
