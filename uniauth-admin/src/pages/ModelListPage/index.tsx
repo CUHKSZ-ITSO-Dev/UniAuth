@@ -190,6 +190,31 @@ const ModelListPage: React.FC = () => {
     },
   ];
 
+  // 更新模型列表
+  const handleUpdateModel = async () => {
+    try {
+      // 在实际应用中，这里应该调用API重新获取模型列表
+      // 由于这是模拟环境，我们重新生成一组随机模型数据
+      message.loading('正在更新模型列表...');
+
+      // 模拟API请求延迟
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // 生成新的模型数据
+      const newDataSource = Array.from({ length: 51 }, (_, index) => ({
+        id: (index + 1).toString(),
+        modelName: `模型_${Date.now() % 1000}_${index + 1}`,
+      }));
+
+      setDataSource(newDataSource);
+      message.destroy();
+      message.success('模型列表更新成功');
+    } catch (_error) {
+      message.destroy();
+      message.error('模型列表更新失败');
+    }
+  };
+
   // 组件渲染
   return (
     <PageContainer>
@@ -199,6 +224,9 @@ const ModelListPage: React.FC = () => {
         <div style={{ marginBottom: 16 }}>
           <Button type="primary" onClick={handleAddModel}>
             添加模型
+          </Button>
+          <Button style={{ marginLeft: 8 }} onClick={handleUpdateModel}>
+            更新模型
           </Button>
         </div>
         <Form form={form} component={false}>
