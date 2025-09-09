@@ -1,103 +1,258 @@
-import { DingdingOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import {
   GridContent,
   PageContainer,
+  ProColumns,
+  ProTable,
   RouteContext,
 } from "@ant-design/pro-components";
-import { useRequest } from "@umijs/max";
 import {
   Badge,
   Button,
   Card,
   Descriptions,
-  Divider,
   Empty,
-  Popover,
   Space,
   Statistic,
-  Steps,
-  Table,
-  Flex,
   Progress,
-  Tooltip,
-  Row,
-  Col,
 } from "antd";
-import classNames from "classnames";
+
 import type { FC } from "react";
-import React, { useState } from "react";
-import type { AdvancedProfileData } from "./data.d";
-import { queryAdvancedProfile } from "./service";
 import useStyles from "./style.style";
 
-const { Step } = Steps;
-const ButtonGroup = Button.Group;
-
-const action = (
-  <RouteContext.Consumer>
-    {({ isMobile }) => {
-      return (
-        <Space>
-          <Button type="primary">禁用配额池</Button>
-        </Space>
-      );
-    }}
-  </RouteContext.Consumer>
-);
-
-const operationTabList = [
-  {
-    key: "tab1",
-    tab: "操作日志一",
-  },
-  {
-    key: "tab2",
-    tab: "操作日志二",
-  },
-  {
-    key: "tab3",
-    tab: "操作日志三",
-  },
-];
-const columns = [
-  {
-    title: "操作类型",
-    dataIndex: "type",
-    key: "type",
-  },
-  {
-    title: "操作人",
-    dataIndex: "name",
-    key: "name",
-  },
-  {
-    title: "执行结果",
-    dataIndex: "status",
-    key: "status",
-    render: (text: string) => {
-      if (text === "agree") {
-        return <Badge status="success" text="成功" />;
-      }
-      return <Badge status="error" text="驳回" />;
-    },
-  },
-  {
-    title: "操作时间",
-    dataIndex: "updatedAt",
-    key: "updatedAt",
-  },
-  {
-    title: "备注",
-    dataIndex: "memo",
-    key: "memo",
-  },
-];
-type AdvancedState = {
-  operationKey: "tab1" | "tab2" | "tab3";
-  tabActiveKey: string;
-};
 const QuotaPoolDetailsPage: FC = () => {
   const { styles } = useStyles();
+
+  const associatedUsersColumns: ProColumns<any>[] = [
+    {
+      title: "UPN",
+      valueType: "text",
+      dataIndex: "upn",
+      search: true,
+      ellipsis: true,
+    },
+    {
+      title: "显示名",
+      valueType: "text",
+      dataIndex: "displayName",
+      search: true,
+      ellipsis: true,
+    },
+    {
+      title: "身份",
+      valueType: "text",
+      dataIndex: "identity",
+      search: true,
+      ellipsis: true,
+    },
+    {
+      title: "标签",
+      valueType: "text",
+      dataIndex: "tags",
+      search: false,
+      render: (_, record) =>
+        record.tags?.map((tag: string) => (
+          <Badge key={tag} color="blue" text={tag} />
+        )),
+    },
+    {
+      title: "部门信息",
+      valueType: "text",
+      dataIndex: "department",
+      search: true,
+      ellipsis: true,
+    },
+    {
+      title: "操作",
+      valueType: "option",
+      width: 100,
+      render: (_, record) => [
+        <Button
+          type="link"
+          key="detail"
+          onClick={() => handleUserDetail(record)}
+        >
+          查看详情
+        </Button>,
+      ],
+    },
+  ];
+
+  const associatedUsersDataRequest = async (params: any) => {
+    // TODO: 替换为实际请求
+    let example_data = [
+      {
+        upn: "user1@cuhk.edu.cn",
+        displayName: "张三",
+        identity: "管理员",
+        tags: ["VIP", "研发"],
+        department: "信息技术部",
+      },
+      {
+        upn: "user2@cuhk.edu.cn",
+        displayName: "李四",
+        identity: "普通用户",
+        tags: ["测试"],
+        department: "测试部",
+      },
+      {
+        upn: "user3@cuhk.edu.cn",
+        displayName: "王五",
+        identity: "管理员",
+        tags: ["运维"],
+        department: "运维部",
+      },
+      {
+        upn: "user4@cuhk.edu.cn",
+        displayName: "赵六",
+        identity: "普通用户",
+        tags: ["AI"],
+        department: "人工智能部",
+      },
+      {
+        upn: "user5@cuhk.edu.cn",
+        displayName: "钱七",
+        identity: "普通用户",
+        tags: ["大数据"],
+        department: "大数据部",
+      },
+    ];
+
+    if (params.upn) {
+      example_data = example_data.filter((item) =>
+        item.upn.includes(params.upn as string)
+      );
+    }
+    if (params.displayName) {
+      example_data = example_data.filter((item) =>
+        item.displayName.includes(params.displayName as string)
+      );
+    }
+    if (params.identity) {
+      example_data = example_data.filter((item) =>
+        item.identity.includes(params.identity as string)
+      );
+    }
+    if (params.department) {
+      example_data = example_data.filter((item) =>
+        item.department.includes(params.department as string)
+      );
+    }
+
+    return {
+      data: example_data,
+      success: true,
+      total: 2,
+    };
+  };
+
+  const itToolsRulesColumns: ProColumns<any>[] = [
+    {
+      title: "主体",
+      dataIndex: "sub",
+      valueType: "text",
+      ellipsis: true,
+      search: true,
+    },
+    {
+      title: "域",
+      dataIndex: "dom",
+      valueType: "text",
+      ellipsis: true,
+      search: true,
+    },
+    {
+      title: "对象",
+      dataIndex: "obj",
+      valueType: "text",
+      ellipsis: true,
+      search: true,
+    },
+    {
+      title: "操作",
+      dataIndex: "act",
+      valueType: "text",
+      ellipsis: true,
+      search: true,
+    },
+    {
+      title: "效果",
+      dataIndex: "eft",
+      valueType: "select",
+      valueEnum: {
+        allow: { text: "允许", status: "Success" },
+        deny: { text: "拒绝", status: "Error" },
+      },
+      ellipsis: true,
+      search: true,
+    },
+    {
+      title: "角色分组",
+      dataIndex: "g",
+      valueType: "text",
+      ellipsis: true,
+      search: true,
+    },
+  ];
+
+  const itToolsRulesDataRequest = async (params: any) => {
+    // TODO: 替换为实际请求
+    let example_data = [
+      {
+        id: 1,
+        sub: "alice",
+        dom: "domain1",
+        obj: "data1",
+        act: "read",
+        eft: "allow",
+        g: "group1",
+      },
+      {
+        id: 2,
+        sub: "bob",
+        dom: "domain2",
+        obj: "data2",
+        act: "write",
+        eft: "deny",
+        g: "group2",
+      },
+      {
+        id: 3,
+        sub: "data2_admin",
+        dom: "domain2",
+        obj: "data2",
+        act: "read|write|delete",
+        eft: "allow",
+        g: "group3",
+      },
+      {
+        id: 4,
+        sub: "data1_admin",
+        dom: "domain1",
+        obj: "data1",
+        act: "read|write|delete",
+        eft: "allow",
+        g: "group1",
+      },
+    ];
+
+    return {
+      data: example_data,
+      success: true,
+      total: 2,
+    };
+  };
+
+  const action = (
+    <RouteContext.Consumer>
+      {({ isMobile }) => {
+        return (
+          <Space>
+            <Button type="primary">禁用配额池</Button>
+          </Space>
+        );
+      }}
+    </RouteContext.Consumer>
+  );
 
   const extra = (
     <div className={styles.moreInfo}>
@@ -105,6 +260,7 @@ const QuotaPoolDetailsPage: FC = () => {
       <Statistic title="配额池余额" value={496} prefix="$" />
     </div>
   );
+
   const description = (
     <RouteContext.Consumer>
       {({ isMobile }) => (
@@ -122,53 +278,11 @@ const QuotaPoolDetailsPage: FC = () => {
     </RouteContext.Consumer>
   );
 
-  const [tabStatus, seTabStatus] = useState<AdvancedState>({
-    operationKey: "tab1",
-    tabActiveKey: "detail",
-  });
+  const handleUserDetail = (record: any) => {
+    // TODO: 跳转展示用户详情页
+    console.log("查看用户详情", record);
+  };
 
-  const { data = {}, loading } = useRequest<{
-    data: AdvancedProfileData;
-  }>(queryAdvancedProfile);
-  const { advancedOperation1, advancedOperation2, advancedOperation3 } = data;
-  const contentList = {
-    tab1: (
-      <Table
-        pagination={false}
-        loading={loading}
-        dataSource={advancedOperation1}
-        columns={columns}
-      />
-    ),
-    tab2: (
-      <Table
-        pagination={false}
-        loading={loading}
-        dataSource={advancedOperation2}
-        columns={columns}
-      />
-    ),
-    tab3: (
-      <Table
-        pagination={false}
-        loading={loading}
-        dataSource={advancedOperation3}
-        columns={columns}
-      />
-    ),
-  };
-  const onTabChange = (tabActiveKey: string) => {
-    seTabStatus({
-      ...tabStatus,
-      tabActiveKey,
-    });
-  };
-  const onOperationTabChange = (key: string) => {
-    seTabStatus({
-      ...tabStatus,
-      operationKey: key as "tab1",
-    });
-  };
   return (
     <PageContainer
       title="配额池详情"
@@ -176,8 +290,6 @@ const QuotaPoolDetailsPage: FC = () => {
       className={styles.pageHeader}
       content={description}
       extraContent={extra}
-      tabActiveKey={tabStatus.tabActiveKey}
-      onTabChange={onTabChange}
       tabList={[
         {
           key: "config_detail",
@@ -198,44 +310,33 @@ const QuotaPoolDetailsPage: FC = () => {
             }}
             variant="borderless"
           >
-            <Row>
-              <Col span={18}>
-                <Descriptions
-                  style={{
-                    marginBottom: 24,
-                  }}
-                >
-                  <Descriptions.Item label="配额池名称">
-                    example@cuhk.edu.cn
-                  </Descriptions.Item>
-                  <Descriptions.Item label="刷新周期">每周</Descriptions.Item>
-                  <Descriptions.Item label="上次刷新时间">
-                    2025-8-29 19:30:00
-                  </Descriptions.Item>
-                  <Descriptions.Item label="定期配额">
-                    $648.00
-                  </Descriptions.Item>
-                  <Descriptions.Item label="剩余配额">
-                    $328.00
-                  </Descriptions.Item>
+            <Descriptions
+              style={{
+                marginBottom: 24,
+              }}
+            >
+              <Descriptions.Item label="配额池名称">
+                example@cuhk.edu.cn
+              </Descriptions.Item>
+              <Descriptions.Item label="刷新周期">每周</Descriptions.Item>
+              <Descriptions.Item label="上次刷新时间">
+                2025-8-29 19:30:00
+              </Descriptions.Item>
+              <Descriptions.Item label="定期配额">$648.00</Descriptions.Item>
+              <Descriptions.Item label="剩余配额">$328.00</Descriptions.Item>
 
-                  <Descriptions.Item label="加油包">$168.00</Descriptions.Item>
-                </Descriptions>
-              </Col>
-              <Col span={6}>
-                <Tooltip title="3 done / 3 in progress / 4 to do">
-                  <Progress
-                    percent={Number(
-                      (((328 + 168) / (648 + 168)) * 100).toFixed(1)
-                    )}
-                    success={{
-                      percent: Number(((328 / (648 + 168)) * 100).toFixed(1)),
-                    }}
-                    type="dashboard"
-                  />
-                </Tooltip>
-              </Col>
-            </Row>
+              <Descriptions.Item label="加油包">$168.00</Descriptions.Item>
+              <Descriptions.Item label="余额百分比">
+                <Progress
+                  percent={Number(
+                    (((328 + 168) / (648 + 168)) * 100).toFixed(1)
+                  )}
+                  success={{
+                    percent: Number(((328 / (648 + 168)) * 100).toFixed(1)),
+                  }}
+                />
+              </Descriptions.Item>
+            </Descriptions>
           </Card>
           <Card
             title="配额池关联用户"
@@ -244,7 +345,13 @@ const QuotaPoolDetailsPage: FC = () => {
             }}
             variant="borderless"
           >
-            <Empty />
+            <ProTable
+              columns={associatedUsersColumns}
+              rowKey="upn"
+              search={{ labelWidth: "auto" }}
+              pagination={{ pageSize: 5 }}
+              request={associatedUsersDataRequest}
+            />
           </Card>
           <Card
             title="配置池 ITTools 规则"
@@ -253,7 +360,13 @@ const QuotaPoolDetailsPage: FC = () => {
             }}
             variant="borderless"
           >
-            <Empty />
+            <ProTable
+              columns={itToolsRulesColumns}
+              rowKey="id"
+              search={false}
+              pagination={{ pageSize: 5 }}
+              request={itToolsRulesDataRequest}
+            />
           </Card>
         </GridContent>
       </div>
