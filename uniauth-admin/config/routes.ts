@@ -47,7 +47,7 @@ export default [
   {
     path: "/model-list",
     name: "model-list",
-    icon: "User",
+    icon: "Database",
     component: "@/pages/ModelListPage",
   },
   {

@@ -45,6 +45,14 @@ const ModelListPage: React.FC = () => {
 
   // 添加新模型
   const handleAddModel = () => {
+    // 检查是否已经存在未保存的空模型
+    const hasEmptyModel = dataSource.some((item) => !item.modelName);
+
+    // 如果已经存在空模型，则不执行任何操作
+    if (hasEmptyModel) {
+      return;
+    }
+
     // 生成新ID（基于当前最大ID + 1）
     const maxId = Math.max(
       ...dataSource.map((item) => parseInt(item.id, 10)),
