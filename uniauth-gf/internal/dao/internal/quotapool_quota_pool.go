@@ -32,6 +32,7 @@ type QuotapoolQuotaPoolColumns struct {
 	Disabled       string // 是否禁用
 	UserinfosRules string // ITTools规则
 	CreatedAt      string // 创建时间
+	UpdatedAt      string // 修改时间
 }
 
 // quotapoolQuotaPoolColumns holds the columns for the table quotapool_quota_pool.
@@ -47,6 +48,7 @@ var quotapoolQuotaPoolColumns = QuotapoolQuotaPoolColumns{
 	Disabled:       "disabled",
 	UserinfosRules: "userinfos_rules",
 	CreatedAt:      "created_at",
+	UpdatedAt:      "updated_at",
 }
 
 // NewQuotapoolQuotaPoolDao creates and returns a new DAO object for table data access.

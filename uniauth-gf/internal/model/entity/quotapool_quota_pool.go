@@ -22,4 +22,5 @@ type QuotapoolQuotaPool struct {
 	Disabled       bool            `json:"disabled"       orm:"disabled"        description:"是否禁用"`      // 是否禁用
 	UserinfosRules string          `json:"userinfosRules" orm:"userinfos_rules" description:"ITTools规则"` // ITTools规则
 	CreatedAt      *gtime.Time     `json:"createdAt"      orm:"created_at"      description:"创建时间"`      // 创建时间
+	UpdatedAt      *gtime.Time     `json:"updatedAt"      orm:"updated_at"      description:"修改时间"`      // 修改时间
 }

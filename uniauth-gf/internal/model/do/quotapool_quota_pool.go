@@ -23,4 +23,5 @@ type QuotapoolQuotaPool struct {
 	Disabled       interface{} // 是否禁用
 	UserinfosRules interface{} // ITTools规则
 	CreatedAt      *gtime.Time // 创建时间
+	UpdatedAt      *gtime.Time // 修改时间
 }
