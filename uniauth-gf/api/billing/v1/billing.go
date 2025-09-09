@@ -11,7 +11,7 @@ type BillingRecordReq struct {
 	Upn     string `json:"upn" v:"required"`
 	Service string `json:"service" v:"required"`
 	Product string `json:"product" v:"required"`
-	Plan    string `json:"plan" v:"required"`
+	Plan    string `json:"plan" v:"required|in:Included,Quota Pool"`
 	Source  string `json:"source" v:"required"`
 
 	CNYCost decimal.Decimal `json:"cny_cost"`
@@ -20,7 +20,7 @@ type BillingRecordReq struct {
 	Remark *gjson.Json `json:"detail"`
 }
 type BillingRecordRes struct {
-	Ok bool `json:"ok"`
+	Ok     bool   `json:"ok"`
 }
 
 type CheckBalanceReq struct {

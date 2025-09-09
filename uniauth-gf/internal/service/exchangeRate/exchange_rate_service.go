@@ -58,5 +58,17 @@ func getRateApi(ctx context.Context) (decimal.Decimal, error) {
 	if !ok {
 		return decimal.Zero, gerror.New("汇率 API 接口返回的 CNY 汇率不是 float64 或者没有返回，API 接口异常。")
 	}
+
+	// 数据库写入
+	_, err := dao.ConfigExchangeRate.Ctx(ctx).Data(g.Map{
+		"date": gtime.Date(),
+		"f":    "USD",
+		"t":    "CNY",
+		"rate": decimal.NewFromFloat(rate),
+	}).Insert()
+	if err != nil {
+		return decimal.Zero, gerror.Wrap(err, "数据库汇率写入失败")
+	}
+
 	return decimal.NewFromFloat(rate), nil
 }
