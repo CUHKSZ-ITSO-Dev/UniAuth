@@ -44,5 +44,5 @@ type CheckTokensUsageReq struct {
 }
 type CheckTokensUsageRes struct {
 	// 这个是对话前端下面的柱状图，最近7天
-	TokensUsage string `json:"tokensUsage"`
+	TokensUsage *gjson.Json `json:"tokensUsage"`
 }
