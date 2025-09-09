@@ -9,11 +9,13 @@ import (
 	//pgadapter "github.com/casbin/casbin-pg-adapter"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/persist/file-adapter"
+	"github.com/gogf/gf/v2/os/gres"
 )
 
 var e *casbin.Enforcer
 
 func init() {
+	gres.Dump()
 	// File Adapter
 	a := fileadapter.NewAdapter("resource/config/casbin_policy.csv")
 	// PG Adapter
