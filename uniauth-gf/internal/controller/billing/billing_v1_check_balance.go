@@ -7,6 +7,7 @@ import (
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
 
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/robfig/cron/v3"
@@ -42,35 +43,44 @@ Day of week  | Yes        | 0-6 or SUN-SAT  | * / , - ?
 */
 func (c *ControllerV1) CheckBalance(ctx context.Context, req *v1.CheckBalanceReq) (res *v1.CheckBalanceRes, err error) {
 	res = &v1.CheckBalanceRes{}
-	// 找到余额池
-	var quotaPool *entity.QuotapoolQuotaPool
-	err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPool).Scan(&quotaPool)
-	if err != nil {
-		err = gerror.Wrap(err, "查询配额池信息失败")
-		return
-	}
 
-	// 懒刷新
-	sched, err := cron.ParseStandard(quotaPool.CronCycle)
-	if err != nil {
-		err = gerror.Wrapf(err, "配额池 cron_cycle 解析失败。cron_cycle: %v", quotaPool.CronCycle)
-		return
-	}
-	if gtime.Now().Time.After(sched.Next(quotaPool.LastResetAt.Time)) {
-		quotaPool.RemainingQuota = quotaPool.RegularQuota
-	}
+	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		// 找到余额池并锁定
+		var quotaPool *entity.QuotapoolQuotaPool
+		err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPool).LockShared().Scan(&quotaPool)
+		if err != nil {
+			return gerror.Wrap(err, "查询配额池信息失败")
+		}
+		if quotaPool == nil {
+			return gerror.Wrapf(err, "该配额池不存在，请重新检查：%v", req.QuotaPool)
+		}
 
-	// 检查余额是否充足
-	// 重新获取一次
-	err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPool).Scan(&quotaPool)
+		// 懒刷新
+		sched, err := cron.ParseStandard(quotaPool.CronCycle)
+		if err != nil {
+			return gerror.Wrapf(err, "配额池 cron_cycle 解析失败。cron_cycle: %v", quotaPool.CronCycle)
+		}
+		if gtime.Now().Time.After(sched.Next(quotaPool.LastResetAt.Time)) {
+			quotaPool.RemainingQuota = quotaPool.RegularQuota
+			quotaPool.LastResetAt = gtime.Now()
+		}
+
+		// 检查余额是否充足
+		if quotaPool.RemainingQuota.Add(quotaPool.ExtraQuota).IsPositive() {
+			res.Ok = true
+		} else {
+			res.Ok = false
+		}
+
+		// 更新并释放锁
+		_, err = dao.QuotapoolQuotaPool.Ctx(ctx).Data(quotaPool).Update()
+		if err != nil {
+			return gerror.Wrap(err, "更新配额池信息失败")
+		}
+		return nil
+	})
 	if err != nil {
-		err = gerror.Wrap(err, "第二次查询配额池信息失败")
-		return
-	}
-	if quotaPool.RemainingQuota.Add(quotaPool.ExtraQuota).IsPositive() {
-		res.Ok = true
-	} else {
-		res.Ok = false
+		err = gerror.Wrap(err, "检查余额事务中发生错误")
 	}
 	return
 }
