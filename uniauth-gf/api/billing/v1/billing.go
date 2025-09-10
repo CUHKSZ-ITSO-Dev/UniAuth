@@ -29,12 +29,12 @@ type BillingRecordRes struct {
 
 type CheckBalanceReq struct {
 	g.Meta    `path:"/check" tags:"Billing" method:"post" summary:"检查余额" dc:"刷新、检查配额池的余额。"`
-	QuotaPool string `json:"quotaPool" v:"required"`
+	QuotaPool string `json:"quotaPool" v:"required" example:"itso-deep-research-vip"`
 }
 type CheckBalanceRes struct {
-	Ok          bool      `json:"ok"`
-	Percentage  string    `json:"percentage"`
-	NextResetAt time.Time `json:"nextResetAt"`
+	Ok          bool      `json:"ok" example:"true"`
+	Percentage  string    `json:"percentage" example:"16.67%"`
+	NextResetAt time.Time `json:"nextíResetAt" example:"2025-09-11T03:00:00+08:00"`
 }
 
 type CheckTokensUsageReq struct {
