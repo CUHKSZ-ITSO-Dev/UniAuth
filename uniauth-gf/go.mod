@@ -6,6 +6,7 @@ require (
 	github.com/casbin/casbin/v2 v2.121.0
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.9.1
 	github.com/gogf/gf/v2 v2.9.1
+	github.com/robfig/cron/v3 v3.0.0
 	github.com/shopspring/decimal v1.4.0
 	golang.org/x/sync v0.17.0
 )
