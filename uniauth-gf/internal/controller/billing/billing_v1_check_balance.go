@@ -63,6 +63,11 @@ func (c *ControllerV1) CheckBalance(ctx context.Context, req *v1.CheckBalanceReq
 		if gtime.Now().Time.After(sched.Next(quotaPool.LastResetAt.Time)) {
 			quotaPool.RemainingQuota = quotaPool.RegularQuota
 			quotaPool.LastResetAt = gtime.Now()
+			// 更新并释放锁
+			_, err = dao.QuotapoolQuotaPool.Ctx(ctx).Data(quotaPool).Update()
+			if err != nil {
+				return gerror.Wrap(err, "更新配额池信息失败")
+			}
 		}
 
 		// 检查余额是否充足
@@ -71,12 +76,7 @@ func (c *ControllerV1) CheckBalance(ctx context.Context, req *v1.CheckBalanceReq
 		} else {
 			res.Ok = false
 		}
-
-		// 更新并释放锁
-		_, err = dao.QuotapoolQuotaPool.Ctx(ctx).Data(quotaPool).Update()
-		if err != nil {
-			return gerror.Wrap(err, "更新配额池信息失败")
-		}
+		
 		return nil
 	})
 	if err != nil {
