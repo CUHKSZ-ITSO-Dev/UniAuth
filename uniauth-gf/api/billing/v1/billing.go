@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"time"
+
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/shopspring/decimal"
@@ -26,15 +28,13 @@ type BillingRecordRes struct {
 }
 
 type CheckBalanceReq struct {
-	g.Meta    `path:"/check" tags:"Billing" method:"post" summary:"检查是否可以使用某个产品" dc:"根据给定的参数，检查是否可以使用某个产品。"`
-	Upn       string `json:"upn" v:"required"`
-	Svc       string `json:"svc" v:"required"`
-	Product   string `json:"product" v:"required"`
-	QuotaPool string `json:"quotaPool" v:"required"`
+	g.Meta    `path:"/check" tags:"Billing" method:"post" summary:"检查余额" dc:"刷新、检查配额池的余额。"`
+	QuotaPool string `json:"quotaPool" v:"required" example:"itso-deep-research-vip"`
 }
 type CheckBalanceRes struct {
-	Ok  bool   `json:"ok"`
-	Err string `json:"err"`
+	Ok          bool      `json:"ok" example:"true"`
+	Percentage  string    `json:"percentage" example:"16.67%"`
+	NextResetAt time.Time `json:"nextíResetAt" example:"2025-09-11T03:00:00+08:00"`
 }
 
 type CheckTokensUsageReq struct {
