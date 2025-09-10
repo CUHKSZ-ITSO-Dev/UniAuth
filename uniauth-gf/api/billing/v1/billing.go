@@ -39,10 +39,12 @@ type CheckBalanceRes struct {
 
 type CheckTokensUsageReq struct {
 	g.Meta    `path:"/checkTokensUsage" tags:"Billing" method:"post" summary:"检查Tokens使用情况" dc:"检查Tokens使用情况"`
-	Upn       string `json:"upn" v:"required"`
-	QuotaPool string `json:"quotaPool" v:"required"`
+	Upn       string `json:"upn" v:"required" example:"122020255@link.cuhk.edu.cn"`
+	QuotaPool string `json:"quotaPool" v:"required" example:"itso-deep-research-vip"`
+	NDays     int    `json:"nDays" v:"required|integer" d:"7"`
 }
 type CheckTokensUsageRes struct {
 	// 这个是对话前端下面的柱状图，最近7天
+	g.Meta      `resEg:"resource/interface/billing/check_tokens_usage_res.json"`
 	TokensUsage *gjson.Json `json:"tokensUsage"`
 }
