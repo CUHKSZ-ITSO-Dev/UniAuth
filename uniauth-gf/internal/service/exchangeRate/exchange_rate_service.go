@@ -47,7 +47,7 @@ func getRateApi(ctx context.Context) (decimal.Decimal, error) {
 	r := g.Client().Timeout(time.Duration(3*1000*1000*1000)).GetBytes(ctx, "https://v6.exchangerate-api.com/v6/badaf9f96a065fc7b17b662d/latest/USD")
 	var rJson g.Map
 	if err := json.Unmarshal(r, &rJson); err != nil {
-		return decimal.Zero, err
+		return decimal.Zero, gerror.Wrapf(err, "汇率接口返回信息反序列化失败。[DEBUG]原始响应：%v", r)
 	}
 	result, ok := rJson["result"].(string)
 	if !ok || result != "success" {

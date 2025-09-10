@@ -21,7 +21,9 @@ import (
 
 1. 该用户有没有钱使用产品（因为这里已经是计费了）；
 
-2. 该用户有没有权限使用本产品，也不对 Svc 和 Product 的正确性做校验。
+2. 该用户有没有权限使用本产品，也不对 Svc 和 Product 的正确性做校验；
+
+3. 不校验本用户有没有权限使用本配额池。
 */
 func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordReq) (res *v1.BillingRecordRes, err error) {
 	res = &v1.BillingRecordRes{}
@@ -46,22 +48,31 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		err = errors.New("计费请求中 Plan 声明计划为 Included，但声明的 Source 非个人配额池")
 		return
 	}
-
-	// 算钱
-	rate, err := exchangeRate.GetExchangeRate(ctx, "USD", "CNY")
-	if err != nil {
-		err = gerror.Wrap(err, "获取汇率失败")
+	if value.Bool() && req.Plan == "Quota Pool" {
+		err = errors.New("计费请求中 Plan 声明计划为 Quota Pool，但声明的 Source 为个人配额池")
 		return
 	}
-	cost := req.CNYCost.Add(req.USDCost.Mul(rate))
 
 	// 记录
-	if req.USDCost != decimal.Zero {
+	var cost decimal.Decimal
+	var rate decimal.Decimal
+	if !req.USDCost.IsZero() {
+		// 算钱
+		rate, err = exchangeRate.GetExchangeRate(ctx, "USD", "CNY")
+		if err != nil {
+			err = gerror.Wrap(err, "获取汇率失败")
+			return
+		}
+
 		req.Remark.Set("USD", req.USDCost.String())
 		req.Remark.Set("USD_CNY_rate", rate.String())
-		if req.CNYCost != decimal.Zero {
+		if !req.CNYCost.IsZero() {
 			req.Remark.Set("CNY", req.CNYCost.String())
 		}
+
+		cost = req.CNYCost.Add(req.USDCost.Mul(rate))
+	} else {
+		cost = req.CNYCost
 	}
 	_, err = dao.BillingCostRecords.Ctx(ctx).Data(g.Map{
 		"upn":     req.Upn,
@@ -81,7 +92,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		// 先获取基本余额和加油包的情况，用来计算应该扣多少
 		type oldQuota struct {
 			RemainingQuota decimal.Decimal
-			ExtraQuota decimal.Decimal
+			ExtraQuota     decimal.Decimal
 		}
 		var old_quota oldQuota
 		err := dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.Source).LockUpdate().Scan(&old_quota)
