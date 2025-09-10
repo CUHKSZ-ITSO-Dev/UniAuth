@@ -11,6 +11,7 @@ import (
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/robfig/cron/v3"
+	"github.com/shopspring/decimal"
 )
 
 /*
@@ -43,16 +44,15 @@ Day of week  | Yes        | 0-6 or SUN-SAT  | * / , - ?
 */
 func (c *ControllerV1) CheckBalance(ctx context.Context, req *v1.CheckBalanceReq) (res *v1.CheckBalanceRes, err error) {
 	res = &v1.CheckBalanceRes{}
-
 	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 找到余额池并锁定
 		var quotaPool *entity.QuotapoolQuotaPool
-		err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPool).LockShared().Scan(&quotaPool)
+		err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPool).LockUpdate().Scan(&quotaPool)
 		if err != nil {
 			return gerror.Wrap(err, "查询配额池信息失败")
 		}
 		if quotaPool == nil {
-			return gerror.Wrapf(err, "该配额池不存在，请重新检查：%v", req.QuotaPool)
+			return gerror.Newf("该配额池不存在，请重新检查：%v", req.QuotaPool)
 		}
 
 		// 懒刷新
@@ -60,11 +60,12 @@ func (c *ControllerV1) CheckBalance(ctx context.Context, req *v1.CheckBalanceReq
 		if err != nil {
 			return gerror.Wrapf(err, "配额池 cron_cycle 解析失败。cron_cycle: %v", quotaPool.CronCycle)
 		}
-		if gtime.Now().Time.After(sched.Next(quotaPool.LastResetAt.Time)) {
+		res.NextResetAt = sched.Next(quotaPool.LastResetAt.Local().Time)
+		if gtime.Now().Time.After(res.NextResetAt) {
 			quotaPool.RemainingQuota = quotaPool.RegularQuota
 			quotaPool.LastResetAt = gtime.Now()
 			// 更新并释放锁
-			_, err = dao.QuotapoolQuotaPool.Ctx(ctx).Data(quotaPool).Update()
+			_, err = dao.QuotapoolQuotaPool.Ctx(ctx).WherePri(quotaPool.Id).Data(quotaPool).Update()
 			if err != nil {
 				return gerror.Wrap(err, "更新配额池信息失败")
 			}
@@ -76,7 +77,12 @@ func (c *ControllerV1) CheckBalance(ctx context.Context, req *v1.CheckBalanceReq
 		} else {
 			res.Ok = false
 		}
-		
+		res.Percentage = quotaPool.RemainingQuota.
+			Add(quotaPool.ExtraQuota).
+			Div(quotaPool.RegularQuota).
+			Mul(decimal.NewFromInt(100)).
+			Round(2).
+			String() + "%"
 		return nil
 	})
 	if err != nil {
