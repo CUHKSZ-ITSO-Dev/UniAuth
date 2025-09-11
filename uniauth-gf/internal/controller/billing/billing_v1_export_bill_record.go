@@ -57,7 +57,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		PrintObject:     &trueVal,
 		LockAspectRatio: true,
 	}); err != nil {
-		g.Log().Warning(ctx, "无法加载校徽图像:", err)
+		return nil, gerror.Wrap(err, "无法加载校徽图像")
 	}
 
 	// 设置第一行高度以容纳校徽
