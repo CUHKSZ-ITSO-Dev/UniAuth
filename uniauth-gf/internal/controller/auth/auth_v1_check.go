@@ -7,7 +7,7 @@ import (
 
 func (c *ControllerV1) Check(ctx context.Context, req *v1.CheckReq) (res *v1.CheckRes, err error) {
 	res = &v1.CheckRes{}
-	res.Allow, err = e.Enforce(req.Sub, req.Dom, req.Obj, req.Act)
+	res.Allow, err = e.Enforce(req.Sub, req.Obj, req.Act)
 	if err != nil {
 		return nil, err
 	}

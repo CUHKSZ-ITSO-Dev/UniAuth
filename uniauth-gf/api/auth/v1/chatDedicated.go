@@ -16,3 +16,12 @@ type ChatPreCheckOneStopReq struct {
 type ChatPreCheckOneStopRes struct {
 	Ok bool `json:"ok"`
 }
+
+type GetAvailableModelForQuotaPoolReq struct {
+	g.Meta    `path:"/chat/quotaPools/models" tags:"Auth" method:"get" summary:"获取所属配额池的可用模型" dc:"动态获取指定配额池的可用模型。"`
+	QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPool" example:"student_pool"`
+}
+type GetAvailableModelForQuotaPoolRes struct {
+	g.Meta          `resEg:"resource/interface/auth/get_available_model_for_quota_pool_res.json"`
+	AvailableModels []string `json:"availableModels" dc:"AvailableModel 列表"`
+}
