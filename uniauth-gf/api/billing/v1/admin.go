@@ -17,7 +17,6 @@ type ExportBillRecordReq struct {
 	ExportType string   `json:"exportType" v:"required|in:pdf,xlsx" dc:"导出类型" example:"pdf"`
 }
 type ExportBillRecordRes struct {
-	File []byte `json:"file" dc:"账单PDF/XLSX二进制内容"`
 }
 
 type GetBillRecordReq struct {

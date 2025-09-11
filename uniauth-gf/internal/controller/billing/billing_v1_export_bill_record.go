@@ -132,5 +132,11 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		return nil, gerror.Wrap(err, "Excel 文件保存失败")
 	}
 
-	return
+
+	r := g.RequestFromCtx(ctx)
+	if r == nil {
+		fmt.Println("NNNNILLLL!")
+	}
+	r.Response.ServeFileDownload("Book1.xlsx", "123.xlsx")
+	return &v1.ExportBillRecordRes{}, nil
 }
