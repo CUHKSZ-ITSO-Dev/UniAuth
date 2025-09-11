@@ -21,3 +21,5 @@ jobs:
         with:
           version: v2.1
           working-directory: uniauth-gf
+          only-new-issues: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
