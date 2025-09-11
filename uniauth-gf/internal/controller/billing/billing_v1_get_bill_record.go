@@ -23,7 +23,7 @@ func (c *ControllerV1) GetBillRecord(ctx context.Context, req *v1.GetBillRecordR
 	if err != nil {
 		return nil, gerror.Wrap(err, "数据库查询账单记录时失败")
 	}
-	
+
 	res = &v1.GetBillRecordRes{}
 	for _, record := range result {
 		res.Records = append(res.Records, gjson.New(record))
