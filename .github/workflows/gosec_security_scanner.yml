@@ -13,5 +13,4 @@ jobs:
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:
-          args: uniauth-gf/...
-          exclude-generated: true
+          args: "-exclude-generated uniauth-gf/..."
