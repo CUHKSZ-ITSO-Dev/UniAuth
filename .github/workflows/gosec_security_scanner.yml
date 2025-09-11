@@ -14,10 +14,8 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.24.0'
-      - name: Install dependencies
-        working-directory: ./uniauth-gf 
-        run: go mod tidy
+      - name: Install Gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
       - name: Run Gosec Security Scanner
-        uses: securego/gosec@master
-        with:
-          args: "-exclude-generated uniauth-gf/..."
+        working-directory: ./uniauth-gf
+        run: gosec -exclude-generated ./...
