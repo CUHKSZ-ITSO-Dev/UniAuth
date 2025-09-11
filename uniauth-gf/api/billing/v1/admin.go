@@ -14,7 +14,6 @@ type ExportBillRecordReq struct {
 	Product    []string `json:"product" dc:"产品" example:"['chat', 'voice']"`
 	StartTime  string   `json:"startTime" v:"required" dc:"开始时间" example:"2024-01-01"`
 	EndTime    string   `json:"endTime" v:"required" dc:"结束时间" example:"2024-01-01"`
-	ExportType string   `json:"exportType" v:"required|in:pdf,xlsx" dc:"导出类型" example:"pdf"`
 }
 type ExportBillRecordRes struct {
 }
