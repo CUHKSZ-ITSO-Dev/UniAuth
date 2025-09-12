@@ -1,10 +1,11 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-09 16:58:44
 // =================================================================================
 
 package do
 
 import (
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 )
@@ -12,13 +13,13 @@ import (
 // BillingCostRecords is the golang structure of table billing_cost_records for DAO operations like Where/Data.
 type BillingCostRecords struct {
 	g.Meta    `orm:"table:billing_cost_records, do:true"`
-	Id        interface{} //
-	Upn       interface{} //
-	Svc       interface{} //
-	Product   interface{} //
-	Cost      interface{} //
-	Plan      interface{} //
-	Source    interface{} //
-	Remark    interface{} //
-	CreatedAt *gtime.Time //
+	Id        interface{} // 自增主键
+	Upn       interface{} // UPN
+	Svc       interface{} // 服务名称
+	Product   interface{} // 产品名称
+	Cost      interface{} // 费用
+	Plan      interface{} // 计费方案
+	Source    interface{} // 来源
+	Remark    *gjson.Json // 备注信息
+	CreatedAt *gtime.Time // 创建时间
 }

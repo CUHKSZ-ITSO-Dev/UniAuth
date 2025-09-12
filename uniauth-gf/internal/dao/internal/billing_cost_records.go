@@ -1,5 +1,5 @@
 // ==========================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-09 16:58:44
 // ==========================================================================
 
 package internal
@@ -21,15 +21,15 @@ type BillingCostRecordsDao struct {
 
 // BillingCostRecordsColumns defines and stores column names for the table billing_cost_records.
 type BillingCostRecordsColumns struct {
-	Id        string //
-	Upn       string //
-	Svc       string //
-	Product   string //
-	Cost      string //
-	Plan      string //
-	Source    string //
-	Remark    string //
-	CreatedAt string //
+	Id        string // 自增主键
+	Upn       string // UPN
+	Svc       string // 服务名称
+	Product   string // 产品名称
+	Cost      string // 费用
+	Plan      string // 计费方案
+	Source    string // 来源
+	Remark    string // 备注信息
+	CreatedAt string // 创建时间
 }
 
 // billingCostRecordsColumns holds the columns for the table billing_cost_records.

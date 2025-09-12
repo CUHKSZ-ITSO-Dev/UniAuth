@@ -1,44 +1,50 @@
 package v1
 
 import (
+	"time"
+
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/shopspring/decimal"
 )
 
 type BillingRecordReq struct {
-	g.Meta  `path:"/record" tags:"Billing" method:"post" summary:"计费接口" dc:"xxxxxxxx计费接口"`
+	// g.Meta `path:"/record" tags:"Billing" method:"post" summary:"计费接口" dc:"上传计费请求，完成配额池的扣费。"`
+	g.Meta `path:"/record" tags:"Billing" method:"post" summary:"计费接口" dc:"上传计费请求，完成配额池的扣费。" resEg:"resource/interface/billing/billing_record_req.json"`
+
 	Upn     string `json:"upn" v:"required"`
 	Service string `json:"service" v:"required"`
 	Product string `json:"product" v:"required"`
+	Plan    string `json:"plan" v:"required|in:Included,Quota Pool"`
+	Source  string `json:"source" v:"required"`
 
 	CNYCost decimal.Decimal `json:"cny_cost"`
 	USDCost decimal.Decimal `json:"usd_cost"`
 
-	Detail *gjson.Json `json:"detail"`
+	Remark *gjson.Json `json:"detail"`
 }
 type BillingRecordRes struct {
 	Ok bool `json:"ok"`
 }
 
 type CheckBalanceReq struct {
-	g.Meta `path:"/check" tags:"Billing" method:"post" summary:"检查是否可以使用某个产品" dc:"根据给定的参数，检查是否可以使用某个产品。"`
-	Upn     string `json:"upn" v:"required"`
-	Svc string `json:"svc" v:"required"`
-	Product string `json:"product" v:"required"`		
-	QuotaPool string `json:"quotaPool" v:"required"`
+	g.Meta    `path:"/check" tags:"Billing" method:"post" summary:"检查余额" dc:"刷新、检查配额池的余额。"`
+	QuotaPool string `json:"quotaPool" v:"required" example:"itso-deep-research-vip"`
 }
 type CheckBalanceRes struct {
-	Ok bool `json:"ok"`
-	Err string `json:"err"`
+	Ok          bool      `json:"ok" example:"true"`
+	Percentage  string    `json:"percentage" example:"16.67%"`
+	NextResetAt time.Time `json:"nextíResetAt" example:"2025-09-11T03:00:00+08:00"`
 }
 
 type CheckTokensUsageReq struct {
-	g.Meta `path:"/checkTokensUsage" tags:"Billing" method:"post" summary:"检查Tokens使用情况" dc:"检查Tokens使用情况"`
-	Upn string `json:"upn" v:"required"`
-	QuotaPool string `json:"quotaPool" v:"required"`
+	g.Meta    `path:"/checkTokensUsage" tags:"Billing" method:"post" summary:"检查Tokens使用情况" dc:"检查Tokens使用情况"`
+	Upn       string `json:"upn" v:"required" example:"122020255@link.cuhk.edu.cn"`
+	QuotaPool string `json:"quotaPool" v:"required" example:"itso-deep-research-vip"`
+	NDays     int    `json:"nDays" v:"required|integer" d:"7"`
 }
 type CheckTokensUsageRes struct {
 	// 这个是对话前端下面的柱状图，最近7天
-	TokensUsage string `json:"tokensUsage"`
+	g.Meta      `resEg:"resource/interface/billing/check_tokens_usage_res.json"`
+	TokensUsage *gjson.Json `json:"tokensUsage"`
 }

@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/os/gres"
+
+	"github.com/gogf/gf/v2/os/gtime"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -22,42 +23,39 @@ var (
 		Usage: "main",
 		Brief: "start http server",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
-			// 加载资源文件，主要用于接口示例数据的导入
-			gres.Dump()
+			// 设置进程全局时区
+			if err := gtime.SetTimeZone("Asia/Shanghai"); err != nil {
+				panic(err)
+			}
 
 			s := g.Server()
+			s.Use(ghttp.MiddlewareHandlerResponse)
 			s.Group("/", func(group *ghttp.RouterGroup) {
-				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					hello.NewV1(),
 				)
 			})
 			s.Group("/userinfos", func(group *ghttp.RouterGroup) {
-				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					userinfos.NewV1(),
 				)
 			})
 			s.Group("/auth", func(group *ghttp.RouterGroup) {
-				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					auth.NewV1(),
 				)
 			})
 			s.Group("/billing", func(group *ghttp.RouterGroup) {
-				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					billing.NewV1(),
 				)
 			})
 			s.Group("/config", func(group *ghttp.RouterGroup) {
-				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					config.NewV1(),
 				)
 			})
 			s.Group("/quotaPool", func(group *ghttp.RouterGroup) {
-				group.Middleware(ghttp.MiddlewareHandlerResponse)
 				group.Bind(
 					quotaPool.NewV1(),
 				)

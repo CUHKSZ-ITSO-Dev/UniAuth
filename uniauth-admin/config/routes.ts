@@ -34,6 +34,13 @@ export default [
   //   icon: 'Dashboard',
   //   component: '@/pages/DashboardPage',
   // },
+
+  {
+    path: "/model-list",
+    name: "model-list",
+    icon: "Database",
+    component: "@/pages/ModelListPage",
+  },
   {
     path: "/user-list",
     name: "user-list",
@@ -41,14 +48,20 @@ export default [
     component: "@/pages/UserListPage",
   },
   {
-    path: "/",
-    redirect: "/welcome",
+    path: "/quota-pool-list",
+    name: "quota-pool-list",
+    icon: "Container",
+    component: "@/pages/QuotaPoolListPage",
   },
   {
-    path: "/model-list",
-    name: "model-list",
-    icon: "Database",
-    component: "@/pages/ModelListPage",
+    path: "/quota-pool-details/",
+    name: "quota-pool-details",
+    icon: "Container",
+    component: "@/pages/QuotaPoolDetailsPage",
+  },
+  {
+    path: "/",
+    redirect: "/welcome",
   },
   {
     path: "*",

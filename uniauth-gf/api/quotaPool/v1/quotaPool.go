@@ -30,5 +30,3 @@ type DeleteQuotaPoolReq struct {
 type DeleteQuotaPoolRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
 }
-
-
