@@ -35,6 +35,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 	} else {
 		target = req.QuotaPools
 	}
+	records.SetViolenceCheck(true)  // 开启冲突检测，避免键名中有.的时候提取错误
 
 	// 新建工作表
 	f := excelize.NewFile()
@@ -217,9 +218,6 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		})
 		_ = f.SetCellStyle(sheet, "A14", "I14", headerStyle)
 		var totalCost = decimal.Zero
-
-		fmt.Println(records.GetJsons(sheet))
-		fmt.Println("#########")
 		for idx, record := range (records.GetJsons(sheet)) {
 			_ = f.SetSheetRow(sheet, fmt.Sprintf("A%d", idx+15), &g.Array{
 				fmt.Sprintf("%d", idx+1),
