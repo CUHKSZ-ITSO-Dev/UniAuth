@@ -3,6 +3,7 @@ package billing
 import (
 	"context"
 	"errors"
+	"log"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -64,10 +65,19 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 			return
 		}
 
-		req.Remark.Set("USD", req.USDCost.String())
-		req.Remark.Set("USD_CNY_rate", rate.String())
+		wrtErr := req.Remark.Set("USD", req.USDCost.String())
+		if wrtErr != nil {
+			log.Printf("计费流程中 USD 信息写入 Remark 失败。原始计费记录：%v", req)
+		}
+		wrtErr = req.Remark.Set("USD_CNY_rate", rate.String())
+		if wrtErr != nil {
+			log.Printf("计费流程中 USD->CNY 汇率信息写入 Remark 失败。原始计费记录：%v", req)
+		}
 		if !req.CNYCost.IsZero() {
-			req.Remark.Set("CNY", req.CNYCost.String())
+			wrtErr = req.Remark.Set("CNY", req.CNYCost.String())
+			if wrtErr != nil {
+				log.Printf("计费流程中 CNY 信息写入 Remark 失败。原始计费记录：%v", req)
+			}
 		}
 
 		cost = req.CNYCost.Add(req.USDCost.Mul(rate))
