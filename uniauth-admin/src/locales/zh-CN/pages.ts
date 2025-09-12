@@ -68,4 +68,10 @@ export default {
   'pages.searchTable.tenThousand': '万',
   'pages.searchTable.batchDeletion': '批量删除',
   'pages.searchTable.batchApproval': '批量审批',
+  'pages.userList.title': '用户列表',
+  'pages.userList.description': '管理系统中的所有用户及其权限',
+  'pages.userList.name': '姓名',
+  'pages.userList.email': '邮箱',
+  'pages.userList.actions': '操作',
+  'pages.userList.detail': '详情',
 };
