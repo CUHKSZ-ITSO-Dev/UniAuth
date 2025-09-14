@@ -107,6 +107,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
+          provenance: false
           context: uniauth-gf
           file: uniauth-gf/manifest/deploy/kubernetes/Dockerfile
           platforms: linux/amd64
