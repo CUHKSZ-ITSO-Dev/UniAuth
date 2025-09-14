@@ -91,7 +91,7 @@ jobs:
             org.opencontainers.image.title=UniAuth GF
             org.opencontainers.image.description=UniAuth Automated System
             org.opencontainers.image.created={{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
-            org.opencontainers.image.revision=${{ sha }}
+            org.opencontainers.image.revision={{ sha }}
             org.opencontainers.image.source=https://github.com/CUHKSZ-ITSO-Dev/UniAuth
 
       - name: Build and push Docker image
