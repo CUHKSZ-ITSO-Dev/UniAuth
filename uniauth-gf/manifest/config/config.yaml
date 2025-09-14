@@ -21,3 +21,4 @@ database:
 casbin:
   default:
     link: "postgresql://uniauth:It@73333!@127.0.0.1:5432/uniauth?sslmode=disable"
+    database: "uniauth"
