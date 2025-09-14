@@ -95,14 +95,12 @@ jobs:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=tag
-            type=semver,pattern=v{{major}}.{{minor}}
             type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
           labels: |
-            org.opencontainers.image.title=UniAuth GF
-            org.opencontainers.image.description=UniAuth Automated System
+            org.opencontainers.image.description=UniAuth GF<br>UniAuth Automated System<br>Created at {{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}<br>Revision: {{sha}}
             org.opencontainers.image.created={{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
             org.opencontainers.image.revision={{ sha }}
-            org.opencontainers.image.source=https://github.com/CUHKSZ-ITSO-Dev/UniAuth
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
