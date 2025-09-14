@@ -3,15 +3,19 @@ package billing
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	_ "image/png"
 
+	authV1 "uniauth-gf/api/auth/v1"
 	v1 "uniauth-gf/api/billing/v1"
+	authC "uniauth-gf/internal/controller/auth"
 
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gres"
 	"github.com/shopspring/decimal"
 	"github.com/xuri/excelize/v2"
@@ -189,7 +193,28 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 
 		// 添加"所有人"字段在配额池下面
 		_ = f.SetCellValue(sheet, "A11", "所有人：")
-		_ = f.SetCellValue(sheet, "B11", "") // 内容先空着
+		var ownerStr string
+		if len(req.Upns) > 0 {
+			ownerStr = sheet
+		} else {
+			// 调用 Auth filter policies 接口
+			policies, err := authC.NewV1().FilterPolicies(ctx, &authV1.FilterPoliciesReq{
+				Objs: []string{"quotaPool/" + sheet},
+				Acts: []string{"owner"},
+			})
+			if err != nil {
+				return nil, gerror.Wrap(err, "调用 Auth 模块 filter policies 接口失败")
+			}
+			// 提取所有策略的第一个元素并用逗号连接
+			var owners []string
+			for _, policy := range policies.Policies {
+				if len(policy) > 0 {
+					owners = append(owners, policy[0])
+				}
+			}
+			ownerStr = strings.Join(owners, ",")
+		}
+		_ = f.SetCellValue(sheet, "B11", ownerStr)
 		_ = f.MergeCell(sheet, "B11", "E11")
 		_ = f.SetCellStyle(sheet, "A11", "I11", infoStyle)
 
@@ -394,14 +419,19 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		filename = fmt.Sprintf("Bill-Batch[Quota Pools]%s.xlsx", time.Now().Format("20060102150405"))
 	}
 
+	if err = f.SaveAs(filename); err != nil {
+		return nil, gerror.Wrap(err, "Excel 文件保存失败")
+	}
+
 	r := g.RequestFromCtx(ctx)
 	if r == nil {
-		return nil, gerror.New("failed to get request from context")
+		return nil, gerror.New("无法从上下文中获取请求对象")
 	}
 	r.Response.ServeFileDownload(filename)
 
-	// if err = f.SaveAs(filename); err != nil {
-	// 	return nil, gerror.Wrap(err, "Excel 文件保存失败")
-	// }
+	if err := gfile.Remove(filename); err != nil {
+		return nil, gerror.Wrap(err, "Excel 文件删除失败")
+	}
+
 	return &v1.ExportBillRecordRes{}, nil
 }
