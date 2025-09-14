@@ -29,11 +29,41 @@ jobs:
         working-directory: uniauth-gf
         run: gf build
 
-      - name: Upload Artifacts
+      - name: Upload Artifacts 1
         uses: actions/upload-artifact@v4
         with:
-          name: uniauth-gf-binaries
-          path: uniauth-gf/bin
+          name: uniauth-gf-linux_amd64
+          path: uniauth-gf/bin/linux_amd64/uniauth
+
+      - name: Upload Artifacts 2
+        uses: actions/upload-artifact@v4
+        with:
+          name: uniauth-gf-windows_amd64
+          path: uniauth-gf/bin/windows_amd64/uniauth
+
+      - name: Upload Artifacts 3
+        uses: actions/upload-artifact@v4
+        with:
+          name: uniauth-gf-darwin_arm64
+          path: uniauth-gf/bin/darwin_arm64/uniauth
+
+      - name: Upload Artifacts 4
+        uses: actions/upload-artifact@v4
+        with:
+          name: uniauth-gf-darwin_amd64
+          path: uniauth-gf/bin/darwin_amd64/uniauth
+
+      - name: Upload Artifacts 5
+        uses: actions/upload-artifact@v4
+        with:
+          name: uniauth-gf-linux_arm64
+          path: uniauth-gf/bin/linux_arm64/uniauth
+
+      - name: Upload Artifacts 6
+        uses: actions/upload-artifact@v4
+        with:
+          name: uniauth-gf-windows_arm64
+          path: uniauth-gf/bin/windows_arm64/uniauth
 
   # Job2 构建 Docker 镜像
   build-docker:
@@ -60,8 +90,8 @@ jobs:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=tag
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
+            type=semver,pattern=v{{major}}
           labels: |
             org.opencontainers.image.title=UniAuth GF
             org.opencontainers.image.description=UniAuth Automated System
