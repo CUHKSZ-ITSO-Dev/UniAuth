@@ -13,6 +13,7 @@ logger:
 database:
   default:    
     link: "pgsql:uniauth:It@73333!@tcp(127.0.0.1:5432)/uniauth"
+    timezone: "Asia/Shanghai"
     createdAt: "created_at"     
     updatedAt: "updated_at" 
 
