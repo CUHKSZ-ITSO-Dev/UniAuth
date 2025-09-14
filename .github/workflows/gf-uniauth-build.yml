@@ -98,9 +98,11 @@ jobs:
             type=semver,pattern=v{{major}}
             type=semver,pattern=v{{major}}.{{minor}}
           labels: |
-            org.opencontainers.image.description=UniAuth Automated System (GoFrame, {{sha}})
+            org.opencontainers.image.description=UniAuth Automated System (GoFrame, {{sha}}).
             org.opencontainers.image.created={{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
             org.opencontainers.image.revision={{ sha }}
+            org.opencontainers.image.version=v{{major}}.{{minor}}
+            org.opencontainers.image.title=UniAuth GoFrame
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
