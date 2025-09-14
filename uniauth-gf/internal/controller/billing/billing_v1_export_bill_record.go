@@ -9,9 +9,10 @@ import (
 
 	v1 "uniauth-gf/api/billing/v1"
 
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gres"
 	"github.com/shopspring/decimal"
 	"github.com/xuri/excelize/v2"
 )
@@ -35,7 +36,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 	} else {
 		target = req.QuotaPools
 	}
-	records.SetViolenceCheck(true)  // 开启冲突检测，避免键名中有.的时候提取错误
+	records.SetViolenceCheck(true) // 开启冲突检测，避免键名中有.的时候提取错误
 
 	// 新建工作表
 	f := excelize.NewFile()
@@ -57,16 +58,24 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		_ = f.SetColWidth(sheet, "I", "I", 12)
 
 		// 插入校徽
-		logoPath := "resource/public/cuhksz-logo-square.png"
+		logoFile := gres.Get("public/cuhksz-logo-square.png")
+		if logoFile == nil {
+			return nil, gerror.New("找不到校徽图像文件")
+		}
+		logoData := logoFile.Content()
 		trueVal := true
-		if err := f.AddPicture(sheet, "E1", logoPath, &excelize.GraphicOptions{
-			ScaleX:          0.26,
-			ScaleY:          0.26,
-			Positioning:     "oneCell",
-			OffsetX:         25,
-			OffsetY:         5,
-			PrintObject:     &trueVal,
-			LockAspectRatio: true,
+		if err := f.AddPictureFromBytes(sheet, "E1", &excelize.Picture{
+			Extension: ".png",
+			File:      logoData,
+			Format: &excelize.GraphicOptions{
+				ScaleX:          0.26,
+				ScaleY:          0.26,
+				Positioning:     "oneCell",
+				OffsetX:         25,
+				OffsetY:         5,
+				PrintObject:     &trueVal,
+				LockAspectRatio: true,
+			},
 		}); err != nil {
 			return nil, gerror.Wrap(err, "无法加载校徽图像")
 		}
@@ -218,7 +227,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		})
 		_ = f.SetCellStyle(sheet, "A14", "I14", headerStyle)
 		var totalCost = decimal.Zero
-		for idx, record := range (records.GetJsons(sheet)) {
+		for idx, record := range records.GetJsons(sheet) {
 			_ = f.SetSheetRow(sheet, fmt.Sprintf("A%d", idx+15), &g.Array{
 				fmt.Sprintf("%d", idx+1),
 				record.Get("upn"),

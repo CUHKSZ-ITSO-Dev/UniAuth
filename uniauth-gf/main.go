@@ -9,6 +9,7 @@ import (
 
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	"github.com/gogf/gf/v2/os/gctx"
+	"github.com/gogf/gf/v2/os/gres"
 )
 
 func main() {
@@ -24,5 +25,7 @@ func main() {
 	fmt.Println("Copyright 2025 The Chinese University of Hong Kong, Shenzhen")
 	fmt.Println()
 	time.Sleep(time.Second)
+	fmt.Println("GRes Directory List:")
+	gres.Dump()
 	cmd.Main.Run(gctx.GetInitCtx())
 }
