@@ -8,6 +8,10 @@ on:
 env:
   IMAGE_NAME: ghcr.io/cuhksz-itso-dev/uniauth-gf
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   # Job1 交叉编译，上传 Artifacts
   build-binaries:
