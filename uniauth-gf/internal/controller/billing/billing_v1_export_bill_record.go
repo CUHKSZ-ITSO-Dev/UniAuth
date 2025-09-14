@@ -58,7 +58,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		_ = f.SetColWidth(sheet, "I", "I", 12)
 
 		// 插入校徽
-		logoFile := gres.Get("public/cuhksz-logo-square.png")
+		logoFile := gres.Get("resource/public/cuhksz-logo-square.png")
 		if logoFile == nil {
 			return nil, gerror.New("找不到校徽图像文件")
 		}

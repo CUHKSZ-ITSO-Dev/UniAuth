@@ -19,9 +19,9 @@ var e *casbin.Enforcer
 
 func init() {
 	// 从gres中读取Casbin配置文件
-	configFile := gres.Get("config/core_rbac.conf")
+	configFile := gres.Get("resource/config/core_rbac.conf")
 	if configFile == nil {
-		panic("未找到Casbin配置文件: config/core_rbac.conf")
+		panic("未找到Casbin配置文件: resource/config/core_rbac.conf")
 	}
 	configContent := configFile.Content()
 	m, err := model.NewModelFromString(string(configContent))
