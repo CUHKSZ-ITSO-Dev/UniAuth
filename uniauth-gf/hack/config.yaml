@@ -19,12 +19,8 @@ gfcli:
     path: "./bin"
     packSrc: "manifest/config,resource/public,resource/config"
     exitWhenError: true
+    extra: "-ldflags=\"-w -s\""
   
   run:
     path:  "./bin"
     extra: ""
-
-  docker:
-    build: "-a amd64 -s linux -p temp -ew"
-    tagPrefixes:
-      - my.image.pub/my-app
