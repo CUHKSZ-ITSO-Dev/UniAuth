@@ -1,10 +1,12 @@
-import React, { FC, useMemo } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { PageContainer, ProCard } from '@ant-design/pro-components';
-import { Typography, Input, Button, message } from 'antd';
+import { Typography, Input, Button, message, Tabs } from 'antd';
 import { useLocation, useNavigate } from 'umi';
+import ReactJson from 'react-json-view';
 
 const { Title } = Typography;
+const { TabPane } = Tabs;
 
 export interface AutoQuotaPoolDetailsConfig {
   autoQuotaPoolConfigs: string[];
@@ -37,11 +39,20 @@ const AutoQuotaPoolDetailsPage: FC = () => {
   const [jsonData, setJsonData] = React.useState<string>(
     JSON.stringify(initialJsonData, null, 2)
   );
+  const [jsonObject, setJsonObject] = React.useState<any>(initialJsonData);
   const [error, setError] = React.useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('editor');
+
+  // 计算行号
+  const lineNumbers = useMemo(() => {
+    const lines = jsonData.split('\n');
+    return lines.map((_, index) => index + 1).join('\n');
+  }, [jsonData]);
 
   const validateJson = (value: string): boolean => {
     try {
-      JSON.parse(value);
+      const parsed = JSON.parse(value);
+      setJsonObject(parsed);
       setError(null);
       return true;
     } catch (err) {
@@ -105,11 +116,31 @@ const AutoQuotaPoolDetailsPage: FC = () => {
     }
   };
 
-  // 计算行号
-  const lineNumbers = useMemo(() => {
-    const lines = jsonData.split('\n');
-    return lines.map((_, index) => index + 1).join('\n');
-  }, [jsonData]);
+  // 处理JSON对象变化（来自可视化编辑器）
+  const handleJsonChangeVisual = (edit: any) => {
+    const updatedSrc = edit.updated_src;
+    setJsonObject(updatedSrc);
+    const formatted = JSON.stringify(updatedSrc, null, 2);
+    setJsonData(formatted);
+    validateJson(formatted);
+    return true;
+  };
+
+  // 添加新属性
+  const handleAddProperty = () => {
+    try {
+      const parsed = JSON.parse(jsonData);
+      // 添加一个新属性
+      const newKey = `newProperty${Object.keys(parsed).length}`;
+      parsed[newKey] = "";
+      const formatted = JSON.stringify(parsed, null, 2);
+      setJsonData(formatted);
+      setJsonObject(parsed);
+      message.success('已添加新属性');
+    } catch (error) {
+      message.error('JSON 格式不正确，无法添加属性');
+    }
+  };
 
   return (
     <PageContainer>
@@ -118,68 +149,124 @@ const AutoQuotaPoolDetailsPage: FC = () => {
           编辑自动配额池配置 - {record?.configName || '新建配置'}
         </Title>
         
-        <div style={{ marginBottom: 16 }}>
-          <Button
-            type="default"
-            onClick={handleFormatJson}
-            style={{ marginBottom: 8 }}
-          >
-            格式化 JSON
-          </Button>
-          
-          {/* 带行号的文本编辑器 */}
-          <div style={{ 
-            display: 'flex', 
-            border: '1px solid #d9d9d9', 
-            borderRadius: '6px',
-            overflow: 'hidden',
-            fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-            fontSize: '16px'
-          }}>
-            {/* 行号区域 */}
-            <div style={{
-              padding: '4px 8px',
-              backgroundColor: '#f5f5f5',
-              color: '#999',
-              textAlign: 'right',
-              minWidth: '40px',
-              lineHeight: '1.5',
-              borderRight: '1px solid #d9d9d9',
-              userSelect: 'none',
-              whiteSpace: 'pre'
-            }}>
-              {lineNumbers}
+        <Tabs activeKey={activeTab} onChange={setActiveTab}>
+          <TabPane tab="代码编辑器" key="editor">
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <Button type="default" onClick={handleFormatJson}>
+                  格式化 JSON
+                </Button>
+                <Button type="default" onClick={handleAddProperty}>
+                  添加属性
+                </Button>
+              </div>
+              
+              {/* 带行号的文本编辑器 */}
+              <div style={{ 
+                display: 'flex', 
+                border: '1px solid #d9d9d9', 
+                borderRadius: '6px',
+                overflow: 'hidden',
+                fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+                fontSize: '16px'
+              }}>
+                {/* 行号区域 */}
+                <div style={{
+                  padding: '4px 8px',
+                  backgroundColor: '#f5f5f5',
+                  color: '#999',
+                  textAlign: 'right',
+                  minWidth: '40px',
+                  lineHeight: '1.5',
+                  borderRight: '1px solid #d9d9d9',
+                  userSelect: 'none',
+                  whiteSpace: 'pre'
+                }}>
+                  {lineNumbers}
+                </div>
+                
+                {/* 文本编辑区域 */}
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <Input.TextArea
+                    value={jsonData}
+                    onChange={handleJsonChange}
+                    placeholder='请输入符合格式的 JSON 文本：{"autoQuotaPoolConfigs": ["string"]}'
+                    autoSize={{ minRows: 16, maxRows: 24 }}
+                    style={{
+                      fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+                      fontSize: '16px',
+                      border: 'none',
+                      borderRadius: '0',
+                      resize: 'none',
+                      width: '100%',
+                      height: '100%',
+                      minHeight: '300px'
+                    }}
+                  />
+                </div>
+              </div>
+              
+              {error && (
+                <div style={{ color: 'red', marginTop: 8, fontSize: '20px' }}>
+                  {error}
+                </div>
+              )}
             </div>
-            
-            {/* 文本编辑区域 */}
-            <div style={{ flex: 1, position: 'relative' }}>
-              <Input.TextArea
-                value={jsonData}
-                onChange={handleJsonChange}
-                placeholder='请输入符合格式的 JSON 文本'
-                autoSize={{ minRows: 16, maxRows: 24 }}
-                style={{
-                  fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-                  fontSize: '16px',
-                  border: 'none',
-                  borderRadius: '0',
-                  resize: 'none',
-                  width: '100%',
-                  height: '100%',
-                  minHeight: '300px'
+          </TabPane>
+          
+          <TabPane tab="可视化编辑器" key="visual">
+            <div style={{ 
+              border: '1px solid #d9d9d9', 
+              borderRadius: '6px',
+              padding: '16px',
+              minHeight: '300px'
+            }}>
+              <ReactJson
+                src={jsonObject}
+                onEdit={handleJsonChangeVisual}
+                onAdd={handleJsonChangeVisual}
+                onDelete={handleJsonChangeVisual}
+                theme="rjv-default"
+                style={{ 
+                  backgroundColor: '#fff',
+                  padding: '16px',
+                  borderRadius: '4px'
                 }}
+                name={null}
+                collapsed={false}
+                collapseStringsAfterLength={100}
+                indentWidth={4}
+                enableClipboard={true}
+                displayObjectSize={true}
+                displayDataTypes={true}
+                iconStyle="triangle"
               />
             </div>
-          </div>
+          </TabPane>
           
-          {error && (
-            <div style={{ color: 'red', marginTop: 8, fontSize: '20px' }}>
-              {error}
+          <TabPane tab="实时预览" key="preview">
+            <div style={{ 
+              border: '1px solid #d9d9d9', 
+              borderRadius: '6px',
+              padding: '16px',
+              minHeight: '300px',
+              backgroundColor: '#f9f9f9'
+            }}>
+              <pre style={{ 
+                fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+                fontSize: '14px',
+                lineHeight: '1.5',
+                margin: 0,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-all'
+              }}>
+                {jsonData}
+              </pre>
             </div>
-          )}
-        </div>
+          </TabPane>
+        </Tabs>
         
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 16 }}>
           <Button onClick={handleCancel}>
             取消
           </Button>
