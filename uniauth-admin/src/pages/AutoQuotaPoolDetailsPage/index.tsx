@@ -231,20 +231,45 @@ const AutoQuotaPoolDetailsPage: FC = () => {
             <div style={{ 
               border: '1px solid #d9d9d9', 
               borderRadius: '6px',
-              padding: '16px',
               minHeight: '300px',
-              backgroundColor: '#f9f9f9'
+              backgroundColor: '#f9f9f9',
+              position: 'relative'
             }}>
-              <pre style={{ 
-                fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-                fontSize: '14px',
-                lineHeight: '1.5',
-                margin: 0,
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-all'
+              <div style={{ 
+                position: 'absolute', 
+                top: '8px', 
+                right: '8px', 
+                zIndex: 1 
               }}>
-                {jsonData}
-              </pre>
+                <Button 
+                  type="primary" 
+                  size="small"
+                  onClick={() => {
+                    navigator.clipboard.writeText(jsonData).then(() => {
+                      message.success('代码已复制到剪贴板');
+                    }).catch(() => {
+                      message.error('复制失败');
+                    });
+                  }}
+                >
+                  复制代码
+                </Button>
+              </div>
+              <div style={{ 
+                padding: '16px',
+                paddingTop: '40px'
+              }}>
+                <pre style={{ 
+                  fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+                  fontSize: '14px',
+                  lineHeight: '1.5',
+                  margin: 0,
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all'
+                }}>
+                  {jsonData}
+                </pre>
+              </div>
             </div>
           </TabPane>
         </Tabs>
