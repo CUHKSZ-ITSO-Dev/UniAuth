@@ -31,15 +31,15 @@ func init() {
 
 	// 数据库连接配置
 	ctx := gctx.New()
-	casbinLink, err := g.Cfg().Get(ctx, "casbin.default.link")
+	dsn, err := g.Cfg().Get(ctx, "casbin.default.link")
 	if err != nil {
-		panic("获取Casbin连接配置失败: " + err.Error())
+		panic("获取 casbin.default.link 失败: " + err.Error())
 	}
-	casbinDBName, err := g.Cfg().Get(ctx, "casbin.default.database")
+	dbn, err := g.Cfg().Get(ctx, "casbin.default.database")
 	if err != nil {
-		panic("获取Casbin数据库名称失败: " + err.Error())
+		panic("获取 casbin.default.database 失败: " + err.Error())
 	}
-	a, err := pgadapter.NewAdapter(casbinLink.String(), casbinDBName.String())
+	a, err := pgadapter.NewAdapter(dsn.String(), dbn.String())
 	if err != nil {
 		panic("创建Casbin适配器失败: " + err.Error())
 	}
