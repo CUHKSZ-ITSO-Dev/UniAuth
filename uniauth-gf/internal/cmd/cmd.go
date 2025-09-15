@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	_ "time/tzdata"
 
 	"github.com/gogf/gf/v2/os/gtime"
 

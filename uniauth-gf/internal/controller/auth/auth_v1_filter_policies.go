@@ -15,6 +15,7 @@ func (c *ControllerV1) FilterPolicies(ctx context.Context, req *v1.FilterPolicie
 	}
 
 	subs := garray.NewStrArrayFrom(req.Subs)
+	doms := garray.NewStrArrayFrom(req.Doms)
 	objs := garray.NewStrArrayFrom(req.Objs)
 	acts := garray.NewStrArrayFrom(req.Acts)
 	res = &v1.FilterPoliciesRes{
@@ -22,8 +23,9 @@ func (c *ControllerV1) FilterPolicies(ctx context.Context, req *v1.FilterPolicie
 	}
 
 	for _, policy := range policies {
-		sub, obj, act := policy[0], policy[1], policy[2]
+		sub, dom, obj, act := policy[0], policy[1], policy[2], policy[3]
 		if (subs.Len() == 0 || subs.Contains(sub)) &&
+			(doms.Len() == 0 || doms.Contains(dom)) &&
 			(objs.Len() == 0 || objs.Contains(obj)) &&
 			(acts.Len() == 0 || acts.Contains(act)) {
 			res.Policies = append(res.Policies, policy)

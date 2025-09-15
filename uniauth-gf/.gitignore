@@ -16,6 +16,7 @@ manifest/output/
 temp/
 temp.yaml
 bin
+**/config/config.yaml
 
 .venv/
 .python-version

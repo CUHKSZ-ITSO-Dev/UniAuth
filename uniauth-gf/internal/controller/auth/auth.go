@@ -5,53 +5,25 @@
 package auth
 
 import (
-	pgadapter "github.com/casbin/casbin-pg-adapter"
-
+	"fmt"
+	//pgadapter "github.com/casbin/casbin-pg-adapter"
 	"github.com/casbin/casbin/v2"
-	"github.com/casbin/casbin/v2/model"
-
-	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gctx"
+	"github.com/casbin/casbin/v2/persist/file-adapter"
 	"github.com/gogf/gf/v2/os/gres"
 )
 
 var e *casbin.Enforcer
 
 func init() {
-	// 从gres中读取Casbin配置文件
-	configFile := gres.Get("resource/config/core_rbac.conf")
-	if configFile == nil {
-		panic("未找到Casbin配置文件: resource/config/core_rbac.conf")
-	}
-	configContent := configFile.Content()
-	m, err := model.NewModelFromString(string(configContent))
-	if err != nil {
-		panic("解析Casbin配置文件失败: " + err.Error())
-	}
-
-	// 数据库连接配置
-	ctx := gctx.New()
-	dsn, err := g.Cfg().Get(ctx, "casbin.default.link")
-	if err != nil {
-		panic("获取 casbin.default.link 失败: " + err.Error())
-	}
-	dbn, err := g.Cfg().Get(ctx, "casbin.default.database")
-	if err != nil {
-		panic("获取 casbin.default.database 失败: " + err.Error())
-	}
-	a, err := pgadapter.NewAdapter(dsn.String(), dbn.String())
-	if err != nil {
-		panic("创建Casbin适配器失败: " + err.Error())
-	}
-
-	// 使用model和adapter创建Enforcer
-	e, err = casbin.NewEnforcer(m, a)
-	if err != nil {
-		panic("创建Casbin Enforcer失败: " + err.Error())
-	}
-
-	// 加载策略
+	gres.Dump()
+	// File Adapter
+	a := fileadapter.NewAdapter("resource/config/casbin_policy.csv")
+	// PG Adapter
+	// a, _ := pgadapter.NewAdapter("postgresql://uniauth:'It@73333!'@localhost:5432/uniauth")
+	e, _ = casbin.NewEnforcer("resource/config/core_rbac.conf", a)
 	if err := e.LoadPolicy(); err != nil {
-		panic("加载Casbin策略失败: " + err.Error())
+		panic(err)
 	}
+	policies, _ := e.GetPolicy()
+	fmt.Println(policies)
 }
