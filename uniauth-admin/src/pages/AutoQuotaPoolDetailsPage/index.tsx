@@ -4,6 +4,7 @@ import { PageContainer, ProCard } from '@ant-design/pro-components';
 import { Typography, Input, Button, message, Tabs } from 'antd';
 import { useLocation, useNavigate } from 'umi';
 import ReactJson from 'react-json-view';
+import Editor from '@monaco-editor/react';
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -150,49 +151,42 @@ const AutoQuotaPoolDetailsPage: FC = () => {
           <TabPane tab="代码编辑器" key="editor">
             <div style={{ marginBottom: 16 }}>
               
-              {/* 带行号的文本编辑器 */}
+              {/* Monaco Editor 代码编辑器 */}
               <div style={{ 
-                display: 'flex', 
                 border: '1px solid #d9d9d9', 
                 borderRadius: '6px',
                 overflow: 'hidden',
-                fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-                fontSize: '16px'
+                minHeight: '300px'
               }}>
-                {/* 行号区域 */}
-                <div style={{
-                  padding: '4px 8px',
-                  backgroundColor: '#f5f5f5',
-                  color: '#999',
-                  textAlign: 'right',
-                  minWidth: '40px',
-                  lineHeight: '1.5',
-                  borderRight: '1px solid #d9d9d9',
-                  userSelect: 'none',
-                  whiteSpace: 'pre'
-                }}>
-                  {lineNumbers}
-                </div>
-                
-                {/* 文本编辑区域 */}
-                <div style={{ flex: 1, position: 'relative' }}>
-                  <Input.TextArea
-                    value={jsonData}
-                    onChange={handleJsonChange}
-                    placeholder='请输入符合格式的 JSON 文本：{"autoQuotaPoolConfigs": ["string"]}'
-                    autoSize={{ minRows: 16, maxRows: 24 }}
-                    style={{
-                      fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-                      fontSize: '16px',
-                      border: 'none',
-                      borderRadius: '0',
-                      resize: 'none',
-                      width: '100%',
-                      height: '100%',
-                      minHeight: '300px'
-                    }}
-                  />
-                </div>
+                <Editor
+                  height="400px"
+                  defaultLanguage="json"
+                  value={jsonData}
+                  onChange={(value) => {
+                    if (value !== undefined) {
+                      handleJsonChange({
+                        target: { value }
+                      } as React.ChangeEvent<HTMLTextAreaElement>);
+                    }
+                  }}
+                  theme="vs-light"
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                    wordWrap: 'on',
+                    wrappingIndent: 'indent',
+                    lineNumbers: 'on',
+                    folding: true,
+                    renderLineHighlight: 'all',
+                    suggestOnTriggerCharacters: true,
+                    quickSuggestions: true,
+                    tabSize: 2,
+                    formatOnPaste: true,
+                    formatOnType: true
+                  }}
+                />
               </div>
               
               {error && (
