@@ -2,18 +2,19 @@ package billing
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 
-	"uniauth-gf/api/billing/v1"
+	v1 "uniauth-gf/api/billing/v1"
 	"uniauth-gf/internal/dao"
 )
 
 func (c *ControllerV1) NDaysProductUsageGroup(ctx context.Context, req *v1.NDaysProductUsageGroupReq) (res *v1.NDaysProductUsageGroupRes, err error) {
 	result, err := dao.BillingCostRecords.Ctx(ctx).
 		Where("svc = ?", "chat").
-		Where("created_at >= NOW() - INTERVAL ? DAY", req.N).
+		Where(fmt.Sprintf("created_at >= NOW() - INTERVAL '%d' DAY", req.N)).
 		Group("product").
 		Fields("product, COUNT(*) as count").
 		All()
@@ -27,18 +28,17 @@ func (c *ControllerV1) NDaysProductUsageGroup(ctx context.Context, req *v1.NDays
 	}
 
 	type finalResultItem struct {
-		product string
-		count   int
-		percent float32
+		Product string
+		Count   int
+		Percent float32
 	}
 	finalResult := []finalResultItem{}
-	result.ScanList(&finalResult, "product", "count")
-	for _, item := range finalResult {
-		if item.count > 0 {
-			item.percent = float32(item.count) / float32(totalCount)
-		} else {
-			item.percent = 0
-		}
+	for _, record := range result {
+		finalResult = append(finalResult, finalResultItem{
+			Product: record["product"].String(),
+			Count:   record["count"].Int(),
+			Percent: record["count"].Float32() / float32(totalCount),
+		})
 	}
 
 	res = &v1.NDaysProductUsageGroupRes{
