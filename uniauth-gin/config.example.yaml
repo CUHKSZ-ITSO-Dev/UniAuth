@@ -1,0 +1,51 @@
+# UniAuth Gateway 配置文件示例
+# 复制此文件为 config.yaml 并根据您的环境进行配置
+
+server:
+  port: "8080"
+  mode: "debug"  # debug, release, test
+
+session:
+  # 会话密钥，生产环境中请使用强随机密钥
+  secret_key: "your-super-secret-session-key-change-in-production"
+  cookie_name: "uniauth_session"
+  cookie_domain: ""  # 留空表示当前域名，或设置为 ".example.com" 用于子域名共享
+  cookie_max_age: 7200  # 会话有效期（秒），7200 = 2小时
+  cookie_secure: false  # 生产环境中设置为 true（需要HTTPS）
+
+sso:
+  # Microsoft Azure AD 示例配置
+  # 替换 {tenant-id} 为您的租户ID
+  login_url: "https://login.microsoftonline.com/{tenant-id}/oauth2/v2.0/authorize"
+  callback_url: "/auth/callback"
+  client_id: "your-azure-app-client-id"
+  client_secret: "your-azure-app-client-secret"
+  
+  # 其他SSO提供商示例：
+  # Google:
+  # login_url: "https://accounts.google.com/o/oauth2/v2/auth"
+  # OIDC:
+  # login_url: "https://your-oidc-provider.com/auth"
+
+redis:
+  addr: "localhost:6379"
+  password: ""  # Redis密码，如果有的话
+  db: 0  # Redis数据库编号
+
+uniauth:
+  # UniAuth-GF 服务的地址
+  base_url: "http://localhost:8000"
+  timeout: 30  # 请求超时时间（秒）
+
+# 可选：日志配置
+logging:
+  level: "info"  # debug, info, warn, error
+  format: "json"  # text, json
+  file: ""  # 留空表示输出到标准输出
+
+# 可选：监控配置  
+monitoring:
+  enable_metrics: true
+  metrics_path: "/metrics"
+  enable_health_check: true
+  health_check_path: "/health"

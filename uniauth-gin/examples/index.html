@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniAuth Gateway 示例应用</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .user-info h2 {
+            color: #333;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info h2:before {
+            content: "👤";
+            margin-right: 0.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: #333;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 4px;
+            padding: 0.75rem;
+        }
+
+        .features {
+            margin-top: 2rem;
+        }
+
+        .features h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+
+        .features li:before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .refresh-section {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>UniAuth Gateway</h1>
+            <p>示例受保护的应用</p>
+        </div>
+        
+        <div class="content">
+            <div class="user-info">
+                <h2>用户信息</h2>
+                <div id="user-data" class="loading">正在加载用户信息...</div>
+            </div>
+            
+            <div class="refresh-section">
+                <button class="btn" onclick="loadUserInfo()">刷新用户信息</button>
+            </div>
+
+            <div class="features">
+                <h3>UniAuth Gateway 功能特性</h3>
+                <ul>
+                    <li>统一身份认证和授权</li>
+                    <li>支持SSO单点登录</li>
+                    <li>自动注入用户信息到HTTP头</li>
+                    <li>基于Redis的分布式会话管理</li>
+                    <li>Kubernetes Ingress集成</li>
+                    <li>现代化的登录界面</li>
+                    <li>高性能和可扩展性</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadUserInfo() {
+            const userDataEl = document.getElementById('user-data');
+            userDataEl.innerHTML = '<div class="loading">正在加载用户信息...</div>';
+            
+            try {
+                const response = await fetch('/api/user');
+                const userData = await response.json();
+                
+                if (userData.authenticated) {
+                    userDataEl.innerHTML = `
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">用户主体名称 (UPN)</span>
+                                <span class="info-value">${userData.upn || '未设置'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">姓名</span>
+                                <span class="info-value">${userData.name || '未设置'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">邮箱</span>
+                                <span class="info-value">${userData.email || '未设置'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">部门</span>
+                                <span class="info-value">${userData.department || '未设置'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">角色</span>
+                                <span class="info-value">${userData.role || '未设置'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">登录时间</span>
+                                <span class="info-value">${userData.login_time || '未设置'}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    userDataEl.innerHTML = '<div class="error">用户未认证</div>';
+                }
+            } catch (error) {
+                userDataEl.innerHTML = `<div class="error">加载用户信息失败: ${error.message}</div>`;
+            }
+        }
+
+        // 页面加载时自动获取用户信息
+        document.addEventListener('DOMContentLoaded', loadUserInfo);
+    </script>
+</body>
+</html>

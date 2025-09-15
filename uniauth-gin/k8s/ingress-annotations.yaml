@@ -1,0 +1,110 @@
+# UniAuth Gateway Kubernetes Ingress 配置示例
+# 使用注解的方式启用UniAuth认证
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-app-ingress
+  annotations:
+    # 启用UniAuth认证
+    nginx.ingress.kubernetes.io/auth-url: "http://uniauth-gateway.default.svc.cluster.local:8080/auth/status"
+    nginx.ingress.kubernetes.io/auth-signin: "http://uniauth-gateway.default.svc.cluster.local:8080/auth/login?redirect=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-User-UPN,X-User-Name,X-User-Email,X-User-Department,X-User-Role,X-User-Login-Time"
+    
+    # 可选：认证缓存配置
+    nginx.ingress.kubernetes.io/auth-cache-key: "$remote_user$http_authorization"
+    nginx.ingress.kubernetes.io/auth-cache-duration: "200 202 30m"
+    
+    # 可选：认证方法
+    nginx.ingress.kubernetes.io/auth-method: "GET"
+    
+    # 可选：传递原始URI到认证服务
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      proxy_pass_request_body off;
+      proxy_set_header Content-Length "";
+      proxy_set_header X-Original-URI $request_uri;
+      proxy_set_header X-Original-Method $request_method;
+      proxy_set_header X-Forwarded-For $remote_addr;
+    
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: example-app.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: example-app-service
+            port:
+              number: 80
+
+---
+# 针对不需要认证的路径的配置示例
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-public-ingress
+  annotations:
+    # 不启用认证（公共访问）
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: example-app.local
+    http:
+      paths:
+      - path: /public
+        pathType: Prefix
+        backend:
+          service:
+            name: example-app-service
+            port:
+              number: 80
+      - path: /health
+        pathType: Prefix
+        backend:
+          service:
+            name: example-app-service
+            port:
+              number: 80
+
+---
+# 条件认证配置示例（部分路径需要认证）
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-conditional-ingress
+  annotations:
+    # 条件认证 - 只对特定路径启用
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location ~* ^/(admin|secure) {
+        auth_request /auth;
+        auth_request_set $user $upstream_http_x_user_upn;
+        auth_request_set $email $upstream_http_x_user_email;
+        proxy_set_header X-User-UPN $user;
+        proxy_set_header X-User-Email $email;
+      }
+      
+      location = /auth {
+        internal;
+        proxy_pass http://uniauth-gateway.default.svc.cluster.local:8080/auth/status;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header X-Original-URI $request_uri;
+      }
+    
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: example-app.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: example-app-service
+            port:
+              number: 80

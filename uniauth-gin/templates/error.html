@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-container {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            border-radius: 20px;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            color: #dc2626;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .retry-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 0.875rem 2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 1rem;
+        }
+
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .back-button {
+            background: #6b7280;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 0.875rem 2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+
+        .error-details {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #666;
+            text-align: left;
+        }
+
+        .error-code {
+            font-family: monospace;
+            background: #e5e7eb;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            color: #374151;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 480px) {
+            .error-container {
+                padding: 2rem 1.5rem;
+            }
+            
+            .title {
+                font-size: 1.5rem;
+            }
+            
+            .retry-button, .back-button {
+                display: block;
+                width: 100%;
+                margin: 0.5rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">!</div>
+        <h1 class="title">{{ .Title }}</h1>
+        
+        {{ if .ErrorMessage }}
+        <div class="error-message">
+            {{ .ErrorMessage }}
+        </div>
+        {{ end }}
+
+        <div>
+            {{ if .RetryURL }}
+            <a href="{{ .RetryURL }}" class="retry-button">重试</a>
+            {{ end }}
+            <a href="{{ .BackURL | default "/" }}" class="back-button">返回首页</a>
+        </div>
+
+        {{ if .ErrorDetails }}
+        <div class="error-details">
+            <strong>错误详情：</strong><br>
+            {{ if .ErrorCode }}
+            错误代码: <span class="error-code">{{ .ErrorCode }}</span><br>
+            {{ end }}
+            {{ .ErrorDetails }}
+        </div>
+        {{ end }}
+
+        <div class="footer">
+            如果问题持续存在，请联系系统管理员
+        </div>
+    </div>
+</body>
+</html>

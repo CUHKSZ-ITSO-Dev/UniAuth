@@ -1,0 +1,25 @@
+server:
+  port: "8080"
+  mode: "debug"
+
+session:
+  secret_key: "uniauth-gateway-secret-key-change-in-production"
+  cookie_name: "uniauth_session"
+  cookie_domain: ""
+  cookie_max_age: 7200  # 2小时
+  cookie_secure: false
+
+sso:
+  login_url: "https://login.microsoftonline.com/{tenant-id}/oauth2/v2.0/authorize"
+  callback_url: "/auth/callback"
+  client_id: "your-client-id"
+  client_secret: "your-client-secret"
+
+redis:
+  addr: "localhost:6379"
+  password: ""
+  db: 0
+
+uniauth:
+  base_url: "http://localhost:8000"
+  timeout: 30

@@ -1,0 +1,171 @@
+# UniAuth Gateway Kubernetes部署配置
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uniauth-gateway
+  labels:
+    app: uniauth-gateway
+    version: v1.0.0
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: uniauth-gateway
+  template:
+    metadata:
+      labels:
+        app: uniauth-gateway
+        version: v1.0.0
+    spec:
+      containers:
+      - name: uniauth-gateway
+        image: uniauth-gateway:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        # 服务器配置
+        - name: UNIAUTH_GIN_SERVER_PORT
+          value: "8080"
+        - name: UNIAUTH_GIN_SERVER_MODE
+          value: "release"
+        
+        # Session配置
+        - name: UNIAUTH_GIN_SESSION_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: uniauth-gateway-secrets
+              key: session-secret-key
+        - name: UNIAUTH_GIN_SESSION_COOKIE_NAME
+          value: "uniauth_session"
+        - name: UNIAUTH_GIN_SESSION_COOKIE_DOMAIN
+          value: ".example.com"
+        - name: UNIAUTH_GIN_SESSION_COOKIE_MAX_AGE
+          value: "7200"
+        - name: UNIAUTH_GIN_SESSION_COOKIE_SECURE
+          value: "true"
+        
+        # SSO配置
+        - name: UNIAUTH_GIN_SSO_LOGIN_URL
+          value: "https://login.microsoftonline.com/{tenant-id}/oauth2/v2.0/authorize"
+        - name: UNIAUTH_GIN_SSO_CALLBACK_URL
+          value: "/auth/callback"
+        - name: UNIAUTH_GIN_SSO_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: uniauth-gateway-secrets
+              key: sso-client-id
+        - name: UNIAUTH_GIN_SSO_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: uniauth-gateway-secrets
+              key: sso-client-secret
+        
+        # Redis配置
+        - name: UNIAUTH_GIN_REDIS_ADDR
+          value: "redis-service.default.svc.cluster.local:6379"
+        - name: UNIAUTH_GIN_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secrets
+              key: password
+              optional: true
+        - name: UNIAUTH_GIN_REDIS_DB
+          value: "0"
+        
+        # UniAuth服务配置
+        - name: UNIAUTH_GIN_UNIAUTH_BASE_URL
+          value: "http://uniauth-gf-service.default.svc.cluster.local:8000"
+        - name: UNIAUTH_GIN_UNIAUTH_TIMEOUT
+          value: "30"
+        
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uniauth-gateway-service
+  labels:
+    app: uniauth-gateway
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: uniauth-gateway
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: uniauth-gateway-secrets
+type: Opaque
+stringData:
+  session-secret-key: "your-super-secret-session-key-change-in-production"
+  sso-client-id: "your-sso-client-id"
+  sso-client-secret: "your-sso-client-secret"
+
+---
+# 可选：HorizontalPodAutoscaler 用于自动扩缩容
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: uniauth-gateway-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: uniauth-gateway
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
