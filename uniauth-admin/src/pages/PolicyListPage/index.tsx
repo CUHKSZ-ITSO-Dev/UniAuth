@@ -10,7 +10,6 @@ const policiesExampleData = [
   {
     id: 1,
     sub: "policy_admin",
-    dom: "chat_admin",
     obj: "platform",
     act: "entry",
     eft: "allow",
@@ -18,7 +17,6 @@ const policiesExampleData = [
   {
     id: 2,
     sub: "policy_test",
-    dom: "chat_test",
     obj: "platform",
     act: "entry/no",
     eft: "deny",
@@ -26,7 +24,6 @@ const policiesExampleData = [
   {
     id: 3,
     sub: "policy_user",
-    dom: "data",
     obj: "db",
     act: "read",
     eft: "allow",
@@ -38,13 +35,6 @@ const columns: ProColumns<any>[] = [
   {
     title: "主体",
     dataIndex: "sub",
-    valueType: "text",
-    search: true,
-    align: "center",
-  },
-  {
-    title: "域",
-    dataIndex: "dom",
     valueType: "text",
     search: true,
     align: "center",
@@ -108,12 +98,6 @@ function handleDelete(record: any) {
   // 删除接口
   message.success("删除成功");
   console.log("删除规则", record);
-}
-
-function handleNewPolicyClick() {
-  // 前端收集数据后调用添加接口
-  message.success("添加成功");
-  console.log("添加新规则");
 }
 
 const policyListRequest = async (params: any) => {
