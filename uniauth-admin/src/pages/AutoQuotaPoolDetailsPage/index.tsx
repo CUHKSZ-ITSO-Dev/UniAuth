@@ -126,40 +126,29 @@ const AutoQuotaPoolDetailsPage: FC = () => {
     return true;
   };
 
-  // 添加新属性
-  const handleAddProperty = () => {
-    try {
-      const parsed = JSON.parse(jsonData);
-      // 添加一个新属性
-      const newKey = `newProperty${Object.keys(parsed).length}`;
-      parsed[newKey] = "";
-      const formatted = JSON.stringify(parsed, null, 2);
-      setJsonData(formatted);
-      setJsonObject(parsed);
-      message.success('已添加新属性');
-    } catch (error) {
-      message.error('JSON 格式不正确，无法添加属性');
-    }
-  };
-
   return (
     <PageContainer>
       <ProCard>
-        <Title level={4}>
-          编辑自动配额池配置 - {record?.configName || '新建配置'}
-        </Title>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <Title level={4} style={{ margin: 0 }}>
+            自动配额池配置编辑器 - {record?.configName ? `配置名称: ${record.configName}` : '新建配置'}
+          </Title>
+          <div>
+            <Button type="default" onClick={handleFormatJson} style={{ marginRight: 8 }}>
+              格式化 JSON
+            </Button>
+            <Button onClick={handleCancel} style={{ marginRight: 8 }}>
+              取消
+            </Button>
+            <Button type="primary" onClick={handleSave}>
+              保存
+            </Button>
+          </div>
+        </div>
         
         <Tabs activeKey={activeTab} onChange={setActiveTab}>
           <TabPane tab="代码编辑器" key="editor">
             <div style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <Button type="default" onClick={handleFormatJson}>
-                  格式化 JSON
-                </Button>
-                <Button type="default" onClick={handleAddProperty}>
-                  添加属性
-                </Button>
-              </div>
               
               {/* 带行号的文本编辑器 */}
               <div style={{ 
@@ -265,15 +254,6 @@ const AutoQuotaPoolDetailsPage: FC = () => {
             </div>
           </TabPane>
         </Tabs>
-        
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 16 }}>
-          <Button onClick={handleCancel}>
-            取消
-          </Button>
-          <Button type="primary" onClick={handleSave}>
-            保存
-          </Button>
-        </div>
       </ProCard>
     </PageContainer>
   );
