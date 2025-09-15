@@ -94,6 +94,10 @@ function handleViewDetail(record: any) {
   console.log("查看规则详情", record);
 }
 
+function handleNewPolicyClick() {
+  // 新增规则接口
+  console.log("新增规则");
+}
 function handleDelete(record: any) {
   // 删除接口
   message.success("删除成功");
@@ -105,9 +109,6 @@ const policyListRequest = async (params: any) => {
   let data = policiesExampleData;
   if (params.sub) {
     data = data.filter((item) => item.sub.includes(params.sub));
-  }
-  if (params.dom) {
-    data = data.filter((item) => item.dom.includes(params.dom));
   }
   if (params.obj) {
     data = data.filter((item) => item.obj.includes(params.obj));
