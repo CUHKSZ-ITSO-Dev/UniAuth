@@ -2,6 +2,7 @@ import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { PageContainer, ProCard, ProTable } from '@ant-design/pro-components';
 import { Typography, Button, Popconfirm, Table, Space, message } from 'antd';
 import { useRef } from 'react';
+import { history } from 'umi';
 
 const { Title, Text } = Typography;
 
@@ -58,9 +59,9 @@ const columns: ProColumns<AutoQuotaPoolConfig>[] = [
 
 // 事件处理函数
 function handleEdit(record: AutoQuotaPoolConfig) {
-  // 编辑逻辑 - 实际应用中可能会打开弹窗或跳转到编辑页面
+  // 编辑逻辑 - 在当前页面切换到 AutoQuotaPoolDetailsPage
   console.log('编辑配置', record);
-  message.info(`编辑配置：${record.configName}`);
+  history.push(`/auto-quota-pool-details?record=${encodeURIComponent(JSON.stringify(record))}`);
 }
 
 function handleDelete(record: AutoQuotaPoolConfig) {

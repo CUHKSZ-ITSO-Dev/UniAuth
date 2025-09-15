@@ -66,6 +66,12 @@ export default [
     component: "@/pages/AutoQuotaPoolConfigPage",
   },
   {
+    path: "/auto-quota-pool-details",
+    name: "auto-quota-pool-details",
+    component: "@/pages/AutoQuotaPoolDetailsPage",
+    hideInMenu: true,
+  },
+  {
     path: "/",
     redirect: "/welcome",
   },
