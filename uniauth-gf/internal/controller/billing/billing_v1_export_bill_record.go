@@ -15,7 +15,6 @@ import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gres"
 	"github.com/shopspring/decimal"
 	"github.com/xuri/excelize/v2"
@@ -419,19 +418,15 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		filename = fmt.Sprintf("Bill-Batch[Quota Pools]%s.xlsx", time.Now().Format("20060102150405"))
 	}
 
-	if err = f.SaveAs(filename); err != nil {
-		return nil, gerror.Wrap(err, "Excel 文件保存失败")
-	}
-
 	r := g.RequestFromCtx(ctx)
 	if r == nil {
 		return nil, gerror.New("无法从上下文中获取请求对象")
 	}
-	r.Response.ServeFileDownload(filename)
-
-	if err := gfile.Remove(filename); err != nil {
-		return nil, gerror.Wrap(err, "Excel 文件删除失败")
+	r.Response.Header().Set("Content-Type", "application/vnd.ms-excel")
+	r.Response.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	if err = f.Write(r.Response.Writer); err != nil {
+		return nil, gerror.Wrap(err, "Excel 文件流写入响应体失败")
 	}
 
-	return &v1.ExportBillRecordRes{}, nil
+	return
 }
