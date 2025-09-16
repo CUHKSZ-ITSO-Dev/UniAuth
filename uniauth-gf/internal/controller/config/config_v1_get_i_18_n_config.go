@@ -35,6 +35,6 @@ func (c *ControllerV1) GetI18nConfig(ctx context.Context, req *v1.GetI18nConfigR
 	}
 
 	return &v1.GetI18nConfigRes{
-		Json: jsonObj,
+		Config: jsonObj,
 	}, nil
 }

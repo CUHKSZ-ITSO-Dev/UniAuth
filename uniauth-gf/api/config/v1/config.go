@@ -39,7 +39,7 @@ type GetI18nConfigReq struct {
 }
 type GetI18nConfigRes struct {
 	g.Meta `mime:"application/json" dc:"返回某个指定语言的所有翻译配置"`
-	*gjson.Json
+	Config *gjson.Json
 }
 
 type AddI18nItemReq struct {
