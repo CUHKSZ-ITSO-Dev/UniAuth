@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from 'react';
 import { PageContainer, ProCard } from '@ant-design/pro-components';
 import { Form, Input, InputNumber, Button, message, Space, Typography, Row, Col } from 'antd';
 import { useLocation, useNavigate } from 'umi';
-import type { ModelConfig } from '../ModelConfigPage/index';
+import type { ModelConfig } from '../ModelConfigPage/types';
 
 const { Title } = Typography;
 
@@ -52,7 +52,7 @@ const ModelEditPage: FC = () => {
                      typeof values.servicewares === 'string' ? values.servicewares.split(',').map((s: string) => s.trim()) : [],
       };
 
-      console.log('保存方案', formattedValues);
+      console.log('保存模型', formattedValues);
       
       // 发送消息给父窗口（如果在弹窗中）
       if (window.opener) {
@@ -62,7 +62,7 @@ const ModelEditPage: FC = () => {
         );
       }
       
-      message.success(`${isEdit ? '更新' : '创建'}方案成功`);
+      message.success(`${isEdit ? '更新' : '创建'}模型成功`);
       
       // 如果在弹窗中则关闭，否则返回上一页
       if (window.opener) {
@@ -71,7 +71,7 @@ const ModelEditPage: FC = () => {
         navigate('/config/model-config');
       }
     } catch (error) {
-      message.error(`${isEdit ? '更新' : '创建'}方案失败`);
+      message.error(`${isEdit ? '更新' : '创建'}模型失败`);
       console.error('保存失败', error);
     }
   };
@@ -87,7 +87,7 @@ const ModelEditPage: FC = () => {
   return (
     <PageContainer>
       <ProCard>
-        <Title level={4}>{isEdit ? '编辑方案' : '新建方案'}</Title>
+        <Title level={4}>{isEdit ? '编辑模型' : '新建模型'}</Title>
         <Form
           form={form}
           layout="vertical"
@@ -98,10 +98,10 @@ const ModelEditPage: FC = () => {
             <Col span={12}>
               <Form.Item
                 name="approach_name"
-                label="方案名称"
-                rules={[{ required: true, message: '请输入方案名称' }]}
+                label="模型名称"
+                rules={[{ required: true, message: '请输入模型名称' }]}
               >
-                <Input placeholder="请输入方案名称" />
+                <Input placeholder="请输入模型名称" />
               </Form.Item>
             </Col>
             <Col span={12}>
