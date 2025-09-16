@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/os/gtime"
 
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
@@ -25,11 +24,9 @@ func (c *ControllerV1) AddI18nItem(ctx context.Context, req *v1.AddI18nItemReq) 
 
 	// 插入新的国际化配置
 	_, err = dao.ConfigInternationalization.Ctx(ctx).Data(&entity.ConfigInternationalization{
-		LangCode:  req.Lang,
-		Key:       req.Key,
-		Value:     req.Value,
-		CreatedAt: gtime.Now(),
-		UpdatedAt: gtime.Now(),
+		LangCode: req.Lang,
+		Key:      req.Key,
+		Value:    req.Value,
 	}).Insert()
 
 	if err != nil {
