@@ -5,6 +5,7 @@ import (
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 
 	v1 "uniauth-gf/api/config/v1"
@@ -31,7 +32,7 @@ func (c *ControllerV1) EditI18nItem(ctx context.Context, req *v1.EditI18nItemReq
 		// 执行更新操作
 		_, err = dao.ConfigInternationalization.Ctx(ctx).
 			Where("lang_code = ? AND key = ?", req.Lang, req.Key).
-			Data(map[string]any{
+			Data(g.Map{
 				"value":      req.Value,
 				"updated_at": gtime.Now(),
 			}).Update()

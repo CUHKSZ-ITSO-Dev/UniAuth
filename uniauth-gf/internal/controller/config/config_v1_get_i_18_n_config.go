@@ -5,6 +5,7 @@ import (
 
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
@@ -24,7 +25,7 @@ func (c *ControllerV1) GetI18nConfig(ctx context.Context, req *v1.GetI18nConfigR
 	}
 
 	// 创建空的JSON对象
-	jsonObj := gjson.New(map[string]any{})
+	jsonObj := gjson.New(g.Map{})
 
 	// 使用gjson的Set方法直接设置嵌套值
 	for _, item := range items {
