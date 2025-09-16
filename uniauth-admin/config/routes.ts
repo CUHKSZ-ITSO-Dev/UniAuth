@@ -36,10 +36,35 @@ export default [
   // },
 
   {
-    path: "/model-list",
-    name: "model-list",
-    icon: "Database",
-    component: "@/pages/ModelListPage",
+    path: "/config",
+    name: "Config",
+    icon: "Setting",
+    routes: [
+      {
+        path: "/config/model-config",
+        name: "model-config",
+        icon: "Database",
+        component: "@/pages/ModelConfigPage",
+      },
+      {
+        path: "/config/auto-config",
+        name: "auto-config",
+        icon: "Container",
+        component: "@/pages/AutoQuotaPoolConfigPage",
+      },
+      {
+        path: "/config/auto-edit",
+        name: "auto-edit",
+        component: "@/pages/AutoQuotaPoolEditPage",
+        hideInMenu: true,
+      },
+      {
+        path: "/config/model-edit",
+        name: "model-edit",
+        component: "@/pages/ModelEditPage",
+        hideInMenu: true,
+      },
+    ],
   },
   {
     path: "/user-list",
@@ -58,18 +83,6 @@ export default [
     name: "quota-pool-details",
     icon: "Container",
     component: "@/pages/QuotaPoolDetailsPage",
-  },
-  {
-    path: "/auto-quota-pool-config",
-    name: "auto-quota-pool-config",
-    icon: "Container",
-    component: "@/pages/AutoQuotaPoolConfigPage",
-  },
-  {
-    path: "/auto-quota-pool-details",
-    name: "auto-quota-pool-details",
-    component: "@/pages/AutoQuotaPoolDetailsPage",
-    hideInMenu: true,
   },
   {
     path: "/",

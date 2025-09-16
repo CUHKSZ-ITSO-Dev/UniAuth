@@ -206,9 +206,11 @@ const columns: ProColumns<ModelConfig>[] = [
 
 // 事件处理函数
 function handleEdit(record: ModelConfig) {
-  // 编辑逻辑 - 实际应用中可能会打开弹窗或跳转到编辑页面
+  // 编辑逻辑 - 跳转到编辑页面
   console.log('编辑方案', record);
-  message.info(`编辑方案：${record.approach_name}`);
+  // 使用umi的history跳转到编辑页面
+  const history = require('umi').history;
+  history.push(`/config/model-edit?record=${encodeURIComponent(JSON.stringify(record))}`);
 }
 
 function handleDelete(record: ModelConfig) {
@@ -218,9 +220,10 @@ function handleDelete(record: ModelConfig) {
 }
 
 function handleAddModel() {
-  // 添加新方案逻辑
+  // 添加新方案逻辑 - 跳转到编辑页面
   console.log('添加新方案');
-  message.info('添加新方案');
+  const history = require('umi').history;
+  history.push('/config/model-edit');
 }
 
 function handleUpdateModels() {
@@ -268,7 +271,7 @@ const modelListRequest = async (params: any) => {
   };
 };
 
-const ModelListPage: React.FC = () => {
+const ModelConfigPage: React.FC = () => {
   const actionRef = useRef<ActionType | null>(null);
 
   return (
@@ -323,4 +326,4 @@ const ModelListPage: React.FC = () => {
   );
 };
 
-export default ModelListPage;
+export default ModelConfigPage;

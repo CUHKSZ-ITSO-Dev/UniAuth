@@ -59,9 +59,9 @@ const columns: ProColumns<AutoQuotaPoolConfig>[] = [
 
 // 事件处理函数
 function handleEdit(record: AutoQuotaPoolConfig) {
-  // 编辑逻辑 - 在当前页面切换到 AutoQuotaPoolDetailsPage
+  // 编辑逻辑 - 在当前页面切换到 AutoQuotaPoolEditPage
   console.log('编辑配置', record);
-  history.push(`/auto-quota-pool-details?record=${encodeURIComponent(JSON.stringify(record))}`);
+  history.push(`/config/auto-edit?record=${encodeURIComponent(JSON.stringify(record))}`);
 }
 
 function handleDelete(record: AutoQuotaPoolConfig) {
@@ -71,9 +71,9 @@ function handleDelete(record: AutoQuotaPoolConfig) {
 }
 
 function handleAddConfig() {
-  // 添加新配置逻辑
+  // 添加新配置逻辑 - 跳转到编辑页面
   console.log('添加新配置');
-  message.info('添加新配置');
+  history.push('/config/auto-edit');
 }
 
 function handleUpdateConfigs() {

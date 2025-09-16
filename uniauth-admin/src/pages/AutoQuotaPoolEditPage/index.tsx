@@ -13,7 +13,7 @@ export interface AutoQuotaPoolDetailsConfig {
   autoQuotaPoolConfigs: string[];
 }
 
-const AutoQuotaPoolDetailsPage: FC = () => {
+const AutoQuotaPoolEditPage: FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -90,7 +90,7 @@ const AutoQuotaPoolDetailsPage: FC = () => {
       if (window.opener) {
         window.close();
       } else {
-        navigate(-1);
+        navigate('/config/auto-config');
       }
     } catch (error) {
       message.error('保存配置失败');
@@ -102,7 +102,7 @@ const AutoQuotaPoolDetailsPage: FC = () => {
     if (window.opener) {
       window.close();
     } else {
-      navigate(-1);
+      navigate('/config/auto-config');
     }
   };
 
@@ -278,4 +278,4 @@ const AutoQuotaPoolDetailsPage: FC = () => {
   );
 };
 
-export default AutoQuotaPoolDetailsPage;
+export default AutoQuotaPoolEditPage;
