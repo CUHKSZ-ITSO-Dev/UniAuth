@@ -17,21 +17,10 @@ gfcli:
     arch: "amd64,arm64"
     system: "darwin,windows,linux"
     path: "./bin"
+    packSrc: "manifest/config,resource/public,resource/config"
+    exitWhenError: true
+    extra: "-ldflags=\"-w -s\""
   
   run:
     path:  "./bin"
     extra: ""
-    args:  "all"
-
-  docker:
-    build: "-a amd64 -s linux -p temp -ew"
-    tagPrefixes:
-      - my.image.pub/my-app
-
-database:
-  default:
-    link: "pgsql:uniauth:It@73333!@tcp(127.0.0.1:5432)/uniauth"
-    debug: true
-    timezone: "Local"
-    createdAt: "created_at"     
-    updatedAt: "updated_at" 

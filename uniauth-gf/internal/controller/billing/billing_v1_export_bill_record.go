@@ -3,15 +3,19 @@ package billing
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	_ "image/png"
 
+	authV1 "uniauth-gf/api/auth/v1"
 	v1 "uniauth-gf/api/billing/v1"
+	authC "uniauth-gf/internal/controller/auth"
 
-	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gres"
 	"github.com/shopspring/decimal"
 	"github.com/xuri/excelize/v2"
 )
@@ -35,7 +39,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 	} else {
 		target = req.QuotaPools
 	}
-	records.SetViolenceCheck(true)  // 开启冲突检测，避免键名中有.的时候提取错误
+	records.SetViolenceCheck(true) // 开启冲突检测，避免键名中有.的时候提取错误
 
 	// 新建工作表
 	f := excelize.NewFile()
@@ -57,16 +61,24 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		_ = f.SetColWidth(sheet, "I", "I", 12)
 
 		// 插入校徽
-		logoPath := "resource/public/cuhksz-logo-square.png"
+		logoFile := gres.Get("resource/public/cuhksz-logo-square.png")
+		if logoFile == nil {
+			return nil, gerror.New("找不到校徽图像文件")
+		}
+		logoData := logoFile.Content()
 		trueVal := true
-		if err := f.AddPicture(sheet, "E1", logoPath, &excelize.GraphicOptions{
-			ScaleX:          0.26,
-			ScaleY:          0.26,
-			Positioning:     "oneCell",
-			OffsetX:         25,
-			OffsetY:         5,
-			PrintObject:     &trueVal,
-			LockAspectRatio: true,
+		if err := f.AddPictureFromBytes(sheet, "E1", &excelize.Picture{
+			Extension: ".png",
+			File:      logoData,
+			Format: &excelize.GraphicOptions{
+				ScaleX:          0.26,
+				ScaleY:          0.26,
+				Positioning:     "oneCell",
+				OffsetX:         25,
+				OffsetY:         5,
+				PrintObject:     &trueVal,
+				LockAspectRatio: true,
+			},
 		}); err != nil {
 			return nil, gerror.Wrap(err, "无法加载校徽图像")
 		}
@@ -180,7 +192,28 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 
 		// 添加"所有人"字段在配额池下面
 		_ = f.SetCellValue(sheet, "A11", "所有人：")
-		_ = f.SetCellValue(sheet, "B11", "") // 内容先空着
+		var ownerStr string
+		if len(req.Upns) > 0 {
+			ownerStr = sheet
+		} else {
+			// 调用 Auth filter policies 接口
+			policies, err := authC.NewV1().FilterPolicies(ctx, &authV1.FilterPoliciesReq{
+				Objs: []string{"quotaPool/" + sheet},
+				Acts: []string{"owner"},
+			})
+			if err != nil {
+				return nil, gerror.Wrap(err, "调用 Auth 模块 filter policies 接口失败")
+			}
+			// 提取所有策略的第一个元素并用逗号连接
+			var owners []string
+			for _, policy := range policies.Policies {
+				if len(policy) > 0 {
+					owners = append(owners, policy[0])
+				}
+			}
+			ownerStr = strings.Join(owners, ",")
+		}
+		_ = f.SetCellValue(sheet, "B11", ownerStr)
 		_ = f.MergeCell(sheet, "B11", "E11")
 		_ = f.SetCellStyle(sheet, "A11", "I11", infoStyle)
 
@@ -218,7 +251,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		})
 		_ = f.SetCellStyle(sheet, "A14", "I14", headerStyle)
 		var totalCost = decimal.Zero
-		for idx, record := range (records.GetJsons(sheet)) {
+		for idx, record := range records.GetJsons(sheet) {
 			_ = f.SetSheetRow(sheet, fmt.Sprintf("A%d", idx+15), &g.Array{
 				fmt.Sprintf("%d", idx+1),
 				record.Get("upn"),
@@ -368,11 +401,6 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 
 	// f.SetActiveSheet(index)
 
-	// r := g.RequestFromCtx(ctx)
-	// if r == nil {
-	// 	return nil, gerror.New("failed to get request from context")
-	// }
-	// r.Response.ServeFileDownload("Book1.xlsx")
 	// 收尾工作
 	_ = f.DeleteSheet("Sheet1")
 	var filename string
@@ -389,8 +417,16 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		})
 		filename = fmt.Sprintf("Bill-Batch[Quota Pools]%s.xlsx", time.Now().Format("20060102150405"))
 	}
-	if err = f.SaveAs(filename); err != nil {
-		return nil, gerror.Wrap(err, "Excel 文件保存失败")
+
+	r := g.RequestFromCtx(ctx)
+	if r == nil {
+		return nil, gerror.New("无法从上下文中获取请求对象")
 	}
-	return &v1.ExportBillRecordRes{}, nil
+	r.Response.Header().Set("Content-Type", "application/vnd.ms-excel")
+	r.Response.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	if err = f.Write(r.Response.Writer); err != nil {
+		return nil, gerror.Wrap(err, "Excel 文件流写入响应体失败")
+	}
+
+	return
 }
