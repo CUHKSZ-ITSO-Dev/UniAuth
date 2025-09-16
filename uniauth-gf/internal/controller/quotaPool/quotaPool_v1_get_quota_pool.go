@@ -22,8 +22,6 @@ func (c *ControllerV1) GetQuotaPool(ctx context.Context, req *v1.GetQuotaPoolReq
 		return
 	}
 	res.Items = make([]v1.QuotaPoolItem, 0, len(items))
-	for _, it := range items {
-		res.Items = append(res.Items, it)
-	}
+	res.Items = append(res.Items, items...)
 	return
 }
