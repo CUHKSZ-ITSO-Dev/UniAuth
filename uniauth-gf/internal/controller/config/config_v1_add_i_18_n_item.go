@@ -2,42 +2,41 @@ package config
 
 import (
 	"context"
-	"uniauth-gf/internal/dao"
-	"uniauth-gf/internal/model/entity"
+
+	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/os/gtime"
 
 	v1 "uniauth-gf/api/config/v1"
-
-	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/frame/g"
+	"uniauth-gf/internal/dao"
+	"uniauth-gf/internal/model/do"
 )
 
 func (c *ControllerV1) AddI18nItem(ctx context.Context, req *v1.AddI18nItemReq) (res *v1.AddI18nItemRes, err error) {
-	res = &v1.AddI18nItemRes{OK: false}
-	// 使用事务
-	err = g.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		// 检查是否已存在
-		exists, err := dao.ConfigInternationalization.Ctx(ctx).TX(tx).
-			Where("lang_code = ? AND key = ?", req.Lang, req.Key).
-			Count()
-		if err != nil {
-			return err
-		}
-		if exists > 0 {
-			return gerror.New("该语言和键已存在")
-		}
-		// 插入新数据
-		data := &entity.ConfigInternationalization{
+	// 检查是否已存在相同的 lang_code 和 key 组合
+	count, err := dao.ConfigInternationalization.Ctx(ctx).
+		Where(do.ConfigInternationalization{
 			LangCode: req.Lang,
 			Key:      req.Key,
-			Value:    req.Value,
-		}
-		_, err = dao.ConfigInternationalization.Ctx(ctx).TX(tx).Data(data).Insert()
-		if err != nil {
-			return err
-		}
-		res.OK = true
-		return nil
-	})
-	return res, err
+		}).Count()
+	if err != nil {
+		return &v1.AddI18nItemRes{OK: false}, gerror.Wrap(err, "查询国际化配置失败")
+	}
+
+	if count > 0 {
+		return &v1.AddI18nItemRes{OK: false}, gerror.Newf("国际化配置已存在: lang=%s, key=%s", req.Lang, req.Key)
+	}
+
+	// 插入新的国际化配置
+	_, err = dao.ConfigInternationalization.Ctx(ctx).Data(do.ConfigInternationalization{
+		LangCode:  req.Lang,
+		Key:       req.Key,
+		Value:     req.Value,
+		CreatedAt: gtime.Now(),
+		UpdatedAt: gtime.Now(),
+	}).Insert()
+
+	if err != nil {
+		return &v1.AddI18nItemRes{OK: false}, gerror.Wrap(err, "插入国际化配置失败")
+	}
+	return &v1.AddI18nItemRes{OK: true}, nil
 }
