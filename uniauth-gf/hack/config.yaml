@@ -17,7 +17,7 @@ gfcli:
     arch: "amd64,arm64"
     system: "darwin,windows,linux"
     path: "./bin"
-    packSrc: "manifest/config,resource/public,resource/config"
+    packSrc: "resource/public,resource/config"
     exitWhenError: true
     extra: "-ldflags=\"-w -s\""
   
