@@ -11,19 +11,8 @@ import (
 )
 
 func (c *ControllerV1) EditI18nItem(ctx context.Context, req *v1.EditI18nItemReq) (res *v1.EditI18nItemRes, err error) {
-	// 检查是否存在相同的 lang_code 和 key 组合
-	count, err := dao.ConfigInternationalization.Ctx(ctx).
-		Where("lang_code = ? AND key = ?", req.Lang, req.Key).Count()
-	if err != nil {
-		return &v1.EditI18nItemRes{OK: false}, gerror.Wrap(err, "查询国际化配置失败")
-	}
-
-	if count == 0 {
-		return &v1.EditI18nItemRes{OK: false}, gerror.Newf("国际化配置不存在: lang=%s, key=%s", req.Lang, req.Key)
-	}
-
-	// 更新国际化配置
-	_, err = dao.ConfigInternationalization.Ctx(ctx).
+	// 直接执行更新操作，然后检查受影响的行数
+	result, err := dao.ConfigInternationalization.Ctx(ctx).
 		Where("lang_code = ? AND key = ?", req.Lang, req.Key).
 		Data(map[string]any{
 			"value":      req.Value,
@@ -32,6 +21,16 @@ func (c *ControllerV1) EditI18nItem(ctx context.Context, req *v1.EditI18nItemReq
 
 	if err != nil {
 		return &v1.EditI18nItemRes{OK: false}, gerror.Wrap(err, "更新国际化配置失败")
+	}
+
+	// 检查受影响的行数，如果为0则说明记录不存在
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return &v1.EditI18nItemRes{OK: false}, gerror.Wrap(err, "获取更新结果失败")
+	}
+
+	if rowsAffected == 0 {
+		return &v1.EditI18nItemRes{OK: false}, gerror.Newf("国际化配置不存在: lang=%s, key=%s", req.Lang, req.Key)
 	}
 
 	return &v1.EditI18nItemRes{OK: true}, nil
