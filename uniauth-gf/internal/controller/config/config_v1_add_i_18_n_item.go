@@ -8,16 +8,13 @@ import (
 
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
-	"uniauth-gf/internal/model/do"
+	"uniauth-gf/internal/model/entity"
 )
 
 func (c *ControllerV1) AddI18nItem(ctx context.Context, req *v1.AddI18nItemReq) (res *v1.AddI18nItemRes, err error) {
 	// 检查是否已存在相同的 lang_code 和 key 组合
 	count, err := dao.ConfigInternationalization.Ctx(ctx).
-		Where(do.ConfigInternationalization{
-			LangCode: req.Lang,
-			Key:      req.Key,
-		}).Count()
+		Where("lang_code = ? AND key = ?", req.Lang, req.Key).Count()
 	if err != nil {
 		return &v1.AddI18nItemRes{OK: false}, gerror.Wrap(err, "查询国际化配置失败")
 	}
@@ -27,7 +24,7 @@ func (c *ControllerV1) AddI18nItem(ctx context.Context, req *v1.AddI18nItemReq) 
 	}
 
 	// 插入新的国际化配置
-	_, err = dao.ConfigInternationalization.Ctx(ctx).Data(do.ConfigInternationalization{
+	_, err = dao.ConfigInternationalization.Ctx(ctx).Data(&entity.ConfigInternationalization{
 		LangCode:  req.Lang,
 		Key:       req.Key,
 		Value:     req.Value,
