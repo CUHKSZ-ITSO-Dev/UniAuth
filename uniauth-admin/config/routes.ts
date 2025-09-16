@@ -62,8 +62,9 @@ export default [
     component: "@/pages/404Page",
   },
   {
-  path: '/policy-list',
-  name: 'policy-list',
-  component: '@/pages/PolicyListPage',
+  path: "/policy-list",
+  name: "policy-list",
+  icon: "bars",
+  component: "@/pages/PolicyListPage",
 },
 ];
