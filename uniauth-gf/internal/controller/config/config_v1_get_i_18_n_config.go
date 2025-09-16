@@ -9,13 +9,17 @@ import (
 
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
-	"uniauth-gf/internal/model/entity"
 )
 
 func (c *ControllerV1) GetI18nConfig(ctx context.Context, req *v1.GetI18nConfigReq) (res *v1.GetI18nConfigRes, err error) {
+	type i18nItem struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	}
+
 	// 查询指定语言的所有配置项
-	var items []entity.ConfigInternationalization
-	if err = dao.ConfigInternationalization.Ctx(ctx).Where("lang_code = ?", req.Lang).Scan(&items); err != nil {
+	var items []i18nItem
+	if err = dao.ConfigInternationalization.Ctx(ctx).Where("lang_code = ?", req.Lang).Fields("key, value").Scan(&items); err != nil {
 		return nil, gerror.Wrap(err, "查询i18n配置失败")
 	}
 
