@@ -11,6 +11,7 @@ gfcli:
             import: github.com/shopspring/decimal
         withTime: true
         gJsonSupport: true
+        tatablesEx: casbin_rule
 
   build:
     name: "uniauth"
@@ -19,8 +20,8 @@ gfcli:
     path: "./bin"
     packSrc: "manifest/config,resource/public,resource/config"
     exitWhenError: true
-    extra: "-ldflags=\"-w -s\""
-  
+    extra: '-ldflags="-w -s"'
+
   run:
-    path:  "./bin"
+    path: "./bin"
     extra: ""
