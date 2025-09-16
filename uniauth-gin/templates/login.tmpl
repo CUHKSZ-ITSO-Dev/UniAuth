@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPT Services Platform</title>
+  <link rel="icon" href="/assets/CUSZ-02logo-RGB-square.png" type="image/png" />
+
+  <link rel="stylesheet" type="text/css" href="../css/tailwind.css" />
+  <link rel="stylesheet" type="text/css" href="../css/components.css" />
+  <link rel="stylesheet" type="text/css" href="../css/bg-effects.css" />
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      overflow-x: hidden;
+      font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Source Han Sans CN", "Noto Sans CJK SC", sans-serif;
+    }
+
+    /* 针对低分辨率屏幕的特殊处理 */
+    @media (max-height: 700px) {
+      .adapt-small-height {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+      }
+
+      .logo-small-height {
+        width: 5rem;
+        height: 5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .title-small-height {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .subtitle-small-height {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .button-small-height {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+      }
+
+      .card-small-height {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        min-height: auto !important;
+      }
+
+      .header-small-height {
+        top: 0.5rem;
+        padding: 0.375rem 1rem;
+      }
+    }
+
+    /* 针对超宽但高度较低的屏幕 */
+    @media (min-width: 1024px) and (max-height: 650px) {
+      .main-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+      }
+    }
+
+    /* 主标题样式 */
+    .main-title {
+      background: linear-gradient(180deg, rgba(8, 8, 8, 1) 0%, rgba(87, 81, 91, 1) 100%);
+      font-weight: 600;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .dark .main-title {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(159, 160, 167, 1) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    @media (max-width: 768px) {
+      .main-title {
+        transition: none;
+      }
+    }
+
+    /* 副标题样式 */
+    .sub-title {
+      font-weight: 500;
+      background: linear-gradient(90deg, rgba(85, 24, 175, 1), rgba(111, 14, 127, 1));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .dark .sub-title {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 1));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* 语言选择器样式 */
+    .language-label {
+      color: rgba(88, 70, 206, 1);
+      transition: color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .dark .language-label {
+      color: rgba(202, 202, 218, 1) !important;
+    }
+
+    .language-select {
+      color: rgba(89, 70, 207, 1);
+      background: rgba(89, 70, 207, 0.2);
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .dark .language-select {
+      color: rgba(202, 202, 218, 1);
+      background: rgba(89, 70, 207, 0.2);
+    }
+
+    /* 移动端语言切换按钮样式 */
+    .mobile-language-button {
+      color: rgba(89, 70, 207, 1);
+      background: rgba(89, 70, 207, 0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .dark .mobile-language-button {
+      color: rgba(202, 202, 218, 1) !important;
+      background: rgba(89, 70, 207, 0.2);
+    }
+
+    .mobile-language-button:hover {
+      background: rgba(89, 70, 207, 0.3);
+    }
+
+    .dark .mobile-language-button:hover {
+      background: rgba(89, 70, 207, 0.3);
+    }
+
+    /* 顶部装饰圆形 */
+    .top-decoration-circle {
+      position: absolute;
+      left: calc(50vw - 80vw);
+      top: -147.5vw;
+      width: 160vw;
+      height: 160vw;
+      opacity: 1;
+      background: linear-gradient(220deg,
+          rgba(226, 212, 255, 1) 0%,
+          rgba(226, 212, 255, 1) 60%,
+          rgba(185, 172, 254, 0.95) 90%,
+          rgba(176, 161, 255, 0.95) 100%);
+      border: 1px solid rgba(129, 115, 223, 1);
+      box-shadow: inset 0px -20px 24px rgba(18, 3, 22, 0.15), 0px 16px 32px rgba(255, 255, 255, 0.32);
+      z-index: 1;
+      border-radius: 50%;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .dark .top-decoration-circle {
+      background: linear-gradient(180deg, rgba(111, 81, 148, 0.5) 0%, rgba(65, 40, 91, 0.95) 100%);
+      border: 1px solid rgba(129, 115, 223, 1);
+      box-shadow: inset 0px -20px 24px rgba(255, 255, 255, 0.15), 0px 16px 32px rgba(135, 62, 210, 0.32);
+    }
+
+    @media (max-width: 768px) {
+      .top-decoration-circle {
+        left: calc(50vw - 150vw);
+        top: -265vw;
+        width: 300vw;
+        height: 300vw;
+      }
+    }
+
+    /* 登录按钮样式 */
+    .login-button {
+      background: linear-gradient(180deg, rgb(239, 239, 239) 0%, rgb(213, 227, 255) 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .login-button:hover {
+      background: linear-gradient(180deg, rgb(255, 255, 255) 0%, rgb(219, 231, 254) 100%);
+    }
+
+    .dark .login-button {
+      background: linear-gradient(160.29deg,
+          rgba(143, 99, 242, 1) 20%,
+          rgba(48, 199, 207, 1) 100%), rgba(255, 255, 255, 0.5);
+      background-blend-mode: normal;
+    }
+
+    .dark .login-button:hover {
+      background: linear-gradient(160.29deg,
+          rgb(157, 119, 244) 20%,
+          rgb(88, 210, 216) 100%), rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+
+<body class="relative min-h-screen flex flex-col bg-white dark:bg-background-dark overflow-hidden"
+  style="transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); font-family: 'PingFang SC', 'Microsoft YaHei', 'Source Han Sans SC', 'Source Han Sans CN', 'Noto Sans CJK SC', sans-serif;">
+  <!-- ========== 背景 ========== -->
+  <div id="light-theme-bg-container" class="theme-bg-container"></div>
+  <div id="dark-theme-bg-container" class="theme-bg-container"></div>
+
+  <!-- 顶部装饰圆形 -->
+  <div class="top-decoration-circle"></div>
+
+  <!-- 顶部导航栏 -->
+  <nav
+    class="fixed top-0 left-0 right-0 z-50 bg-white/20 dark:bg-black/20 backdrop-blur-lg border-b border-white/20 dark:border-white/10 h-16">
+    <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-16 h-full">
+      <div class="flex justify-between items-center h-full">
+        <!-- Logo区域 -->
+        <div class="flex items-center">
+          <!-- 浅色主题logo -->
+          <img src="/assets/light-logo.png" alt="CUHK-Shenzhen Logo"
+            class="h-5 md:h-8 object-contain block dark:hidden" />
+          <!-- 深色主题logo -->
+          <img src="/assets/dark-logo.png" alt="CUHK-Shenzhen Logo"
+            class="h-5 md:h-8 object-contain hidden dark:block" />
+        </div>
+
+        <!-- 右侧控制区域 -->
+        <div class="flex items-center space-x-2 md:space-x-4">
+          <!-- 语言选择器 - 桌面端 -->
+          <div class="hidden md:flex items-center space-x-2">
+            <span data-i18n="language-selector" class="text-sm font-medium language-label">语言 Language</span>
+            <!-- 渐变边框容器 -->
+            <div class="gradient-border-select h-10 w-36">
+              <select id="language-select"
+                class="w-full h-full rounded-md bg-transparent text-text-primary-light dark:text-text-primary-dark focus:bg-transparent min-w-[100px] backdrop-blur-sm border-0 outline-none px-6 py-1 language-select">
+              </select>
+              <svg class="select-arrow block dark:hidden" xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink" width="10.21923828125" height="5.996551513671875"
+                viewBox="0 0 10.21923828125 5.996551513671875" fill="none">
+                <path
+                  d="M9.9952 0.226415C9.82539 0.0566038 9.59898 0 9.37256 0L0.881997 0.0566038C0.655582 0.0566038 0.429167 0.113208 0.259356 0.283019C-0.080267 0.622642 -0.080267 1.13208 0.259356 1.4717L4.50464 5.71698C4.56124 5.77358 4.67445 5.83019 4.73105 5.88679L4.78766 5.9434C5.07068 6.0566 5.4669 6 5.69332 5.77358L9.9386 1.4717C10.3348 1.07547 10.2782 0.566038 9.9952 0.226415Z"
+                  fill="#5946CF">
+                </path>
+              </svg>
+              <svg class="select-arrow hidden dark:block" xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink" width="10.21923828125" height="5.996551513671875"
+                viewBox="0 0 10.21923828125 5.996551513671875" fill="none">
+                <path
+                  d="M9.9952 0.226415C9.82539 0.0566038 9.59898 0 9.37256 0L0.881997 0.0566038C0.655582 0.0566038 0.429167 0.113208 0.259356 0.283019C-0.080267 0.622642 -0.080267 1.13208 0.259356 1.4717L4.50464 5.71698C4.56124 5.77358 4.67445 5.83019 4.73105 5.88679L4.78766 5.9434C5.07068 6.0566 5.4669 6 5.69332 5.77358L9.9386 1.4717C10.3348 1.07547 10.2782 0.566038 9.9952 0.226415Z"
+                  fill="#FFFFFF">
+                </path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 语言切换按钮 - 移动端 -->
+          <div class="gradient-border-select h-8 md:h-10 w-8 md:w-10 flex md:hidden" id="mobile-language-toggle">
+            <button
+              class="p-2 rounded-sm md:rounded-md backdrop-blur-sm bg-transparent h-full w-full flex items-center justify-center mobile-language-button"
+              title="切换语言">
+              <!-- 语言图标 -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                class="w-4 h-4 block">
+                <path
+                  d="M12.87 15.07L10.33 12.56L10.36 12.53C12.1 10.59 13.34 8.36 14.07 6H17V4H10V2H8V4H1V6H12.17C11.5 7.92 10.44 9.75 9 11.35C8.07 10.32 7.3 9.19 6.69 8H4.69C5.42 9.63 6.42 11.17 7.67 12.56L2.58 17.58L4 19L9 14L12.11 17.11L12.87 15.07ZM18.5 10H16.5L12 22H14L15.12 19H19.87L21 22H23L18.5 10ZM15.88 17L17.5 12.67L19.12 17H15.88Z"
+                  fill="currentColor" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- 主题切换按钮 -->
+          <div class="gradient-border-select h-8 md:h-10 w-8 md:w-10" id="theme-toggle">
+            <button
+              class="p-2 rounded-sm md:rounded-md backdrop-blur-sm bg-transparent h-full w-full flex items-center justify-center"
+              style="color: rgba(89, 70, 207, 1); background: rgba(89, 70, 207, 0.2); transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);"
+              title="切换日/夜模式">
+              <!-- 太阳图标 (浅色模式) -->
+              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20"
+                viewBox="0 0 16.085205078125 18" fill="none" class="w-4 h-4 block dark:hidden">
+                <path
+                  d="M9 18C11.776 18 14.3114 16.737 15.9911 14.6675C16.2396 14.3613 15.9686 13.9141 15.5846 13.9872C11.2181 14.8188 7.20819 11.4709 7.20819 7.06303C7.20819 4.52398 8.5674 2.18914 10.7765 0.931992C11.117 0.738211 11.0314 0.221941 10.6444 0.150469C10.102 0.0504468 9.55158 8.21369e-05 9 0C4.03211 -6.71338e-16 0 4.02578 0 9C0 13.9679 4.02578 18 9 18Z"
+                  fill="rgba(89, 70, 207, 1)" />
+              </svg>
+              <!-- 月亮图标 (深色模式) -->
+              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20"
+                viewBox="0 0 19.996826171875 19.996795654296875" fill="none" class="w-5 h-5  hidden dark:block">
+                <path
+                  d="M9.2105 3.2L9.2105 0L10.7905 0L10.7905 3.2C10.2659 3.13971 9.73509 3.13971 9.2105 3.2ZM2.37 3.4905L4.64 5.7505C4.96793 5.33703 5.33653 4.96843 5.75 4.6405L3.49 2.3705L2.37 3.4905ZM14.2484 4.6405C14.6619 4.96843 15.0405 5.33703 15.3684 5.7505L17.6284 3.4905L16.5084 2.3705L14.2484 4.6405ZM4.7368 9.9968C4.7368 12.9036 7.08996 15.2668 9.9968 15.2668C12.9036 15.2668 15.2668 12.9036 15.2668 9.9968C15.2668 7.08996 12.9036 4.7368 9.9968 4.7368C7.08996 4.7368 4.7368 7.08996 4.7368 9.9968ZM0 9.2105L0 10.7905L3.2 10.7905C3.13971 10.2659 3.13971 9.73509 3.2 9.2105L0 9.2105ZM16.7968 9.2105C16.8571 9.73509 16.8571 10.2659 16.7968 10.7905L19.9968 10.7905L19.9968 9.2105L16.7968 9.2105ZM2.3705 16.5079L3.4905 17.6279L5.7505 15.3679C5.33703 15.04 4.96843 14.6614 4.6405 14.2479L2.3705 16.5079ZM14.2479 15.3679L16.5079 17.6279L17.6279 16.5079L15.3679 14.2479C15.04 14.6614 14.6614 15.04 14.2479 15.3679ZM9.2105 16.7968L9.2105 19.9968L10.7905 19.9968L10.7905 16.7968C10.2659 16.8571 9.73509 16.8571 9.2105 16.7968Z"
+                  fill-rule="evenodd" fill="rgba(202, 202, 218, 1)" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主屏幕内容 -->
+  <div id="main-screen" class="flex-1 flex flex-col items-center justify-center bg-transparent h-[100vh]">
+    <!-- 主内容区域 -->
+    <main
+      class="flex flex-col items-center justify-center w-full flex-1 min-h-[100vh] py-4 sm:py-12 md:py-8 lg:py-16 main-container">
+      <!-- 主标题 -->
+      <h1 data-i18n="login-title"
+        class="text-5xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-7xl 2xl:text-8xl text-text-primary-light dark:text-text-primary-dark mb-2 md:mb-2 lg:mb-1 xl:mb-8 mt-0 md:mt-24 lg:mt-60 xl:mt-60 z-10 tracking-wide text-center px-4 sm:px-0 py-4 md:py-1 xl:py-4 main-title">
+        让我们预见未来</h1>
+
+      <!-- 副标题卡片 -->
+      <div class="px-6 py-0 md:py-1 xl:py-3 mb-12 lg:mb-10 xl:mb-16">
+        <h2 data-i18n="login-subtitle" class="text-lg sm:text-xl md:text-xl xl:text-2xl z-10 text-center sub-title">
+          大学GPT服务平台</h2>
+      </div>
+
+      <!-- 登录按钮 -->
+      <div class="relative inline-block">
+        <!-- 三角形亮部装饰 -->
+        <div
+          class="absolute top-0 left-0 w-0 h-0 border-r-[45px] lg:border-r-[50px] border-t-[45px] lg:border-t-[50px] border-r-transparent border-t-white/40 dark:border-t-white/10 z-20 pointer-events-none rounded-lg md:rounded-tl-2xl">
+        </div>
+
+        <div onclick="handleLogin()"
+          class="cursor-pointer btn-gradient-hover rounded-lg md:rounded-2xl px-24 lg:px-28 xl:px-42 py-3 sm:py-4 lg:py-3 xl:py-6 text-xl sm:text-2xl mb-14 md:mb-12 xl:mb-8 z-10 min-w-[200px] relative flex items-center justify-center  border-1 border-white login-button">
+          <div data-i18n="login-button" class="font-semibold">登录</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 版权信息 -->
+    <footer class="w-full py-4 h-6 pb-16 md:pb-24 xl:pb-36">
+      <div class="text-center">
+        <p data-i18n="login-cc" class="text-xs sm:text-sm text-text-muted-light dark:text-text-muted-dark font-medium">
+          版权所有 © 2025 香港中文大学（深圳）</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Disclaimer Modal -->
+  <div id="disclaimer-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity overflow-y-auto py-4">
+    <div data-i18n="disclaimer-modal-content"
+      class="w-[95%] max-w-2xl p-4 sm:p-6 bg-white/95 dark:bg-background-card-dark rounded-xl shadow-card dark:shadow-card-dark opacity-0 transition-all duration-300 origin-center my-4 border border-border-light dark:border-border-dark">
+      <h1 data-i18n="notice-title"
+        class="text-xl sm:text-2xl font-bold text-text-primary-light dark:text-text-primary-dark"></h1>
+      <p data-i18n="notice-content"
+        class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed"></p>
+      <div class="flex justify-end space-x-3 sm:space-x-4 pt-3 sm:pt-4">
+        <button id="notice-reject" data-i18n="notice-reject"
+          class="cursor-pointer px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-primary-800/50 dark:hover:bg-primary-700/50 dark:text-text-primary-dark transition-colors text-sm sm:text-base"></button>
+        <button id="notice-accept" data-i18n="notice-accept"
+          class="cursor-pointer px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white transition-colors text-sm sm:text-base shadow-glow"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Browser Compatibility Warning Modal -->
+  <div id="browser-warning-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity overflow-y-auto py-4">
+    <div
+      class="w-[95%] max-w-2xl p-4 sm:p-6 bg-white/95 dark:bg-background-card-dark rounded-xl shadow-card dark:shadow-card-dark opacity-0 transition-all duration-300 origin-center my-4 border border-border-light dark:border-border-dark">
+      <div class="flex items-center mb-4">
+        <!-- 警告图标 -->
+        <svg class="w-8 h-8 text-yellow-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+            clip-rule="evenodd"></path>
+        </svg>
+        <h1 data-i18n="browser-warning-title"
+          class="text-xl sm:text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">浏览器兼容性提醒</h1>
+        <div id="current-browser-info"></div>
+      </div>
+
+      <div class="mb-4">
+        <p data-i18n="browser-warning-content"
+          class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed mb-3">
+          检测到您正在使用较旧版本的浏览器，这可能会影响您的使用体验。为了获得最佳体验，建议您升级到以下浏览器的最新版本：</p>
+
+        <ul
+          class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed ml-4 space-y-1">
+          <li data-i18n="browser-chrome">• Chrome 120 或更高版本</li>
+          <li data-i18n="browser-firefox">• Firefox 128 或更高版本</li>
+          <li data-i18n="browser-safari">• Safari 16.4 或更高版本</li>
+          <li data-i18n="browser-edge">• Microsoft Edge 120 或更高版本</li>
+        </ul>
+
+        <p data-i18n="browser-warning-note" class="text-sm text-text-muted-light dark:text-text-muted-dark mt-3">
+          您仍然可以继续使用当前浏览器，但某些功能可能无法正常工作。</p>
+      </div>
+
+      <div class="flex justify-end space-x-3 sm:space-x-4 pt-3 sm:pt-4">
+        <button id="browser-warning-dismiss" data-i18n="browser-warning-dismiss"
+          class="cursor-pointer px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-primary-800/50 dark:hover:bg-primary-700/50 dark:text-text-primary-dark transition-colors text-sm sm:text-base">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      window.loadLang && loadLang("login");
+
+      // 移动端语言切换按钮事件
+      const mobileLanguageToggle = document.getElementById('mobile-language-toggle');
+      const languageSelect = document.getElementById('language-select');
+
+      if (mobileLanguageToggle && languageSelect) {
+        mobileLanguageToggle.addEventListener('click', () => {
+          try {
+            // 添加点击动画效果
+            const button = mobileLanguageToggle.querySelector('button');
+
+            // 获取当前语言
+            const currentLang = languageSelect.value || 'zh-CN';
+
+            // 切换语言逻辑 - 支持更多语言选项
+            const languages = Array.from(languageSelect.options).map(option => option.value);
+            const currentIndex = languages.indexOf(currentLang);
+            const nextIndex = (currentIndex + 1) % languages.length;
+            const nextLang = languages[nextIndex];
+
+            // 设置新语言
+            languageSelect.value = nextLang;
+
+            // 触发语言切换事件
+            const event = new Event('change', { bubbles: true });
+            languageSelect.dispatchEvent(event);
+
+            console.log(`语言已切换: ${currentLang} -> ${nextLang}`);
+          } catch (error) {
+            console.error('语言切换失败:', error);
+          }
+        });
+      }
+    });
+
+    // 跳转函数，必须放这里，因为django template
+    function jumpToAI() {
+      localStorage.setItem("noticeAccepted", "true");
+      window.location.href = `https://sts.cuhk.edu.cn/adfs/oauth2/authorize?client_id={{ .client_id }}&response_type=code&redirect_uri={{ .redirect_url }}&resource={{ .resource }}&state={{ .state }}`;
+    }
+
+    // 登录按钮的处理函数
+    function handleLogin() {
+      // 这里添加处理登录按钮点击的代码
+      // 您可能需要根据原有逻辑移植代码到这里
+      // 或直接调用 jumpToAI() 函数
+      jumpToAI();
+    }
+  </script>
+
+  <!-- 浏览器兼容性检测脚本 -->
+  <script>
+    (function () {
+      // 浏览器兼容性检测函数
+      function checkBrowserCompatibility() {
+        const userAgent = navigator.userAgent;
+        let isOldBrowser = false;
+        let browserInfo = '';
+
+        // 检测各种浏览器版本 - 更新版本要求
+        if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edge') === -1) {
+          const chromeMatch = userAgent.match(/Chrome\/(\d+)/);
+          if (chromeMatch) {
+            const version = parseInt(chromeMatch[1]);
+            if (version < 120) {
+              isOldBrowser = true;
+              browserInfo = `Chrome ${version}`;
+            }
+          }
+        } else if (userAgent.indexOf('Firefox') > -1) {
+          const firefoxMatch = userAgent.match(/Firefox\/(\d+)/);
+          if (firefoxMatch) {
+            const version = parseInt(firefoxMatch[1]);
+            if (version < 128) {
+              isOldBrowser = true;
+              browserInfo = `Firefox ${version}`;
+            }
+          }
+        } else if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('Chrome') === -1) {
+          const safariMatch = userAgent.match(/Version\/(\d+)\.(\d+)/);
+          if (safariMatch) {
+            const majorVersion = parseInt(safariMatch[1]);
+            const minorVersion = parseInt(safariMatch[2]);
+            // Safari 16.4 或更高版本
+            if (majorVersion < 16 || (majorVersion === 16 && minorVersion < 4)) {
+              isOldBrowser = true;
+              browserInfo = `Safari ${majorVersion}.${minorVersion}`;
+            }
+          }
+        } else if (userAgent.indexOf('Edg') > -1) {
+          // Microsoft Edge (Chromium-based)
+          const edgeMatch = userAgent.match(/Edg\/(\d+)/);
+          if (edgeMatch) {
+            const version = parseInt(edgeMatch[1]);
+            if (version < 120) {
+              isOldBrowser = true;
+              browserInfo = `Edge ${version}`;
+            }
+          }
+        } else if (userAgent.indexOf('Edge') > -1) {
+          // Legacy Microsoft Edge
+          isOldBrowser = true;
+          browserInfo = 'Legacy Edge';
+        } else if (userAgent.indexOf('MSIE') > -1 || userAgent.indexOf('Trident') > -1) {
+          // Internet Explorer
+          isOldBrowser = true;
+          browserInfo = 'Internet Explorer';
+        } else {
+          // 未知浏览器，假设为旧版本
+          isOldBrowser = true;
+          browserInfo = 'Unknown Browser';
+        }
+
+        return { isOldBrowser, browserInfo };
+      }
+
+      // 隐藏浏览器警告模态框
+      function hideBrowserWarning() {
+        const modal = document.getElementById('browser-warning-modal');
+        if (modal) {
+          const content = modal.querySelector('div > div');
+          if (content) {
+            content.style.opacity = '0';
+            content.style.transform = 'scale(0.95)';
+          }
+          setTimeout(() => {
+            modal.classList.add('hidden');
+          }, 300);
+        }
+      }
+
+      // 页面加载完成后检测浏览器
+      document.addEventListener('DOMContentLoaded', function () {
+        // 检查是否强制使用完整版本（通过URL参数）
+        const urlParams = new URLSearchParams(window.location.search);
+        const forceFullVersion = urlParams.get('force_full') === 'true';
+
+        if (forceFullVersion) {
+          console.log('强制使用完整版本，跳过浏览器检测');
+          return;
+        }
+
+        const { isOldBrowser, browserInfo } = checkBrowserCompatibility();
+
+        if (isOldBrowser) {
+          window.location.href = '/login-legacy';
+          return;
+        }
+
+        console.log('浏览器版本符合要求，使用完整版本');
+      });
+
+      // 绑定按钮事件（保留原有功能）
+      document.addEventListener('DOMContentLoaded', function () {
+        // 我知道了按钮
+        const dismissBtn = document.getElementById('browser-warning-dismiss');
+        if (dismissBtn) {
+          dismissBtn.addEventListener('click', hideBrowserWarning);
+        }
+
+        // 点击模态框背景关闭
+        const modal = document.getElementById('browser-warning-modal');
+        if (modal) {
+          modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+              hideBrowserWarning();
+            }
+          });
+        }
+      });
+    })();
+  </script>
+
+  <script type="module" src="../js/i18n.js"></script>
+  <script src="../js/theme-manager.js"></script>
+  <script src="../js/login-disclaimer-modal.js"></script>
+</body>
+
+</html>
