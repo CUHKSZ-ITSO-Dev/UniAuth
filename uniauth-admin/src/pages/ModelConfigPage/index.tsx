@@ -185,7 +185,7 @@ const columns: ProColumns<ModelConfig>[] = [
     width: 200,
     ellipsis: true,
     render: (_, record) => (
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'left' }}>
         <a key="edit" onClick={() => handleEdit(record)}>
           编辑
         </a>
@@ -284,7 +284,7 @@ const ModelConfigPage: React.FC = () => {
           actionRef={actionRef}
           rowKey="approach_name"
           search={{ labelWidth: 'auto' }}
-          scroll={{ x: 1800 }}
+          scroll={{ x: 1800, y: 300 }}
           rowSelection={{
             selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
           }}

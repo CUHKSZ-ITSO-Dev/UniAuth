@@ -38,7 +38,7 @@ const columns: ProColumns<AutoQuotaPoolConfig>[] = [
     width: 200,
     ellipsis: true,
     render: (_, record) => (
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'left' }}>
         <a key="edit" onClick={() => handleEdit(record)}>
           编辑
         </a>
