@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"uniauth-gf/internal/model/entity"
+
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/shopspring/decimal"
@@ -12,18 +14,7 @@ type GetQuotaPoolReq struct {
 }
 
 type QuotaPoolItem struct {
-	Id             int64           `json:"id"`
-	QuotaPoolName  string          `json:"quotaPoolName"`
-	CronCycle      string          `json:"cronCycle"`
-	RegularQuota   decimal.Decimal `json:"regularQuota"`
-	RemainingQuota decimal.Decimal `json:"remainingQuota"`
-	LastResetAt    string          `json:"lastResetAt"`
-	ExtraQuota     decimal.Decimal `json:"extraQuota"`
-	Personal       bool            `json:"personal"`
-	Disabled       bool            `json:"disabled"`
-	UserinfosRules *gjson.Json     `json:"userinfosRules"`
-	CreatedAt      string          `json:"createdAt"`
-	UpdatedAt      string          `json:"updatedAt"`
+	entity.QuotapoolQuotaPool
 }
 
 type GetQuotaPoolRes struct {
