@@ -6,7 +6,6 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gtime"
 
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
@@ -14,9 +13,8 @@ import (
 )
 
 func (c *ControllerV1) EditI18nItem(ctx context.Context, req *v1.EditI18nItemReq) (res *v1.EditI18nItemRes, err error) {
-	// 使用事务来处理编辑操作
 	err = dao.ConfigInternationalization.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		// 先检查记录是否存在并加锁，防止并发修改
+		// 先检查记录是否存在
 		var existingConfig *entity.ConfigInternationalization
 		err := dao.ConfigInternationalization.Ctx(ctx).
 			Where("lang_code = ? AND key = ?", req.Lang, req.Key).
@@ -33,8 +31,7 @@ func (c *ControllerV1) EditI18nItem(ctx context.Context, req *v1.EditI18nItemReq
 		_, err = dao.ConfigInternationalization.Ctx(ctx).
 			Where("lang_code = ? AND key = ?", req.Lang, req.Key).
 			Data(g.Map{
-				"value":      req.Value,
-				"updated_at": gtime.Now(),
+				"value": req.Value,
 			}).Update()
 
 		if err != nil {
