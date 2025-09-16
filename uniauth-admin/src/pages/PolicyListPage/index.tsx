@@ -2,9 +2,17 @@ import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
 import { Typography, Button, Popconfirm, Table, Space, message } from "antd";
 import { useRef } from "react";
+import { postAuthAdminPoliciesAdd, postAuthAdminPoliciesOpenApiDelete, postAuthAdminPoliciesEdit } from  "@/services/uniauth-umi/crud";  
 
 const { Title, Text } = Typography;
 
+// 定义 Policy 类型
+interface onePolicy {
+  sub : string;
+  obj : string;
+  act : string;
+  eft : string;
+}
 // Policy 示例数据
 const policiesExampleData = [
   {
@@ -79,7 +87,7 @@ const columns: ProColumns<any>[] = [
         <Popconfirm
           key="delete"
           title="确定要删除该规则吗？"
-          onConfirm={() => handleDelete(record)}
+          onConfirm={() => handleDeletePolicy()}
         >
           <a style={{ color: "red" }}>删除</a>
         </Popconfirm>
@@ -94,14 +102,13 @@ function handleViewDetail(record: any) {
   console.log("查看规则详情", record);
 }
 
-function handleNewPolicyClick() {
-  // 新增规则接口
-  console.log("新增规则");
+async function handleAddPolicy() {
 }
-function handleDelete(record: any) {
-  // 删除接口
-  message.success("删除成功");
-  console.log("删除规则", record);
+
+async function handleDeletePolicy() {
+}
+
+async function handleNewPolicyClick() {
 }
 
 const policyListRequest = async (params: any) => {
