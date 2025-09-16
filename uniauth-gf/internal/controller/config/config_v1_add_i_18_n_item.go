@@ -16,11 +16,11 @@ func (c *ControllerV1) AddI18nItem(ctx context.Context, req *v1.AddI18nItemReq) 
 	count, err := dao.ConfigInternationalization.Ctx(ctx).
 		Where("lang_code = ? AND key = ?", req.Lang, req.Key).Count()
 	if err != nil {
-		return &v1.AddI18nItemRes{OK: false}, gerror.Wrap(err, "查询国际化配置失败")
+		return nil, gerror.Wrap(err, "查询国际化配置失败")
 	}
 
 	if count > 0 {
-		return &v1.AddI18nItemRes{OK: false}, gerror.Newf("国际化配置已存在: lang=%s, key=%s", req.Lang, req.Key)
+		return nil, gerror.Newf("国际化配置已存在: lang=%s, key=%s", req.Lang, req.Key)
 	}
 
 	// 插入新的国际化配置
@@ -33,7 +33,7 @@ func (c *ControllerV1) AddI18nItem(ctx context.Context, req *v1.AddI18nItemReq) 
 	}).Insert()
 
 	if err != nil {
-		return &v1.AddI18nItemRes{OK: false}, gerror.Wrap(err, "插入国际化配置失败")
+		return nil, gerror.Wrap(err, "插入国际化配置失败")
 	}
 	return &v1.AddI18nItemRes{OK: true}, nil
 }

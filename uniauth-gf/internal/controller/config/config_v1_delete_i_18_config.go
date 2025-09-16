@@ -37,7 +37,7 @@ func (c *ControllerV1) DeleteI18Config(ctx context.Context, req *v1.DeleteI18Con
 	})
 
 	if err != nil {
-		return &v1.DeleteI18ConfigRes{OK: false}, gerror.Wrap(err, "删除国际化配置失败")
+		return nil, gerror.Wrap(err, "删除国际化配置失败")
 	}
 
 	return &v1.DeleteI18ConfigRes{OK: true}, nil
