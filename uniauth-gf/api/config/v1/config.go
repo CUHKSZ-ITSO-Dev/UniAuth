@@ -38,7 +38,8 @@ type GetI18nConfigReq struct {
 	Lang   string `json:"lang" v:"required" dc:"语言" example:"en-US"`
 }
 type GetI18nConfigRes struct {
-	Config *gjson.Json `json:"config" dc:"配置"`
+	g.Meta `mime:"application/json" dc:"返回某个指定语言的所有翻译配置"`
+	*gjson.Json
 }
 
 type AddI18nItemReq struct {

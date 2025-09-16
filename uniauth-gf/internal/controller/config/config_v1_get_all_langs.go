@@ -3,12 +3,26 @@ package config
 import (
 	"context"
 
-	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 
-	"uniauth-gf/api/config/v1"
+	v1 "uniauth-gf/api/config/v1"
+	"uniauth-gf/internal/dao"
 )
 
 func (c *ControllerV1) GetAllLangs(ctx context.Context, req *v1.GetAllLangsReq) (res *v1.GetAllLangsRes, err error) {
-	return nil, gerror.NewCode(gcode.CodeNotImplemented)
+	// 查询所有不重复的语言代码
+	result, err := dao.ConfigInternationalization.Ctx(ctx).Fields("DISTINCT lang_code").Array()
+	if err != nil {
+		return nil, gerror.Wrap(err, "查询语言列表失败")
+	}
+
+	// 将结果转换为字符串数组
+	var langs []string
+	for _, item := range result {
+		langs = append(langs, item.String())
+	}
+
+	return &v1.GetAllLangsRes{
+		Langs: langs,
+	}, nil
 }
