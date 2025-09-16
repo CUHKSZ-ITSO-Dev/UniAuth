@@ -18,6 +18,11 @@ func (c *ControllerV1) GetI18nConfig(ctx context.Context, req *v1.GetI18nConfigR
 		return nil, gerror.Wrap(err, "查询i18n配置失败")
 	}
 
+	// 如果没有找到任何配置项，返回错误提示
+	if len(items) == 0 {
+		return nil, gerror.Newf("不支持的语言代码或该语言没有任何配置项: %s", req.Lang)
+	}
+
 	// 创建空的JSON对象
 	jsonObj := gjson.New(map[string]any{})
 
