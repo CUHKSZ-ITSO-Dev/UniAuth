@@ -2,7 +2,12 @@ name: Gosec 安全检查
 on:
   push:
     branches: main
+    paths:
+      - 'uniauth-gf/**'
   pull_request:
+    paths:
+      - 'uniauth-gf/**'
+  workflow_dispatch:
 jobs:
   tests:
     runs-on: ubuntu-latest
