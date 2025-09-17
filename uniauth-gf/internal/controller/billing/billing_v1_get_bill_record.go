@@ -17,13 +17,9 @@ func (c *ControllerV1) GetBillRecord(ctx context.Context, req *v1.GetBillRecordR
 	if upnLen == 0 && qpLen == 0 {
 		return nil, gerror.New("UPNs 和 QuotaPools 必须传一个")
 	}
-	// golangci-lint QF1001: could apply De Morgan's law (staticcheck)
-	// 原始条件 !(upnLen > 0 && qpLen == 0 || upnLen == 0 && qpLen > 0)
-	// not (a and b or c and d)
-	// not (a and b) and not (c and d)
-	if !(upnLen > 0 && qpLen == 0) && !(upnLen == 0 && qpLen > 0) {
-		return nil, gerror.New("UPNs 和 QuotaPools 只能同时传一个")
-	}
+ 	if upnLen > 0 && qpLen > 0 {
+ 		return nil, gerror.New("UPNs 和 QuotaPools 只能同时传一个")
+ 	}
 	resultMap := map[string]gdb.Result{}
 	if upnLen > 0 {
 		// upn 模式
