@@ -3,6 +3,7 @@ package quotaPool
 import (
 	"context"
 
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -22,20 +23,34 @@ func (c *ControllerV1) DeleteQuotaPool(ctx context.Context, req *v1.DeleteQuotaP
 		return
 	}
 
-	// 检查是否存在
-	exists, countErr := dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", quotaPoolName).Count()
-	if countErr != nil {
-		err = gerror.WrapCode(gcode.CodeDbOperationError, countErr, "检查配额池是否存在失败")
-		return
-	}
-	if exists == 0 {
-		err = gerror.NewCodef(gcode.CodeNotFound, "配额池不存在: %s", quotaPoolName)
-		return
-	}
+	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		count, err := dao.QuotapoolQuotaPool.Ctx(ctx).
+			Where("quota_pool_name = ?", quotaPoolName).
+			LockUpdate().
+			Count()
+		if err != nil {
+			return gerror.WrapCode(gcode.CodeDbOperationError, err, "检查配额池是否存在失败")
+		}
+		if count == 0 {
+			return gerror.NewCodef(gcode.CodeNotFound, "配额池不存在: %s", quotaPoolName)
+		}
 
-	// 删除
-	if _, delErr := dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", quotaPoolName).Delete(); delErr != nil {
-		err = gerror.WrapCode(gcode.CodeDbOperationError, delErr, "删除配额池失败")
+		result, delErr := dao.QuotapoolQuotaPool.Ctx(ctx).
+			Where("quota_pool_name = ?", quotaPoolName).
+			Delete()
+		if delErr != nil {
+			return gerror.WrapCode(gcode.CodeDbOperationError, delErr, "删除配额池失败")
+		}
+		rows, raErr := result.RowsAffected()
+		if raErr != nil {
+			return gerror.WrapCode(gcode.CodeDbOperationError, raErr, "获取删除影响行数失败")
+		}
+		if rows == 0 {
+			return gerror.NewCodef(gcode.CodeNotFound, "配额池不存在: %s", quotaPoolName)
+		}
+		return nil
+	})
+	if err != nil {
 		return
 	}
 

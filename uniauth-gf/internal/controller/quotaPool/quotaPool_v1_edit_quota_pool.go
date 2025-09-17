@@ -3,6 +3,7 @@ package quotaPool
 import (
 	"context"
 
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -20,29 +21,36 @@ func (c *ControllerV1) EditQuotaPool(ctx context.Context, req *v1.EditQuotaPoolR
 		return
 	}
 
-	// 检查目标是否存在
-	exists, err := dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPoolName).Count()
-	if err != nil {
-		err = gerror.Wrap(err, "检查配额池是否存在失败")
-		return
-	}
-	if exists == 0 {
-		err = gerror.Newf("配额池不存在: %s", req.QuotaPoolName)
-		return
-	}
+	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		count, err := dao.QuotapoolQuotaPool.Ctx(ctx).
+			Where("quota_pool_name = ?", req.QuotaPoolName).
+			LockUpdate().
+			Count()
+		if err != nil {
+			return gerror.Wrap(err, "检查配额池是否存在失败")
+		}
+		if count == 0 {
+			return gerror.Newf("配额池不存在: %s", req.QuotaPoolName)
+		}
 
-	// 执行更新（不改 remaining_quota 与 last_reset_at）
-	_, err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPoolName).Data(g.Map{
-		"cron_cycle":      req.CronCycle,
-		"regular_quota":   req.RegularQuota,
-		"extra_quota":     req.ExtraQuota,
-		"personal":        req.Personal,
-		"disabled":        req.Disabled,
-		"userinfos_rules": req.UserinfosRules,
-		"updated_at":      gtime.Now(),
-	}).Update()
+		// 执行更新（不改 remaining_quota 与 last_reset_at）
+		if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).
+			Where("quota_pool_name = ?", req.QuotaPoolName).
+			Data(g.Map{
+				"cron_cycle":      req.CronCycle,
+				"regular_quota":   req.RegularQuota,
+				"extra_quota":     req.ExtraQuota,
+				"personal":        req.Personal,
+				"disabled":        req.Disabled,
+				"userinfos_rules": req.UserinfosRules,
+				"updated_at":      gtime.Now(),
+			}).
+			Update(); err != nil {
+			return gerror.Wrap(err, "更新配额池失败")
+		}
+		return nil
+	})
 	if err != nil {
-		err = gerror.Wrap(err, "更新配额池失败")
 		return
 	}
 

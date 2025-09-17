@@ -3,6 +3,7 @@ package quotaPool
 import (
 	"context"
 
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/os/gtime"
 
@@ -21,34 +22,39 @@ func (c *ControllerV1) NewQuotaPool(ctx context.Context, req *v1.NewQuotaPoolReq
 		return
 	}
 
-	exists, err := dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPoolName).Count()
-	if err != nil {
-		err = gerror.Wrap(err, "检查配额池是否已存在失败")
-		return
-	}
-	if exists > 0 {
-		err = gerror.Newf("配额池已存在: %s", req.QuotaPoolName)
-		return
-	}
+	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		count, err := dao.QuotapoolQuotaPool.Ctx(ctx).
+			Where("quota_pool_name = ?", req.QuotaPoolName).
+			LockUpdate().
+			Count()
+		if err != nil {
+			return gerror.Wrap(err, "检查配额池是否已存在失败")
+		}
+		if count > 0 {
+			return gerror.Newf("配额池已存在: %s", req.QuotaPoolName)
+		}
 
-	now := gtime.Now()
-	data := &entity.QuotapoolQuotaPool{
-		QuotaPoolName:  req.QuotaPoolName,
-		CronCycle:      req.CronCycle,
-		RegularQuota:   req.RegularQuota,
-		RemainingQuota: req.RegularQuota,
-		LastResetAt:    now,
-		ExtraQuota:     req.ExtraQuota,
-		Personal:       req.Personal,
-		Disabled:       req.Disabled,
-		UserinfosRules: req.UserinfosRules,
-		CreatedAt:      now,
-		UpdatedAt:      now,
-	}
+		now := gtime.Now()
+		data := &entity.QuotapoolQuotaPool{
+			QuotaPoolName:  req.QuotaPoolName,
+			CronCycle:      req.CronCycle,
+			RegularQuota:   req.RegularQuota,
+			RemainingQuota: req.RegularQuota,
+			LastResetAt:    now,
+			ExtraQuota:     req.ExtraQuota,
+			Personal:       req.Personal,
+			Disabled:       req.Disabled,
+			UserinfosRules: req.UserinfosRules,
+			CreatedAt:      now,
+			UpdatedAt:      now,
+		}
 
-	_, err = dao.QuotapoolQuotaPool.Ctx(ctx).Data(data).Insert()
+		if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).Data(data).Insert(); err != nil {
+			return gerror.Wrap(err, "创建配额池失败")
+		}
+		return nil
+	})
 	if err != nil {
-		err = gerror.Wrap(err, "创建配额池失败")
 		return
 	}
 	res.OK = true
