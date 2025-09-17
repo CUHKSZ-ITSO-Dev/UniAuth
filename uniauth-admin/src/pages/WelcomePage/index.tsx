@@ -1,7 +1,6 @@
-import { getUserinfos } from "@/services/uniauth-umi/userInfo";
 import { PageContainer } from "@ant-design/pro-components";
 import { useModel } from "@umijs/max";
-import { Button, Card, theme } from "antd";
+import { Card, theme } from "antd";
 import React from "react";
 
 /**
@@ -160,20 +159,6 @@ const Welcome: React.FC = () => {
           </div>
         </div>
       </Card>
-      <Button
-        type="primary"
-        style={{
-          marginTop: 16,
-        }}
-        onClick={() => {
-          const res = getUserinfos({
-            upn: "122090332@link.cuhk.edu.cn",
-          });
-          console.log(res);
-        }}
-      >
-        立即体验
-      </Button>
     </PageContainer>
   );
 };
