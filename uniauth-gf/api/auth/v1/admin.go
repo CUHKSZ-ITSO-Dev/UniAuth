@@ -28,7 +28,6 @@ type DeletePoliciesRes struct {
 type FilterPoliciesReq struct {
 	g.Meta `path:"/admin/policies/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Policies" dc:"根据给定的条件，返回Policy。留空的字段（传空 Array）将被忽略。"`
 	Subs   []string `json:"subs" dc:"Subjects 列表"`
-	Doms   []string `json:"doms" dc:"Domains 列表"`
 	Objs   []string `json:"objs" dc:"Objects 列表"`
 	Acts   []string `json:"acts" dc:"Actions 列表"`
 }
