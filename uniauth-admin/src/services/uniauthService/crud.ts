@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
 /** 添加 Policies POST /auth/admin/policies/add */
 export async function postAuthAdminPoliciesAdd(

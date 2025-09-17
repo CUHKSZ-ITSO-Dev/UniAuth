@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
 /** 查询用户信息 根据UPN，返回用户的所有信息。 GET /userinfos */
 export async function getUserinfos(
