@@ -4,7 +4,7 @@ import "github.com/gogf/gf/v2/frame/g"
 
 type AddPoliciesReq struct {
 	g.Meta   `path:"/admin/policies/add" tags:"Auth/Admin/CRUD" method:"post" summary:"添加 Policies"`
-	Policies [][]string `json:"policies" v:"required" dc:"Policies" example:"[['sub1', 'dom1', 'obj1', 'act1'], ['sub2', 'dom2', 'obj2', 'act2']]"`
+	Policies [][]string `json:"policies" v:"required" dc:"Policies" example:"[['sub1', 'obj1', 'act1'], ['sub2', 'obj2', 'act2']]"`
 	Skip     bool       `json:"skip" d:"true" dc:"开启时，当规则已经存在时自动跳过，不返回错误；否则会返回错误，并回退所有操作"`
 }
 type AddPoliciesRes struct {
