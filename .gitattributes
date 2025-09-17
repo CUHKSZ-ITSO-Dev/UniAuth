@@ -1,0 +1,2 @@
+uniauth-gf/manifest/config/** filter=git-crypt diff=git-crypt
+uniauth-gf/hack/config.yaml filter=git-crypt diff=git-crypt
