@@ -2,7 +2,12 @@ name: Gosec 安全检查
 on:
   push:
     branches: main
+    paths:
+      - 'uniauth-gf/**'
   pull_request:
+    paths:
+      - 'uniauth-gf/**'
+  workflow_dispatch:
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -21,4 +26,4 @@ jobs:
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
       - name: Run Gosec Security Scanner
         working-directory: ./uniauth-gf
-        run: gosec -exclude-generated ./...
+        run: gosec ./...
