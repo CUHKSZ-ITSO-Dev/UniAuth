@@ -1,7 +1,8 @@
-import { PageContainer } from '@ant-design/pro-components';
-import { useModel } from '@umijs/max';
-import { Card, theme } from 'antd';
-import React from 'react';
+import { getUserinfos } from "@/services/uniauth-umi/userInfo";
+import { PageContainer } from "@ant-design/pro-components";
+import { useModel } from "@umijs/max";
+import { Button, Card, theme } from "antd";
+import React from "react";
 
 /**
  * 每个单独的卡片，为了复用样式抽成了组件
@@ -23,32 +24,32 @@ const InfoCard: React.FC<{
       style={{
         backgroundColor: token.colorBgContainer,
         boxShadow: token.boxShadow,
-        borderRadius: '8px',
-        fontSize: '14px',
+        borderRadius: "8px",
+        fontSize: "14px",
         color: token.colorTextSecondary,
-        lineHeight: '22px',
-        padding: '16px 19px',
-        minWidth: '220px',
+        lineHeight: "22px",
+        padding: "16px 19px",
+        minWidth: "220px",
         flex: 1,
       }}
     >
       <div
         style={{
-          display: 'flex',
-          gap: '4px',
-          alignItems: 'center',
+          display: "flex",
+          gap: "4px",
+          alignItems: "center",
         }}
       >
         <div
           style={{
             width: 48,
             height: 48,
-            lineHeight: '22px',
-            backgroundSize: '100%',
-            textAlign: 'center',
-            padding: '8px 16px 16px 12px',
-            color: '#FFF',
-            fontWeight: 'bold',
+            lineHeight: "22px",
+            backgroundSize: "100%",
+            textAlign: "center",
+            padding: "8px 16px 16px 12px",
+            color: "#FFF",
+            fontWeight: "bold",
             backgroundImage:
               "url('https://gw.alipayobjects.com/zos/bmw-prod/daaf8d50-8e6d-4251-905d-676a24ddfa12.svg')",
           }}
@@ -57,7 +58,7 @@ const InfoCard: React.FC<{
         </div>
         <div
           style={{
-            fontSize: '16px',
+            fontSize: "16px",
             color: token.colorText,
             paddingBottom: 8,
           }}
@@ -67,17 +68,17 @@ const InfoCard: React.FC<{
       </div>
       <div
         style={{
-          fontSize: '14px',
+          fontSize: "14px",
           color: token.colorTextSecondary,
-          textAlign: 'justify',
-          lineHeight: '22px',
+          textAlign: "justify",
+          lineHeight: "22px",
           marginBottom: 8,
         }}
       >
         {desc}
       </div>
       <a href={href} target="_blank" rel="noreferrer">
-        了解更多 {'>'}
+        了解更多 {">"}
       </a>
     </div>
   );
@@ -85,7 +86,7 @@ const InfoCard: React.FC<{
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
-  const { initialState } = useModel('@@initialState');
+  const { initialState } = useModel("@@initialState");
   return (
     <PageContainer>
       <Card
@@ -95,24 +96,24 @@ const Welcome: React.FC = () => {
         styles={{
           body: {
             backgroundImage:
-              initialState?.settings?.navTheme === 'realDark'
-                ? 'background-image: linear-gradient(75deg, #1A1B1F 0%, #191C1F 100%)'
-                : 'background-image: linear-gradient(75deg, #FBFDFF 0%, #F5F7FF 100%)',
+              initialState?.settings?.navTheme === "realDark"
+                ? "background-image: linear-gradient(75deg, #1A1B1F 0%, #191C1F 100%)"
+                : "background-image: linear-gradient(75deg, #FBFDFF 0%, #F5F7FF 100%)",
           },
         }}
       >
         <div
           style={{
-            backgroundPosition: '100% -30%',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: '274px auto',
+            backgroundPosition: "100% -30%",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "274px auto",
             backgroundImage:
               "url('https://gw.alipayobjects.com/mdn/rms_a9745b/afts/img/A*BuFmQqsB2iAAAAAAAAAAAAAAARQnAQ')",
           }}
         >
           <div
             style={{
-              fontSize: '20px',
+              fontSize: "20px",
               color: token.colorTextHeading,
             }}
           >
@@ -120,12 +121,12 @@ const Welcome: React.FC = () => {
           </div>
           <p
             style={{
-              fontSize: '14px',
+              fontSize: "14px",
               color: token.colorTextSecondary,
-              lineHeight: '22px',
+              lineHeight: "22px",
               marginTop: 16,
               marginBottom: 32,
-              width: '65%',
+              width: "65%",
             }}
           >
             Ant Design Pro 是一个整合了 umi，Ant Design 和 ProComponents
@@ -133,8 +134,8 @@ const Welcome: React.FC = () => {
           </p>
           <div
             style={{
-              display: 'flex',
-              flexWrap: 'wrap',
+              display: "flex",
+              flexWrap: "wrap",
               gap: 16,
             }}
           >
@@ -159,6 +160,20 @@ const Welcome: React.FC = () => {
           </div>
         </div>
       </Card>
+      <Button
+        type="primary"
+        style={{
+          marginTop: 16,
+        }}
+        onClick={() => {
+          const res = getUserinfos({
+            upn: "122090332@link.cuhk.edu.cn",
+          });
+          console.log(res);
+        }}
+      >
+        立即体验
+      </Button>
     </PageContainer>
   );
 };
