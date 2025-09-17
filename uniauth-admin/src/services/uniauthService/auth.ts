@@ -1,8 +1,26 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
-/** 基础权限检查 给定sub obj act dom，查询是否有权限。 POST /auth/check */
+/** 获取所属配额池的可用模型 动态获取指定配额池的可用模型。 GET /auth/chat/quotaPools/models */
+export async function getAuthChatQuotaPoolsModels(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getAuthChatQuotaPoolsModelsParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.GetAvailableModelForQuotaPoolRes>(
+    "/auth/chat/quotaPools/models",
+    {
+      method: "GET",
+      params: {
+        ...params,
+      },
+      ...(options || {}),
+    }
+  );
+}
+
+/** 基础权限检查 给定sub obj act，查询是否有权限。 POST /auth/check */
 export async function postAuthCheck(
   body: API.CheckReq,
   options?: { [key: string]: any }
@@ -17,7 +35,7 @@ export async function postAuthCheck(
   });
 }
 
-/** 解释权限来源 给定sub obj act dom，如果允许，返回使其允许的规则。 POST /auth/checkEx */
+/** 解释权限来源 给定sub obj act，如果允许，返回使其允许的规则。 POST /auth/checkEx */
 export async function postAuthCheckEx(
   body: API.CheckAndExplainReq,
   options?: { [key: string]: any }
@@ -45,24 +63,6 @@ export async function getAuthQuotaPoolsAll(
     },
     ...(options || {}),
   });
-}
-
-/** 获取所属配额池的可用模型 动态获取指定配额池的可用模型。 GET /auth/quotaPools/models */
-export async function getAuthQuotaPoolsModels(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getAuthQuotaPoolsModelsParams,
-  options?: { [key: string]: any }
-) {
-  return request<API.GetAvailableModelForQuotaPoolRes>(
-    "/auth/quotaPools/models",
-    {
-      method: "GET",
-      params: {
-        ...params,
-      },
-      ...(options || {}),
-    }
-  );
 }
 
 /** 获取所属配额池的用户 动态获取指定配额池的用户。 GET /auth/quotaPools/users */
