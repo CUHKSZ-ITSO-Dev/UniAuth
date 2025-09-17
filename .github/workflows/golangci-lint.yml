@@ -1,8 +1,10 @@
 name: Golangci-lint Linter 检查
+
 on:
   push:
     branches: main
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,6 +13,7 @@ permissions:
   
 jobs:
   golangci:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -25,4 +28,21 @@ jobs:
           version: v2.1
           working-directory: uniauth-gf
           only-new-issues: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  golangci-manual:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          cache: true
+          cache-dependency-path: uniauth-gf/go.sum
+          go-version: "1.25.0"
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.1
+          working-directory: uniauth-gf
           github-token: ${{ secrets.GITHUB_TOKEN }}
