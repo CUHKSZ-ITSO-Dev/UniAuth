@@ -1,141 +1,194 @@
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
-import { Typography, Button, Popconfirm, Table, Space, message } from "antd";
-import { useRef } from "react";
-import { postAuthAdminPoliciesAdd, postAuthAdminPoliciesOpenApiDelete, postAuthAdminPoliciesEdit } from  "@/services/uniauth-umi/crud";  
+import { Typography, Button, Popconfirm, Table, Space, Modal, Form, Input } from "antd";
+import { useRef, useState } from "react";
+import { postAuthAdminPoliciesAdd, postAuthAdminPoliciesOpenApiDelete, postAuthAdminPoliciesEdit } from  "@/services/uniauth-umi/crud"; 
+import { postAuthAdminPoliciesFilter } from "@/services/uniauth-umi/query"; 
+import { title } from "process";
+import { set } from "lodash";
 
 const { Title, Text } = Typography;
 
-// 定义 Policy 类型
+// 定义 Policy 类
 interface onePolicy {
   sub : string;
   obj : string;
   act : string;
   eft : string;
 }
-// Policy 示例数据
-const policiesExampleData = [
-  {
-    id: 1,
-    sub: "policy_admin",
-    obj: "platform",
-    act: "entry",
-    eft: "allow",
-  },
-  {
-    id: 2,
-    sub: "policy_test",
-    obj: "platform",
-    act: "entry/no",
-    eft: "deny",
-  },
-  {
-    id: 3,
-    sub: "policy_user",
-    obj: "db",
-    act: "read",
-    eft: "allow",
-  },
-];
-
-// 定义表格列
-const columns: ProColumns<any>[] = [
-  {
-    title: "主体",
-    dataIndex: "sub",
-    valueType: "text",
-    search: true,
-    align: "center",
-  },
-  {
-    title: "资源",
-    dataIndex: "obj",
-    valueType: "text",
-    search: true,
-    align: "center",
-  },
-  {
-    title: "动作",
-    dataIndex: "act",
-    valueType: "text",
-    search: true,
-    align: "center",
-  },
-  {
-    title: "效果",
-    dataIndex: "eft",
-    valueType: "select",
-    valueEnum: {
-      allow: { text: "开启" },
-      deny: { text: "关闭" },
-    },
-    search: true,
-    render: (_, record) => (record.eft === "allow" ? "开启" : "关闭"),
-    align: "center",
-  },
-  {
-    title: "操作",
-    valueType: "option",
-    width: 180,
-    ellipsis: true,
-    render: (_, record) => (
-      <div style={{ textAlign: "center" }}>
-        <a key="detail" onClick={() => handleViewDetail(record)}>
-          详情
-        </a>
-        <span style={{ margin: "0 8px" }} />
-        <Popconfirm
-          key="delete"
-          title="确定要删除该规则吗？"
-          onConfirm={() => handleDeletePolicy()}
-        >
-          <a style={{ color: "red" }}>删除</a>
-        </Popconfirm>
-      </div>
-    ),
-    align: "center",
-  },
-];
-
-function handleViewDetail(record: any) {
-  // 跳转详情页
-  console.log("查看规则详情", record);
-}
-
-async function handleAddPolicy() {
-}
-
-async function handleDeletePolicy() {
-}
-
-async function handleNewPolicyClick() {
-}
-
-const policyListRequest = async (params: any) => {
-  // 实际的request请求
-  let data = policiesExampleData;
-  if (params.sub) {
-    data = data.filter((item) => item.sub.includes(params.sub));
-  }
-  if (params.obj) {
-    data = data.filter((item) => item.obj.includes(params.obj));
-  }
-  if (params.act) {
-    data = data.filter((item) => item.act.includes(params.act));
-  }
-  if (params.eft) {
-    data = data.filter((item) => item.eft === params.eft);
-  }
-  return {
-    data,
-    success: true,
-    total: data.length,
-  };
-};
 
 const PolicyListPage: React.FC = () => {
   const actionRef = useRef<ActionType | null>(null);
+  
+  // 获取 Policy 列表
+  const policyListRequest = async () => {
+    const res = await postAuthAdminPoliciesFilter({
+      subs: [],
+      objs: [],
+      acts: [],
+    });
+    return {
+      data: res.policies?.map((policy: string[]) => ({
+      sub: policy[0],
+      obj: policy[1],
+      act: policy[2],
+      eft: policy[3],
+      })),
+      success: true,
+    };
+  };
 
+  //事件处理函数：编辑
+  function handleEdit(record: onePolicy) {
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [form] = Form.useForm();
+
+    const showModal = () => {
+      setIsModalVisible(true);
+      form.setFieldsValue({
+        sub: record.sub,
+        obj: record.obj,
+        act: record.act,
+      });
+    };
+
+    const handleOk = async () => {
+      const values = await form.validateFields();
+      await postAuthAdminPoliciesEdit({
+        oldPolicy: [record.sub, record.obj, record.act],
+        newPolicy: [values.sub, values.obj, values.act],
+      });
+      setIsModalVisible(false);
+    };
+    const handleCancel = () => {
+      setIsModalVisible(false);
+    };
+    return (
+      <>
+        <a onClick={showModal}>编辑</a>
+        <Modal title="编辑 Policy 规则" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+          <Form form={form} layout="vertical">
+            <Form.Item name="sub" label="主体" rules={[{ required: true, message: "请输入主体" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="obj" label="对象" rules={[{ required: true, message: "请输入对象" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="act" label="操作" rules={[{ required: true, message: "请输入操作" }]}>
+              <Input />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </>
+    );
+  }
+
+  // 事件处理函数：删除
+  const handleDelete = async (record: onePolicy) => {
+    await postAuthAdminPoliciesOpenApiDelete({
+      polices: [
+        [record.sub, record.obj, record.act],
+      ],
+    });
+    if (actionRef.current) {
+      actionRef.current.reload();
+    }
+  };
+
+  // 事件处理函数：添加
+  const handleAdd = () => {
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [form] = Form.useForm();
+    const showModal = () => {
+      setIsModalVisible(true);
+      form.resetFields();
+    };
+    const handleOk = async () => {
+      const values = await form.validateFields();
+      await postAuthAdminPoliciesAdd({
+        polices: [
+          [values.sub, values.obj, values.act, values.eft]
+        ]
+      });
+      setIsModalVisible(false);
+      if (actionRef.current) {
+        actionRef.current.reload();
+      }
+    };
+    const handleCancel = () => {
+      setIsModalVisible(false);
+    };
+    return (
+      <>
+        <Button type="primary" onClick={showModal}>
+          添加新的规则
+        </Button>
+        <Modal title="添加新的 Policy 规则" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+          <Form form={form} layout="vertical">
+            <Form.Item name="sub" label="主体" rules={[{ required: true, message: "请输入主体" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="obj" label="对象" rules={[{ required: true, message: "请输入对象" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="act" label="操作" rules={[{ required: true, message: "请输入操作" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="eft" label="效果" rules={[{ required: true, message: "请输入效果" }]}>
+              <Input defaultValue="allow" />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </>
+    );
+  };
+
+  const columns: ProColumns<onePolicy>[] = [
+    {
+      title: "主体",
+      dataIndex: "sub",
+      valueType: "text",
+      align: "center",
+      width: "25%",
+      ellipsis: true,
+      search: true,
+    },
+    {
+      title: "对象",
+      dataIndex: "obj",
+      valueType: "text",
+      align: "center",
+      width: "25%",
+      ellipsis: true,
+      search: true,
+    },
+    {
+      title: "操作",
+      dataIndex: "act",
+      valueType: "option",
+      align: "center",
+      width: "25%",
+      ellipsis: true,
+      search: true,
+      render: (_, record) => (
+        <div style={{ textAlign: "center" }}>
+          <a style={{ marginRight: 16 }} key="edit" onClick={() => handleEdit(record)}>
+            编辑
+          </a>
+          <Popconfirm
+            key="delete"
+            title="确定删除该规则吗？"
+            onConfirm={() => handleDelete(record)}
+            okText="确定"
+            cancelText="取消"
+          />
+            <a style={{ marginRight: 16 }} color="red" onClick={() => handleDelete(record)}>
+              删除
+            </a>
+        </div>
+      ),
+    }
+  ];
   return (
     <PageContainer>
       <ProCard>
@@ -175,7 +228,7 @@ const PolicyListPage: React.FC = () => {
             );
           }}
           toolBarRender={() => [
-            <Button type="primary" key="new" onClick={handleNewPolicyClick}>
+            <Button type="primary" key="new" onClick={handleAdd}>
               添加新的规则
             </Button>,
           ]}
