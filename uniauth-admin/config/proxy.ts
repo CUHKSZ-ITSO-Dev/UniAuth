@@ -14,14 +14,19 @@ export default {
  * @name 详细的代理配置
  * @doc https://github.com/chimurai/http-proxy-middleware
  */
-  // dev: {
-  //   '/api/': {
-  //     target: 'http://localhost:8000',
-  //     changeOrigin: true,
-  //     pathRewrite: { '^/api/': '/api/' },
-  //     secure: false, // 禁用SSL验证
-  //   },
-  // },
+  dev: {
+    '/userinfos': {
+      target: 'http://localhost:8000',
+      changeOrigin: true,
+      secure: false, // 禁用SSL验证
+      pathRewrite: { '^/userinfos': '/userinfos' },
+    },
+    '/userinfos/filter': {
+      target: 'http://localhost:8000',
+      changeOrigin: true,
+      secure: false,
+    },
+  },
   test: {
     '/api/': {
       target: 'http://localhost:9090',
