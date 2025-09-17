@@ -11,34 +11,28 @@
  */
 export default {
   /**
- * @name 详细的代理配置
- * @doc https://github.com/chimurai/http-proxy-middleware
- */
+   * @name 详细的代理配置
+   * @doc https://github.com/chimurai/http-proxy-middleware
+   */
   dev: {
-    '/userinfos': {
-      target: 'http://localhost:8000',
+    "/api/": {
+      target: "http://localhost:8000",
       changeOrigin: true,
-      secure: false, // 禁用SSL验证
-      pathRewrite: { '^/userinfos': '/userinfos' },
-    },
-    '/userinfos/filter': {
-      target: 'http://localhost:8000',
-      changeOrigin: true,
-      secure: false,
+      pathRewrite: { "^/api/": "" },
     },
   },
-  test: {
-    '/api/': {
-      target: 'http://localhost:9090',
-      changeOrigin: true,
-      pathRewrite: { '^/api/': '/api/' },
-    },
-  },
-  pre: {
-    '/api/': {
-      target: 'http://localhost:9090',
-      changeOrigin: true,
-      pathRewrite: { '^/api/': '/api/' },
-    },
-  },
+  // test: {
+  //   "/api/": {
+  //     target: "http://localhost:8000",
+  //     changeOrigin: true,
+  //     pathRewrite: { "^/api/": "/api/" },
+  //   },
+  // },
+  // pre: {
+  //   "/api/": {
+  //     target: "http://localhost:8000",
+  //     changeOrigin: true,
+  //     pathRewrite: { "^/api/": "/api/" },
+  //   },
+  // },
 };
