@@ -11,7 +11,7 @@ type AddPoliciesRes struct {
 }
 
 type EditPolicyReq struct {
-	g.Meta    `path:"/admin/policies/edit" tags:"Auth/Admin/CRUD" method:"post" summary:"编辑 Policy" dc:"编辑 Policy。需要提供老的 Policy。<br>注意顺序是 Sub Dom Obj Act。"`
+	g.Meta    `path:"/admin/policies/edit" tags:"Auth/Admin/CRUD" method:"post" summary:"编辑 Policy" dc:"编辑 Policy。需要提供老的 Policy。<br>注意顺序是 Sub Obj Act。"`
 	OldPolicy []string `json:"oldPolicy" v:"required" dc:"旧的 Policy" example:"['alice','chat_production','platform','entry']"`
 	NewPolicy []string `json:"newPolicy" v:"required" dc:"新的 Policy" example:"[\"alice\",\"chat_production\",\"platform\",\"entry/no\"]"`
 }
@@ -20,7 +20,7 @@ type EditPolicyRes struct {
 
 type DeletePoliciesReq struct {
 	g.Meta   `path:"/admin/policies/delete" tags:"Auth/Admin/CRUD" method:"post" summary:"删除 Policies" dc:"删除 Policies。原子性操作，当规则中有一条和数据库中的规则不匹配，立即回滚所有操作并返回错误。"`
-	Policies [][]string `json:"policies" v:"required" dc:"Policies" examples:"[['sub1', 'dom1', 'obj1', 'act1'], ['sub2', 'dom2', 'obj2', 'act2']]"`
+	Policies [][]string `json:"policies" v:"required" dc:"Policies" examples:"[['sub1', 'obj1', 'act1'], ['sub2', 'obj2', 'act2']]"`
 }
 type DeletePoliciesRes struct {
 }
