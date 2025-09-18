@@ -3,396 +3,430 @@ package billing
 import (
 	"context"
 	"fmt"
-	"strconv"
+	"strings"
 	"time"
 
+	_ "image/png"
+
+	authV1 "uniauth-gf/api/auth/v1"
 	v1 "uniauth-gf/api/billing/v1"
+	authC "uniauth-gf/internal/controller/auth"
 
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/signintech/gopdf"
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gres"
+	"github.com/shopspring/decimal"
+	"github.com/xuri/excelize/v2"
 )
-
-// truncateString 截断字符串
-func truncateString(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
-	}
-	return s[:maxLen-3] + "..."
-}
 
 func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillRecordReq) (res *v1.ExportBillRecordRes, err error) {
 	recordsPri, err := c.GetBillRecord(ctx, &v1.GetBillRecordReq{
-		QuotaPool: req.QuotaPool,
-		Svc:       req.Svc,
-		Product:   req.Product,
-		StartTime: req.StartTime,
-		EndTime:   req.EndTime,
+		Upns:       req.Upns,
+		QuotaPools: req.QuotaPools,
+		Svc:        req.Svc,
+		Product:    req.Product,
+		StartTime:  req.StartTime,
+		EndTime:    req.EndTime,
 	})
 	if err != nil {
 		return nil, gerror.Wrap(err, "复用获取账单记录接口时失败")
 	}
-
-	// 创建PDF对象
-	pdf := gopdf.GoPdf{}
-	pdf.Start(gopdf.Config{
-		PageSize: *gopdf.PageSizeA4,
-	})
-	pdf.AddPage()
-
-	// 添加字体
-	err = pdf.AddTTFFont("SourceHanSans", "resource/font/SourceHanSansSC-VF.ttf")
-	if err != nil {
-		return nil, gerror.Wrap(err, "添加字体时失败")
+	records := recordsPri.Records
+	var target []string
+	if len(req.Upns) > 0 {
+		target = req.Upns
+	} else {
+		target = req.QuotaPools
 	}
+	records.SetViolenceCheck(true) // 开启冲突检测，避免键名中有.的时候提取错误
 
-	// 页面边距
-	leftMargin := 40.0
-	rightMargin := 555.0
-	topMargin := 60.0
+	// 新建工作表
+	f := excelize.NewFile()
+	defer func() {
+		if errClose := f.Close(); errClose != nil {
+			err = gerror.Wrap(errClose, "Excel 文件关闭失败")
+		}
+	}()
 
-	// 绘制页眉
-	pdf.SetLineWidth(2)
-	pdf.SetStrokeColor(0, 102, 204) // 蓝色
-	pdf.Line(leftMargin, topMargin-10, rightMargin, topMargin-10)
-
-	// 公司Logo位置（预留）
-	pdf.SetFillColor(240, 240, 240)
-	pdf.RectFromUpperLeftWithStyle(leftMargin, topMargin, 80, 60, "F")
-	pdf.SetX(leftMargin + 5)
-	pdf.SetY(topMargin + 25)
-	err = pdf.SetFont("SourceHanSans", "", 10)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
-	}
-	pdf.SetTextColor(100, 100, 100)
-	pdf.Cell(nil, "LOGO")
-
-	// 我方公司信息
-	pdf.SetX(leftMargin)
-	pdf.SetY(topMargin + 70)
-	err = pdf.SetFont("SourceHanSans", "", 12)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
-	}
-	pdf.SetTextColor(0, 0, 0)
-	pdf.Cell(nil, "深度研究科技有限公司")
-	pdf.Br(15)
-
-	pdf.SetX(leftMargin)
-	err = pdf.SetFont("SourceHanSans", "", 10)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
-	}
-	pdf.SetTextColor(80, 80, 80)
-	pdf.Cell(nil, "地址: 北京市海淀区中关村大街1号")
-	pdf.Br(12)
-	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "电话: 010-12345678")
-	pdf.Br(12)
-	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "邮箱: billing@deepresearch.com")
-	pdf.Br(12)
-	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "税号: 91110108MA01234567")
-
-	// 账单标题
-	pdf.SetX(300)
-	pdf.SetY(topMargin + 20)
-	err = pdf.SetFont("SourceHanSans", "", 24)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
-	}
-	pdf.SetTextColor(0, 102, 204)
-	pdf.Cell(nil, "服务账单")
-
-	// 账单信息框
-	billInfoY := topMargin + 70
-	pdf.SetFillColor(245, 248, 252)
-	pdf.RectFromUpperLeftWithStyle(300, billInfoY, 255, 90, "F")
-	pdf.SetStrokeColor(200, 200, 200)
-	pdf.RectFromUpperLeftWithStyle(300, billInfoY, 255, 90, "S")
-
-	// 账单编号和日期
-	pdf.SetX(310)
-	pdf.SetY(billInfoY + 10)
-	err = pdf.SetFont("SourceHanSans", "", 11)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
-	}
-	pdf.SetTextColor(60, 60, 60)
-	billNumber := fmt.Sprintf("BILL-%s-%d", req.QuotaPool, time.Now().Unix())
-	pdf.Cell(nil, fmt.Sprintf("账单编号: %s", billNumber))
-	pdf.Br(15)
-
-	pdf.SetX(310)
-	pdf.Cell(nil, fmt.Sprintf("账单日期: %s", time.Now().Format("2006-01-02")))
-	pdf.Br(15)
-
-	pdf.SetX(310)
-	pdf.Cell(nil, fmt.Sprintf("服务期间: %s 至 %s", req.StartTime, req.EndTime))
-	pdf.Br(15)
-
-	pdf.SetX(310)
-	pdf.Cell(nil, fmt.Sprintf("配额池: %s", req.QuotaPool))
-
-	// 客户信息
-	customerY := billInfoY + 110
-	pdf.SetX(leftMargin)
-	pdf.SetY(customerY)
-	err = pdf.SetFont("SourceHanSans", "", 12)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
-	}
-	pdf.SetTextColor(0, 0, 0)
-	pdf.Cell(nil, "账单接收方:")
-	pdf.Br(18)
-
-	pdf.SetFillColor(250, 250, 250)
-	pdf.RectFromUpperLeftWithStyle(leftMargin, customerY+20, 250, 70, "F")
-	pdf.SetStrokeColor(220, 220, 220)
-	pdf.RectFromUpperLeftWithStyle(leftMargin, customerY+20, 250, 70, "S")
-
-	pdf.SetX(leftMargin + 10)
-	pdf.SetY(customerY + 30)
-	err = pdf.SetFont("SourceHanSans", "", 11)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
-	}
-	pdf.SetTextColor(40, 40, 40)
-	pdf.Cell(nil, "智能科技有限公司")
-	pdf.Br(15)
-
-	pdf.SetX(leftMargin + 10)
-	pdf.Cell(nil, "地址: 上海市浦东新区张江高科技园区")
-	pdf.Br(15)
-
-	pdf.SetX(leftMargin + 10)
-	pdf.Cell(nil, "联系人: 张经理")
-	pdf.Br(15)
-
-	pdf.SetX(leftMargin + 10)
-	pdf.Cell(nil, "电话: 021-87654321")
-
-	// 服务明细表格
-	tableY := customerY + 110
-	pdf.SetY(tableY)
-
-	// 表格标题
-	pdf.SetX(leftMargin)
-	err = pdf.SetFont("SourceHanSans", "", 14)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
-	}
-	pdf.SetTextColor(0, 0, 0)
-	pdf.Cell(nil, "服务明细")
-	pdf.Br(25)
-
-	// 表格参数
-	tableStartX := leftMargin
-	tableWidth := rightMargin - leftMargin
-	columnWidths := []float64{30, 75, 65, 65, 60, 60, 70, 90}
-	headers := []string{"序号", "用户标识", "服务类型", "产品名称", "计费方案", "来源", "费用", "使用时间"}
-
-	// 绘制表头函数
-	drawTableHeader := func() {
-		currentY := pdf.GetY()
-
-		// 表头背景
-		pdf.SetFillColor(0, 102, 204)
-		pdf.RectFromUpperLeftWithStyle(tableStartX, currentY, tableWidth, 25, "F")
-
-		// 表头文字
-		err = pdf.SetFont("SourceHanSans", "", 8)
+	for _, sheet := range target {
+		// 新建工作簿
+		_, err := f.NewSheet(sheet)
 		if err != nil {
-			return
+			return nil, gerror.Wrap(err, "Excel 新建工作表失败")
 		}
-		pdf.SetTextColor(255, 255, 255)
 
-		currentX := tableStartX
-		for i, header := range headers {
-			// 计算文字居中位置
-			textWidth, _ := pdf.MeasureTextWidth(header)
-			centerX := currentX + (columnWidths[i]-textWidth)/2
-			pdf.SetX(centerX)
-			pdf.SetY(currentY + 8)
-			pdf.Cell(nil, header)
-			currentX += columnWidths[i]
+		_ = f.SetColWidth(sheet, "B", "H", 30)
+		_ = f.SetColWidth(sheet, "A", "A", 12)
+		_ = f.SetColWidth(sheet, "I", "I", 12)
+
+		// 插入校徽
+		logoFile := gres.Get("resource/public/cuhksz-logo-square.png")
+		if logoFile == nil {
+			return nil, gerror.New("找不到校徽图像文件")
 		}
-		pdf.SetY(currentY + 25)
-	}
+		logoData := logoFile.Content()
+		trueVal := true
+		if err := f.AddPictureFromBytes(sheet, "E1", &excelize.Picture{
+			Extension: ".png",
+			File:      logoData,
+			Format: &excelize.GraphicOptions{
+				ScaleX:          0.26,
+				ScaleY:          0.26,
+				Positioning:     "oneCell",
+				OffsetX:         25,
+				OffsetY:         5,
+				PrintObject:     &trueVal,
+				LockAspectRatio: true,
+			},
+		}); err != nil {
+			return nil, gerror.Wrap(err, "无法加载校徽图像")
+		}
 
-	// 绘制表头
-	drawTableHeader()
+		// 设置第一行高度以容纳校徽
+		_ = f.SetRowHeight(sheet, 1, 120)
 
-	// 设置表格内容字体
-	err = pdf.SetFont("SourceHanSans", "", 7)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置表格内容字体大小时失败")
-	}
-	pdf.SetTextColor(40, 40, 40)
+		// Header - 机构信息
+		// 创建标题样式
+		titleStyle, _ := f.NewStyle(&excelize.Style{
+			Font: &excelize.Font{
+				Bold: true,
+				Size: 16,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "center",
+			},
+		})
 
-	// 添加记录数据
-	var totalCost float64 = 0
-	rowHeight := 20.0
+		// 创建副标题样式
+		subtitleStyle, _ := f.NewStyle(&excelize.Style{
+			Font: &excelize.Font{
+				Bold: true,
+				Size: 12,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "center",
+			},
+		})
 
-	for i, record := range recordsPri.Records {
-		currentY := pdf.GetY()
+		// 创建账单标题样式
+		billTitleStyle, _ := f.NewStyle(&excelize.Style{
+			Font: &excelize.Font{
+				Bold:  true,
+				Size:  14,
+				Color: "FF0000",
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "center",
+			},
+			Fill: excelize.Fill{
+				Type:    "pattern",
+				Color:   []string{"F0F8FF"},
+				Pattern: 1,
+			},
+		})
 
-		// 绘制行背景（交替颜色）
-		if i%2 == 0 {
-			pdf.SetFillColor(248, 249, 250)
+		// 学校名称放在第二行（校徽下面）
+		_ = f.SetCellValue(sheet, "A2", "香港中文大学（深圳）")
+		_ = f.MergeCell(sheet, "A2", "I2")
+		_ = f.SetCellStyle(sheet, "A2", "I2", titleStyle)
+
+		_ = f.SetCellValue(sheet, "A3", "The Chinese University of Hong Kong, Shenzhen")
+		_ = f.MergeCell(sheet, "A3", "I3")
+		_ = f.SetCellStyle(sheet, "A3", "I3", subtitleStyle)
+
+		// 账单标题
+		_ = f.SetCellValue(sheet, "A7", "正 式 账 单")
+		_ = f.MergeCell(sheet, "A7", "I7")
+		_ = f.SetCellStyle(sheet, "A7", "I7", billTitleStyle)
+
+		// 生成账单编号和日期
+		billNumber := fmt.Sprintf("BILL-%s-%s", sheet, time.Now().Format("20060102150405"))
+		generateDate := time.Now().Format("2006年01月02日")
+
+		// 账单信息区域
+		infoStyle, _ := f.NewStyle(&excelize.Style{
+			Font: &excelize.Font{
+				Bold: true,
+				Size: 11,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "left",
+				Vertical:   "center",
+			},
+		})
+
+		// 创建边框样式
+		borderCenterStyle, _ := f.NewStyle(&excelize.Style{
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "center",
+			},
+			Border: []excelize.Border{
+				{Type: "left", Style: 1, Color: "000000"},
+				{Type: "right", Style: 1, Color: "000000"},
+				{Type: "top", Style: 1, Color: "000000"},
+				{Type: "bottom", Style: 1, Color: "000000"},
+			},
+		})
+
+		// 账单详细信息
+		_ = f.SetCellValue(sheet, "A9", "账单编号：")
+		_ = f.SetCellValue(sheet, "B9", billNumber)
+		_ = f.SetCellValue(sheet, "F9", "生成日期：")
+		_ = f.SetCellValue(sheet, "G9", generateDate)
+		_ = f.SetCellStyle(sheet, "A9", "I9", infoStyle)
+
+		if len(req.Upns) > 0 {
+			_ = f.SetCellValue(sheet, "A10", "UPN：")
 		} else {
-			pdf.SetFillColor(255, 255, 255)
+			_ = f.SetCellValue(sheet, "A10", "配额池：")
 		}
-		pdf.RectFromUpperLeftWithStyle(tableStartX, currentY, tableWidth, rowHeight, "F")
+		_ = f.SetCellValue(sheet, "B10", sheet)
+		_ = f.SetCellValue(sheet, "F10", "账单状态：")
+		_ = f.SetCellValue(sheet, "G10", "正式账单")
+		_ = f.SetCellStyle(sheet, "A10", "I10", infoStyle)
 
-		// 绘制行边框
-		pdf.SetLineWidth(0.5)
-		pdf.SetStrokeColor(220, 220, 220)
-		pdf.RectFromUpperLeftWithStyle(tableStartX, currentY, tableWidth, rowHeight, "S")
-
-		currentX := tableStartX
-
-		// 准备所有字段数据
-		fields := []string{
-			strconv.Itoa(i + 1),                                   // 序号
-			truncateString(record.Get("upn").String(), 12),        // UPN截断
-			truncateString(record.Get("svc").String(), 8),         // 服务
-			truncateString(record.Get("product").String(), 8),     // 产品
-			truncateString(record.Get("plan").String(), 8),        // 计费方案
-			truncateString(record.Get("source").String(), 8),      // 来源
-			fmt.Sprintf("¥%.2f", record.Get("cost").Float64()),    // 费用
-			truncateString(record.Get("created_at").String(), 16), // 创建时间
+		// 添加"所有人"字段在配额池下面
+		_ = f.SetCellValue(sheet, "A11", "所有人：")
+		var ownerStr string
+		if len(req.Upns) > 0 {
+			ownerStr = sheet
+		} else {
+			// 调用 Auth filter policies 接口
+			policies, err := authC.NewV1().FilterPolicies(ctx, &authV1.FilterPoliciesReq{
+				Objs: []string{"quotaPool/" + sheet},
+				Acts: []string{"owner"},
+			})
+			if err != nil {
+				return nil, gerror.Wrap(err, "调用 Auth 模块 filter policies 接口失败")
+			}
+			// 提取所有策略的第一个元素并用逗号连接
+			var owners []string
+			for _, policy := range policies.Policies {
+				if len(policy) > 0 {
+					owners = append(owners, policy[0])
+				}
+			}
+			ownerStr = strings.Join(owners, ",")
 		}
+		_ = f.SetCellValue(sheet, "B11", ownerStr)
+		_ = f.MergeCell(sheet, "B11", "E11")
+		_ = f.SetCellStyle(sheet, "A11", "I11", infoStyle)
 
-		// 累计费用
-		cost := record.Get("cost").Float64()
-		totalCost += cost
+		_ = f.SetCellValue(sheet, "A12", "账单周期：")
+		_ = f.SetCellValue(sheet, "B12", fmt.Sprintf("%v 至 %v", req.StartTime, req.EndTime))
+		_ = f.MergeCell(sheet, "B12", "E12")
+		_ = f.SetCellStyle(sheet, "A12", "I12", infoStyle)
 
-		// 绘制每个字段，居中对齐
-		for j, field := range fields {
-			textWidth, _ := pdf.MeasureTextWidth(field)
-			centerX := currentX + (columnWidths[j]-textWidth)/2
-			pdf.SetX(centerX)
-			pdf.SetY(currentY + 6)
-			pdf.Cell(nil, field)
-			currentX += columnWidths[j]
+		// 表格标题
+		header := g.ArrayStr{"序号", "UPN", "服务", "产品", "计划", "来源", "消费", "记录时间", "记录ID"}
+		_ = f.SetSheetRow(sheet, "A14", &header)
+
+		// 表头样式
+		headerStyle, _ := f.NewStyle(&excelize.Style{
+			Font: &excelize.Font{
+				Bold:  true,
+				Size:  12,
+				Color: "000000",
+			},
+			Fill: excelize.Fill{
+				Type:    "pattern",
+				Color:   []string{"D3D3D3"},
+				Pattern: 1,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "center",
+			},
+			Border: []excelize.Border{
+				{Type: "left", Style: 2, Color: "000000"},
+				{Type: "right", Style: 2, Color: "000000"},
+				{Type: "top", Style: 2, Color: "000000"},
+				{Type: "bottom", Style: 2, Color: "000000"},
+			},
+		})
+		_ = f.SetCellStyle(sheet, "A14", "I14", headerStyle)
+		var totalCost = decimal.Zero
+		for idx, record := range records.GetJsons(sheet) {
+			_ = f.SetSheetRow(sheet, fmt.Sprintf("A%d", idx+15), &g.Array{
+				fmt.Sprintf("%d", idx+1),
+				record.Get("upn"),
+				record.Get("svc"),
+				record.Get("product"),
+				record.Get("plan"),
+				record.Get("source"),
+				record.Get("cost"),
+				record.Get("created_at"),
+				record.Get("id"),
+			})
+			if record.Get("plan").String() == "Included" {
+				_ = f.SetCellRichText(sheet, fmt.Sprintf("G%d", idx+15), []excelize.RichTextRun{
+					{
+						Text: record.Get("cost").String(),
+						Font: &excelize.Font{
+							Strike: true,
+							Color:  "BFBFBF",
+						},
+					},
+					{
+						Text: " Included",
+					},
+				})
+			} else {
+				// 只有非 Included 的项目才计入总计
+				if cost, err := decimal.NewFromString(record.Get("cost").String()); err == nil && cost.IsPositive() {
+					totalCost = totalCost.Add(cost)
+				} else if err != nil {
+					return nil, gerror.Wrap(err, "转换 Decimal 失败")
+				}
+			}
+			_ = f.AddComment(sheet, excelize.Comment{
+				Cell:   fmt.Sprintf("G%d", idx+15),
+				Author: "UniAuth.Billing",
+				Paragraph: []excelize.RichTextRun{
+					{
+						Text: gjson.New(record.Get("remark")).MustToJsonIndentString(),
+					},
+				},
+			})
 		}
-
-		pdf.SetY(currentY + rowHeight)
-
-		// 检查是否需要换页
-		if pdf.GetY() > 720 {
-			pdf.AddPage()
-			drawTableHeader()
+		totalRows := len(records.GetJsons(sheet))
+		// 先给数据行应用边框样式（不包括表头）
+		if totalRows > 0 {
+			_ = f.SetCellStyle(sheet, "A15", fmt.Sprintf("I%d", 14+totalRows), borderCenterStyle)
 		}
+		// 重新应用表头样式，确保不被覆盖
+		_ = f.SetCellStyle(sheet, "A14", "I14", headerStyle)
+
+		// 添加总计行
+		totalRowNum := 15 + totalRows
+		_ = f.SetCellValue(sheet, fmt.Sprintf("F%d", totalRowNum), "总计")
+		_ = f.SetCellValue(sheet, fmt.Sprintf("G%d", totalRowNum), totalCost.Round(2).String())
+
+		// 创建总计行样式（加粗+背景色）
+		totalStyle, _ := f.NewStyle(&excelize.Style{
+			Font: &excelize.Font{
+				Bold: true,
+				Size: 12,
+			},
+			Fill: excelize.Fill{
+				Type:    "pattern",
+				Color:   []string{"FFE4B5"},
+				Pattern: 1,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "center",
+			},
+			Border: []excelize.Border{
+				{Type: "left", Style: 2, Color: "000000"},
+				{Type: "right", Style: 2, Color: "000000"},
+				{Type: "top", Style: 2, Color: "000000"},
+				{Type: "bottom", Style: 2, Color: "000000"},
+			},
+		})
+		_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", totalRowNum), fmt.Sprintf("I%d", totalRowNum), totalStyle)
+
+		// 添加部门信息和联系信息到表格下方
+		deptRowNum := totalRowNum + 2
+		_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", deptRowNum), "资讯科技服务处 Information Technology Services Office")
+		_ = f.MergeCell(sheet, fmt.Sprintf("A%d", deptRowNum), fmt.Sprintf("I%d", deptRowNum))
+
+		contactRowNum := deptRowNum + 1
+		_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", contactRowNum), "地址：广东省深圳市龙岗区龙翔大道2001号 | 联系电话：0755-8427-3333")
+		_ = f.MergeCell(sheet, fmt.Sprintf("A%d", contactRowNum), fmt.Sprintf("I%d", contactRowNum))
+
+		// 创建部门和联系信息样式
+		contactStyle, _ := f.NewStyle(&excelize.Style{
+			Font: &excelize.Font{
+				Size: 10,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "center",
+			},
+		})
+		deptStyle, _ := f.NewStyle(&excelize.Style{
+			Font: &excelize.Font{
+				Bold: true,
+				Size: 12,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "center",
+			},
+		})
+		_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", deptRowNum), fmt.Sprintf("I%d", deptRowNum), deptStyle)
+		_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", contactRowNum), fmt.Sprintf("I%d", contactRowNum), contactStyle)
+
+		// 添加页脚
+		footerRowNum := contactRowNum + 2
+		_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", footerRowNum), "UniAuth Automated System, Billing Module. ©2025, CUHK-Shenzhen")
+		_ = f.MergeCell(sheet, fmt.Sprintf("A%d", footerRowNum), fmt.Sprintf("I%d", footerRowNum))
+
+		// 添加开发团队信息
+		devTeamRowNum := footerRowNum + 1
+		_ = f.SetCellValue(sheet, fmt.Sprintf("A%d", devTeamRowNum), "Developed by the Student Assistant Development Team")
+		_ = f.MergeCell(sheet, fmt.Sprintf("A%d", devTeamRowNum), fmt.Sprintf("I%d", devTeamRowNum))
+
+		// 创建页脚样式
+		footerStyle, _ := f.NewStyle(&excelize.Style{
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "center",
+			},
+			Font: &excelize.Font{
+				Italic: true,
+				Size:   9,
+				Color:  "808080",
+			},
+			Border: []excelize.Border{
+				{Type: "top", Style: 1, Color: "C0C0C0"},
+			},
+		})
+		_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", footerRowNum), fmt.Sprintf("I%d", footerRowNum), footerStyle)
+		_ = f.SetCellStyle(sheet, fmt.Sprintf("A%d", devTeamRowNum), fmt.Sprintf("I%d", devTeamRowNum), footerStyle)
+
+		_ = f.SetHeaderFooter(sheet, &excelize.HeaderFooterOptions{
+			DifferentFirst:   false,
+			DifferentOddEven: false,
+			OddFooter:        "&CUniAuth Automated System, Billing Module. &\"Arial\"&8©2025, CUHK-Shenzhen",
+		})
+		_ = f.AddIgnoredErrors(sheet, "A:I", excelize.IgnoredErrorsNumberStoredAsText) // 忽略单元格中"以文本形式存储的数字"错误
 	}
 
-	// 表格底部边框
-	pdf.SetLineWidth(1)
-	pdf.SetStrokeColor(0, 102, 204)
-	pdf.Line(tableStartX, pdf.GetY(), tableStartX+tableWidth, pdf.GetY())
+	// f.SetActiveSheet(index)
 
-	// 合计区域
-	summaryY := pdf.GetY() + 20
-	pdf.SetY(summaryY)
-
-	// 合计框
-	summaryBoxX := rightMargin - 200
-	pdf.SetFillColor(245, 248, 252)
-	pdf.RectFromUpperLeftWithStyle(summaryBoxX, summaryY, 200, 60, "F")
-	pdf.SetStrokeColor(0, 102, 204)
-	pdf.SetLineWidth(1)
-	pdf.RectFromUpperLeftWithStyle(summaryBoxX, summaryY, 200, 60, "S")
-
-	// 小计
-	pdf.SetX(summaryBoxX + 10)
-	pdf.SetY(summaryY + 10)
-	err = pdf.SetFont("SourceHanSans", "", 11)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
+	// 收尾工作
+	_ = f.DeleteSheet("Sheet1")
+	var filename string
+	if len(req.Upns) > 0 {
+		_ = f.SetDocProps(&excelize.DocProperties{
+			Creator:     "UniAuth Automated System, Billing Module",
+			Description: fmt.Sprintf("GPT 服务账单 - UPNs %v", req.Upns),
+		})
+		filename = fmt.Sprintf("Bill-Batch[UPNS]%s.xlsx", time.Now().Format("20060102150405"))
+	} else {
+		_ = f.SetDocProps(&excelize.DocProperties{
+			Creator:     "UniAuth Automated System, Billing Module",
+			Description: fmt.Sprintf("GPT 服务账单 - 配额池 %v", req.QuotaPools),
+		})
+		filename = fmt.Sprintf("Bill-Batch[Quota Pools]%s.xlsx", time.Now().Format("20060102150405"))
 	}
-	pdf.SetTextColor(60, 60, 60)
-	pdf.Cell(nil, "小计:")
-	pdf.SetX(summaryBoxX + 120)
-	pdf.Cell(nil, fmt.Sprintf("¥%.4f", totalCost))
 
-	// 税费（示例）
-	tax := totalCost * 0.06 // 6%税率
-	pdf.SetX(summaryBoxX + 10)
-	pdf.SetY(summaryY + 25)
-	pdf.Cell(nil, "税费 (6%):")
-	pdf.SetX(summaryBoxX + 120)
-	pdf.Cell(nil, fmt.Sprintf("¥%.4f", tax))
-
-	// 总计
-	total := totalCost + tax
-	pdf.SetX(summaryBoxX + 10)
-	pdf.SetY(summaryY + 40)
-	err = pdf.SetFont("SourceHanSans", "", 12)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
+	r := g.RequestFromCtx(ctx)
+	if r == nil {
+		return nil, gerror.New("无法从上下文中获取请求对象")
 	}
-	pdf.SetTextColor(0, 102, 204)
-	pdf.Cell(nil, "总计:")
-	pdf.SetX(summaryBoxX + 120)
-	pdf.Cell(nil, fmt.Sprintf("¥%.4f", total))
-
-	// 页脚信息
-	footerY := summaryY + 80
-	pdf.SetY(footerY)
-
-	// 付款信息
-	pdf.SetX(leftMargin)
-	err = pdf.SetFont("SourceHanSans", "", 10)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
+	r.Response.Header().Set("Content-Type", "application/vnd.ms-excel")
+	r.Response.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	if err = f.Write(r.Response.Writer); err != nil {
+		return nil, gerror.Wrap(err, "Excel 文件流写入响应体失败")
 	}
-	pdf.SetTextColor(80, 80, 80)
-	pdf.Cell(nil, "付款方式: 银行转账")
-	pdf.Br(15)
 
-	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "账户名称: 深度研究科技有限公司")
-	pdf.Br(15)
-
-	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "开户银行: 中国银行北京中关村支行")
-	pdf.Br(15)
-
-	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "银行账号: 1234 5678 9012 3456 789")
-	pdf.Br(15)
-
-	pdf.SetX(leftMargin)
-	pdf.Cell(nil, "付款期限: 收到账单后30天内")
-
-	// 页面底部线条
-	pdf.SetY(footerY + 90)
-	pdf.SetLineWidth(1)
-	pdf.SetStrokeColor(0, 102, 204)
-	pdf.Line(leftMargin, pdf.GetY(), rightMargin, pdf.GetY())
-
-	// 联系信息
-	pdf.SetX(leftMargin)
-	pdf.SetY(pdf.GetY() + 10)
-	err = pdf.SetFont("SourceHanSans", "", 9)
-	if err != nil {
-		return nil, gerror.Wrap(err, "设置字体失败")
-	}
-	pdf.SetTextColor(120, 120, 120)
-	pdf.Cell(nil, "如有疑问，请联系我们: billing@deepresearch.com | 010-12345678")
-
-	// 生成文件名
-	fileName := fmt.Sprintf("invoice_%s_%s.pdf", req.QuotaPool, time.Now().Format("20060102150405"))
-
-	// 保存PDF
-	pdf.WritePdf(fileName)
 	return
-	// 返回PDF文件内容
-	// fileContent := pdf.GetBytesPdf()
-
-	// return &v1.ExportBillRecordRes{
-	// 	File: fileContent,
-	// }, nil
 }

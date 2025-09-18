@@ -1,24 +1,29 @@
 // https://umijs.org/config/
 
-import { join } from 'node:path';
-import { defineConfig } from '@umijs/max';
-import defaultSettings from './defaultSettings';
-import proxy from './proxy';
+import { join } from "node:path";
+import { defineConfig } from "@umijs/max";
+import defaultSettings from "./defaultSettings";
+import proxy from "./proxy";
 
-import routes from './routes';
+import routes from "./routes";
 
-const { REACT_APP_ENV = 'dev' } = process.env;
+const { REACT_APP_ENV = "dev" } = process.env;
 
 /**
  * @name 使用公共路径
  * @description 部署时的路径，如果部署在非根目录下，需要配置这个变量
- * @doc https://umijs.org/docs/api/config#publicpath
+ * @doc https://umijs.org/docs/api/config#publicpaths
  */
-const PUBLIC_PATH: string = '/';
+const PUBLIC_PATH: string = "/";
 
 type Config = Parameters<typeof defineConfig>[0];
 
 const config: Config = {
+  // https://umijs.org/docs/api/config#define
+  define: {
+    "process.env.REACT_APP_ENV": process.env.REACT_APP_ENV,
+  },
+
   /**
    * @name 开启 hash 模式
    * @description 让 build 之后的产物包含 hash 后缀。通常用于增量发布和避免浏览器加载缓存。
@@ -80,7 +85,6 @@ const config: Config = {
    */
   fastRefresh: true,
 
-
   //============== 以下都是max的插件配置 ===============
   /**
    * @name 数据流插件
@@ -99,7 +103,7 @@ const config: Config = {
    * @name layout 插件
    * @doc https://umijs.org/docs/max/layout-menu
    */
-  title: 'Ant Design Pro',
+  title: "Ant Design Pro",
   layout: {
     locale: true,
     ...defaultSettings,
@@ -111,8 +115,8 @@ const config: Config = {
    * @doc https://umijs.org/docs/max/moment2dayjs
    */
   moment2dayjs: {
-    preset: 'antd',
-    plugins: ['duration'],
+    preset: "antd",
+    plugins: ["duration"],
   },
 
   /**
@@ -121,7 +125,7 @@ const config: Config = {
    */
   locale: {
     // default zh-CN
-    default: 'zh-CN',
+    default: "zh-CN",
     antd: true,
     // default true, when it is true, will use `navigator.language` overwrite default
     baseNavigator: true,
@@ -138,7 +142,7 @@ const config: Config = {
       theme: {
         cssVar: true,
         token: {
-          fontFamily: 'AlibabaSans, sans-serif',
+          fontFamily: "AlibabaSans, sans-serif",
         },
       },
     },
@@ -164,12 +168,11 @@ const config: Config = {
    */
   headScripts: [
     // 解决首次加载时白屏的问题
-    { src: join(PUBLIC_PATH, 'scripts/loading.js'), async: true },
+    { src: join(PUBLIC_PATH, "scripts/loading.js"), async: true },
   ],
 
-
   //================ pro 插件配置 =================
-  presets: ['umi-presets-pro'],
+  presets: ["umi-presets-pro"],
 
   /**
    * @name openAPI 插件的配置
@@ -181,12 +184,12 @@ const config: Config = {
       requestLibPath: "import { request } from '@umijs/max'",
       // 或者使用在线的版本
       // schemaPath: "https://gw.alipayobjects.com/os/antfincdn/M%24jrzTTYJN/oneapi.json"
-      schemaPath: join(__dirname, 'api.json'),
+      schemaPath: join(__dirname, "api.json"),
       mock: true,
     },
   ],
   mock: {
-    include: ['mock/*'],
+    include: ["mock/*"],
   },
 
   /**
@@ -198,6 +201,6 @@ const config: Config = {
   esbuildMinifyIIFE: true,
   requestRecord: {},
   exportStatic: {},
-}
+};
 
 export default config;

@@ -7,3 +7,7 @@ CREATE TABLE config_internationalization (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     PRIMARY KEY (lang_code, key)
 )
+
+CREATE INDEX idx_config_internationalization_key ON config_internationalization (key);
+
+CREATE INDEX idx_config_internationalization_lang_code ON config_internationalization (lang_code);
