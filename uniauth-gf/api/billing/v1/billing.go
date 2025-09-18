@@ -34,7 +34,7 @@ type CheckBalanceReq struct {
 type CheckBalanceRes struct {
 	Ok          bool      `json:"ok" example:"true"`
 	Percentage  string    `json:"percentage" example:"16.67%"`
-	NextResetAt time.Time `json:"nextíResetAt" example:"2025-09-11T03:00:00+08:00"`
+	NextResetAt time.Time `json:"nextResetAt" example:"2025-09-11T03:00:00+08:00"`
 }
 
 type CheckTokensUsageReq struct {

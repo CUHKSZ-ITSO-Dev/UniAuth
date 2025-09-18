@@ -54,7 +54,7 @@ func (c *ControllerV1) ChatPreCheckOneStop(ctx context.Context, req *v1.ChatPreC
 	}
 
 	// Step 4
-	allow, err := e.Enforce(req.Upn, req.Dom, req.Svc+"/"+req.Product, req.Act)
+	allow, err := e.Enforce(req.Upn, req.Svc+"/"+req.Product, req.Act)
 	if err != nil {
 		err = gerror.Wrap(err, "Casbin在检查配额池策略时发生内部错误")
 		return
