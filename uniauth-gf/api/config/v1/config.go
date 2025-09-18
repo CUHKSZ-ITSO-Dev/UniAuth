@@ -76,33 +76,3 @@ type GetAllLangsReq struct {
 type GetAllLangsRes struct {
 	Langs []string `json:"langs" dc:"语言列表" example:"['en-US', 'zh-CN']"`
 }
-
-type GetAutoQuotaPoolConfigReq struct {
-	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"获取自动配额池规则"`
-}
-type GetAutoQuotaPoolConfigRes struct {
-	AutoQuotaPoolConfigs []string `json:"autoQuotaPoolConfigs" dc:"自动配额池规则"`
-}
-
-type EditAutoQuotaPoolConfigReq struct {
-	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"put" summary:"编辑自动配额池规则"`
-	// Conditions UserInfos.Filter
-	// DefaultValue
-}
-type EditAutoQuotaPoolConfigRes struct {
-	OK bool `json:"ok" dc:"是否成功"`
-}
-
-type DeleteAutoQuotaPoolConfigReq struct {
-	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"delete" summary:"删除自动配额池规则"`
-}
-type DeleteAutoQuotaPoolConfigRes struct {
-	OK bool `json:"ok" dc:"是否成功"`
-}
-
-type AddAutoQuotaPoolConfigReq struct {
-	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"新增自动配额池规则"`
-}
-type AddAutoQuotaPoolConfigRes struct {
-	OK bool `json:"ok" dc:"是否成功"`
-}
