@@ -30,8 +30,8 @@ declare namespace API {
   };
 
   type AddPoliciesReq = {
-    /** Polices */
-    polices: string[][];
+    /** Policies */
+    policies: string[][];
     /** 开启时，当规则已经存在时自动跳过，不返回错误；否则会返回错误，并回退所有操作 */
     skip?: boolean;
   };
@@ -168,8 +168,8 @@ declare namespace API {
   };
 
   type DeletePoliciesReq = {
-    /** Polices */
-    polices: string[][];
+    /** Policies */
+    policies: string[][];
   };
 
   type DeletePoliciesRes = {};
