@@ -144,7 +144,7 @@ const QuotaPoolDetailsPage: FC = () => {
     };
   };
 
-  const itToolsRulesColumns: ProColumns<any>[] = [
+  const quotaPoolRulesColumns: ProColumns<any>[] = [
     {
       title: "主体",
       dataIndex: "sub",
@@ -193,7 +193,19 @@ const QuotaPoolDetailsPage: FC = () => {
     },
   ];
 
-  const itToolsRulesDataRequest = async (params: any) => {
+  const itToolsRulesColumns: ProColumns<any>[] = [
+    {
+      title: "规则名称",
+      dataIndex: "ruleName",
+      valueType: "text",
+      ellipsis: true,
+      search: true,
+    },
+  ];
+
+
+
+  const quotaPoolRulesDataRequest = async (params: any) => {
     // TODO: 替换为实际请求
     let example_data = [
       {
@@ -234,6 +246,28 @@ const QuotaPoolDetailsPage: FC = () => {
       },
     ];
 
+    return {
+      data: example_data,
+      success: true,
+      total: 2,
+    };
+  };
+  const itToolsRulesDataRequest = async (params: any) => {
+    // TODO: 替换为实际请求
+    let example_data = [
+      {
+        id: 1,
+        ruleName: "允许访问ITTools",
+      },
+      {
+        id: 2,
+        ruleName: "禁止删除资源",
+      },
+      {
+        id: 3,
+        ruleName: "允许读写数据",
+      },
+    ];
     return {
       data: example_data,
       success: true,
@@ -357,6 +391,21 @@ const QuotaPoolDetailsPage: FC = () => {
           </Card>
           <Card
             title="配额池权限规则"
+            style={{
+              marginBottom: 24,
+            }}
+            variant="borderless"
+          >
+            <ProTable
+              columns={quotaPoolRulesColumns}
+              rowKey="id"
+              search={false}
+              pagination={{ pageSize: 5 }}
+              request={quotaPoolRulesDataRequest}
+            />
+          </Card>
+          <Card
+            title="配额池ITTools规则"
             style={{
               marginBottom: 24,
             }}
