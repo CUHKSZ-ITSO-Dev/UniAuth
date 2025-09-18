@@ -80,7 +80,7 @@ const filterPolicies = async (params: any) => {
     const response = await filterPoliciesAPI(filterRequest);
     
     // 将 API 返回的二维数组转换为表格需要的格式
-    const formattedData = response.policies.map((policy, index) => ({
+    const formattedData = response.policies.map((policy: any, index: any) => ({
       id: `${index + 1}`,
       subject: policy[0] || '',
       object: policy[1] || '',
