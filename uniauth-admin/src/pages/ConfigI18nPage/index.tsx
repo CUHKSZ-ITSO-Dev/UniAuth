@@ -179,12 +179,15 @@ const ConfigI18nPage: React.FC = () => {
   // 编辑翻译配置
   const handleEdit = (record: I18nDataType) => {
     setEditingRecord(record);
+
+    // 为编辑模式设置表单值
     form.setFieldsValue({
       lang: record.langCode,
       key: record.keyValue,
       value: record.value,
       description: record.description,
     });
+
     setModalMode("edit");
     setModalVisible(true);
   };
@@ -229,6 +232,19 @@ const ConfigI18nPage: React.FC = () => {
   // 新增翻译配置
   const handleAdd = () => {
     form.resetFields();
+
+    // 为新增模式初始化翻译对象
+    const initialTranslations = availableLangs.reduce((acc, lang) => {
+      acc[lang] = "";
+      return acc;
+    }, {} as Record<string, string>);
+
+    form.setFieldsValue({
+      key: "",
+      description: "",
+      translations: initialTranslations,
+    });
+
     setEditingRecord(null);
     setModalMode("add");
     setModalVisible(true);
@@ -303,7 +319,7 @@ const ConfigI18nPage: React.FC = () => {
       const values = await form.validateFields();
 
       if (modalMode === "edit") {
-        // 编辑
+        // 编辑模式：单个语言编辑
         await putConfigI18N({
           lang: values.lang,
           key: values.key,
@@ -316,33 +332,80 @@ const ConfigI18nPage: React.FC = () => {
             defaultMessage: "编辑成功",
           })
         );
-        setModalVisible(false);
       } else {
-        // 新增
-        await postConfigI18N({
-          lang: values.lang,
-          key: values.key,
-          value: values.value,
-          description: values.description,
-        });
+        // 新增模式：为每个语言发送单独的新增请求
+        const { key, description, translations } = values;
+
+        if (!translations || Object.keys(translations).length === 0) {
+          message.error(
+            intl.formatMessage({
+              id: "pages.configI18n.add.noTranslations",
+              defaultMessage: "请至少为一种语言添加翻译",
+            })
+          );
+          return;
+        }
+
+        // 并行发送所有语言的新增请求
+        const addPromises = Object.entries(translations)
+          .filter(
+            ([_, value]) =>
+              value && typeof value === "string" && value.trim() !== ""
+          ) // 过滤空值
+          .map(([lang, value]) =>
+            postConfigI18N({
+              lang,
+              key,
+              value: value as string,
+              description: description || "",
+            })
+          );
+
+        if (addPromises.length === 0) {
+          message.error(
+            intl.formatMessage({
+              id: "pages.configI18n.add.noValidTranslations",
+              defaultMessage: "请输入有效的翻译内容",
+            })
+          );
+          return;
+        }
+
+        await Promise.all(addPromises);
+
         message.success(
-          intl.formatMessage({
-            id: "pages.configI18n.add.success",
-            defaultMessage: "添加成功",
-          })
+          intl.formatMessage(
+            {
+              id: "pages.configI18n.add.success",
+              defaultMessage: "成功为 {count} 种语言添加配置",
+            },
+            { count: addPromises.length }
+          )
         );
-        setModalVisible(false);
       }
 
+      setModalVisible(false);
       actionRef.current?.reload();
     } catch (error) {
       console.error("操作失败:", error);
-      message.error(
-        intl.formatMessage({
-          id: "pages.configI18n.operation.error",
-          defaultMessage: "操作失败",
-        })
-      );
+
+      // 更详细的错误处理
+      if (modalMode === "add" && error && typeof error === "object") {
+        // 如果是批量添加失败，给出更具体的提示
+        message.error(
+          intl.formatMessage({
+            id: "pages.configI18n.add.error.detailed",
+            defaultMessage: "添加配置失败，请检查网络连接或联系管理员",
+          })
+        );
+      } else {
+        message.error(
+          intl.formatMessage({
+            id: "pages.configI18n.operation.error",
+            defaultMessage: "操作失败",
+          })
+        );
+      }
     }
   };
 
@@ -542,114 +605,209 @@ const ConfigI18nPage: React.FC = () => {
         onCancel={() => {
           setModalVisible(false);
         }}
+        width={800}
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="lang"
-            label={intl.formatMessage({
-              id: "pages.configI18n.form.lang",
-              defaultMessage: "语言",
-            })}
-            rules={[
-              {
-                required: true,
-                message: intl.formatMessage({
-                  id: "pages.configI18n.form.lang.required",
-                  defaultMessage: "请选择语言",
-                }),
-              },
-            ]}
-          >
-            <Select
-              placeholder={intl.formatMessage({
-                id: "pages.configI18n.form.lang.placeholder",
-                defaultMessage: "请选择语言",
-              })}
-              showSearch
-              allowClear
-              disabled={modalMode === "edit"}
-            >
-              {availableLangs.map((lang) => (
-                <Select.Option key={lang} value={lang}>
-                  {lang}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+          {modalMode === "edit" ? (
+            // 编辑模式：只显示单个语言的编辑字段
+            <>
+              <Form.Item
+                name="lang"
+                label={intl.formatMessage({
+                  id: "pages.configI18n.form.lang",
+                  defaultMessage: "语言",
+                })}
+              >
+                <Select
+                  disabled
+                  placeholder={intl.formatMessage({
+                    id: "pages.configI18n.form.lang.placeholder",
+                    defaultMessage: "请选择语言",
+                  })}
+                >
+                  {availableLangs.map((lang) => (
+                    <Select.Option key={lang} value={lang}>
+                      {lang}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
 
-          <Form.Item
-            name="key"
-            label={intl.formatMessage({
-              id: "pages.configI18n.form.key",
-              defaultMessage: "键值",
-            })}
-            rules={[
-              {
-                required: true,
-                message: intl.formatMessage({
-                  id: "pages.configI18n.form.key.required",
-                  defaultMessage: "请输入键值",
-                }),
-              },
-              {
-                pattern: /^[a-zA-Z_]+(\.[a-zA-Z_]+)+$/,
-                message: intl.formatMessage({
-                  id: "pages.configI18n.form.key.pattern",
-                  defaultMessage:
-                    "键值格式不正确，应该是由点分割的字符串，例如：test.temp、nav.title 等",
-                }),
-              },
-            ]}
-          >
-            <Input
-              placeholder={intl.formatMessage({
-                id: "pages.configI18n.form.key.placeholder",
-                defaultMessage: "例如：navBar.title",
-              })}
-              disabled={modalMode === "edit"} // 编辑时不允许修改键值
-            />
-          </Form.Item>
+              <Form.Item
+                name="key"
+                label={intl.formatMessage({
+                  id: "pages.configI18n.form.key",
+                  defaultMessage: "键值",
+                })}
+              >
+                <Input
+                  disabled
+                  placeholder={intl.formatMessage({
+                    id: "pages.configI18n.form.key.placeholder",
+                    defaultMessage: "例如：navBar.title",
+                  })}
+                />
+              </Form.Item>
 
-          <Form.Item
-            name="value"
-            label={intl.formatMessage({
-              id: "pages.configI18n.form.value",
-              defaultMessage: "翻译内容",
-            })}
-            rules={[
-              {
-                required: true,
-                message: intl.formatMessage({
-                  id: "pages.configI18n.form.value.required",
-                  defaultMessage: "请输入翻译内容",
-                }),
-              },
-            ]}
-          >
-            <Input.TextArea
-              placeholder={intl.formatMessage({
-                id: "pages.configI18n.form.value.placeholder",
-                defaultMessage: "请输入该语言的翻译内容",
-              })}
-              rows={3}
-            />
-          </Form.Item>
+              <Form.Item
+                name="value"
+                label={intl.formatMessage({
+                  id: "pages.configI18n.form.value",
+                  defaultMessage: "翻译内容",
+                })}
+                rules={[
+                  {
+                    required: true,
+                    message: intl.formatMessage({
+                      id: "pages.configI18n.form.value.required",
+                      defaultMessage: "请输入翻译内容",
+                    }),
+                  },
+                ]}
+              >
+                <Input.TextArea
+                  placeholder={intl.formatMessage({
+                    id: "pages.configI18n.form.value.placeholder",
+                    defaultMessage: "请输入该语言的翻译内容",
+                  })}
+                  rows={3}
+                />
+              </Form.Item>
 
-          <Form.Item
-            name="description"
-            label={intl.formatMessage({
-              id: "pages.configI18n.form.description",
-              defaultMessage: "描述",
-            })}
-          >
-            <Input.TextArea
-              placeholder={intl.formatMessage({
-                id: "pages.configI18n.form.description.placeholder",
-                defaultMessage: "请输入该配置项的描述信息（可选）",
-              })}
-              rows={2}
-            />
-          </Form.Item>
+              <Form.Item
+                name="description"
+                label={intl.formatMessage({
+                  id: "pages.configI18n.form.description",
+                  defaultMessage: "描述",
+                })}
+              >
+                <Input.TextArea
+                  placeholder={intl.formatMessage({
+                    id: "pages.configI18n.form.description.placeholder",
+                    defaultMessage: "请输入该配置项的描述信息（可选）",
+                  })}
+                  rows={2}
+                />
+              </Form.Item>
+            </>
+          ) : (
+            // 新增模式：支持为所有语言一次性填写配置
+            <>
+              <Form.Item
+                name="key"
+                label={intl.formatMessage({
+                  id: "pages.configI18n.form.key",
+                  defaultMessage: "键值",
+                })}
+                rules={[
+                  {
+                    required: true,
+                    message: intl.formatMessage({
+                      id: "pages.configI18n.form.key.required",
+                      defaultMessage: "请输入键值",
+                    }),
+                  },
+                  {
+                    pattern: /^[a-zA-Z_]+(\.[a-zA-Z_]+)+$/,
+                    message: intl.formatMessage({
+                      id: "pages.configI18n.form.key.pattern",
+                      defaultMessage:
+                        "键值格式不正确，应该是由点分割的字符串，例如：test.temp、nav.title 等",
+                    }),
+                  },
+                ]}
+              >
+                <Input
+                  placeholder={intl.formatMessage({
+                    id: "pages.configI18n.form.key.placeholder",
+                    defaultMessage: "例如：navBar.title",
+                  })}
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="description"
+                label={intl.formatMessage({
+                  id: "pages.configI18n.form.description",
+                  defaultMessage: "描述",
+                })}
+              >
+                <Input.TextArea
+                  placeholder={intl.formatMessage({
+                    id: "pages.configI18n.form.description.placeholder",
+                    defaultMessage: "请输入该配置项的描述信息（可选）",
+                  })}
+                  rows={2}
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={intl.formatMessage({
+                  id: "pages.configI18n.form.translations",
+                  defaultMessage: "各语言翻译",
+                })}
+              >
+                <div
+                  style={{
+                    border: "1px solid #d9d9d9",
+                    borderRadius: "6px",
+                    padding: "12px",
+                  }}
+                >
+                  {availableLangs.map((lang) => (
+                    <Form.Item
+                      key={lang}
+                      name={["translations", lang]}
+                      label={
+                        <span>
+                          <Tag
+                            color={
+                              lang === "zh"
+                                ? "#2db7f5"
+                                : lang === "en-US"
+                                ? "#87d068"
+                                : "#2db7f5"
+                            }
+                            style={{ marginRight: 8 }}
+                          >
+                            {lang}
+                          </Tag>
+                          {intl.formatMessage({
+                            id: "pages.configI18n.form.translation",
+                            defaultMessage: "翻译内容",
+                          })}
+                        </span>
+                      }
+                      rules={[
+                        {
+                          required: true,
+                          message: intl.formatMessage(
+                            {
+                              id: "pages.configI18n.form.translation.required",
+                              defaultMessage: "请输入 {lang} 的翻译内容",
+                            },
+                            { lang }
+                          ),
+                        },
+                      ]}
+                      style={{ marginBottom: "16px" }}
+                    >
+                      <Input.TextArea
+                        placeholder={intl.formatMessage(
+                          {
+                            id: "pages.configI18n.form.translation.placeholder",
+                            defaultMessage: "请输入 {lang} 的翻译内容",
+                          },
+                          { lang }
+                        )}
+                        rows={2}
+                      />
+                    </Form.Item>
+                  ))}
+                </div>
+              </Form.Item>
+            </>
+          )}
         </Form>
       </Modal>
     </PageContainer>

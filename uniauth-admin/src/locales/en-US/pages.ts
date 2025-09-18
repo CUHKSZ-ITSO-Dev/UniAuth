@@ -5,7 +5,7 @@ export default {
   "pages.configI18n.title": "I18N Configuration",
   "pages.configI18n.description":
     "Manage multilingual translation configurations in the system",
-  "pages.configI18n.search": "Search Configurations",
+  "pages.configI18n.search": "Search",
   "pages.configI18n.search.placeholder":
     "Please enter key, language, translation content or description",
   "pages.configI18n.search.query": "Query",
@@ -24,7 +24,8 @@ export default {
   "pages.configI18n.delete.success": "Deleted successfully",
   "pages.configI18n.delete.error": "Delete failed",
   "pages.configI18n.edit.success": "Edited successfully",
-  "pages.configI18n.add.success": "Added successfully",
+  "pages.configI18n.add.success":
+    "Successfully added configuration for {count} languages",
   "pages.configI18n.operation.error": "Operation failed",
   "pages.configI18n.modal.edit.title": "Edit Configuration",
   "pages.configI18n.modal.add.title": "Add Configuration",
@@ -50,4 +51,17 @@ export default {
     "Are you sure you want to delete all language configurations for the selected {count} keys? This action cannot be undone.",
   "pages.configI18n.batchDelete.success": "Batch deletion successful",
   "pages.configI18n.batchDelete.error": "Batch deletion failed",
+  // New internationalization keys
+  "pages.configI18n.form.translations": "Translations for All Languages",
+  "pages.configI18n.form.translation": "Translation Content",
+  "pages.configI18n.form.translation.required":
+    "Please enter translation content for {lang}",
+  "pages.configI18n.form.translation.placeholder":
+    "Please enter translation content for {lang}",
+  "pages.configI18n.add.noTranslations":
+    "Please add translation for at least one language",
+  "pages.configI18n.add.noValidTranslations":
+    "Please enter valid translation content",
+  "pages.configI18n.add.error.detailed":
+    "Failed to add configuration, please check network connection or contact administrator",
 };

@@ -72,7 +72,7 @@ export default {
   // ConfigI18nPage
   "pages.configI18n.title": "国际化配置管理",
   "pages.configI18n.description": "管理系统中的多语言翻译配置",
-  "pages.configI18n.search": "搜索配置",
+  "pages.configI18n.search": "搜索",
   "pages.configI18n.search.placeholder": "请输入键值、语言、翻译内容或描述",
   "pages.configI18n.search.query": "查询",
   "pages.configI18n.search.reset": "重置",
@@ -90,7 +90,7 @@ export default {
   "pages.configI18n.delete.success": "删除成功",
   "pages.configI18n.delete.error": "删除失败",
   "pages.configI18n.edit.success": "编辑成功",
-  "pages.configI18n.add.success": "添加成功",
+  "pages.configI18n.add.success": "成功为 {count} 种语言添加配置",
   "pages.configI18n.operation.error": "操作失败",
   "pages.configI18n.modal.edit.title": "编辑配置",
   "pages.configI18n.modal.add.title": "新增配置",
@@ -113,4 +113,13 @@ export default {
     "确定要删除选中的 {count} 个键值的所有语言配置吗？此操作不可恢复。",
   "pages.configI18n.batchDelete.success": "批量删除成功",
   "pages.configI18n.batchDelete.error": "批量删除失败",
+  // 新增的国际化键值
+  "pages.configI18n.form.translations": "各语言翻译",
+  "pages.configI18n.form.translation": "翻译内容",
+  "pages.configI18n.form.translation.required": "请输入 {lang} 的翻译内容",
+  "pages.configI18n.form.translation.placeholder": "请输入 {lang} 的翻译内容",
+  "pages.configI18n.add.noTranslations": "请至少为一种语言添加翻译",
+  "pages.configI18n.add.noValidTranslations": "请输入有效的翻译内容",
+  "pages.configI18n.add.error.detailed":
+    "添加配置失败，请检查网络连接或联系管理员",
 };
