@@ -32,7 +32,7 @@ export async function postAuthAdminPoliciesOpenApiDelete(
   });
 }
 
-/** 编辑 Policy 编辑 Policy。需要提供老的 Policy。<br>注意顺序是 Sub Dom Obj Act。 POST /auth/admin/policies/edit */
+/** 编辑 Policy 编辑 Policy。需要提供老的 Policy。<br>注意顺序是 Sub Obj Act。 POST /auth/admin/policies/edit */
 export async function postAuthAdminPoliciesEdit(
   body: API.EditPolicyReq,
   options?: { [key: string]: any }

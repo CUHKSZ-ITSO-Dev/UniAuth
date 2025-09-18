@@ -1,15 +1,29 @@
-import { PageContainer, ProCard, ProTable, ModalForm, ProFormText, ProFormSelect } from "@ant-design/pro-components";
+import {
+  PageContainer,
+  ProCard,
+  ProTable,
+  ModalForm,
+  ProFormText,
+  ProFormSelect,
+} from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
-import { Typography, Button, Popconfirm, Table, Space, message, Tag } from "antd";
+import {
+  Typography,
+  Button,
+  Popconfirm,
+  Table,
+  Space,
+  message,
+  Tag,
+} from "antd";
 import { useRef, useState } from "react";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { 
-  filterPolicies as filterPoliciesAPI,
-  addPolicies as addPoliciesAPI,
-  deletePolicies as deletePoliciesAPI,
-  editPolicy as editPolicyAPI,
-  type PolicyFilterRequest,
-} from "@/services/policyService";
+import {
+  postAuthAdminPoliciesAdd as addPoliciesAPI,
+  postAuthAdminPoliciesOpenApiDelete as deletePoliciesAPI,
+  postAuthAdminPoliciesEdit as editPolicyAPI,
+} from "@/services/uniauthService/crud";
+import { postAuthAdminPoliciesFilter as filterPoliciesAPI } from "@/services/uniauthService/query";
 
 const { Title, Text } = Typography;
 
@@ -23,118 +37,45 @@ interface PolicyItem {
   raw?: string[];
 }
 
-// 示例数据
-const policiesExampleData: PolicyItem[] = [
-  {
-    id: "1",
-    subject: "alice",
-    object: "chat_production",
-    action: "platform",
-    effect: "entry",
-    raw: ["alice", "chat_production", "platform", "entry"]
-  },
-  {
-    id: "2", 
-    subject: "bob",
-    object: "data_service",
-    action: "read",
-    effect: "allow",
-    raw: ["bob", "data_service", "read", "allow"]
-  },
-  {
-    id: "3",
-    subject: "admin",
-    object: "system",
-    action: "manage",
-    effect: "allow",
-    raw: ["admin", "system", "manage", "allow"]
-  },
-  {
-    id: "4",
-    subject: "user_group",
-    object: "api_gateway",
-    action: "access",
-    effect: "deny",
-    raw: ["user_group", "api_gateway", "access", "deny"]
-  },
-  {
-    id: "5",
-    subject: "service_account",
-    object: "database",
-    action: "write",
-    effect: "allow",
-    raw: ["service_account", "database", "write", "allow"]
-  },
-];
-
 // API 请求函数
 const filterPolicies = async (params: any) => {
-  try {
-    // 构建筛选参数
-    const filterRequest: PolicyFilterRequest = {
-      subs: params.subject ? [params.subject] : [],
-      objs: params.object ? [params.object] : [],
-      acts: params.action ? [params.action] : [],
-    };
-    
-    const response = await filterPoliciesAPI(filterRequest);
-    
-    // 将 API 返回的二维数组转换为表格需要的格式
-    const formattedData = response.policies.map((policy: any, index: any) => ({
-      id: `${index + 1}`,
-      subject: policy[0] || '',
-      object: policy[1] || '',
-      action: policy[2] || '',
-      effect: policy[3] || '',
-      raw: policy,
-    }));
-    
-    return {
-      data: formattedData,
-      success: true,
-      total: formattedData.length,
-    };
-  } catch (error) {
-    message.error('获取规则列表失败');
-    console.error('Filter policies error:', error);
-    
-    // 如果 API 调用失败，返回示例数据
-    let filteredData = [...policiesExampleData];
-    
-    if (params.subject) {
-      filteredData = filteredData.filter(item => 
-        item.subject.toLowerCase().includes(params.subject.toLowerCase())
-      );
-    }
-    if (params.object) {
-      filteredData = filteredData.filter(item => 
-        item.object.toLowerCase().includes(params.object.toLowerCase())
-      );
-    }
-    if (params.action) {
-      filteredData = filteredData.filter(item => 
-        item.action.toLowerCase().includes(params.action.toLowerCase())
-      );
-    }
-    
-    return {
-      data: filteredData,
-      success: true,
-      total: filteredData.length,
-    };
-  }
+  // 构建筛选参数
+  const filterRequest = {
+    sub: params.subject,
+    obj: params.object,
+    act: params.action,
+    eft: params.effect,
+  };
+
+  const response = await filterPoliciesAPI(filterRequest);
+
+  // 将 API 返回的二维数组转换为表格需要的格式
+  // @ts-ignore
+  const formattedData = response.policies.map((policy: any, index: any) => ({
+    id: `${index + 1}`,
+    subject: policy[0] || "",
+    object: policy[1] || "",
+    action: policy[2] || "",
+    effect: policy[3] || "",
+    raw: policy,
+  }));
+  return {
+    data: formattedData,
+    success: true,
+    total: formattedData.length,
+  };
 };
 
 const addPolicies = async (policies: string[][]) => {
   try {
     await addPoliciesAPI({
-      polices: policies,
+      policies: policies,
       skip: false,
     });
     return true;
   } catch (error) {
-    console.error('Add policies error:', error);
-    message.error('添加规则失败');
+    console.error("Add policies error:", error);
+    message.error("添加规则失败");
     return false;
   }
 };
@@ -142,17 +83,17 @@ const addPolicies = async (policies: string[][]) => {
 const deletePolicies = async (policies: string[][]) => {
   try {
     await deletePoliciesAPI({
-      polices: policies,
+      policies: policies,
     });
     return true;
   } catch (error) {
-    console.error('Delete policies error:', error);
-    message.error('删除规则失败');
+    console.error("Delete policies error:", error);
+    message.error("删除规则失败");
     return false;
   }
 };
 
-const editPolicy = async (oldPolicy: string, newPolicy: string[]) => {
+const editPolicy = async (oldPolicy: string[], newPolicy: string[]) => {
   try {
     await editPolicyAPI({
       oldPolicy,
@@ -160,8 +101,8 @@ const editPolicy = async (oldPolicy: string, newPolicy: string[]) => {
     });
     return true;
   } catch (error) {
-    console.error('Edit policy error:', error);
-    message.error('编辑规则失败');
+    console.error("Edit policy error:", error);
+    message.error("编辑规则失败");
     return false;
   }
 };
@@ -191,7 +132,9 @@ const PolicyListPage: React.FC = () => {
   };
 
   const handleBatchDelete = async (selectedRows: PolicyItem[]) => {
-    const policies = selectedRows.map(row => row.raw).filter(Boolean) as string[][];
+    const policies = selectedRows
+      .map((row) => row.raw)
+      .filter(Boolean) as string[][];
     const success = await deletePolicies(policies);
     if (success) {
       message.success(`批量删除 ${policies.length} 条规则成功`);
@@ -209,9 +152,7 @@ const PolicyListPage: React.FC = () => {
       valueType: "text",
       width: 200,
       ellipsis: true,
-      render: (_, record) => (
-        <Tag color="blue">{record.subject}</Tag>
-      ),
+      render: (_, record) => <Tag color="blue">{record.subject}</Tag>,
     },
     {
       title: "对象 (Object)",
@@ -219,9 +160,7 @@ const PolicyListPage: React.FC = () => {
       valueType: "text",
       width: 200,
       ellipsis: true,
-      render: (_, record) => (
-        <Tag color="green">{record.object}</Tag>
-      ),
+      render: (_, record) => <Tag color="green">{record.object}</Tag>,
     },
     {
       title: "操作 (Action)",
@@ -229,9 +168,7 @@ const PolicyListPage: React.FC = () => {
       valueType: "text",
       width: 150,
       ellipsis: true,
-      render: (_, record) => (
-        <Tag color="orange">{record.action}</Tag>
-      ),
+      render: (_, record) => <Tag color="orange">{record.action}</Tag>,
     },
     {
       title: "效果 (Effect)",
@@ -239,7 +176,15 @@ const PolicyListPage: React.FC = () => {
       valueType: "text",
       width: 150,
       render: (_, record) => (
-        <Tag color={record.effect === "allow" ? "success" : record.effect === "deny" ? "error" : "default"}>
+        <Tag
+          color={
+            record.effect === "allow"
+              ? "success"
+              : record.effect === "deny"
+              ? "error"
+              : "default"
+          }
+        >
           {record.effect}
         </Tag>
       ),
@@ -252,7 +197,7 @@ const PolicyListPage: React.FC = () => {
       width: 300,
       render: (_, record) => (
         <Text code style={{ fontSize: 12 }}>
-          [{record.raw?.map(item => `'${item}'`).join(', ')}]
+          [{record.raw?.map((item) => `'${item}'`).join(", ")}]
         </Text>
       ),
     },
@@ -260,7 +205,7 @@ const PolicyListPage: React.FC = () => {
       title: "操作",
       valueType: "option",
       width: 150,
-      fixed: 'right',
+      fixed: "right",
       render: (_, record) => (
         <Space>
           <a key="edit" onClick={() => handleEdit(record)}>
@@ -290,15 +235,15 @@ const PolicyListPage: React.FC = () => {
         <Text type="secondary">
           管理系统访问控制规则，配置用户、资源和操作的权限规则
         </Text>
-        
+
         <ProTable<PolicyItem>
           columns={columns}
           actionRef={actionRef}
           rowKey="id"
           search={{
-            labelWidth: 'auto',
-            searchText: '查询',
-            resetText: '重置',
+            labelWidth: "auto",
+            searchText: "查询",
+            resetText: "重置",
             defaultCollapsed: false,
             collapseRender: false,
             optionRender: ({ searchText, resetText }, { form }) => [
@@ -338,10 +283,7 @@ const PolicyListPage: React.FC = () => {
               setSelectedRows(rows);
             },
           }}
-          tableAlertRender={({
-            selectedRowKeys,
-            onCleanSelected,
-          }) => {
+          tableAlertRender={({ selectedRowKeys, onCleanSelected }) => {
             return (
               <Space size={24}>
                 <span>
@@ -368,8 +310,8 @@ const PolicyListPage: React.FC = () => {
             );
           }}
           toolBarRender={() => [
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               key="new"
               icon={<PlusOutlined />}
               onClick={() => setCreateModalVisible(true)}
@@ -401,11 +343,11 @@ const PolicyListPage: React.FC = () => {
             values.subject,
             values.object,
             values.action,
-            values.effect || 'allow'
+            values.effect || "allow",
           ];
           const success = await addPolicies([policy]);
           if (success) {
-            message.success('添加成功');
+            message.success("添加成功");
             actionRef.current?.reload();
             return true;
           }
@@ -416,30 +358,30 @@ const PolicyListPage: React.FC = () => {
           name="subject"
           label="主体 (Subject)"
           placeholder="请输入主体，如: alice, user_group"
-          rules={[{ required: true, message: '请输入主体' }]}
+          rules={[{ required: true, message: "请输入主体" }]}
         />
         <ProFormText
           name="object"
           label="对象 (Object)"
           placeholder="请输入对象，如: chat_production, database"
-          rules={[{ required: true, message: '请输入对象' }]}
+          rules={[{ required: true, message: "请输入对象" }]}
         />
         <ProFormText
           name="action"
           label="操作 (Action)"
           placeholder="请输入操作，如: read, write, manage"
-          rules={[{ required: true, message: '请输入操作' }]}
+          rules={[{ required: true, message: "请输入操作" }]}
         />
         <ProFormSelect
           name="effect"
           label="效果 (Effect)"
           placeholder="请选择效果"
           options={[
-            { label: 'Allow', value: 'allow' },
-            { label: 'Deny', value: 'deny' },
-            { label: 'Entry', value: 'entry' },
+            { label: "Allow", value: "allow" },
+            { label: "Deny", value: "deny" },
+            { label: "Entry", value: "entry" },
           ]}
-          rules={[{ required: true, message: '请选择效果' }]}
+          rules={[{ required: true, message: "请选择效果" }]}
         />
       </ModalForm>
 
@@ -452,16 +394,21 @@ const PolicyListPage: React.FC = () => {
         initialValues={editingPolicy || {}}
         onFinish={async (values) => {
           if (editingPolicy?.raw) {
-            const oldPolicyStr = `[${editingPolicy.raw.map(item => `'${item}'`).join(',')}]`;
+            const oldPolicyStr = [
+              editingPolicy.raw[0],
+              editingPolicy.raw[1],
+              editingPolicy.raw[2],
+              editingPolicy.raw[3],
+            ];
             const newPolicy = [
               values.subject,
               values.object,
               values.action,
-              values.effect || 'allow'
+              values.effect || "allow",
             ];
             const success = await editPolicy(oldPolicyStr, newPolicy);
             if (success) {
-              message.success('编辑成功');
+              message.success("编辑成功");
               actionRef.current?.reload();
               setEditingPolicy(null);
               return true;
@@ -474,30 +421,30 @@ const PolicyListPage: React.FC = () => {
           name="subject"
           label="主体 (Subject)"
           placeholder="请输入主体"
-          rules={[{ required: true, message: '请输入主体' }]}
+          rules={[{ required: true, message: "请输入主体" }]}
         />
         <ProFormText
           name="object"
           label="对象 (Object)"
           placeholder="请输入对象"
-          rules={[{ required: true, message: '请输入对象' }]}
+          rules={[{ required: true, message: "请输入对象" }]}
         />
         <ProFormText
           name="action"
           label="操作 (Action)"
           placeholder="请输入操作"
-          rules={[{ required: true, message: '请输入操作' }]}
+          rules={[{ required: true, message: "请输入操作" }]}
         />
         <ProFormSelect
           name="effect"
           label="效果 (Effect)"
           placeholder="请选择效果"
           options={[
-            { label: 'Allow', value: 'allow' },
-            { label: 'Deny', value: 'deny' },
-            { label: 'Entry', value: 'entry' },
+            { label: "Allow", value: "allow" },
+            { label: "Deny", value: "deny" },
+            { label: "Entry", value: "entry" },
           ]}
-          rules={[{ required: true, message: '请选择效果' }]}
+          rules={[{ required: true, message: "请选择效果" }]}
         />
       </ModalForm>
     </PageContainer>

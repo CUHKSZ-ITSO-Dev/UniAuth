@@ -26,10 +26,11 @@ type DeletePoliciesRes struct {
 }
 
 type FilterPoliciesReq struct {
-	g.Meta `path:"/admin/policies/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Policies" dc:"根据给定的条件，返回Policy。留空的字段（传空 Array）将被忽略。"`
-	Subs   []string `json:"subs" dc:"Subjects 列表"`
-	Objs   []string `json:"objs" dc:"Objects 列表"`
-	Acts   []string `json:"acts" dc:"Actions 列表"`
+	g.Meta `path:"/admin/policies/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Policies" dc:"模糊匹配。根据给定的条件，返回Policy。留空的字段（传空 Array）将被忽略。"`
+	Sub    string `json:"sub" dc:"Subject"`
+	Obj    string `json:"obj" dc:"Object"`
+	Act    string `json:"act" dc:"Action"`
+	Eft    string `json:"eft" dc:"Effect"`
 }
 type FilterPoliciesRes struct {
 	g.Meta   `mime:"application/json"`

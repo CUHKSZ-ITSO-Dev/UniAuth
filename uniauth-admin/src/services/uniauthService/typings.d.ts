@@ -70,8 +70,6 @@ declare namespace API {
   type ChatPreCheckOneStopReq = {
     /** UPN */
     upn: string;
-    /** Domain */
-    Dom: string;
     /** 微服务 */
     svc: string;
     /** 产品 */
@@ -97,7 +95,7 @@ declare namespace API {
 
   type CheckAndExplainRes = {
     allow?: boolean;
-    /** 注意只有 allow = true 的时候才会返回 [4]string, 按顺序依次是 sub, dom, obj, act。 */
+    /** 注意只有 allow = true 的时候才会返回 [3]string, 按顺序依次是 sub, obj, act。 */
     reason?: string[];
   };
 
@@ -108,7 +106,7 @@ declare namespace API {
   type CheckBalanceRes = {
     ok?: boolean;
     percentage?: string;
-    nextíResetAt?: string;
+    nextResetAt?: string;
   };
 
   type CheckReq = {
@@ -286,12 +284,14 @@ declare namespace API {
   };
 
   type FilterPoliciesReq = {
-    /** Subjects 列表 */
-    subs?: string[];
-    /** Objects 列表 */
-    objs?: string[];
-    /** Actions 列表 */
-    acts?: string[];
+    /** Subjects */
+    sub?: string;
+    /** Objects */
+    obj?: string;
+    /** Actions */
+    act?: string;
+    /** Effects */
+    eft?: string;
   };
 
   type FilterPoliciesRes = {
@@ -331,13 +331,6 @@ declare namespace API {
   type GetAllActionsRes = {
     /** Actions */
     actions?: string[];
-  };
-
-  type GetAllDomainsReq = {};
-
-  type GetAllDomainsRes = {
-    /** Domains */
-    domains?: string[];
   };
 
   type GetAllLangsReq = {};
