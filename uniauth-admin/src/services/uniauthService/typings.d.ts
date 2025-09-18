@@ -285,6 +285,34 @@ declare namespace API {
     groups?: string[][];
   };
 
+  type FilterI18nReq = {
+    /** 过滤条件，支持复杂的逻辑组合查询 */
+    filter: I18nFilterGroup;
+    /** 排序条件，支持多字段排序 */
+    sort?: I18nSortCondition[];
+    /** 分页参数，支持分页或查询全部 */
+    pagination?: I18nPaginationReq;
+    /** 是否返回详细i18n信息，false时仅返回键值对 */
+    verbose?: boolean;
+  };
+
+  type FilterI18nRes = {
+    /** i18n键列表 */
+    i18nKeys?: string[];
+    /** 详细i18n信息（verbose=true时返回） */
+    i18nItems?: I18nItem[];
+    /** 总记录数 */
+    total?: number;
+    /** 当前页码 */
+    page?: number;
+    /** 每页条数 */
+    pageSize?: number;
+    /** 总页数 */
+    totalPages?: number;
+    /** 是否为全部数据查询 */
+    isAll?: boolean;
+  };
+
   type FilterPoliciesReq = {
     /** Subjects 列表 */
     subs?: string[];
@@ -539,6 +567,71 @@ declare namespace API {
   type HelloReq = {};
 
   type HelloRes = {};
+
+  type I18nFilterCondition = {
+    /** 字段名 */
+    field: string;
+    /** 操作符: eq(等于), neq(不等于), gt(大于), gte(大于等于), lt(小于), lte(小于等于), like(模糊匹配), ilike(不区分大小写模糊匹配), in(包含), notin(不包含), contains(包含子串), notcontains(不包含子串), startswith(以...开头), endswith(以...结尾), isnull(为空), isnotnull(不为空) */
+    op:
+      | "eq"
+      | "neq"
+      | "gt"
+      | "gte"
+      | "lt"
+      | "lte"
+      | "like"
+      | "ilike"
+      | "in"
+      | "notin"
+      | "contains"
+      | "notcontains"
+      | "startswith"
+      | "endswith"
+      | "isnull"
+      | "isnotnull";
+    /** 条件值，根据操作符类型可以是字符串、数字、数组等 */
+    value?: Var;
+  };
+
+  type I18nFilterGroup = {
+    /** 逻辑关系: and(且), or(或) */
+    logic?: "and" | "or";
+    /** 过滤条件列表 */
+    conditions?: I18nFilterCondition[];
+    /** 嵌套的条件组，支持复杂逻辑 */
+    groups?: I18nFilterGroup[];
+  };
+
+  type I18nItem = {
+    /** 语言代码 */
+    langCode?: string;
+    /** 键 */
+    key?: string;
+    /** 值 */
+    value?: string;
+    /** 描述 */
+    description?: string;
+    /** 创建时间 */
+    createdAt?: string;
+    /** 更新时间 */
+    updatedAt?: string;
+  };
+
+  type I18nPaginationReq = {
+    /** 页码，从1开始 */
+    page?: number;
+    /** 每页条数，最大1000 */
+    pageSize?: number;
+    /** 是否返回全部数据，true时忽略分页参数，但仍有最大限制保护 */
+    all?: boolean;
+  };
+
+  type I18nSortCondition = {
+    /** 排序字段 */
+    field: string;
+    /** 排序方向: asc(升序), desc(降序) */
+    order?: "asc" | "desc";
+  };
 
   type Json = {};
 

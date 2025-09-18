@@ -69,3 +69,18 @@ export async function getConfigI18NLang(
     ...(options || {}),
   });
 }
+
+/** 自定义筛选i18n配置 根据过滤条件，返回i18n配置。支持复杂条件查询、排序和分页。 POST /config/i18n/filter */
+export async function postConfigI18NFilter(
+  body: API.FilterI18nReq,
+  options?: { [key: string]: any }
+) {
+  return request<API.FilterI18nRes>("/config/i18n/filter", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
