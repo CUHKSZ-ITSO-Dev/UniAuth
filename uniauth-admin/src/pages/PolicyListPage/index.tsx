@@ -51,8 +51,8 @@ const filterPolicies = async (params: any) => {
 
   // 将 API 返回的二维数组转换为表格需要的格式
   // @ts-ignore
-  const formattedData = response.policies.map((policy: any, index: any) => ({
-    id: `${index + 1}`,
+  const formattedData = response.policies.map((policy: any) => ({
+    id: policy.join(','),
     subject: policy[0] || "",
     object: policy[1] || "",
     action: policy[2] || "",
