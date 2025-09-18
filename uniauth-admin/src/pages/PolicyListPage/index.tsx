@@ -197,7 +197,7 @@ const PolicyListPage: React.FC = () => {
       width: 300,
       render: (_, record) => (
         <Text code style={{ fontSize: 12 }}>
-          [{record.raw?.map((item) => `'${item}'`).join(", ")}]
+          p, {record.raw?.map((item) => `${item}`).join(", ")}
         </Text>
       ),
     },
@@ -378,8 +378,7 @@ const PolicyListPage: React.FC = () => {
           placeholder="请选择效果"
           options={[
             { label: "Allow", value: "allow" },
-            { label: "Deny", value: "deny" },
-            { label: "Entry", value: "entry" },
+            { label: "Deny", value: "deny" }
           ]}
           rules={[{ required: true, message: "请选择效果" }]}
         />
@@ -441,8 +440,7 @@ const PolicyListPage: React.FC = () => {
           placeholder="请选择效果"
           options={[
             { label: "Allow", value: "allow" },
-            { label: "Deny", value: "deny" },
-            { label: "Entry", value: "entry" },
+            { label: "Deny", value: "deny" }
           ]}
           rules={[{ required: true, message: "请选择效果" }]}
         />
