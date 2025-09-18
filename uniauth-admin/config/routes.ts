@@ -53,6 +53,12 @@ export default [
     component: "@/pages/QuotaPoolDetailsPage",
   },
   {
+    path: "/config-i18n",
+    name: "config-i18n",
+    icon: "Global",
+    component: "@/pages/ConfigI18nPage",
+  },
+  {
     path: "/",
     redirect: "/welcome",
   },
