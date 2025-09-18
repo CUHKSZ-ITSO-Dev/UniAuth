@@ -1,6 +1,6 @@
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns } from "@ant-design/pro-components";
-import { Typography, Space } from "antd";
+import { Typography, Space, message } from "antd";
 import React from "react";
 import { useIntl, Link } from "@umijs/max";
 import {
@@ -16,6 +16,8 @@ interface DataType {
   email: string;
   upn: string;
   displayName: string;
+  employeeId: string;
+  department: string;
 }
 
 const UserListPage: React.FC = () => {
@@ -36,8 +38,9 @@ const UserListPage: React.FC = () => {
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.userList.search.placeholder",
-          defaultMessage: "请输入姓名、邮箱、UPN",
+          defaultMessage: "请输入姓名、UPN、员工/学号、部门",
         }),
+        style: { width: 400 },
       },
     },
     {
@@ -47,15 +50,7 @@ const UserListPage: React.FC = () => {
       }),
       dataIndex: "name",
       key: "name",
-      search: false,
-    },
-    {
-      title: intl.formatMessage({
-        id: "pages.userList.email",
-        defaultMessage: "邮箱",
-      }),
-      dataIndex: "email",
-      key: "email",
+      ellipsis: true,
       search: false,
     },
     {
@@ -65,15 +60,27 @@ const UserListPage: React.FC = () => {
       }),
       dataIndex: "upn",
       key: "upn",
+      ellipsis: true,
       search: false,
     },
     {
       title: intl.formatMessage({
-        id: "pages.userList.displayName",
-        defaultMessage: "显示名称",
+        id: "pages.userList.employeeId",
+        defaultMessage: "员工/学号",
       }),
-      dataIndex: "displayName",
-      key: "displayName",
+      dataIndex: "employeeId",
+      key: "employeeId",
+      ellipsis: true,
+      search: false,
+    },
+    {
+      title: intl.formatMessage({
+        id: "pages.userList.department",
+        defaultMessage: "部门",
+      }),
+      dataIndex: "department",
+      key: "department",
+      ellipsis: true,
       search: false,
     },
     {
@@ -132,23 +139,27 @@ const UserListPage: React.FC = () => {
           request={async (params) => {
             const { current, pageSize, keyword, ...searchParams } = params;
 
+            // 构建搜索条件，确保正确搜索姓名、upn和邮箱
             const filter: API.FilterGroup = {
               logic: "or",
               conditions: [],
             };
 
             if (keyword) {
-              const fields = ["name", "email", "upn", "displayName"];
-              fields.forEach((field) => {
+              // 搜索字段：姓名、邮箱、UPN、学号、部门，确保支持模糊匹配
+              const searchFields = ["name", "upn", "employeeId", "department"];
+              searchFields.forEach((field) => {
                 filter.conditions!.push({
                   field,
                   op: "like",
                   value: `%${keyword}%`,
                 });
               });
+              console.log("构建的搜索条件:", filter);
             }
 
             try {
+              // 发送搜索请求
               const response = await postUserinfosFilter({
                 filter,
                 pagination: {
@@ -165,9 +176,12 @@ const UserListPage: React.FC = () => {
                 verbose: true,
               });
 
+              console.log("API响应数据:", response);
+
               // 增强错误边界检查
               if (!response || typeof response !== "object") {
                 console.error("API返回格式错误", response);
+                message.error("搜索失败，返回数据格式不正确");
                 return {
                   data: [],
                   success: false,
@@ -176,6 +190,7 @@ const UserListPage: React.FC = () => {
               }
 
               if (!response.userInfos || !Array.isArray(response.userInfos)) {
+                console.warn("没有找到用户数据");
                 return {
                   data: [],
                   success: true,
@@ -184,13 +199,20 @@ const UserListPage: React.FC = () => {
               }
 
               // 数据转换逻辑优化，确保类型安全
-              const tableData = response.userInfos.map((user, index) => ({
+              const tableData: DataType[] = response.userInfos.map((user, index) => ({
                 key: user.upn || `user-${index}`,
                 name: user.name || user.displayName || "Unknown",
                 email: user.email || "",
                 upn: user.upn || "",
                 displayName: user.displayName || "",
+                employeeId: user.employeeId || "",
+                department: user.department || "",
               }));
+
+              // 搜索结果提示
+              if (keyword && tableData.length === 0) {
+                message.info(`未找到包含 "${keyword}" 的用户信息`);
+              }
 
               return {
                 data: tableData,
@@ -198,13 +220,34 @@ const UserListPage: React.FC = () => {
                 total: response.total || tableData.length,
               };
             } catch (error) {
-              console.error("API Error:", error);
+              console.error("搜索API错误:", error);
+              const errorMessage = error instanceof Error ? error.message : "搜索失败，请稍后重试";
+              message.error(errorMessage);
               return {
                 data: [],
                 success: false,
                 total: 0,
               };
             }
+          }}
+          // 添加表格加载状态和空数据提示
+          loading={false}
+          tableAlertRender={({ selectedRowKeys }) => {
+            return <div>当前共 {selectedRowKeys.length} 条选中记录</div>;
+          }}
+          tableAlertOptionRender={({ selectedRowKeys }) => {
+            return (
+              <Space>
+                <Text>已选择 {selectedRowKeys.length} 项</Text>
+              </Space>
+            );
+          }}
+          rowSelection={false}
+          // 优化表格性能
+          size="middle"
+          pagination={{
+            showSizeChanger: true,
+            showTotal: (total) => `共 ${total} 条数据`,
           }}
         />
       </ProCard>

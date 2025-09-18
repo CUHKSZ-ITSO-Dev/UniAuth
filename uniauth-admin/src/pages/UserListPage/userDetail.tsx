@@ -8,6 +8,7 @@ import {
   Card,
   Button,
   Tag,
+  Flex,
 } from "antd";
 import type { FormProps, FormItemProps } from "antd";
 import { ArrowLeftOutlined, UserOutlined } from "@ant-design/icons";
@@ -312,15 +313,20 @@ const UserDetail: React.FC = () => {
         rules: [{ required: false }],
         tooltip: fieldDescriptions.tags,
         render: () => (
-          <Input
-            value={userData.tags?.join(", ") || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
+          <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+            // 确保容器有足够的宽度来容纳多个标签并支持换行
+          >
+            {userData.tags?.length > 0 ? (
+              userData.tags.map((tag, index) => {
+                // 为标签选择循环的颜色
+                const colors = ['magenta', 'red', 'volcano', 'orange', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
+                const color = colors[index % colors.length];
+                return <Tag key={index} color={color}>{tag}</Tag>;
+              })
+            ) : (
+              <Tag color="default">-</Tag>
+            )}
+          </div>
         ),
       },
       {
@@ -627,10 +633,36 @@ const UserDetail: React.FC = () => {
     };
 
     const renderField = (key: keyof UserDetailData, labelKey: string) => {
-      const value =
-        key === "tags"
-          ? userData.tags?.join(", ") || "-"
-          : userData[key] || "-";
+      const value = userData[key] || "-";
+      
+      // 特殊处理tags字段，使用Tag组件
+      if (key === "tags") {
+        const tags = Array.isArray(userData.tags) ? userData.tags : [];
+        // 标签颜色数组
+        const colors = ['magenta', 'red', 'volcano', 'orange', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
+        
+        return (
+          <Form.Item
+            key={key}
+            label={intl.formatMessage({ id: labelKey })}
+            tooltip={fieldDescriptions[key as keyof typeof fieldDescriptions]}
+            style={{ marginBottom: "16px" }}
+          >
+            <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {tags.length > 0 ? (
+                tags.map((tag, index) => {
+                  const color = colors[index % colors.length];
+                  return <Tag key={index} color={color}>{tag}</Tag>;
+                })
+              ) : (
+                <Tag color="default">-</Tag>
+              )}
+            </div>
+          </Form.Item>
+        );
+      }
+      
+      // 其他字段使用Input组件
       return (
         <Form.Item
           key={key}
