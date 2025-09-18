@@ -79,7 +79,7 @@ export default {
   'pages.userList.actions': '操作',
   'pages.userList.detail': '详情',
   'pages.userList.search': '搜索',
-  'pages.userList.search.placeholder': '请输入姓名、UPN、员工/学号、部门',
+  'pages.userList.search.placeholder': '请输入姓名、UPN、员工号/学号、邮箱',
   'pages.userList.search.query': '查询',
   'pages.userList.search.reset': '重置',
 

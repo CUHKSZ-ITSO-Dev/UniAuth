@@ -17,7 +17,7 @@ import { ArrowLeftOutlined, UserOutlined } from "@ant-design/icons";
 interface CustomFormItemProps extends FormItemProps {
   render?: () => React.ReactNode;
 }
-import { useParams, useIntl, useNavigate } from "@umijs/max";
+import { useParams, useIntl, useNavigate, useSearchParams } from "@umijs/max";
 import { PageContainer } from "@ant-design/pro-components";
 import {
   getUserinfos,
@@ -54,6 +54,7 @@ const UserDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const intl = useIntl();
+  const [searchParams] = useSearchParams();
   const [userData, setUserData] = useState<UserDetailData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
@@ -150,7 +151,22 @@ const UserDetail: React.FC = () => {
   }, [id, form]);
 
   const handleBack = () => {
-    navigate(-1);
+    // 从URL参数中读取之前的搜索状态
+    const fromKeyword = searchParams.get('from_keyword');
+    const fromCurrent = searchParams.get('from_current');
+    const fromPageSize = searchParams.get('from_pageSize');
+    
+    // 构建返回的URL参数
+    const backParams = new URLSearchParams();
+    if (fromKeyword) backParams.set('keyword', fromKeyword);
+    if (fromCurrent) backParams.set('current', fromCurrent);
+    if (fromPageSize) backParams.set('pageSize', fromPageSize);
+    
+    // 构建完整的返回URL
+    const backUrl = `/user-list${backParams.toString() ? `?${backParams.toString()}` : ''}`;
+    
+    // 导航到用户列表页面并恢复搜索状态
+    navigate(backUrl);
   };
 
   const getFormItems = (): CustomFormItemProps[] => {

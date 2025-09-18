@@ -84,7 +84,7 @@ export default {
   'pages.userList.actions': 'Actions',
   'pages.userList.detail': 'Detail',
   'pages.userList.search': 'Search',
-  'pages.userList.search.placeholder': 'Enter name, UPN, employee/student ID, department',
+  'pages.userList.search.placeholder': 'Enter name, UPN, employee/student ID, email',
   'pages.userList.search.query': 'Query',
   'pages.userList.search.reset': 'Reset',
 
