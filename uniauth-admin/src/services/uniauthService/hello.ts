@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
 /** You first hello api GET /hello */
 export async function getHello(options?: { [key: string]: any }) {
