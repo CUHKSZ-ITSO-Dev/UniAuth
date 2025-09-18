@@ -61,7 +61,7 @@ export async function getConfigI18NLang(
   params: API.getConfigI18nLangParams,
   options?: { [key: string]: any }
 ) {
-  return request<API.GetI18nConfigRes>(`/config/i18n/${lang}`, {
+  return request<API.GetI18nConfigRes>(`/config/i18n/${params.lang}`, {
     method: "GET",
     params: {
       ...params,
