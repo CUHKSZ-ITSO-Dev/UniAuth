@@ -181,11 +181,12 @@ const config: Config = {
    */
   openAPI: [
     {
-      requestLibPath: "import { request } from '@umijs/max'",
+      requestLibPath: "import { request } from '@/utils/request'",
       // 或者使用在线的版本
       // schemaPath: "https://gw.alipayobjects.com/os/antfincdn/M%24jrzTTYJN/oneapi.json"
-      schemaPath: join(__dirname, "api.json"),
-      mock: true,
+      schemaPath: "http://localhost:8000/api.json",
+      mock: false,
+      projectName: "uniauthService",
     },
   ],
   mock: {

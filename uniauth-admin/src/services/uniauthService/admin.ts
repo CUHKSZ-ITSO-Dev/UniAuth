@@ -1,8 +1,8 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
-/** 导出账单 导出账单，根据一定的条件。 POST /billing/admin/export */
+/** 导出账单 导出账单，根据一定的条件。有两个类型的账单：<br>1. 配额池出账（可以传Array），每个配额池的账单会在不同的工作表里面；<br>2. 个人出账（可以传Array），每个人的消费记录会在不同的工作表里面。<br>QuotaPool 数组和 UPN 数组只能同时传一个。 POST /billing/admin/export */
 export async function postBillingAdminOpenApiExport(
   body: API.ExportBillRecordReq,
   options?: { [key: string]: any }
@@ -17,7 +17,7 @@ export async function postBillingAdminOpenApiExport(
   });
 }
 
-/** 查询账单 查询账单，根据一定的条件。 POST /billing/admin/get */
+/** 查询账单 查询账单，根据一定的条件。有两个类型的账单：<br>1. 配额池出账（可以传Array），每个配额池的账单会在不同的工作表里面；<br>2. 个人出账（可以传Array），每个人的消费记录会在不同的工作表里面。<br>QuotaPool 数组和 UPN 数组只能同时传一个。 POST /billing/admin/get */
 export async function postBillingAdminGet(
   body: API.GetBillRecordReq,
   options?: { [key: string]: any }
