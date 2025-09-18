@@ -1,366 +1,651 @@
+import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
+import type { ProColumns } from "@ant-design/pro-components";
 import {
-  PageContainer,
-  ProCard,
-  EditableProTable,
-} from "@ant-design/pro-components";
-import type {
-  ProColumns,
-  ActionType,
-  EditableFormInstance,
-} from "@ant-design/pro-components";
-import { Typography, Button, Popconfirm, Input, Space, Table } from "antd";
-import { useRef, useState } from "react";
+  Typography,
+  Space,
+  message,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Select,
+  Table,
+  Tag,
+} from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import React, { useState, useRef } from "react";
+import { useIntl } from "@umijs/max";
+import {
+  postConfigI18NFilter,
+  putConfigI18N,
+  postConfigI18N,
+  deleteConfigI18N,
+  getConfigI18N,
+} from "@/services/uniauthService/i18N";
 
 const { Title, Text } = Typography;
 
-// i18n配置项数据类型定义
-interface I18nConfigItem {
-  id: number;
+interface I18nDataType {
   key: string;
-  translations: {
-    "zh-CN": string;
-    "en-US": string;
-  };
+  langCode: string;
+  keyValue: string;
+  value: string;
   description: string;
   createdAt: string;
   updatedAt: string;
 }
 
-// 多语言编辑组件
-const TranslationEditor: React.FC<{
-  value?: { "zh-CN": string; "en-US": string };
-  onChange?: (value: { "zh-CN": string; "en-US": string }) => void;
-}> = ({ value = { "zh-CN": "", "en-US": "" }, onChange }) => {
-  const handleChange = (lang: "zh-CN" | "en-US", newValue: string) => {
-    const updatedValue = { ...value, [lang]: newValue };
-    onChange?.(updatedValue);
-  };
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "8px",
-        minWidth: "200px",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ width: "60px", fontSize: "12px", color: "#666" }}>
-          中文：
-        </span>
-        <Input
-          size="small"
-          value={value["zh-CN"]}
-          onChange={(e) => handleChange("zh-CN", e.target.value)}
-          placeholder="请输入中文翻译"
-        />
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ width: "60px", fontSize: "12px", color: "#666" }}>
-          英文：
-        </span>
-        <Input
-          size="small"
-          value={value["en-US"]}
-          onChange={(e) => handleChange("en-US", e.target.value)}
-          placeholder="请输入英文翻译"
-        />
-      </div>
-    </div>
-  );
-};
-
-// 示例数据
-const i18nConfigExampleData: I18nConfigItem[] = [
-  {
-    id: 1,
-    key: "common.ok",
-    translations: {
-      "zh-CN": "确定",
-      "en-US": "OK",
-    },
-    description: "通用确认按钮文本",
-    createdAt: "2024-09-01 10:23:45",
-    updatedAt: "2024-09-15 14:30:12",
-  },
-  {
-    id: 2,
-    key: "common.cancel",
-    translations: {
-      "zh-CN": "取消",
-      "en-US": "Cancel",
-    },
-    description: "通用取消按钮文本",
-    createdAt: "2024-09-01 10:24:12",
-    updatedAt: "2024-09-10 09:15:30",
-  },
-  {
-    id: 3,
-    key: "menu.dashboard",
-    translations: {
-      "zh-CN": "仪表板",
-      "en-US": "Dashboard",
-    },
-    description: "导航菜单-仪表板",
-    createdAt: "2024-09-02 14:05:20",
-    updatedAt: "2024-09-12 16:42:18",
-  },
-  {
-    id: 4,
-    key: "menu.userManagement",
-    translations: {
-      "zh-CN": "用户管理",
-      "en-US": "User Management",
-    },
-    description: "导航菜单-用户管理",
-    createdAt: "2024-09-02 14:06:45",
-    updatedAt: "2024-09-13 11:20:33",
-  },
-  {
-    id: 5,
-    key: "form.validation.required",
-    translations: {
-      "zh-CN": "此字段为必填项",
-      "en-US": "This field is required",
-    },
-    description: "表单验证-必填项错误提示",
-    createdAt: "2024-09-03 09:30:15",
-    updatedAt: "2024-09-14 13:25:45",
-  },
-  {
-    id: 6,
-    key: "table.operations.edit",
-    translations: {
-      "zh-CN": "编辑",
-      "en-US": "Edit",
-    },
-    description: "表格操作-编辑按钮",
-    createdAt: "2024-09-03 15:18:30",
-    updatedAt: "2024-09-16 10:55:22",
-  },
-];
-
-// 列配置
-const columns: ProColumns<I18nConfigItem>[] = [
-  {
-    title: "序号",
-    dataIndex: "index",
-    valueType: "index",
-    width: 80,
-    search: false,
-    editable: false,
-  },
-  {
-    title: "Key值",
-    dataIndex: "key",
-    valueType: "text",
-    search: true,
-    width: 200,
-    ellipsis: true,
-    copyable: true,
-    editable: false,
-    formItemProps: {
-      rules: [
-        {
-          required: true,
-          message: "Key值不能为空",
-        },
-      ],
-    },
-  },
-  {
-    title: "翻译键值",
-    dataIndex: "translations",
-    search: false,
-    width: 300,
-    render: (_, record) => (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <div style={{ fontSize: "14px", fontWeight: 500 }}>
-          <span
-            style={{ display: "inline-block", width: "50px", color: "#1890ff" }}
-          >
-            中文:
-          </span>
-          <span style={{ color: "#262626" }}>
-            {record.translations["zh-CN"]}
-          </span>
-        </div>
-        <div style={{ fontSize: "14px", fontWeight: 500 }}>
-          <span
-            style={{ display: "inline-block", width: "50px", color: "#52c41a" }}
-          >
-            英文:
-          </span>
-          <span style={{ color: "#262626" }}>
-            {record.translations["en-US"]}
-          </span>
-        </div>
-      </div>
-    ),
-    renderFormItem: () => <TranslationEditor />,
-  },
-  {
-    title: "描述内容",
-    dataIndex: "description",
-    valueType: "text",
-    search: true,
-    ellipsis: true,
-    width: 250,
-  },
-  {
-    title: "操作",
-    valueType: "option",
-    width: 120,
-    render: (_, record, __, action) => (
-      <Space>
-        <a
-          key="edit"
-          onClick={() => {
-            action?.startEditable(record.id);
-          }}
-        >
-          编辑
-        </a>
-        <Popconfirm
-          key="delete"
-          title="确定要删除该配置项吗？"
-          onConfirm={() => handleDelete(record)}
-          okText="确定"
-          cancelText="取消"
-        >
-          <a style={{ color: "red" }}>删除</a>
-        </Popconfirm>
-      </Space>
-    ),
-  },
-];
-
-// 事件处理函数
-function handleDelete(record: I18nConfigItem) {
-  // TODO: 删除逻辑
-  console.log("删除配置项", record);
-}
-
-function handleNewConfigClick() {
-  // TODO: 新建配置项逻辑
-  console.log("新建i18n配置项");
-}
-
-function handleBatchDeleteClick() {
-  // TODO: 批量删除逻辑
-  console.log("批量删除");
-}
-
-// 数据请求函数
-const i18nConfigListRequest = async (params: any) => {
-  // TODO: 替换为实际请求
-  let data = [...i18nConfigExampleData];
-
-  // 搜索过滤
-  if (params.key) {
-    data = data.filter((item) =>
-      item.key.toLowerCase().includes(params.key.toLowerCase())
-    );
-  }
-  if (params.description) {
-    data = data.filter((item) => item.description.includes(params.description));
-  }
-
-  return {
-    data,
-    success: true,
-    total: data.length,
-  };
-};
-
 const ConfigI18nPage: React.FC = () => {
-  const actionRef = useRef<ActionType | null>(null);
-  const editableFormRef = useRef<EditableFormInstance<I18nConfigItem>>(null);
-  const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
-  const [dataSource, setDataSource] = useState<readonly I18nConfigItem[]>([]);
+  const intl = useIntl();
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<I18nDataType | null>(null);
+  const [form] = Form.useForm();
+  const actionRef = useRef<any>(null);
+  const [availableLangs, setAvailableLangs] = useState<string[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [selectedRows, setSelectedRows] = useState<I18nDataType[]>([]);
+
+  // 获取可用语言列表
+  React.useEffect(() => {
+    const fetchLangs = async () => {
+      try {
+        const response = await getConfigI18N();
+        if (response.langs) {
+          setAvailableLangs(response.langs);
+        }
+      } catch (error) {
+        console.error("获取语言列表失败:", error);
+      }
+    };
+    fetchLangs();
+  }, []);
+
+  const columns: ProColumns<I18nDataType>[] = [
+    {
+      title: intl.formatMessage({
+        id: "pages.configI18n.search",
+        defaultMessage: "搜索配置",
+      }),
+      dataIndex: "keyword",
+      key: "keyword",
+      hideInTable: true,
+      search: {
+        transform: (value) => ({ keyword: value }),
+      },
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.configI18n.search.placeholder",
+          defaultMessage: "请输入键值、语言、翻译内容或描述",
+        }),
+        style: { width: 400 },
+      },
+    },
+    {
+      title: intl.formatMessage({
+        id: "pages.configI18n.key",
+        defaultMessage: "键值",
+      }),
+      dataIndex: "keyValue",
+      key: "keyValue",
+      ellipsis: true,
+      search: false,
+    },
+    {
+      title: intl.formatMessage({
+        id: "pages.configI18n.lang",
+        defaultMessage: "语言",
+      }),
+      dataIndex: "langCode",
+      key: "langCode",
+      search: false,
+      width: 120,
+      render: (text: any, record: I18nDataType) => {
+        // 为不同语言定义不同颜色
+        const getLanguageColor = (lang: string) => {
+          const colorMap: Record<string, string> = {
+            zh: "#2db7f5",
+            "en-US": "#87d068",
+          };
+          return colorMap[lang] || "#2db7f5";
+        };
+
+        const langCode = text || record.langCode || "";
+        return (
+          <Tag color={getLanguageColor(langCode)} bordered={false}>
+            {langCode}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: intl.formatMessage({
+        id: "pages.configI18n.value",
+        defaultMessage: "翻译内容",
+      }),
+      dataIndex: "value",
+      key: "value",
+      ellipsis: true,
+      search: false,
+    },
+    {
+      title: intl.formatMessage({
+        id: "pages.configI18n.desc",
+        defaultMessage: "描述",
+      }),
+      dataIndex: "description",
+      key: "description",
+      ellipsis: true,
+      search: false,
+    },
+    {
+      title: intl.formatMessage({
+        id: "pages.configI18n.actions",
+        defaultMessage: "操作",
+      }),
+      key: "action",
+      search: false,
+      width: 150,
+      render: (_: any, record: I18nDataType) => (
+        <Space size="small">
+          <Button
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          >
+            {intl.formatMessage({
+              id: "pages.configI18n.edit",
+              defaultMessage: "编辑",
+            })}
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record)}
+          >
+            {intl.formatMessage({
+              id: "pages.configI18n.delete",
+              defaultMessage: "删除",
+            })}
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
+  // 编辑翻译配置
+  const handleEdit = (record: I18nDataType) => {
+    setEditingRecord(record);
+    form.setFieldsValue({
+      lang: record.langCode,
+      key: record.keyValue,
+      value: record.value,
+      description: record.description,
+    });
+    setEditModalVisible(true);
+  };
+
+  // 删除翻译配置
+  const handleDelete = (record: I18nDataType) => {
+    Modal.confirm({
+      title: intl.formatMessage({
+        id: "pages.configI18n.delete.confirm.title",
+        defaultMessage: "确认删除",
+      }),
+      content: intl.formatMessage(
+        {
+          id: "pages.configI18n.delete.confirm.content",
+          defaultMessage: '确定要删除键值 "{key}" 的所有语言配置吗？',
+        },
+        { key: record.keyValue }
+      ),
+      onOk: async () => {
+        try {
+          await deleteConfigI18N({ key: record.keyValue });
+          message.success(
+            intl.formatMessage({
+              id: "pages.configI18n.delete.success",
+              defaultMessage: "删除成功",
+            })
+          );
+          actionRef.current?.reload();
+        } catch (error) {
+          console.error("删除失败:", error);
+          message.error(
+            intl.formatMessage({
+              id: "pages.configI18n.delete.error",
+              defaultMessage: "删除失败",
+            })
+          );
+        }
+      },
+    });
+  };
+
+  // 新增翻译配置
+  const handleAdd = () => {
+    form.resetFields();
+    setEditingRecord(null);
+    setAddModalVisible(true);
+  };
+
+  // 批量删除翻译配置
+  const handleBatchDeleteClick = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning(
+        intl.formatMessage({
+          id: "pages.configI18n.batchDelete.noSelection",
+          defaultMessage: "请至少选择一项进行删除",
+        })
+      );
+      return;
+    }
+
+    // 获取所有选中的唯一键值
+    const uniqueKeys = Array.from(
+      new Set(selectedRows.map((row) => row.keyValue))
+    );
+
+    Modal.confirm({
+      title: intl.formatMessage({
+        id: "pages.configI18n.batchDelete.confirm.title",
+        defaultMessage: "确认批量删除",
+      }),
+      content: intl.formatMessage(
+        {
+          id: "pages.configI18n.batchDelete.confirm.content",
+          defaultMessage:
+            "确定要删除选中的 {count} 个键值的所有语言配置吗？此操作不可恢复。",
+        },
+        { count: uniqueKeys.length }
+      ),
+      onOk: async () => {
+        try {
+          // 批量删除所有选中的键值
+          const deletePromises = uniqueKeys.map((key) =>
+            deleteConfigI18N({ key })
+          );
+
+          await Promise.all(deletePromises);
+
+          message.success(
+            intl.formatMessage({
+              id: "pages.configI18n.batchDelete.success",
+              defaultMessage: "批量删除成功",
+            })
+          );
+
+          // 清空选择并刷新表格
+          setSelectedRowKeys([]);
+          setSelectedRows([]);
+          actionRef.current?.reload();
+        } catch (error) {
+          console.error("批量删除失败:", error);
+          message.error(
+            intl.formatMessage({
+              id: "pages.configI18n.batchDelete.error",
+              defaultMessage: "批量删除失败",
+            })
+          );
+        }
+      },
+    });
+  };
+
+  // 处理模态框的确认操作（新增或编辑）
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
+
+      if (editingRecord) {
+        // 编辑模式
+        // 注意：当前API类型定义暂不支持description字段
+        // 等API更新后可添加: description: values.description,
+        await putConfigI18N({
+          lang: values.lang,
+          key: values.key,
+          value: values.value,
+        });
+        message.success(
+          intl.formatMessage({
+            id: "pages.configI18n.edit.success",
+            defaultMessage: "编辑成功",
+          })
+        );
+        setEditModalVisible(false);
+      } else {
+        // 新增模式
+        // 注意：当前API类型定义暂不支持description字段
+        // 等API更新后可添加: description: values.description,
+        await postConfigI18N({
+          lang: values.lang,
+          key: values.key,
+          value: values.value,
+        });
+        message.success(
+          intl.formatMessage({
+            id: "pages.configI18n.add.success",
+            defaultMessage: "添加成功",
+          })
+        );
+        setAddModalVisible(false);
+      }
+
+      actionRef.current?.reload();
+    } catch (error) {
+      console.error("操作失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.configI18n.operation.error",
+          defaultMessage: "操作失败",
+        })
+      );
+    }
+  };
+
+  // 表格数据请求
+  const columnRequest = async (params: any) => {
+    const { current, pageSize, keyword, ...searchParams } = params;
+
+    // 构建搜索条件
+    const filter: API.I18nFilterGroup = {
+      logic: "or",
+      conditions: [],
+    };
+
+    if (keyword) {
+      // 搜索字段：键值、语言、翻译内容、描述
+      const searchFields = ["key", "langCode", "value", "description"];
+      searchFields.forEach((field) => {
+        filter.conditions!.push({
+          field,
+          op: "like",
+          value: `%${keyword}%`,
+        });
+      });
+      console.log("构建的搜索条件:", filter);
+    }
+
+    try {
+      // 发送搜索请求
+      const response = await postConfigI18NFilter({
+        filter,
+        pagination: {
+          page: current || 1,
+          pageSize: pageSize || 10,
+          all: false,
+        },
+        sort: [
+          {
+            field: "key",
+            order: "asc",
+          },
+        ],
+        verbose: true,
+      });
+
+      console.log("API响应数据:", response);
+
+      // 增强错误边界检查
+      if (!response || typeof response !== "object") {
+        console.error("API返回格式错误", response);
+        message.error("搜索失败，返回数据格式不正确");
+        return {
+          data: [],
+          success: false,
+          total: 0,
+        };
+      }
+
+      if (!response.i18nItems || !Array.isArray(response.i18nItems)) {
+        console.warn("没有找到i18n数据");
+        return {
+          data: [],
+          success: true,
+          total: 0,
+        };
+      }
+
+      // 数据转换逻辑
+      const tableData: I18nDataType[] = response.i18nItems.map(
+        (item, index) => ({
+          key: `${item.langCode}-${item.key}`,
+          langCode: item.langCode || "",
+          keyValue: item.key || "",
+          value: item.value || "",
+          description: item.description || "",
+          createdAt: item.createdAt || "",
+          updatedAt: item.updatedAt || "",
+        })
+      );
+
+      // 搜索结果提示
+      if (keyword && tableData.length === 0) {
+        message.info(`未找到包含 "${keyword}" 的配置信息`);
+      }
+
+      return {
+        data: tableData,
+        success: true,
+        total: response.total || tableData.length,
+      };
+    } catch (error) {
+      console.error("搜索API错误:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "搜索失败，请稍后重试";
+      message.error(errorMessage);
+      return {
+        data: [],
+        success: false,
+        total: 0,
+      };
+    }
+  };
 
   return (
     <PageContainer>
       <ProCard>
-        <Title level={4}>国际化配置管理</Title>
+        <Title level={4}>
+          {intl.formatMessage({
+            id: "pages.configI18n.title",
+            defaultMessage: "国际化配置管理",
+          })}
+        </Title>
         <Text type="secondary">
-          管理系统中的所有国际化文本配置，支持多语言翻译的添加、编辑和删除
+          {intl.formatMessage({
+            id: "pages.configI18n.description",
+            defaultMessage: "管理系统中的多语言翻译配置",
+          })}
         </Text>
-        <EditableProTable<I18nConfigItem>
+        <ProTable<I18nDataType>
           columns={columns}
+          rowKey={(record) => `${record.langCode}-${record.keyValue}`}
           actionRef={actionRef}
-          editableFormRef={editableFormRef}
-          rowKey="id"
-          search={{
-            labelWidth: "auto",
-            collapsed: false,
-          }}
-          value={dataSource}
-          onChange={setDataSource}
-          controlled
-          recordCreatorProps={false}
-          editable={{
-            type: "single",
-            editableKeys,
-            onSave: async (rowKey, data, originRow) => {
-              // TODO: 保存逻辑
-              console.log("保存数据", rowKey, data);
-
-              // 更新数据源
-              const newDataSource = dataSource.map((item) =>
-                item.id === data.id ? { ...data } : item
-              );
-              setDataSource(newDataSource);
-              return true;
-            },
-            onCancel: async (rowKey) => {
-              console.log("取消编辑", rowKey);
-              return true;
-            },
-            onChange: setEditableRowKeys,
-            actionRender: (row, config, dom) => [dom.save, dom.cancel],
-          }}
+          toolBarRender={() => [
+            <Button
+              key="add"
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAdd}
+            >
+              {intl.formatMessage({
+                id: "pages.configI18n.add",
+                defaultMessage: "新增配置",
+              })}
+            </Button>,
+          ]}
+          request={columnRequest}
+          loading={false}
           rowSelection={{
             selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+            selectedRowKeys,
+            onChange: (newSelectedRowKeys, newSelectedRows) => {
+              setSelectedRowKeys(newSelectedRowKeys);
+              setSelectedRows(newSelectedRows);
+            },
           }}
-          tableAlertRender={({ selectedRowKeys, onCleanSelected }) => {
+          tableAlertRender={({
+            selectedRowKeys: alertSelectedRowKeys,
+            selectedRows: alertSelectedRows,
+            onCleanSelected,
+          }) => {
             return (
               <Space size={24}>
                 <span>
-                  已选 {selectedRowKeys.length} 项
-                  <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
+                  已选 {alertSelectedRowKeys.length} 项
+                  <a
+                    style={{ marginInlineStart: 8 }}
+                    onClick={() => {
+                      onCleanSelected();
+                      setSelectedRowKeys([]);
+                      setSelectedRows([]);
+                    }}
+                  >
                     取消选择
                   </a>
                 </span>
               </Space>
             );
           }}
-          tableAlertOptionRender={({ selectedRowKeys }) => {
+          tableAlertOptionRender={() => {
             return (
               <Space size={16}>
-                <a
-                  onClick={handleBatchDeleteClick}
-                  style={{ color: selectedRowKeys.length > 0 ? "red" : "#ccc" }}
-                >
-                  批量删除
-                </a>
+                <a onClick={handleBatchDeleteClick}>批量删除</a>
               </Space>
             );
           }}
-          toolBarRender={() => [
-            <Button type="primary" key="new" onClick={handleNewConfigClick}>
-              添加新配置
-            </Button>,
-          ]}
-          request={i18nConfigListRequest}
+          size="middle"
           pagination={{
-            defaultPageSize: 10,
             showSizeChanger: true,
-            showQuickJumper: true,
+            showTotal: (total) => `共 ${total} 条数据`,
           }}
         />
       </ProCard>
+
+      {/* 编辑模态框 */}
+      <Modal
+        title={
+          editingRecord
+            ? intl.formatMessage({
+                id: "pages.configI18n.modal.edit.title",
+                defaultMessage: "编辑配置",
+              })
+            : intl.formatMessage({
+                id: "pages.configI18n.modal.add.title",
+                defaultMessage: "新增配置",
+              })
+        }
+        open={editModalVisible || addModalVisible}
+        onOk={handleModalOk}
+        onCancel={() => {
+          setEditModalVisible(false);
+          setAddModalVisible(false);
+        }}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="lang"
+            label={intl.formatMessage({
+              id: "pages.configI18n.form.lang",
+              defaultMessage: "语言",
+            })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.configI18n.form.lang.required",
+                  defaultMessage: "请选择语言",
+                }),
+              },
+            ]}
+          >
+            <Select
+              placeholder={intl.formatMessage({
+                id: "pages.configI18n.form.lang.placeholder",
+                defaultMessage: "请选择语言",
+              })}
+              showSearch
+              allowClear
+              disabled={!!editingRecord} // 编辑时不允许修改语言
+            >
+              {availableLangs.map((lang) => (
+                <Select.Option key={lang} value={lang}>
+                  {lang}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="key"
+            label={intl.formatMessage({
+              id: "pages.configI18n.form.key",
+              defaultMessage: "键值",
+            })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.configI18n.form.key.required",
+                  defaultMessage: "请输入键值",
+                }),
+              },
+            ]}
+          >
+            <Input
+              placeholder={intl.formatMessage({
+                id: "pages.configI18n.form.key.placeholder",
+                defaultMessage: "例如：navBar.title",
+              })}
+              disabled={!!editingRecord} // 编辑时不允许修改键值
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="value"
+            label={intl.formatMessage({
+              id: "pages.configI18n.form.value",
+              defaultMessage: "翻译内容",
+            })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.configI18n.form.value.required",
+                  defaultMessage: "请输入翻译内容",
+                }),
+              },
+            ]}
+          >
+            <Input.TextArea
+              placeholder={intl.formatMessage({
+                id: "pages.configI18n.form.value.placeholder",
+                defaultMessage: "请输入该语言的翻译内容",
+              })}
+              rows={3}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label={intl.formatMessage({
+              id: "pages.configI18n.form.description",
+              defaultMessage: "描述",
+            })}
+          >
+            <Input.TextArea
+              placeholder={intl.formatMessage({
+                id: "pages.configI18n.form.description.placeholder",
+                defaultMessage: "请输入该配置项的描述信息（可选）",
+              })}
+              rows={2}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </PageContainer>
   );
 };
