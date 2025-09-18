@@ -1,8 +1,8 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
-/** 检查是否可以使用某个产品 根据给定的参数，检查是否可以使用某个产品。 POST /billing/check */
+/** 检查余额 刷新、检查配额池的余额。 POST /billing/check */
 export async function postBillingCheck(
   body: API.CheckBalanceReq,
   options?: { [key: string]: any }
@@ -32,7 +32,7 @@ export async function postBillingCheckTokensUsage(
   });
 }
 
-/** 计费接口 xxxxxxxx计费接口 POST /billing/record */
+/** 计费接口 上传计费请求，完成配额池的扣费。 POST /billing/record */
 export async function postBillingRecord(
   body: API.BillingRecordReq,
   options?: { [key: string]: any }

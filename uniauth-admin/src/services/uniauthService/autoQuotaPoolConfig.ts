@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
 /** 获取自动配额池规则 GET /config/autoConfig */
 export async function getConfigAutoConfig(options?: { [key: string]: any }) {

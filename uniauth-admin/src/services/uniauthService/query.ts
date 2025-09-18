@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
 /** 获取所有Actions GET /auth/admin/actions/all */
 export async function getAuthAdminActionsAll(options?: { [key: string]: any }) {
