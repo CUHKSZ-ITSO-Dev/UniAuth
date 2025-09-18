@@ -478,7 +478,6 @@ const ConfigI18nPage: React.FC = () => {
             </Button>,
           ]}
           request={columnRequest}
-          loading={false}
           rowSelection={{
             selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
             selectedRowKeys,
@@ -591,6 +590,14 @@ const ConfigI18nPage: React.FC = () => {
                 message: intl.formatMessage({
                   id: "pages.configI18n.form.key.required",
                   defaultMessage: "请输入键值",
+                }),
+              },
+              {
+                pattern: /^[a-zA-Z_]+(\.[a-zA-Z_]+)+$/,
+                message: intl.formatMessage({
+                  id: "pages.configI18n.form.key.pattern",
+                  defaultMessage:
+                    "键值格式不正确，应该是由点分割的字符串，例如：test.temp、nav.title 等",
                 }),
               },
             ]}

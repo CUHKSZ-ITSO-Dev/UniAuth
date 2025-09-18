@@ -41,12 +41,6 @@ export default [
     component: "@/pages/UserListPage",
   },
   {
-    path: "/quota-pool-list",
-    name: "quota-pool-list",
-    icon: "Container",
-    component: "@/pages/QuotaPoolListPage",
-  },
-  {
     path: "/quota-pool-details/",
     name: "quota-pool-details",
     icon: "Container",

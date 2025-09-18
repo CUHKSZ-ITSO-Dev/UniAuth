@@ -33,6 +33,8 @@ export default {
   "pages.configI18n.form.lang.placeholder": "Please select a language",
   "pages.configI18n.form.key": "Key",
   "pages.configI18n.form.key.required": "Please enter a key",
+  "pages.configI18n.form.key.pattern":
+    "Invalid key format. It should be a dot-separated English string, e.g.: test.temp, nav.title",
   "pages.configI18n.form.key.placeholder": "e.g.: navBar.title",
   "pages.configI18n.form.value": "Translation Content",
   "pages.configI18n.form.value.required": "Please enter translation content",

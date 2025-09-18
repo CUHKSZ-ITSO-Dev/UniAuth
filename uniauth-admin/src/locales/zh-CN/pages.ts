@@ -99,6 +99,8 @@ export default {
   "pages.configI18n.form.lang.placeholder": "请选择语言",
   "pages.configI18n.form.key": "键值",
   "pages.configI18n.form.key.required": "请输入键值",
+  "pages.configI18n.form.key.pattern":
+    "键值格式不正确，修改为由点分割的英文字符串，例如：test.temp、nav.title 等",
   "pages.configI18n.form.key.placeholder": "例如：navBar.title",
   "pages.configI18n.form.value": "翻译内容",
   "pages.configI18n.form.value.required": "请输入翻译内容",
