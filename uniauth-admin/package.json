@@ -63,6 +63,7 @@
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
     "@types/react-helmet": "^6.1.11",
+    "@types/react-router-dom": "^5.3.3",
     "@umijs/max": "^4.3.24",
     "cross-env": "^7.0.3",
     "express": "^4.21.1",
