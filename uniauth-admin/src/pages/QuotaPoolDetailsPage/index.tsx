@@ -356,7 +356,7 @@ const QuotaPoolDetailsPage: FC = () => {
             />
           </Card>
           <Card
-            title="配置池 ITTools 规则"
+            title="配额池权限规则"
             style={{
               marginBottom: 24,
             }}
