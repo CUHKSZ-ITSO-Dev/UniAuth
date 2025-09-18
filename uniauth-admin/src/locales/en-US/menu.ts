@@ -52,4 +52,6 @@ export default {
   "menu.editor.mind": "Mind Editor",
   "menu.editor.koni": "Koni Editor",
   "menu.config-i18n": "I18N Configuration",
+  "menu.user-list": "User List",
+  "menu.user-detail": "User Details",
 };
