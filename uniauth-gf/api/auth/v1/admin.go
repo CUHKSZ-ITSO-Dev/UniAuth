@@ -20,7 +20,7 @@ type EditPolicyRes struct {
 
 type DeletePoliciesReq struct {
 	g.Meta   `path:"/admin/policies/delete" tags:"Auth/Admin/CRUD" method:"post" summary:"删除 Policies" dc:"删除 Policies。原子性操作，当规则中有一条和数据库中的规则不匹配，立即回滚所有操作并返回错误。"`
-	Policies [][]string `json:"polices" v:"required" dc:"Polices" examples:"[['sub1', 'dom1', 'obj1', 'act1'], ['sub2', 'dom2', 'obj2', 'act2']]"`
+	Policies [][]string `json:"policies" v:"required" dc:"Policies" examples:"[['sub1', 'dom1', 'obj1', 'act1'], ['sub2', 'dom2', 'obj2', 'act2']]"`
 }
 type DeletePoliciesRes struct {
 }
@@ -37,7 +37,7 @@ type FilterPoliciesRes struct {
 }
 
 type FilterGroupingsReq struct {
-	g.Meta `path:"/admin/groupings/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Grouping Polices" dc:"根据给定的条件，返回 Grouping Polices 角色继承关系。留空的字段（传空 Array）将被忽略。"`
+	g.Meta `path:"/admin/groupings/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Grouping Policies" dc:"根据给定的条件，返回 Grouping Policies 角色继承关系。留空的字段（传空 Array）将被忽略。"`
 	Upns   []string `json:"users" dc:"Upn 列表" example:"['122020255@link.cuhk.edu.cn', 'sadt@cuhk.edu.cn']"`
 	Roles  []string `json:"roles" dc:"Roles 列表" example:"['student', 'staff']"`
 }
