@@ -236,7 +236,7 @@ $$ LANGUAGE plpgsql;
 -- 主函数：重新评估所有规则
 CREATE OR REPLACE FUNCTION reevaluate_all_rules()
 RETURNS TABLE(
-    rule_id BIGINT,
+    result_rule_id BIGINT,
     rule_name VARCHAR(255),
     matched_users INTEGER,
     execution_time_ms INTEGER
@@ -251,6 +251,7 @@ DECLARE
     end_time TIMESTAMP;
     execution_time INTEGER;
     total_matched INTEGER := 0;
+    pool_name TEXT;
 BEGIN
     -- 清空现有映射
     DELETE FROM auto_quota_pool_mappings;
@@ -281,12 +282,16 @@ BEGIN
             FOR user_record IN EXECUTE full_sql
             LOOP
                 -- 为每个配额池创建映射
-                FOREACH quota_pool_name IN ARRAY rule_record.quota_pool_names
-                LOOP
-                    INSERT INTO auto_quota_pool_mappings (user_upn, quota_pool_name, rule_id)
-                    VALUES (user_record.upn, quota_pool_name, rule_record.id)
-                    ON CONFLICT (user_upn, quota_pool_name, rule_id) DO NOTHING;
-                END LOOP;
+                DECLARE
+                    current_rule_id BIGINT := rule_record.id;
+                BEGIN
+                    FOREACH pool_name IN ARRAY rule_record.quota_pool_names
+                    LOOP
+                        INSERT INTO auto_quota_pool_mappings (user_upn, quota_pool_name, rule_id)
+                        VALUES (user_record.upn, pool_name, current_rule_id)
+                        ON CONFLICT (user_upn, quota_pool_name, rule_id) DO NOTHING;
+                    END LOOP;
+                END;
                 
                 matched_count := matched_count + 1;
             END LOOP;
@@ -307,7 +312,7 @@ BEGIN
         total_matched := total_matched + matched_count;
         
         -- 返回该规则的执行结果
-        rule_id := rule_record.id;
+        result_rule_id := rule_record.id;
         rule_name := rule_record.rule_name;
         matched_users := matched_count;
         execution_time_ms := execution_time;
