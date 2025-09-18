@@ -111,18 +111,4 @@ export default {
     "确定要删除选中的 {count} 个键值的所有语言配置吗？此操作不可恢复。",
   "pages.configI18n.batchDelete.success": "批量删除成功",
   "pages.configI18n.batchDelete.error": "批量删除失败",
-
-  // UserListPage
-  "pages.userList.title": "用户列表",
-  "pages.userList.description": "管理系统中的所有用户及其权限",
-  "pages.userList.search": "搜索用户",
-  "pages.userList.search.placeholder": "请输入姓名、UPN、员工/学号、部门",
-  "pages.userList.search.query": "查询",
-  "pages.userList.search.reset": "重置",
-  "pages.userList.name": "姓名",
-  "pages.userList.upn": "UPN",
-  "pages.userList.employeeId": "员工/学号",
-  "pages.userList.department": "部门",
-  "pages.userList.actions": "操作",
-  "pages.userList.detail": "详情",
 };
