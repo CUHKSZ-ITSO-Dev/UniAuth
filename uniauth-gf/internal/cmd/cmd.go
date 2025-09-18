@@ -11,6 +11,7 @@ import (
 	"github.com/gogf/gf/v2/os/gcmd"
 
 	"uniauth-gf/internal/controller/auth"
+	"uniauth-gf/internal/controller/autoquotapool"
 	"uniauth-gf/internal/controller/billing"
 	"uniauth-gf/internal/controller/config"
 	"uniauth-gf/internal/controller/hello"
@@ -59,6 +60,11 @@ var (
 			s.Group("/quotaPool", func(group *ghttp.RouterGroup) {
 				group.Bind(
 					quotaPool.NewV1(),
+				)
+			})
+			s.Group("/autoQuotaPool", func(group *ghttp.RouterGroup) {
+				group.Bind(
+					autoquotapool.NewV1(),
 				)
 			})
 			s.SetOpenApiPath("/api.json")

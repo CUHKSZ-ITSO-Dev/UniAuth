@@ -56,7 +56,7 @@ type AutoQuotaPoolMapping struct {
 
 // GetAutoQuotaPoolRulesReq 获取自动配额池规则列表
 type GetAutoQuotaPoolRulesReq struct {
-	g.Meta       `path:"/autoQuotaPool/rules" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"获取自动配额池规则列表"`
+	g.Meta       `path:"/autoQuotaPool/rules" tags:"AutoQuotaPoolConfig" method:"get" summary:"获取自动配额池规则列表"`
 	Enabled      *bool  `json:"enabled" dc:"是否启用（可选过滤）"`
 	RuleName     string `json:"ruleName" dc:"规则名称（可选模糊搜索）"`
 	Page         int    `json:"page" v:"min:1" dc:"页码" default:"1"`
@@ -74,7 +74,7 @@ type GetAutoQuotaPoolRulesRes struct {
 
 // GetAutoQuotaPoolRuleReq 获取单个自动配额池规则详情
 type GetAutoQuotaPoolRuleReq struct {
-	g.Meta `path:"/autoQuotaPool/rules/{id}" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"获取自动配额池规则详情"`
+	g.Meta `path:"/autoQuotaPool/rules/{id}" tags:"AutoQuotaPoolConfig" method:"get" summary:"获取自动配额池规则详情"`
 	ID     int64 `json:"id" v:"required" dc:"规则ID"`
 }
 
@@ -85,7 +85,7 @@ type GetAutoQuotaPoolRuleRes struct {
 
 // AddAutoQuotaPoolRuleReq 新增自动配额池规则
 type AddAutoQuotaPoolRuleReq struct {
-	g.Meta         `path:"/autoQuotaPool/rules" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"新增自动配额池规则"`
+	g.Meta         `path:"/autoQuotaPool/rules" tags:"AutoQuotaPoolConfig" method:"post" summary:"新增自动配额池规则"`
 	RuleName       string                   `json:"ruleName" v:"required|length:1,255" dc:"规则名称"`
 	Description    string                   `json:"description" dc:"规则描述"`
 	Enabled        bool                     `json:"enabled" dc:"是否启用" default:"true"`
@@ -101,7 +101,7 @@ type AddAutoQuotaPoolRuleRes struct {
 
 // EditAutoQuotaPoolRuleReq 编辑自动配额池规则
 type EditAutoQuotaPoolRuleReq struct {
-	g.Meta         `path:"/autoQuotaPool/rules/{id}" tags:"Config/AutoQuotaPoolConfig" method:"put" summary:"编辑自动配额池规则"`
+	g.Meta         `path:"/autoQuotaPool/rules/{id}" tags:"AutoQuotaPoolConfig" method:"put" summary:"编辑自动配额池规则"`
 	ID             int64                    `json:"id" v:"required" dc:"规则ID"`
 	RuleName       string                   `json:"ruleName" v:"required|length:1,255" dc:"规则名称"`
 	Description    string                   `json:"description" dc:"规则描述"`
@@ -117,7 +117,7 @@ type EditAutoQuotaPoolRuleRes struct {
 
 // DeleteAutoQuotaPoolRuleReq 删除自动配额池规则
 type DeleteAutoQuotaPoolRuleReq struct {
-	g.Meta `path:"/autoQuotaPool/rules/{id}" tags:"Config/AutoQuotaPoolConfig" method:"delete" summary:"删除自动配额池规则"`
+	g.Meta `path:"/autoQuotaPool/rules/{id}" tags:"AutoQuotaPoolConfig" method:"delete" summary:"删除自动配额池规则"`
 	ID     int64 `json:"id" v:"required" dc:"规则ID"`
 }
 
@@ -129,7 +129,7 @@ type DeleteAutoQuotaPoolRuleRes struct {
 
 // GetAutoQuotaPoolConditionsReq 获取规则的条件列表
 type GetAutoQuotaPoolConditionsReq struct {
-	g.Meta `path:"/autoQuotaPool/rules/{ruleId}/conditions" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"获取规则的条件列表"`
+	g.Meta `path:"/autoQuotaPool/rules/{ruleId}/conditions" tags:"AutoQuotaPoolConfig" method:"get" summary:"获取规则的条件列表"`
 	RuleID int64 `json:"ruleId" v:"required" dc:"规则ID"`
 }
 
@@ -139,7 +139,7 @@ type GetAutoQuotaPoolConditionsRes struct {
 
 // AddAutoQuotaPoolConditionReq 新增条件
 type AddAutoQuotaPoolConditionReq struct {
-	g.Meta            `path:"/autoQuotaPool/rules/{ruleId}/conditions" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"新增条件"`
+	g.Meta            `path:"/autoQuotaPool/rules/{ruleId}/conditions" tags:"AutoQuotaPoolConfig" method:"post" summary:"新增条件"`
 	RuleID            int64    `json:"ruleId" v:"required" dc:"规则ID"`
 	ParentConditionID *int64   `json:"parentConditionId" dc:"父条件ID"`
 	ConditionType     string   `json:"conditionType" v:"required|in:field,group" dc:"条件类型"`
@@ -158,7 +158,7 @@ type AddAutoQuotaPoolConditionRes struct {
 
 // EditAutoQuotaPoolConditionReq 编辑条件
 type EditAutoQuotaPoolConditionReq struct {
-	g.Meta            `path:"/autoQuotaPool/conditions/{id}" tags:"Config/AutoQuotaPoolConfig" method:"put" summary:"编辑条件"`
+	g.Meta            `path:"/autoQuotaPool/conditions/{id}" tags:"AutoQuotaPoolConfig" method:"put" summary:"编辑条件"`
 	ID                int64    `json:"id" v:"required" dc:"条件ID"`
 	ParentConditionID *int64   `json:"parentConditionId" dc:"父条件ID"`
 	ConditionType     string   `json:"conditionType" v:"required|in:field,group" dc:"条件类型"`
@@ -176,7 +176,7 @@ type EditAutoQuotaPoolConditionRes struct {
 
 // DeleteAutoQuotaPoolConditionReq 删除条件
 type DeleteAutoQuotaPoolConditionReq struct {
-	g.Meta `path:"/autoQuotaPool/conditions/{id}" tags:"Config/AutoQuotaPoolConfig" method:"delete" summary:"删除条件"`
+	g.Meta `path:"/autoQuotaPool/conditions/{id}" tags:"AutoQuotaPoolConfig" method:"delete" summary:"删除条件"`
 	ID     int64 `json:"id" v:"required" dc:"条件ID"`
 }
 
@@ -188,7 +188,7 @@ type DeleteAutoQuotaPoolConditionRes struct {
 
 // GetUserQuotaPoolsReq 根据用户查询配额池
 type GetUserQuotaPoolsReq struct {
-	g.Meta  `path:"/autoQuotaPool/user/{upn}/quotaPools" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"根据用户查询配额池"`
+	g.Meta  `path:"/autoQuotaPool/user/{upn}/quotaPools" tags:"AutoQuotaPoolConfig" method:"get" summary:"根据用户查询配额池"`
 	UserUpn string `json:"upn" v:"required" dc:"用户UPN"`
 }
 
@@ -200,7 +200,7 @@ type GetUserQuotaPoolsRes struct {
 
 // GetQuotaPoolUsersReq 根据配额池查询用户
 type GetQuotaPoolUsersReq struct {
-	g.Meta        `path:"/autoQuotaPool/quotaPool/{quotaPoolName}/users" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"根据配额池查询用户"`
+	g.Meta        `path:"/autoQuotaPool/quotaPool/{quotaPoolName}/users" tags:"AutoQuotaPoolConfig" method:"get" summary:"根据配额池查询用户"`
 	QuotaPoolName string `json:"quotaPoolName" v:"required" dc:"配额池名称"`
 	Page          int    `json:"page" v:"min:1" dc:"页码" default:"1"`
 	PageSize      int    `json:"pageSize" v:"min:1|max:1000" dc:"每页条数" default:"20"`
@@ -217,7 +217,7 @@ type GetQuotaPoolUsersRes struct {
 
 // GetAutoQuotaPoolMappingsReq 获取映射列表
 type GetAutoQuotaPoolMappingsReq struct {
-	g.Meta        `path:"/autoQuotaPool/mappings" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"获取映射列表"`
+	g.Meta        `path:"/autoQuotaPool/mappings" tags:"AutoQuotaPoolConfig" method:"get" summary:"获取映射列表"`
 	UserUpn       string `json:"userUpn" dc:"用户UPN（可选过滤）"`
 	QuotaPoolName string `json:"quotaPoolName" dc:"配额池名称（可选过滤）"`
 	RuleID        *int64 `json:"ruleId" dc:"规则ID（可选过滤）"`
@@ -237,7 +237,7 @@ type GetAutoQuotaPoolMappingsRes struct {
 
 // ReevaluateAllRulesReq 重新评估所有规则
 type ReevaluateAllRulesReq struct {
-	g.Meta `path:"/autoQuotaPool/reevaluate" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"重新评估所有规则"`
+	g.Meta `path:"/autoQuotaPool/reevaluate" tags:"AutoQuotaPoolConfig" method:"post" summary:"重新评估所有规则"`
 	DryRun bool `json:"dryRun" dc:"是否仅预览，不实际执行" default:"false"`
 }
 
@@ -257,7 +257,7 @@ type RuleEvaluationResult struct {
 
 // TestRuleReq 测试规则
 type TestRuleReq struct {
-	g.Meta         `path:"/autoQuotaPool/rules/test" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"测试规则"`
+	g.Meta         `path:"/autoQuotaPool/rules/test" tags:"AutoQuotaPoolConfig" method:"post" summary:"测试规则"`
 	RuleName       string                   `json:"ruleName" v:"required|length:1,255" dc:"规则名称"`
 	Description    string                   `json:"description" dc:"规则描述"`
 	Enabled        bool                     `json:"enabled" dc:"是否启用"`
@@ -279,7 +279,7 @@ type TestRuleRes struct {
 
 // GetAutoQuotaPoolStatsReq 获取统计信息
 type GetAutoQuotaPoolStatsReq struct {
-	g.Meta `path:"/autoQuotaPool/stats" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"获取统计信息"`
+	g.Meta `path:"/autoQuotaPool/stats" tags:"AutoQuotaPoolConfig" method:"get" summary:"获取统计信息"`
 }
 
 type GetAutoQuotaPoolStatsRes struct {
