@@ -53,12 +53,6 @@ export default [
         component: "@/pages/AutoQuotaPoolConfigPage",
       },
       {
-        path: "/config/auto-edit",
-        name: "auto-edit",
-        component: "@/pages/AutoQuotaPoolEditPage",
-        hideInMenu: true,
-      },
-      {
         path: "/config/model-edit",
         name: "model-edit",
         component: "@/pages/ModelEditPage",

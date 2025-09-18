@@ -2,7 +2,6 @@ import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { PageContainer, ProCard, ProTable } from '@ant-design/pro-components';
 import { Typography, Button, Popconfirm, Table, Space, message } from 'antd';
 import { useRef } from 'react';
-import { history } from 'umi';
 
 const { Title, Text } = Typography;
 
@@ -59,9 +58,11 @@ const columns: ProColumns<AutoQuotaPoolConfig>[] = [
 
 // 事件处理函数
 function handleEdit(record: AutoQuotaPoolConfig) {
-  // 编辑逻辑 - 在当前页面切换到 AutoQuotaPoolEditPage
+  // 编辑逻辑 - 仅显示提示信息，因为编辑功能已被移除
   console.log('编辑配置', record);
-  history.push(`/config/auto-edit?record=${encodeURIComponent(JSON.stringify(record))}`);
+  message.info('编辑功能暂未实现');
+  // 原来的跳转逻辑已移除
+  // history.push(`/config/auto-edit?record=${encodeURIComponent(JSON.stringify(record))}`);
 }
 
 function handleDelete(record: AutoQuotaPoolConfig) {
@@ -71,9 +72,11 @@ function handleDelete(record: AutoQuotaPoolConfig) {
 }
 
 function handleAddConfig() {
-  // 添加新配置逻辑 - 跳转到编辑页面
+  // 添加新配置逻辑 - 显示提示信息
   console.log('添加新配置');
-  history.push('/config/auto-edit');
+  message.info('添加配置功能暂未实现');
+  // 原来的跳转逻辑已移除
+  // history.push('/config/auto-edit');
 }
 
 function handleUpdateConfigs() {
