@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
 /** 获取所有Actions GET /auth/admin/actions/all */
 export async function getAuthAdminActionsAll(options?: { [key: string]: any }) {
@@ -18,7 +18,7 @@ export async function getAuthAdminDomainsAll(options?: { [key: string]: any }) {
   });
 }
 
-/** 筛选 Grouping Polices 根据给定的条件，返回 Grouping Polices 角色继承关系。留空的字段（传空 Array）将被忽略。 POST /auth/admin/groupings/filter */
+/** 筛选 Grouping Policies 根据给定的条件，返回 Grouping Policies 角色继承关系。留空的字段（传空 Array）将被忽略。 POST /auth/admin/groupings/filter */
 export async function postAuthAdminGroupingsFilter(
   body: API.FilterGroupingsReq,
   options?: { [key: string]: any }

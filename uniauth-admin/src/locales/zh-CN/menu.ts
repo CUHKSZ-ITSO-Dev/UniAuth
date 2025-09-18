@@ -53,4 +53,6 @@ export default {
   "menu.editor.flow": "流程编辑器",
   "menu.editor.mind": "脑图编辑器",
   "menu.editor.koni": "拓扑编辑器",
+  "menu.user-list": "用户列表",
+  "menu.user-detail": "用户详情",
 };

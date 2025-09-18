@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
 /** 编辑模型配置 编辑模型配置。 PUT /config/model */
 export async function putConfigModel(

@@ -28,8 +28,8 @@ declare namespace API {
   };
 
   type AddPoliciesReq = {
-    /** Polices */
-    polices: string[][];
+    /** Policies */
+    policies: string[][];
     /** 开启时，当规则已经存在时自动跳过，不返回错误；否则会返回错误，并回退所有操作 */
     skip?: boolean;
   };
@@ -56,6 +56,8 @@ declare namespace API {
     upn: string;
     service: string;
     product: string;
+    plan: "Included" | "Quota Pool";
+    source: string;
     cny_cost?: Decimal;
     usd_cost?: Decimal;
     detail?: Json;
@@ -65,11 +67,28 @@ declare namespace API {
     ok?: boolean;
   };
 
+  type ChatPreCheckOneStopReq = {
+    /** UPN */
+    upn: string;
+    /** Domain */
+    Dom: string;
+    /** 微服务 */
+    svc: string;
+    /** 产品 */
+    product: string;
+    /** 动作 */
+    action: string;
+    /** 配额池 */
+    quotaPool: string;
+  };
+
+  type ChatPreCheckOneStopRes = {
+    ok?: boolean;
+  };
+
   type CheckAndExplainReq = {
     /** 对象 */
     sub: string;
-    /** 域 */
-    dom: string;
     /** 资源 */
     obj: string;
     /** 动作 */
@@ -83,22 +102,18 @@ declare namespace API {
   };
 
   type CheckBalanceReq = {
-    upn: string;
-    svc: string;
-    product: string;
     quotaPool: string;
   };
 
   type CheckBalanceRes = {
     ok?: boolean;
-    err?: string;
+    percentage?: string;
+    nextíResetAt?: string;
   };
 
   type CheckReq = {
     /** 对象 */
     sub: string;
-    /** 域 */
-    dom: string;
     /** 资源 */
     obj: string;
     /** 动作 */
@@ -112,10 +127,11 @@ declare namespace API {
   type CheckTokensUsageReq = {
     upn: string;
     quotaPool: string;
+    nDays: number;
   };
 
   type CheckTokensUsageRes = {
-    tokensUsage?: string;
+    tokensUsage?: Json;
   };
 
   type Decimal = {};
@@ -150,8 +166,8 @@ declare namespace API {
   };
 
   type DeletePoliciesReq = {
-    /** Polices */
-    polices: string[][];
+    /** Policies */
+    policies: string[][];
   };
 
   type DeletePoliciesRes = {};
@@ -208,24 +224,21 @@ declare namespace API {
   };
 
   type ExportBillRecordReq = {
+    /** UPN列表 */
+    upns?: string[];
     /** 配额池 */
-    quotaPool: string;
+    quotaPools?: string[];
     /** 服务 */
-    svc: string[];
+    svc?: string[];
     /** 产品 */
-    product: string[];
+    product?: string[];
     /** 开始时间 */
     startTime: string;
     /** 结束时间 */
     endTime: string;
-    /** 导出类型 */
-    exportType: "pdf" | "xlsx";
   };
 
-  type ExportBillRecordRes = {
-    /** 账单PDF/XLSX二进制内容 */
-    file?: string;
-  };
+  type ExportBillRecordRes = {};
 
   type FilterCondition = {
     /** 字段名 */
@@ -266,8 +279,6 @@ declare namespace API {
     users?: string[];
     /** Roles 列表 */
     roles?: string[];
-    /** Domains 列表 */
-    domains?: string[];
   };
 
   type FilterGroupingsRes = {
@@ -277,8 +288,6 @@ declare namespace API {
   type FilterPoliciesReq = {
     /** Subjects 列表 */
     subs?: string[];
-    /** Domains 列表 */
-    doms?: string[];
     /** Objects 列表 */
     objs?: string[];
     /** Actions 列表 */
@@ -379,14 +388,14 @@ declare namespace API {
     users?: string[];
   };
 
+  type getAuthChatQuotaPoolsModelsParams = {
+    /** QuotaPool */
+    quotaPool: string;
+  };
+
   type getAuthQuotaPoolsAllParams = {
     /** Upn */
     upn: string;
-  };
-
-  type getAuthQuotaPoolsModelsParams = {
-    /** QuotaPool */
-    quotaPool: string;
   };
 
   type getAuthQuotaPoolsUsersParams = {
@@ -411,13 +420,25 @@ declare namespace API {
     availableModels?: string[];
   };
 
+  type getBillingStatsChatUsageChartParams = {
+    /** N Days */
+    N?: number;
+  };
+
+  type getBillingStatsChatUsageGroupParams = {
+    /** N Days */
+    N?: number;
+  };
+
   type GetBillRecordReq = {
+    /** UPN列表 */
+    upns?: string[];
     /** 配额池 */
-    quotaPool: string;
+    quotaPools?: string[];
     /** 服务 */
-    svc: string[];
+    svc?: string[];
     /** 产品 */
-    product: string[];
+    product?: string[];
     /** 开始时间 */
     startTime: string;
     /** 结束时间 */
@@ -425,7 +446,7 @@ declare namespace API {
   };
 
   type GetBillRecordRes = {
-    records?: string[];
+    records?: Json;
   };
 
   type getConfigI18nLangParams = {
@@ -439,8 +460,7 @@ declare namespace API {
   };
 
   type GetI18nConfigRes = {
-    /** 配置 */
-    config?: Json;
+    Config?: Json;
   };
 
   type GetModelConfigReq = {};
@@ -521,6 +541,24 @@ declare namespace API {
   type HelloRes = {};
 
   type Json = {};
+
+  type NDaysProductUsageChartReq = {
+    /** N Days */
+    N?: number;
+  };
+
+  type NDaysProductUsageChartRes = {
+    chartData?: Json;
+  };
+
+  type NDaysProductUsageGroupReq = {
+    /** N Days */
+    N?: number;
+  };
+
+  type NDaysProductUsageGroupRes = {
+    groupData?: Json;
+  };
 
   type NewQuotaPoolReq = {};
 
