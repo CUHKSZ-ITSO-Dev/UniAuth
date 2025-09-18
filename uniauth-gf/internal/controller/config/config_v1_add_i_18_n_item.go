@@ -28,9 +28,10 @@ func (c *ControllerV1) AddI18nItem(ctx context.Context, req *v1.AddI18nItemReq) 
 
 		// 添加新的国际化配置
 		_, err = dao.ConfigInternationalization.Ctx(ctx).Data(&entity.ConfigInternationalization{
-			LangCode: req.Lang,
-			Key:      req.Key,
-			Value:    req.Value,
+			LangCode:    req.Lang,
+			Key:         req.Key,
+			Value:       req.Value,
+			Description: req.Description,
 		}).Insert()
 
 		if err != nil {

@@ -13,6 +13,8 @@ declare namespace API {
     key: string;
     /** 值 */
     value: string;
+    /** 描述 */
+    description?: string;
   };
 
   type AddI18nItemRes = {
@@ -193,6 +195,8 @@ declare namespace API {
     key: string;
     /** 值 */
     value: string;
+    /** 描述 */
+    description?: string;
   };
 
   type EditI18nItemRes = {

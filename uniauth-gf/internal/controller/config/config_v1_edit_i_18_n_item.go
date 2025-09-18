@@ -31,7 +31,8 @@ func (c *ControllerV1) EditI18nItem(ctx context.Context, req *v1.EditI18nItemReq
 		_, err = dao.ConfigInternationalization.Ctx(ctx).
 			Where("lang_code = ? AND key = ?", req.Lang, req.Key).
 			Data(g.Map{
-				"value": req.Value,
+				"value":       req.Value,
+				"description": req.Description,
 			}).Update()
 
 		if err != nil {

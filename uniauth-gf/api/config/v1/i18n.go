@@ -16,10 +16,11 @@ type GetI18nConfigRes struct {
 }
 
 type AddI18nItemReq struct {
-	g.Meta `path:"/i18n" tags:"Config/I18n" method:"post" summary:"添加i18n" dc:"添加一项i18n一个语言的配置"`
-	Lang   string `json:"lang" v:"required" dc:"语言" example:"en-US"`
-	Key    string `json:"key" v:"required" dc:"键" example:"navBar.title"`
-	Value  string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
+	g.Meta      `path:"/i18n" tags:"Config/I18n" method:"post" summary:"添加i18n" dc:"添加一项i18n一个语言的配置"`
+	Lang        string `json:"lang" v:"required" dc:"语言" example:"en-US"`
+	Key         string `json:"key" v:"required" dc:"键" example:"navBar.title"`
+	Value       string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
+	Description string `json:"description" dc:"描述" example:"导航栏标题"`
 }
 
 type AddI18nItemRes struct {
@@ -27,10 +28,11 @@ type AddI18nItemRes struct {
 }
 
 type EditI18nItemReq struct {
-	g.Meta `path:"/i18n" tags:"Config/I18n" method:"put" summary:"编辑i18n" dc:"编辑一项i18n一个语言的配置"`
-	Lang   string `json:"lang" v:"required" dc:"语言" example:"en-US"`
-	Key    string `json:"key" v:"required" dc:"键" example:"navBar.title"`
-	Value  string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
+	g.Meta      `path:"/i18n" tags:"Config/I18n" method:"put" summary:"编辑i18n" dc:"编辑一项i18n一个语言的配置"`
+	Lang        string `json:"lang" v:"required" dc:"语言" example:"en-US"`
+	Key         string `json:"key" v:"required" dc:"键" example:"navBar.title"`
+	Value       string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
+	Description string `json:"description" dc:"描述" example:"导航栏标题"`
 }
 
 type EditI18nItemRes struct {
