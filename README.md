@@ -1,14 +1,13 @@
-
+```
    __  __      _ ___         __  __  
   ╱ ╱ ╱ ╱___  (_)   │ __  __╱ ╱_╱ ╱_ 
  ╱ ╱ ╱ ╱ __ ╲╱ ╱ ╱│ │╱ ╱ ╱ ╱ __╱ __ ╲
 ╱ ╱_╱ ╱ ╱ ╱ ╱ ╱ ___ ╱ ╱_╱ ╱ ╱_╱ ╱ ╱ ╱
 ╲____╱_╱ ╱_╱_╱_╱  │_╲__,_╱╲__╱_╱ ╱_╱ 
 
-
 UniAuth Automated System
 Copyright 2025 The Chinese University of Hong Kong, Shenzhen
-
+```
 ---
 # Auth / Casbin 规则标准
 
