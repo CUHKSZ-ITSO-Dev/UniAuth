@@ -1,36 +1,58 @@
 package v1
 
 import (
+	"uniauth-gf/internal/model/entity"
+
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/shopspring/decimal"
 )
+
+type ModelConfigItem struct {
+	entity.ConfigSingleModelApproach
+}
 
 type GetModelConfigReq struct {
 	g.Meta `path:"/model/all" tags:"Config/Model" method:"get" summary:"获取配置"`
 }
 type GetModelConfigRes struct {
-	Config string `json:"config" dc:"配置"`
+	Items []ModelConfigItem `json:"items" dc:"模型配置列表"`
 }
 
 type AddModelConfigReq struct {
-	g.Meta `path:"/model" tags:"Config/Model" method:"post" summary:"添加模型配置"`
+	g.Meta       `path:"/model" tags:"Config/Model" method:"post" summary:"添加模型配置"`
+	ApproachName string          `json:"approachName" v:"required" dc:"模型名称（唯一）"`
+	Pricing      *gjson.Json     `json:"pricing" dc:"定价配置（JSON）"`
+	Discount     decimal.Decimal `json:"discount" dc:"折扣（0-1 之间的小数）"`
+	ClientType   string          `json:"clientType" dc:"客户端类型（如：web、ios、android、server 等）"`
+	ClientArgs   *gjson.Json     `json:"clientArgs" dc:"客户端参数（JSON）"`
+	RequestArgs  *gjson.Json     `json:"requestArgs" dc:"请求参数（JSON）"`
+	Servicewares []string        `json:"servicewares" dc:"服务项标识"`
 }
 type AddModelConfigRes struct {
-	Config string `json:"config" dc:"配置"`
+	OK bool `json:"ok" dc:"是否成功"`
 }
 
 type EditModelConfigReq struct {
-	g.Meta `path:"/model" tags:"Config/Model" method:"put" summary:"编辑模型配置" dc:"编辑模型配置。"`
+	g.Meta       `path:"/model" tags:"Config/Model" method:"put" summary:"编辑模型配置" dc:"编辑模型配置。"`
+	ApproachName string          `json:"approachName" v:"required" dc:"模型名称（作为定位键）"`
+	Pricing      *gjson.Json     `json:"pricing" dc:"定价配置（JSON）"`
+	Discount     decimal.Decimal `json:"discount" dc:"折扣（0-1 之间的小数）"`
+	ClientType   string          `json:"clientType" dc:"客户端类型（如：web、ios、android、server 等）"`
+	ClientArgs   *gjson.Json     `json:"clientArgs" dc:"客户端参数（JSON）"`
+	RequestArgs  *gjson.Json     `json:"requestArgs" dc:"请求参数（JSON）"`
+	Servicewares []string        `json:"servicewares" dc:"服务项标识"`
 }
 type EditModelConfigRes struct {
-	Config string `json:"config" dc:"配置"`
+	OK bool `json:"ok" dc:"是否成功"`
 }
 
 type DeleteModelConfigReq struct {
-	g.Meta `path:"/model" tags:"Config/Model" method:"delete" summary:"删除模型配置"`
+	g.Meta       `path:"/model" tags:"Config/Model" method:"delete" summary:"删除模型配置"`
+	ApproachName string `json:"approachName" dc:"模型名称（唯一）"`
 }
 type DeleteModelConfigRes struct {
-	Config string `json:"config" dc:"配置"`
+	OK bool `json:"ok" dc:"是否成功"`
 }
 
 type GetI18nConfigReq struct {
