@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@umijs/max";
+import { request } from "@/utils/request";
 
 /** 获取所有语言的列表 GET /config/i18n */
 export async function getConfigI18N(options?: { [key: string]: any }) {
@@ -61,7 +61,7 @@ export async function getConfigI18NLang(
   params: API.getConfigI18nLangParams,
   options?: { [key: string]: any }
 ) {
-  return request<API.GetI18nConfigRes>(`/config/i18n/${lang}`, {
+  return request<API.GetI18nConfigRes>(`/config/i18n/${params.lang}`, {
     method: "GET",
     params: {
       ...params,

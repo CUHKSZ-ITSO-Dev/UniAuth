@@ -53,6 +53,12 @@ export default [
     component: "@/pages/QuotaPoolDetailsPage",
   },
   {
+    path: "/policy-list",
+    name: "policy-list",
+    icon: "Safety",
+    component: "@/pages/PolicyListPage",
+  },
+  {
     path: "/",
     redirect: "/welcome",
   },
@@ -61,10 +67,4 @@ export default [
     layout: false,
     component: "@/pages/404Page",
   },
-  {
-  path: "/policy-list",
-  name: "policy-list",
-  icon: "bars",
-  component: "@/pages/PolicyListPage",
-},
 ];
