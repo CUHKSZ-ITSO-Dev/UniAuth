@@ -38,18 +38,11 @@ func (c *ControllerV1) DeleteAutoQuotaPoolConfig(ctx context.Context, req *v1.De
 			return gerror.NewCodef(gcode.CodeNotFound, "规则不存在: %s", ruleName)
 		}
 
-		result, delErr := dao.ConfigAutoQuotaPool.Ctx(ctx).
+		_, delErr := dao.ConfigAutoQuotaPool.Ctx(ctx).
 			Where("rule_name = ?", ruleName).
 			Delete()
 		if delErr != nil {
 			return gerror.WrapCode(gcode.CodeDbOperationError, delErr, "删除规则失败")
-		}
-		rows, raErr := result.RowsAffected()
-		if raErr != nil {
-			return gerror.WrapCode(gcode.CodeDbOperationError, raErr, "获取删除影响行数失败")
-		}
-		if rows == 0 {
-			return gerror.NewCodef(gcode.CodeNotFound, "规则不存在: %s", ruleName)
 		}
 		return nil
 	})

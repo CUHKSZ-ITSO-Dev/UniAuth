@@ -35,18 +35,11 @@ func (c *ControllerV1) DeleteQuotaPool(ctx context.Context, req *v1.DeleteQuotaP
 			return gerror.NewCodef(gcode.CodeNotFound, "配额池不存在: %s", quotaPoolName)
 		}
 
-		result, delErr := dao.QuotapoolQuotaPool.Ctx(ctx).
+		_, delErr := dao.QuotapoolQuotaPool.Ctx(ctx).
 			Where("quota_pool_name = ?", quotaPoolName).
 			Delete()
 		if delErr != nil {
 			return gerror.WrapCode(gcode.CodeDbOperationError, delErr, "删除配额池失败")
-		}
-		rows, raErr := result.RowsAffected()
-		if raErr != nil {
-			return gerror.WrapCode(gcode.CodeDbOperationError, raErr, "获取删除影响行数失败")
-		}
-		if rows == 0 {
-			return gerror.NewCodef(gcode.CodeNotFound, "配额池不存在: %s", quotaPoolName)
 		}
 		return nil
 	})

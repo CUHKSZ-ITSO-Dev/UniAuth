@@ -59,7 +59,8 @@ type EditQuotaPoolRes struct {
 }
 
 type DeleteQuotaPoolReq struct {
-	g.Meta `path:"/" tags:"QuotaPool" method:"delete" summary:"删除配额池"`
+	g.Meta        `path:"/" tags:"QuotaPool" method:"delete" summary:"删除配额池"`
+	QuotaPoolName string `json:"quotaPoolName" v:"required"`
 }
 
 type DeleteQuotaPoolRes struct {
