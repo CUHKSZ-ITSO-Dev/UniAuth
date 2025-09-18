@@ -35,10 +35,10 @@ export default [
   //   component: '@/pages/DashboardPage',
   // },
   {
-    path: "/user-list",
-    name: "user-list",
-    icon: "User",
-    component: "@/pages/UserListPage",
+    path: "/quota-pool-list",
+    name: "quota-pool-list",
+    icon: "Container",
+    component: "@/pages/QuotaPoolListPage",
   },
   {
     path: "/quota-pool-details/",
