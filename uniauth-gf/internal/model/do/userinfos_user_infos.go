@@ -1,5 +1,5 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-17 23:54:41
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 00:51:49
 // =================================================================================
 
 package do

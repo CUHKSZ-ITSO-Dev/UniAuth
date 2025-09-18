@@ -1,5 +1,5 @@
 // ==========================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-17 23:54:41
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 00:51:49
 // ==========================================================================
 
 package internal
@@ -21,15 +21,15 @@ type ConfigSingleModelApproachDao struct {
 
 // ConfigSingleModelApproachColumns defines and stores column names for the table config_single_model_approach.
 type ConfigSingleModelApproachColumns struct {
-	ApproachName string //
-	Pricing      string //
-	Discount     string //
-	ClientType   string //
-	ClientArgs   string //
-	RequestArgs  string //
-	Servicewares string //
-	UpdatedAt    string //
-	CreatedAt    string //
+	ApproachName string // 模型名称
+	Pricing      string // 定价配置（JSON）
+	Discount     string // 折扣（0-1 之间的小数，例：0.1、0.2、1）
+	ClientType   string // 客户端类型（如：web、ios、android、server 等）
+	ClientArgs   string // 客户端参数（JSON）
+	RequestArgs  string // 请求参数（JSON）
+	Servicewares string // 服务项标识
+	CreatedAt    string // 创建时间
+	UpdatedAt    string // 更新时间
 }
 
 // configSingleModelApproachColumns holds the columns for the table config_single_model_approach.
@@ -41,8 +41,8 @@ var configSingleModelApproachColumns = ConfigSingleModelApproachColumns{
 	ClientArgs:   "client_args",
 	RequestArgs:  "request_args",
 	Servicewares: "servicewares",
-	UpdatedAt:    "updated_at",
 	CreatedAt:    "created_at",
+	UpdatedAt:    "updated_at",
 }
 
 // NewConfigSingleModelApproachDao creates and returns a new DAO object for table data access.
