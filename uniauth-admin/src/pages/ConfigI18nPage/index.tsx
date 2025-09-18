@@ -37,8 +37,8 @@ interface I18nDataType {
 
 const ConfigI18nPage: React.FC = () => {
   const intl = useIntl();
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [editingRecord, setEditingRecord] = useState<I18nDataType | null>(null);
   const [form] = Form.useForm();
   const actionRef = useRef<any>(null);
@@ -185,7 +185,8 @@ const ConfigI18nPage: React.FC = () => {
       value: record.value,
       description: record.description,
     });
-    setEditModalVisible(true);
+    setModalMode("edit");
+    setModalVisible(true);
   };
 
   // 删除翻译配置
@@ -229,7 +230,8 @@ const ConfigI18nPage: React.FC = () => {
   const handleAdd = () => {
     form.resetFields();
     setEditingRecord(null);
-    setAddModalVisible(true);
+    setModalMode("add");
+    setModalVisible(true);
   };
 
   // 批量删除翻译配置
@@ -300,14 +302,13 @@ const ConfigI18nPage: React.FC = () => {
     try {
       const values = await form.validateFields();
 
-      if (editingRecord) {
-        // 编辑模式
-        // 注意：当前API类型定义暂不支持description字段
-        // 等API更新后可添加: description: values.description,
+      if (modalMode === "edit") {
+        // 编辑
         await putConfigI18N({
           lang: values.lang,
           key: values.key,
           value: values.value,
+          description: values.description,
         });
         message.success(
           intl.formatMessage({
@@ -315,15 +316,14 @@ const ConfigI18nPage: React.FC = () => {
             defaultMessage: "编辑成功",
           })
         );
-        setEditModalVisible(false);
+        setModalVisible(false);
       } else {
-        // 新增模式
-        // 注意：当前API类型定义暂不支持description字段
-        // 等API更新后可添加: description: values.description,
+        // 新增
         await postConfigI18N({
           lang: values.lang,
           key: values.key,
           value: values.value,
+          description: values.description,
         });
         message.success(
           intl.formatMessage({
@@ -331,7 +331,7 @@ const ConfigI18nPage: React.FC = () => {
             defaultMessage: "添加成功",
           })
         );
-        setAddModalVisible(false);
+        setModalVisible(false);
       }
 
       actionRef.current?.reload();
@@ -524,10 +524,10 @@ const ConfigI18nPage: React.FC = () => {
         />
       </ProCard>
 
-      {/* 编辑模态框 */}
+      {/* 编辑/新增模态框 */}
       <Modal
         title={
-          editingRecord
+          modalMode === "edit"
             ? intl.formatMessage({
                 id: "pages.configI18n.modal.edit.title",
                 defaultMessage: "编辑配置",
@@ -537,11 +537,10 @@ const ConfigI18nPage: React.FC = () => {
                 defaultMessage: "新增配置",
               })
         }
-        open={editModalVisible || addModalVisible}
+        open={modalVisible}
         onOk={handleModalOk}
         onCancel={() => {
-          setEditModalVisible(false);
-          setAddModalVisible(false);
+          setModalVisible(false);
         }}
       >
         <Form form={form} layout="vertical">
@@ -568,7 +567,7 @@ const ConfigI18nPage: React.FC = () => {
               })}
               showSearch
               allowClear
-              disabled={!!editingRecord} // 编辑时不允许修改语言
+              disabled={modalMode === "edit"}
             >
               {availableLangs.map((lang) => (
                 <Select.Option key={lang} value={lang}>
@@ -607,7 +606,7 @@ const ConfigI18nPage: React.FC = () => {
                 id: "pages.configI18n.form.key.placeholder",
                 defaultMessage: "例如：navBar.title",
               })}
-              disabled={!!editingRecord} // 编辑时不允许修改键值
+              disabled={modalMode === "edit"} // 编辑时不允许修改键值
             />
           </Form.Item>
 
