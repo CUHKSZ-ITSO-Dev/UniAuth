@@ -8,7 +8,6 @@ import {
   Input,
   Modal,
   message,
-  Select,
   Space,
   Table,
   Tag,
@@ -17,7 +16,6 @@ import {
 import React, { useRef, useState } from "react";
 import {
   deleteConfigI18N,
-  getConfigI18N,
   postConfigI18N,
   postConfigI18NFilter,
   putConfigI18N,
@@ -27,10 +25,12 @@ const { Title, Text } = Typography;
 
 interface I18nDataType {
   key: string;
-  langCode: string;
   keyValue: string;
-  value: string;
   description: string;
+  translations: Array<{
+    lang: string;
+    value: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,24 +41,8 @@ const ConfigI18nPage: React.FC = () => {
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [form] = Form.useForm();
   const actionRef = useRef<any>(null);
-  const [availableLangs, setAvailableLangs] = useState<string[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<I18nDataType[]>([]);
-
-  // 获取可用语言列表
-  React.useEffect(() => {
-    const fetchLangs = async () => {
-      try {
-        const response = await getConfigI18N();
-        if (response.langs) {
-          setAvailableLangs(response.langs);
-        }
-      } catch (error) {
-        console.error("获取语言列表失败:", error);
-      }
-    };
-    fetchLangs();
-  }, []);
 
   const columns: ProColumns<I18nDataType>[] = [
     {
@@ -91,39 +75,47 @@ const ConfigI18nPage: React.FC = () => {
     },
     {
       title: intl.formatMessage({
-        id: "pages.configI18n.lang",
-        defaultMessage: "语言",
+        id: "pages.configI18n.translations",
+        defaultMessage: "翻译内容",
       }),
-      dataIndex: "langCode",
-      key: "langCode",
+      dataIndex: "translations",
+      key: "translations",
       search: false,
-      render: (text: any, record: I18nDataType) => {
+      render: (_, record: I18nDataType) => {
         // 为不同语言定义不同颜色
         const getLanguageColor = (lang: string) => {
           const colorMap: Record<string, string> = {
-            zh: "#2db7f5",
-            "en-US": "#87d068",
+            zh_cn: "#2db7f5",
+            en_us: "#87d068",
           };
           return colorMap[lang] || "#2db7f5";
         };
 
-        const langCode = text || record.langCode || "";
         return (
-          <Tag color={getLanguageColor(langCode)} bordered={false}>
-            {langCode}
-          </Tag>
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            {record.translations.map((translation, index) => (
+              <div
+                key={`${translation.lang}-${index}`}
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <Tag
+                  color={getLanguageColor(translation.lang)}
+                  bordered={false}
+                >
+                  {translation.lang === "zh_cn"
+                    ? "zh-CN"
+                    : translation.lang === "en_us"
+                      ? "en-US"
+                      : translation.lang}
+                </Tag>
+                <span style={{ flex: 1, fontWeight: 500 }}>
+                  {translation.value}
+                </span>
+              </div>
+            ))}
+          </div>
         );
       },
-    },
-    {
-      title: intl.formatMessage({
-        id: "pages.configI18n.value",
-        defaultMessage: "翻译内容",
-      }),
-      dataIndex: "value",
-      key: "value",
-      ellipsis: true,
-      search: false,
     },
     {
       title: intl.formatMessage({
@@ -142,6 +134,7 @@ const ConfigI18nPage: React.FC = () => {
       }),
       key: "action",
       search: false,
+      width: 150,
       render: (_: any, record: I18nDataType) => (
         <Space size="small">
           <Button
@@ -175,10 +168,15 @@ const ConfigI18nPage: React.FC = () => {
   // 编辑翻译配置
   const handleEdit = (record: I18nDataType) => {
     // 为编辑模式设置表单值
+    const zh_cn =
+      record.translations.find((t) => t.lang === "zh_cn")?.value || "";
+    const en_us =
+      record.translations.find((t) => t.lang === "en_us")?.value || "";
+
     form.setFieldsValue({
-      lang: record.langCode,
       key: record.keyValue,
-      value: record.value,
+      zh_cn: zh_cn,
+      en_us: en_us,
       description: record.description,
     });
 
@@ -227,19 +225,12 @@ const ConfigI18nPage: React.FC = () => {
   const handleAdd = () => {
     form.resetFields();
 
-    // 为新增模式初始化翻译对象
-    const initialTranslations = availableLangs.reduce(
-      (acc, lang) => {
-        acc[lang] = "";
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
-
+    // 为新增模式初始化表单字段
     form.setFieldsValue({
       key: "",
+      zh_cn: "",
+      en_us: "",
       description: "",
-      translations: initialTranslations,
     });
 
     setModalMode("add");
@@ -315,11 +306,11 @@ const ConfigI18nPage: React.FC = () => {
       const values = await form.validateFields();
 
       if (modalMode === "edit") {
-        // 编辑模式：单个语言编辑
+        // 编辑模式：更新翻译内容
         await putConfigI18N({
-          lang: values.lang,
           key: values.key,
-          value: values.value,
+          zh_cn: values.zh_cn,
+          en_us: values.en_us,
           description: values.description,
         });
         message.success(
@@ -329,54 +320,21 @@ const ConfigI18nPage: React.FC = () => {
           }),
         );
       } else {
-        // 新增模式：为每个语言发送单独的新增请求
-        const { key, description, translations } = values;
+        // 新增模式：添加新的翻译配置
+        const { key, zh_cn, en_us, description } = values;
 
-        if (!translations || Object.keys(translations).length === 0) {
-          message.error(
-            intl.formatMessage({
-              id: "pages.configI18n.add.noTranslations",
-              defaultMessage: "请至少为一种语言添加翻译",
-            }),
-          );
-          return;
-        }
-
-        // 并行发送所有语言的新增请求
-        const addPromises = Object.entries(translations)
-          .filter(
-            ([_, value]) =>
-              value && typeof value === "string" && value.trim() !== "",
-          ) // 过滤空值
-          .map(([lang, value]) =>
-            postConfigI18N({
-              lang,
-              key,
-              value: value as string,
-              description: description || "",
-            }),
-          );
-
-        if (addPromises.length === 0) {
-          message.error(
-            intl.formatMessage({
-              id: "pages.configI18n.add.noValidTranslations",
-              defaultMessage: "请输入有效的翻译内容",
-            }),
-          );
-          return;
-        }
-
-        await Promise.all(addPromises);
+        await postConfigI18N({
+          key,
+          zh_cn: zh_cn || "",
+          en_us: en_us || "",
+          description: description || "",
+        });
 
         message.success(
-          intl.formatMessage(
-            {
-              id: "pages.configI18n.add.success",
-              defaultMessage: "成功为 {count} 种语言添加配置",
-            },
-            { count: addPromises.length },
-          ),
+          intl.formatMessage({
+            id: "pages.configI18n.add.success",
+            defaultMessage: "添加配置成功",
+          }),
         );
       }
 
@@ -385,27 +343,14 @@ const ConfigI18nPage: React.FC = () => {
     } catch (error) {
       console.error("操作失败:", error);
 
-      // 更详细的错误处理
-      if (modalMode === "add" && error && typeof error === "object") {
-        // 如果是批量添加失败，给出更具体的提示
-        message.error(
-          intl.formatMessage({
-            id: "pages.configI18n.add.error.detailed",
-            defaultMessage: "添加配置失败，请检查网络连接或联系管理员",
-          }),
-        );
-      } else {
-        message.error(
-          intl.formatMessage({
-            id: "pages.configI18n.operation.error",
-            defaultMessage: "操作失败",
-          }),
-        );
-      }
+      message.error(
+        intl.formatMessage({
+          id: "pages.configI18n.operation.error",
+          defaultMessage: "操作失败",
+        }),
+      );
     }
-  };
-
-  // 表格数据请求
+  }; // 表格数据请求
   const columnRequest = async (params: any) => {
     const { current, pageSize, keyword } = params;
 
@@ -459,7 +404,7 @@ const ConfigI18nPage: React.FC = () => {
         };
       }
 
-      if (!response.i18nItems || !Array.isArray(response.i18nItems)) {
+      if (!response.i18n_items || !Array.isArray(response.i18n_items)) {
         console.warn("没有找到i18n数据");
         return {
           data: [],
@@ -468,16 +413,63 @@ const ConfigI18nPage: React.FC = () => {
         };
       }
 
-      // 数据转换逻辑
-      const tableData: I18nDataType[] = response.i18nItems.map((item) => ({
-        key: `${item.langCode}-${item.key}`,
-        langCode: item.langCode || "",
-        keyValue: item.key || "",
-        value: item.value || "",
-        description: item.description || "",
-        createdAt: item.createdAt || "",
-        updatedAt: item.updatedAt || "",
-      }));
+      // 数据转换逻辑：按key分组，将同一key的不同语言合并到一行
+      const groupedData = new Map<string, I18nDataType>();
+
+      response.i18n_items.forEach((item: API.I18nItem) => {
+        const key = item.key || "";
+
+        if (groupedData.has(key)) {
+          // 如果已经存在这个key，添加新的语言翻译
+          const existingItem = groupedData.get(key)!;
+
+          // 添加中文翻译
+          if (item.zh_cn) {
+            existingItem.translations.push({
+              lang: "zh_cn",
+              value: item.zh_cn,
+            });
+          }
+
+          // 添加英文翻译
+          if (item.en_us) {
+            existingItem.translations.push({
+              lang: "en_us",
+              value: item.en_us,
+            });
+          }
+        } else {
+          // 创建新的分组项
+          const translations = [];
+
+          // 添加中文翻译
+          if (item.zh_cn) {
+            translations.push({
+              lang: "zh_cn",
+              value: item.zh_cn,
+            });
+          }
+
+          // 添加英文翻译
+          if (item.en_us) {
+            translations.push({
+              lang: "en_us",
+              value: item.en_us,
+            });
+          }
+
+          groupedData.set(key, {
+            key: key,
+            keyValue: key,
+            description: item.description || "",
+            translations: translations,
+            createdAt: item.created_at || "",
+            updatedAt: item.updated_at || "",
+          });
+        }
+      });
+
+      const tableData: I18nDataType[] = Array.from(groupedData.values());
 
       // 搜索结果提示
       if (keyword && tableData.length === 0) {
@@ -519,7 +511,7 @@ const ConfigI18nPage: React.FC = () => {
         </Text>
         <ProTable<I18nDataType>
           columns={columns}
-          rowKey={(record) => `${record.langCode}-${record.keyValue}`}
+          rowKey={(record) => record.keyValue}
           actionRef={actionRef}
           toolBarRender={() => [
             <Button
@@ -601,206 +593,110 @@ const ConfigI18nPage: React.FC = () => {
         width={800}
       >
         <Form form={form} layout="vertical">
-          {modalMode === "edit" ? (
-            // 编辑模式：只显示单个语言的编辑字段
-            <>
-              <Form.Item
-                name="lang"
-                label={intl.formatMessage({
-                  id: "pages.configI18n.form.lang",
-                  defaultMessage: "语言",
-                })}
-              >
-                <Select
-                  disabled
-                  placeholder={intl.formatMessage({
-                    id: "pages.configI18n.form.lang.placeholder",
-                    defaultMessage: "请选择语言",
-                  })}
-                >
-                  {availableLangs.map((lang) => (
-                    <Select.Option key={lang} value={lang}>
-                      {lang}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
+          <Form.Item
+            name="key"
+            label={intl.formatMessage({
+              id: "pages.configI18n.form.key",
+              defaultMessage: "键值",
+            })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.configI18n.form.key.required",
+                  defaultMessage: "请输入键值",
+                }),
+              },
+              {
+                pattern: /^[a-zA-Z_]+(\.[a-zA-Z_]+)+$/,
+                message: intl.formatMessage({
+                  id: "pages.configI18n.form.key.pattern",
+                  defaultMessage:
+                    "键值格式不正确，应该是由点分割的字符串，例如：test.temp、nav.title 等",
+                }),
+              },
+            ]}
+          >
+            <Input
+              disabled={modalMode === "edit"}
+              placeholder={intl.formatMessage({
+                id: "pages.configI18n.form.key.placeholder",
+                defaultMessage: "例如：navBar.title",
+              })}
+            />
+          </Form.Item>
 
-              <Form.Item
-                name="key"
-                label={intl.formatMessage({
-                  id: "pages.configI18n.form.key",
-                  defaultMessage: "键值",
-                })}
-              >
-                <Input
-                  disabled
-                  placeholder={intl.formatMessage({
-                    id: "pages.configI18n.form.key.placeholder",
-                    defaultMessage: "例如：navBar.title",
-                  })}
-                />
-              </Form.Item>
+          <Form.Item
+            name="description"
+            label={intl.formatMessage({
+              id: "pages.configI18n.form.description",
+              defaultMessage: "描述",
+            })}
+          >
+            <Input.TextArea
+              placeholder={intl.formatMessage({
+                id: "pages.configI18n.form.description.placeholder",
+                defaultMessage: "请输入该配置项的描述信息（可选）",
+              })}
+              rows={2}
+            />
+          </Form.Item>
 
-              <Form.Item
-                name="value"
-                label={intl.formatMessage({
-                  id: "pages.configI18n.form.value",
-                  defaultMessage: "翻译内容",
-                })}
-                rules={[
-                  {
-                    required: true,
-                    message: intl.formatMessage({
-                      id: "pages.configI18n.form.value.required",
-                      defaultMessage: "请输入翻译内容",
-                    }),
-                  },
-                ]}
-              >
-                <Input.TextArea
-                  placeholder={intl.formatMessage({
-                    id: "pages.configI18n.form.value.placeholder",
-                    defaultMessage: "请输入该语言的翻译内容",
-                  })}
-                  rows={3}
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="description"
-                label={intl.formatMessage({
-                  id: "pages.configI18n.form.description",
-                  defaultMessage: "描述",
-                })}
-              >
-                <Input.TextArea
-                  placeholder={intl.formatMessage({
-                    id: "pages.configI18n.form.description.placeholder",
-                    defaultMessage: "请输入该配置项的描述信息（可选）",
-                  })}
-                  rows={2}
-                />
-              </Form.Item>
-            </>
-          ) : (
-            // 新增模式：支持为所有语言一次性填写配置
-            <>
-              <Form.Item
-                name="key"
-                label={intl.formatMessage({
-                  id: "pages.configI18n.form.key",
-                  defaultMessage: "键值",
-                })}
-                rules={[
-                  {
-                    required: true,
-                    message: intl.formatMessage({
-                      id: "pages.configI18n.form.key.required",
-                      defaultMessage: "请输入键值",
-                    }),
-                  },
-                  {
-                    pattern: /^[a-zA-Z_]+(\.[a-zA-Z_]+)+$/,
-                    message: intl.formatMessage({
-                      id: "pages.configI18n.form.key.pattern",
-                      defaultMessage:
-                        "键值格式不正确，应该是由点分割的字符串，例如：test.temp、nav.title 等",
-                    }),
-                  },
-                ]}
-              >
-                <Input
-                  placeholder={intl.formatMessage({
-                    id: "pages.configI18n.form.key.placeholder",
-                    defaultMessage: "例如：navBar.title",
-                  })}
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="description"
-                label={intl.formatMessage({
-                  id: "pages.configI18n.form.description",
-                  defaultMessage: "描述",
-                })}
-              >
-                <Input.TextArea
-                  placeholder={intl.formatMessage({
-                    id: "pages.configI18n.form.description.placeholder",
-                    defaultMessage: "请输入该配置项的描述信息（可选）",
-                  })}
-                  rows={2}
-                />
-              </Form.Item>
-
-              <Form.Item
-                label={intl.formatMessage({
-                  id: "pages.configI18n.form.translations",
-                  defaultMessage: "各语言翻译",
-                })}
-              >
-                <div
-                  style={{
-                    border: "1px solid #d9d9d9",
-                    borderRadius: "6px",
-                    padding: "12px",
-                  }}
-                >
-                  {availableLangs.map((lang) => (
-                    <Form.Item
-                      key={lang}
-                      name={["translations", lang]}
-                      label={
-                        <span>
-                          <Tag
-                            color={
-                              lang === "zh"
-                                ? "#2db7f5"
-                                : lang === "en-US"
-                                  ? "#87d068"
-                                  : "#2db7f5"
-                            }
-                            style={{ marginRight: 8 }}
-                          >
-                            {lang}
-                          </Tag>
-                          {intl.formatMessage({
-                            id: "pages.configI18n.form.translation",
-                            defaultMessage: "翻译内容",
-                          })}
-                        </span>
-                      }
-                      rules={[
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.configI18n.form.translations",
+              defaultMessage: "各语言翻译",
+            })}
+          >
+            <div
+              style={{
+                border: "1px solid #d9d9d9",
+                borderRadius: "6px",
+                padding: "12px",
+              }}
+            >
+              {[
+                { lang: "zh-CN", field: "zh_cn", color: "#2db7f5" },
+                { lang: "en-US", field: "en_us", color: "#87d068" },
+              ].map((item) => (
+                <Form.Item
+                  key={item.lang}
+                  name={item.field}
+                  label={
+                    <span>
+                      <Tag color={item.color} style={{ marginRight: 8 }}>
+                        {item.lang}
+                      </Tag>
+                    </span>
+                  }
+                  rules={[
+                    {
+                      required: true,
+                      message: intl.formatMessage(
                         {
-                          required: true,
-                          message: intl.formatMessage(
-                            {
-                              id: "pages.configI18n.form.translation.required",
-                              defaultMessage: "请输入 {lang} 的翻译内容",
-                            },
-                            { lang },
-                          ),
+                          id: "pages.configI18n.form.translation.required",
+                          defaultMessage: "请输入 {lang} 的翻译内容",
                         },
-                      ]}
-                      style={{ marginBottom: "16px" }}
-                    >
-                      <Input.TextArea
-                        placeholder={intl.formatMessage(
-                          {
-                            id: "pages.configI18n.form.translation.placeholder",
-                            defaultMessage: "请输入 {lang} 的翻译内容",
-                          },
-                          { lang },
-                        )}
-                        rows={2}
-                      />
-                    </Form.Item>
-                  ))}
-                </div>
-              </Form.Item>
-            </>
-          )}
+                        { lang: item.lang },
+                      ),
+                    },
+                  ]}
+                  style={{ marginBottom: "16px" }}
+                >
+                  <Input.TextArea
+                    placeholder={intl.formatMessage(
+                      {
+                        id: "pages.configI18n.form.translation.placeholder",
+                        defaultMessage: "请输入 {lang} 的翻译内容",
+                      },
+                      { lang: item.lang },
+                    )}
+                    rows={2}
+                  />
+                </Form.Item>
+              ))}
+            </div>
+          </Form.Item>
         </Form>
       </Modal>
     </PageContainer>
