@@ -125,7 +125,8 @@ function handleNewQuotaPoolClick() {
   console.log("新建配额池");
 }
 
-function handleRefreshQuotaPoolClick() {
+// @ts-expect-error
+function _handleRefreshQuotaPoolClick() {
   // TODO: 刷新逻辑
   console.log("刷新配额池");
 }
