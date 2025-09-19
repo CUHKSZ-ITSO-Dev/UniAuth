@@ -1,6 +1,7 @@
 {
   "**/*.{js,jsx,tsx,ts}": [
-    "pnpm run lint"
+    "pnpm run lint",
+    "pnpm run biome:staged"
   ],
   "**/*.{md,css,less,json}": [
     "pnpm run biome:staged"
