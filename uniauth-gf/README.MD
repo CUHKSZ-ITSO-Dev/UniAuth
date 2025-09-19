@@ -38,7 +38,7 @@ g, upn, student-pool
 - 接口：动态获取用户属于哪些用户组，可以用什么模型。 ok
 - 接口：查询一个配额池有哪些用户， ok
 - 接口：一个配额池可以用什么模型。 ok
-- 接口：基础权限查询。r = sub, dom, obj, act OK
+- 接口：基础权限查询。r = sub, obj, act OK
 - 接口：权限查询解释。用于管理。 OK
 - 接口、权限：一键关闭一些权限 policy（关小黑屋） OK
 - 对话前端：更改用户组的时候，需要请求获取配额池可用的模型。 已完成
@@ -53,8 +53,8 @@ p, production, student_pool, platform, entry 这个是创建配置池时配置�
 p, production, 122@link.cuhk.edu.cn, platform, entry, deny 这个必须要手动添加，是一个弹窗，需要一个接口
 
 - uniauth 前后端的权限管理
-  p, sub, dom, obj, act
-  p, my upn, 'dom', uniauth/bill/quota_pool_name, read // 可以有查看 quota_pool_name 配额池的消费记录
+  p, sub, obj, act
+  p, my upn, uniauth/bill/quota_pool_name, read // 可以有查看 quota_pool_name 配额池的消费记录
   obj 里面有 uniauth 的，有权限的，则可以进入平台
 
 ## Config 配置中心，动态增减模型，动态 i18n

@@ -47,6 +47,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-json-view": "^1.21.3",
+    "react-infinite-scroll-component": "^6.1.0",
     "swagger-ui-dist": "^5.28.0"
   },
   "devDependencies": {

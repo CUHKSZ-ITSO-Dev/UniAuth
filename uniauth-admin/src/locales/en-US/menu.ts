@@ -53,5 +53,7 @@ export default {
   "menu.editor.koni": "Koni Editor",
   "menu.Config": "Configuration",
   "menu.Config.model-config": "Model Configuration",
-  "menu.Config.auto-config": "Auto Quota Pool Configuration"
+  "menu.Config.auto-config": "Auto Quota Pool Configuration",
+  "menu.user-list": "User List",
+  "menu.user-detail": "User Details",
 };

@@ -44,6 +44,9 @@ importers:
       react-json-view:
         specifier: ^1.21.3
         version: 1.21.3(@types/react@19.1.12)(encoding@0.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      react-infinite-scroll-component:
+        specifier: ^6.1.0
+        version: 6.1.0(react@19.1.1)
       swagger-ui-dist:
         specifier: ^5.28.0
         version: 5.28.0
@@ -9439,6 +9442,11 @@ packages:
       react: ^16.6.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.6.0 || ^17.0.0 || ^18.0.0
 
+  react-infinite-scroll-component@6.1.0:
+    resolution: {integrity: sha512-SQu5nCqy8DxQWpnUVLx7V7b7LcA37aM7tvoWjTLZp1dk6EJibM5/4EJKzOnl07/BsM1Y40sKLuqjCwwH/xV0TQ==}
+    peerDependencies:
+      react: '>=16.0.0'
+
   react-intl@3.12.1:
     resolution: {integrity: sha512-cgumW29mwROIqyp8NXStYsoIm27+8FqnxykiLSawWjOxGIBeLuN/+p2srei5SRIumcJefOkOIHP+NDck05RgHg==}
     peerDependencies:
@@ -10684,6 +10692,10 @@ packages:
 
   thread-stream@0.15.2:
     resolution: {integrity: sha512-UkEhKIg2pD+fjkHQKyJO3yoIvAP3N6RlNFt2dUhcS1FGvCD1cQa1M/PGknCLFIyZdtJOWQjejp7bdNqmN7zwdA==}
+
+  throttle-debounce@2.3.0:
+    resolution: {integrity: sha512-H7oLPV0P7+jgvrk+6mwwwBDmxTaxnu9HMXmloNLXwnNO0ZxZ31Orah2n8lU1eMPvsaowP2CX+USCgyovXfdOFQ==}
+    engines: {node: '>=8'}
 
   throttle-debounce@5.0.2:
     resolution: {integrity: sha512-B71/4oyj61iNH0KeCamLuE2rmKuTO5byTOSVwECM5FA7TiAiAW+UqTKZ9ERueC4qvgSttUhdmq1mXC3kJqGX7A==}
@@ -24349,6 +24361,11 @@ snapshots:
       react-fast-compare: 3.2.2
       shallowequal: 1.1.0
 
+  react-infinite-scroll-component@6.1.0(react@19.1.1):
+    dependencies:
+      react: 19.1.1
+      throttle-debounce: 2.3.0
+
   react-intl@3.12.1(@types/react@19.1.12)(react@19.1.1):
     dependencies:
       '@formatjs/intl-displaynames': 1.2.10
@@ -25951,6 +25968,8 @@ snapshots:
   thread-stream@0.15.2:
     dependencies:
       real-require: 0.1.0
+
+  throttle-debounce@2.3.0: {}
 
   throttle-debounce@5.0.2: {}
 

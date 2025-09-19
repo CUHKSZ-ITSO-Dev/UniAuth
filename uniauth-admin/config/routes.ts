@@ -74,6 +74,13 @@ export default [
     component: "@/pages/UserListPage",
   },
   {
+    path: "/user-list/userDetail/:id",
+    name: "user-detail",
+    icon: "User",
+    component: "@/pages/UserListPage/userDetail",
+    hideInMenu: true,
+  },
+  {
     path: "/quota-pool-list",
     name: "quota-pool-list",
     icon: "Container",

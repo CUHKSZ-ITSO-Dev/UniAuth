@@ -181,7 +181,7 @@ const config: Config = {
    */
   openAPI: [
     {
-      requestLibPath: "import { request } from '@/utils/request'",
+      requestLibPath: "import { request } from '@/utils/request';",
       // 或者使用在线的版本
       // schemaPath: "https://gw.alipayobjects.com/os/antfincdn/M%24jrzTTYJN/oneapi.json"
       schemaPath: "http://localhost:8000/api.json",

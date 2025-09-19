@@ -23,7 +23,7 @@ type CheckAndExplainReq struct {
 }
 type CheckAndExplainRes struct {
 	Allow  bool     `json:"allow"`
-	Reason []string `json:"reason" dc:"注意只有 allow = true 的时候才会返回 [4]string, 按顺序依次是 sub, dom, obj, act。" example:"[\"alice\",\"chat_production\",\"platform\",\"entry\"]"`
+	Reason []string `json:"reason" dc:"注意只有 allow = true 的时候才会返回 [3]string, 按顺序依次是 sub, obj, act。" example:"[\"alice\",\"platform\",\"entry\"]"`
 }
 
 type GetAllSubjectsReq struct {
@@ -45,13 +45,6 @@ type GetAllActionsReq struct {
 }
 type GetAllActionsRes struct {
 	Actions []string `json:"actions" dc:"Actions"`
-}
-
-type GetAllDomainsReq struct {
-	g.Meta `path:"/admin/domains/all" tags:"Auth/Admin/Query" method:"get" summary:"获取所有 Domains"`
-}
-type GetAllDomainsRes struct {
-	Domains []string `json:"domains" dc:"Domains"`
 }
 
 type GetAllRolesReq struct {
