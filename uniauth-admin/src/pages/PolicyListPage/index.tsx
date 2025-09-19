@@ -154,7 +154,7 @@ const PolicyListPage: React.FC = () => {
         id: "pages.policyList.subject",
         defaultMessage: "主体",
       }),
-      dataIndex: "subject",
+      dataIndex: "sub",
       valueType: "text",
       width: 200,
       ellipsis: true,
@@ -165,7 +165,7 @@ const PolicyListPage: React.FC = () => {
         id: "pages.policyList.object",
         defaultMessage: "对象",
       }),
-      dataIndex: "object",
+      dataIndex: "obj",
       valueType: "text",
       width: 200,
       ellipsis: true,
@@ -176,7 +176,7 @@ const PolicyListPage: React.FC = () => {
         id: "pages.policyList.action",
         defaultMessage: "操作",
       }),
-      dataIndex: "action",
+      dataIndex: "act",
       valueType: "text",
       width: 150,
       ellipsis: true,
@@ -187,7 +187,7 @@ const PolicyListPage: React.FC = () => {
         id: "pages.policyList.effect",
         defaultMessage: "效果",
       }),
-      dataIndex: "effect",
+      dataIndex: "eft",
       valueType: "text",
       width: 150,
       render: (_, record) => (
@@ -440,10 +440,7 @@ const PolicyListPage: React.FC = () => {
         }}
       >
         <ProFormText
-          name={intl.formatMessage({
-            id: "pages.policyList.searchTable.subject",
-            defaultMessage: "主体",
-          })}
+          name="subject"
           label={intl.formatMessage({
             id: "pages.policyList.searchTable.subject.label",
             defaultMessage: "主体",
@@ -461,10 +458,7 @@ const PolicyListPage: React.FC = () => {
           }]}
         />
         <ProFormText
-          name={intl.formatMessage({
-            id: "pages.policyList.searchTable.object",
-            defaultMessage: "对象",
-          })}
+          name="object"
           label={intl.formatMessage({
             id: "pages.policyList.searchTable.object",
             defaultMessage: "对象",
