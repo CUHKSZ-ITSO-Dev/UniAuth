@@ -4,24 +4,17 @@ import {
   message,
   Form,
   Input,
-  Typography,
   Card,
   Button,
   Tag,
-  Flex,
 } from "antd";
-import type { FormProps, FormItemProps } from "antd";
 import { ArrowLeftOutlined, UserOutlined } from "@ant-design/icons";
 
 // 扩展Form.ItemProps类型以包含render属性
-interface CustomFormItemProps extends FormItemProps {
-  render?: () => React.ReactNode;
-}
 import { useParams, useIntl, useNavigate, useSearchParams } from "@umijs/max";
 import { PageContainer } from "@ant-design/pro-components";
 import {
   getUserinfos,
-  postUserinfosFilter,
 } from "@/services/uniauthService/userInfo";
 
 interface UserDetailData {
@@ -155,462 +148,18 @@ const UserDetail: React.FC = () => {
     const fromKeyword = searchParams.get('from_keyword');
     const fromCurrent = searchParams.get('from_current');
     const fromPageSize = searchParams.get('from_pageSize');
-    
+
     // 构建返回的URL参数
     const backParams = new URLSearchParams();
     if (fromKeyword) backParams.set('keyword', fromKeyword);
     if (fromCurrent) backParams.set('current', fromCurrent);
     if (fromPageSize) backParams.set('pageSize', fromPageSize);
-    
+
     // 构建完整的返回URL
     const backUrl = `/user-list${backParams.toString() ? `?${backParams.toString()}` : ''}`;
-    
+
     // 导航到用户列表页面并恢复搜索状态
     navigate(backUrl);
-  };
-
-  const getFormItems = (): CustomFormItemProps[] => {
-    // 为每个字段定义附加说明
-    const fieldDescriptions = {
-      upn: "唯一。用户名@cuhk.edu.cn 或 学号@link.cuhk.edu.cn。用户登录名。",
-      email: "唯一。用户名@cuhk.edu.cn。",
-      displayName: "显示名。",
-      schoolStatus:
-        "当前在校状态：Employed | Dimission | In-School | Graduation | Withdraw | Emeritus。",
-      identityType: "身份类型：Fulltime | CO | Student | Parttime。",
-      employeeId: "唯一。6位员工编号或9/10位学号。",
-      name: "唯一。全名。",
-      tags: "用户标签。",
-      department: "部门信息。",
-      title: "职务名称。",
-      office: "办公地点。",
-      officePhone: "办公室电话。",
-      employeeType: "员工类型。",
-      fundingTypeOrAdmissionYear:
-        "教职员经费类型（uni/researchPro/Other）或学生4位入学年份",
-      studentCategoryPrimary: "Postgraduate/Undergraduate 研究生/本科生",
-      studentCategoryDetail: "Master/Ph.D./Undergraduate 硕士/博士/本科",
-      studentNationalityType:
-        "Local/Exchange/International/CUCDMP/HMT 本地/交换/国际/本部/港澳台",
-      residentialCollege: "书院缩写（如SHAW）",
-      staffRole:
-        "Teaching/Admin/VisitingStudent/Alumni/Other 教学/行政/访问学生/校友/其他",
-      samAccountName: "Windows账户名。",
-      mailNickname: "邮箱别名。",
-      createdAt: "记录创建时间。",
-      updatedAt: "记录最后更新时间。",
-    };
-
-    if (!userData) return [];
-
-    return [
-      {
-        name: "upn",
-        label: intl.formatMessage({ id: "pages.userDetail.upn" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.upn,
-        render: () => (
-          <Input
-            value={userData.upn || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "email",
-        label: intl.formatMessage({ id: "pages.userDetail.email" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.email,
-        render: () => (
-          <Input
-            value={userData.email || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "displayName",
-        label: intl.formatMessage({ id: "pages.userDetail.displayName" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.displayName,
-        render: () => (
-          <Input
-            value={userData.displayName || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "schoolStatus",
-        label: intl.formatMessage({ id: "pages.userDetail.schoolStatus" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.schoolStatus,
-        render: () => (
-          <Input
-            value={userData.schoolStatus || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "identityType",
-        label: intl.formatMessage({ id: "pages.userDetail.identityType" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.identityType,
-        render: () => (
-          <Input
-            value={userData.identityType || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "employeeId",
-        label: intl.formatMessage({ id: "pages.userDetail.employeeId" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.employeeId,
-        render: () => (
-          <Input
-            value={userData.employeeId || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "name",
-        label: intl.formatMessage({ id: "pages.userDetail.name" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.name,
-        render: () => (
-          <Input
-            value={userData.name || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "tags",
-        label: intl.formatMessage({ id: "pages.userDetail.tags" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.tags,
-        render: () => (
-          <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: '8px' }}
-            // 确保容器有足够的宽度来容纳多个标签并支持换行
-          >
-            {userData.tags?.length > 0 ? (
-              userData.tags.map((tag, index) => {
-                // 为标签选择循环的颜色
-                const colors = ['magenta', 'red', 'volcano', 'orange', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
-                const color = colors[index % colors.length];
-                return <Tag key={index} color={color}>{tag}</Tag>;
-              })
-            ) : (
-              <Tag color="default">-</Tag>
-            )}
-          </div>
-        ),
-      },
-      {
-        name: "department",
-        label: intl.formatMessage({ id: "pages.userDetail.department" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.department,
-        render: () => (
-          <Input
-            value={userData.department || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "title",
-        label: intl.formatMessage({ id: "pages.userDetail.title" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.title,
-        render: () => (
-          <Input
-            value={userData.title || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "office",
-        label: intl.formatMessage({ id: "pages.userDetail.office" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.office,
-        render: () => (
-          <Input
-            value={userData.office || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "officePhone",
-        label: intl.formatMessage({ id: "pages.userDetail.officePhone" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.officePhone,
-        render: () => (
-          <Input
-            value={userData.officePhone || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "employeeType",
-        label: intl.formatMessage({ id: "pages.userDetail.employeeType" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.employeeType,
-        render: () => (
-          <Input
-            value={userData.employeeType || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "fundingTypeOrAdmissionYear",
-        label: intl.formatMessage({
-          id: "pages.userDetail.fundingTypeOrAdmissionYear",
-        }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.fundingTypeOrAdmissionYear,
-        render: () => (
-          <Input
-            value={userData.fundingTypeOrAdmissionYear || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "studentCategoryPrimary",
-        label: intl.formatMessage({
-          id: "pages.userDetail.studentCategoryPrimary",
-        }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.studentCategoryPrimary,
-        render: () => (
-          <Input
-            value={userData.studentCategoryPrimary || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "studentCategoryDetail",
-        label: intl.formatMessage({
-          id: "pages.userDetail.studentCategoryDetail",
-        }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.studentCategoryDetail,
-        render: () => (
-          <Input
-            value={userData.studentCategoryDetail || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "studentNationalityType",
-        label: intl.formatMessage({
-          id: "pages.userDetail.studentNationalityType",
-        }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.studentNationalityType,
-        render: () => (
-          <Input
-            value={userData.studentNationalityType || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "residentialCollege",
-        label: intl.formatMessage({
-          id: "pages.userDetail.residentialCollege",
-        }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.residentialCollege,
-        render: () => (
-          <Input
-            value={userData.residentialCollege || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "staffRole",
-        label: intl.formatMessage({ id: "pages.userDetail.staffRole" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.staffRole,
-        render: () => (
-          <Input
-            value={userData.staffRole || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "samAccountName",
-        label: intl.formatMessage({ id: "pages.userDetail.samAccountName" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.samAccountName,
-        render: () => (
-          <Input
-            value={userData.samAccountName || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "mailNickname",
-        label: intl.formatMessage({ id: "pages.userDetail.mailNickname" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.mailNickname,
-        render: () => (
-          <Input
-            value={userData.mailNickname || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "createdAt",
-        label: intl.formatMessage({ id: "pages.userDetail.createdAt" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.createdAt,
-        render: () => (
-          <Input
-            value={userData.createdAt || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-      {
-        name: "updatedAt",
-        label: intl.formatMessage({ id: "pages.userDetail.updatedAt" }),
-        rules: [{ required: false }],
-        tooltip: fieldDescriptions.updatedAt,
-        render: () => (
-          <Input
-            value={userData.updatedAt || "-"}
-            readOnly
-            style={{
-              backgroundColor: "#fafafa",
-              borderColor: "#d9d9d9",
-              color: "#333",
-            }}
-          />
-        ),
-      },
-    ];
   };
 
   // 直接渲染表单字段，避免类型推断问题
@@ -650,13 +199,13 @@ const UserDetail: React.FC = () => {
 
     const renderField = (key: keyof UserDetailData, labelKey: string) => {
       const value = userData[key] || "-";
-      
+
       // 特殊处理tags字段，使用Tag组件
       if (key === "tags") {
         const tags = Array.isArray(userData.tags) ? userData.tags : [];
         // 标签颜色数组
         const colors = ['magenta', 'red', 'volcano', 'orange', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
-        
+
         return (
           <Form.Item
             key={key}
@@ -668,7 +217,7 @@ const UserDetail: React.FC = () => {
               {tags.length > 0 ? (
                 tags.map((tag, index) => {
                   const color = colors[index % colors.length];
-                  return <Tag key={index} color={color}>{tag}</Tag>;
+                  return <Tag key={`tag-${tag}`} color={color}>{tag}</Tag>;
                 })
               ) : (
                 <Tag color="default">-</Tag>
@@ -677,7 +226,7 @@ const UserDetail: React.FC = () => {
           </Form.Item>
         );
       }
-      
+
       // 其他字段使用Input组件
       return (
         <Form.Item
@@ -766,69 +315,67 @@ const UserDetail: React.FC = () => {
             </div>
           ) : (
             // 错误状态或用户数据
-            <>
-              {error ? (
-                <div
-                  style={{ textAlign: "center", padding: 60, color: "#f5222d" }}
+            error ? (
+              <div
+                style={{ textAlign: "center", padding: 60, color: "#f5222d" }}
+              >
+                <UserOutlined style={{ fontSize: 48, marginBottom: 16 }} />
+                <p style={{ fontSize: 16, marginBottom: 16 }}>{error}</p>
+                <Button
+                  type="primary"
+                  onClick={() => window.location.reload()}
                 >
-                  <UserOutlined style={{ fontSize: 48, marginBottom: 16 }} />
-                  <p style={{ fontSize: 16, marginBottom: 16 }}>{error}</p>
-                  <Button
-                    type="primary"
-                    onClick={() => window.location.reload()}
-                  >
-                    重试
-                  </Button>
-                </div>
-              ) : userData ? (
-                <>
-                  {/* 用户基本信息概览 */}
-                  <div
-                    style={{
-                      padding: 16,
-                      backgroundColor: "#f5f5f5",
-                      borderRadius: 8,
-                      marginBottom: 24,
-                    }}
-                  >
-                    <h2 style={{ margin: 0, marginBottom: 8 }}>
-                      {userData.displayName || userData.name || "未知用户"}
-                    </h2>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      <Tag color="blue">{userData.upn}</Tag>
-                      {userData.schoolStatus && (
-                        <Tag
-                          color={
-                            userData.schoolStatus === "Employed" ||
+                  重试
+                </Button>
+              </div>
+            ) : userData ? (
+              <>
+                {/* 用户基本信息概览 */}
+                <div
+                  style={{
+                    padding: 16,
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: 8,
+                    marginBottom: 24,
+                  }}
+                >
+                  <h2 style={{ margin: 0, marginBottom: 8 }}>
+                    {userData.displayName || userData.name || "未知用户"}
+                  </h2>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    <Tag color="blue">{userData.upn}</Tag>
+                    {userData.schoolStatus && (
+                      <Tag
+                        color={
+                          userData.schoolStatus === "Employed" ||
                             userData.schoolStatus === "In-School"
-                              ? "green"
-                              : "orange"
-                          }
-                        >
-                          {userData.schoolStatus}
-                        </Tag>
-                      )}
-                      {userData.identityType && (
-                        <Tag>{userData.identityType}</Tag>
-                      )}
-                      {userData.department && <Tag>{userData.department}</Tag>}
-                    </div>
+                            ? "green"
+                            : "orange"
+                        }
+                      >
+                        {userData.schoolStatus}
+                      </Tag>
+                    )}
+                    {userData.identityType && (
+                      <Tag>{userData.identityType}</Tag>
+                    )}
+                    {userData.department && <Tag>{userData.department}</Tag>}
                   </div>
-
-                  {/* 用户详细信息表单 */}
-                  <Form form={form} layout="vertical" size="middle">
-                    {renderFormFields()}
-                  </Form>
-                </>
-              ) : (
-                <div style={{ textAlign: "center", padding: 60 }}>
-                  <UserOutlined
-                    style={{ fontSize: 48, marginBottom: 16, color: "#d9d9d9" }}
-                  />
-                  <p>无用户数据</p>
                 </div>
-              )}
-            </>
+
+                {/* 用户详细信息表单 */}
+                <Form form={form} layout="vertical" size="middle">
+                  {renderFormFields()}
+                </Form>
+              </>
+            ) : (
+              <div style={{ textAlign: "center", padding: 60 }}>
+                <UserOutlined
+                  style={{ fontSize: 48, marginBottom: 16, color: "#d9d9d9" }}
+                />
+                <p>无用户数据</p>
+              </div>
+            )
           )}
         </Card>
       </PageContainer>
