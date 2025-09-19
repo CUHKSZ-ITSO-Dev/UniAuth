@@ -25,15 +25,12 @@ func (c *ControllerV1) AddAutoQuotaPoolConfig(ctx context.Context, req *v1.AddAu
 
 	err = dao.ConfigAutoQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 基本唯一性校验：rule_name 不重复
-		count, err := dao.ConfigAutoQuotaPool.Ctx(ctx).
+		_, err := dao.ConfigAutoQuotaPool.Ctx(ctx).
 			Where("rule_name = ?", req.RuleName).
 			LockUpdate().
 			Count()
 		if err != nil {
 			return gerror.Wrap(err, "检查规则是否存在失败")
-		}
-		if count > 0 {
-			return gerror.Newf("规则已存在: %s", req.RuleName)
 		}
 
 		// 插入

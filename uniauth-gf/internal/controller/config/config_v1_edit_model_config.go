@@ -7,7 +7,6 @@ import (
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gtime"
 
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
@@ -24,13 +23,8 @@ func (c *ControllerV1) EditModelConfig(ctx context.Context, req *v1.EditModelCon
 		if err != nil {
 			return gerror.WrapCode(gcode.CodeDbOperationError, err, "检查是否存在失败")
 		}
-		if cnt == 0 {
-			return gerror.NewCodef(gcode.CodeNotFound, "模型不存在: %s", req.ApproachName)
-		}
 
-		data := g.Map{
-			"updated_at": gtime.Now(),
-		}
+		data := g.Map{}
 		if req.Pricing != nil {
 			data["pricing"] = req.Pricing
 		}

@@ -18,17 +18,13 @@ func (c *ControllerV1) AddModelConfig(ctx context.Context, req *v1.AddModelConfi
 
 	err = dao.ConfigSingleModelApproach.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 唯一键：approach_name
-		cnt, err := dao.ConfigSingleModelApproach.Ctx(ctx).
+		_, err := dao.ConfigSingleModelApproach.Ctx(ctx).
 			Where("approach_name = ?", req.ApproachName).
 			LockUpdate().
 			Count()
 		if err != nil {
 			return gerror.WrapCode(gcode.CodeDbOperationError, err, "检查是否已存在失败")
 		}
-		if cnt > 0 {
-			return gerror.NewCodef(gcode.CodeValidationFailed, "模型已存在: %s", req.ApproachName)
-		}
-
 		now := gtime.Now()
 		data := &entity.ConfigSingleModelApproach{
 			ApproachName: req.ApproachName,

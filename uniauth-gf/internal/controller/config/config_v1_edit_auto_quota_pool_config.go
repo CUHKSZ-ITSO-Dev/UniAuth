@@ -7,7 +7,6 @@ import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/robfig/cron/v3"
 
 	v1 "uniauth-gf/api/config/v1"
@@ -41,7 +40,6 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 			"enabled":       req.Enabled,
 			"description":   req.Description,
 			"priority":      req.Priority,
-			"updated_at":    gtime.Now(),
 		}
 		if req.FilterGroup != nil {
 			data["filter_group"] = gjson.New(req.FilterGroup)
