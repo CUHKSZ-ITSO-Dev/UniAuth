@@ -1,5 +1,5 @@
 // ==========================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-16 12:07:45
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-19 20:51:46
 // ==========================================================================
 
 package internal
@@ -21,22 +21,20 @@ type ConfigInternationalizationDao struct {
 
 // ConfigInternationalizationColumns defines and stores column names for the table config_internationalization.
 type ConfigInternationalizationColumns struct {
-	LangCode    string //
-	Key         string //
-	Value       string //
-	Description string //
-	CreatedAt   string //
-	UpdatedAt   string //
+	Key          string //
+	Translations string //
+	Description  string //
+	CreatedAt    string //
+	UpdatedAt    string //
 }
 
 // configInternationalizationColumns holds the columns for the table config_internationalization.
 var configInternationalizationColumns = ConfigInternationalizationColumns{
-	LangCode:    "lang_code",
-	Key:         "key",
-	Value:       "value",
-	Description: "description",
-	CreatedAt:   "created_at",
-	UpdatedAt:   "updated_at",
+	Key:          "key",
+	Translations: "translations",
+	Description:  "description",
+	CreatedAt:    "created_at",
+	UpdatedAt:    "updated_at",
 }
 
 // NewConfigInternationalizationDao creates and returns a new DAO object for table data access.
