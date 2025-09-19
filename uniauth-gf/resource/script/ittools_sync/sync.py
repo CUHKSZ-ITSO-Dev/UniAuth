@@ -7,12 +7,10 @@ import sys
 from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
-import dotenv
 
 import asyncpg
 from aiohttp import ClientError, ClientSession
 
-dotenv.load_dotenv()
 
 # --- 日志配置 ---
 def setup_logging():

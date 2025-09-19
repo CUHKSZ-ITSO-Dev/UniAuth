@@ -11,7 +11,7 @@ ENV PGPASSWORD="It@73333!"
 ENV PGDATABASE="uniauth"
 
 WORKDIR /app
-
+RUN chmod 777 /app
 COPY sync.py /app/sync.py
 
 CMD ["python3", "sync.py"]
