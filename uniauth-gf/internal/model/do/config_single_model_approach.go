@@ -1,5 +1,5 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 00:51:49
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-19 15:40:33
 // =================================================================================
 
 package do
@@ -15,8 +15,8 @@ type ConfigSingleModelApproach struct {
 	g.Meta       `orm:"table:config_single_model_approach, do:true"`
 	ApproachName any         // 模型名称
 	Pricing      *gjson.Json // 定价配置（JSON）
-	Discount     any         // 折扣（0-1 之间的小数，例：0.1、0.2、1）
-	ClientType   any         // 客户端类型（如：web、ios、android、server 等）
+	Discount     any         // 折扣
+	ClientType   any         // 客户端类型
 	ClientArgs   *gjson.Json // 客户端参数（JSON）
 	RequestArgs  *gjson.Json // 请求参数（JSON）
 	Servicewares []string    // 服务项标识

@@ -1,5 +1,5 @@
 // ==========================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 00:51:49
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-19 15:40:33
 // ==========================================================================
 
 package internal
@@ -23,8 +23,8 @@ type ConfigSingleModelApproachDao struct {
 type ConfigSingleModelApproachColumns struct {
 	ApproachName string // 模型名称
 	Pricing      string // 定价配置（JSON）
-	Discount     string // 折扣（0-1 之间的小数，例：0.1、0.2、1）
-	ClientType   string // 客户端类型（如：web、ios、android、server 等）
+	Discount     string // 折扣
+	ClientType   string // 客户端类型
 	ClientArgs   string // 客户端参数（JSON）
 	RequestArgs  string // 请求参数（JSON）
 	Servicewares string // 服务项标识
