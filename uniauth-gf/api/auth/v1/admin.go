@@ -26,15 +26,21 @@ type DeletePoliciesRes struct {
 }
 
 type FilterPoliciesReq struct {
-	g.Meta `path:"/admin/policies/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Policies" dc:"模糊匹配。根据给定的条件，返回Policy。留空的字段（传空 Array）将被忽略。"`
-	Sub    string `json:"sub" dc:"Subject"`
-	Obj    string `json:"obj" dc:"Object"`
-	Act    string `json:"act" dc:"Action"`
-	Eft    string `json:"eft" dc:"Effect"`
+	g.Meta   `path:"/admin/policies/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Policies" dc:"模糊匹配。根据给定的条件，返回Policy。留空的字段（传空 Array）将被忽略。"`
+	Sub      string `json:"sub" dc:"Subject"`
+	Obj      string `json:"obj" dc:"Object"`
+	Act      string `json:"act" dc:"Action"`
+	Eft      string `json:"eft" dc:"Effect"`
+	Page     int    `json:"page" d:"1" dc:"分页。当前页码。"`
+	PageSize int    `json:"pageSize" d:"10" dc:"分页。每页条数。"`
 }
 type FilterPoliciesRes struct {
-	g.Meta   `mime:"application/json"`
-	Policies [][]string `json:"policies"`
+	g.Meta     `mime:"application/json"`
+	Policies   [][]string `json:"policies"`
+	Total      int        `json:"total" dc:"总条数。"`
+	Page       int        `json:"page" dc:"当前页码。"`
+	PageSize   int        `json:"pageSize" dc:"每页条数。"`
+	TotalPages int        `json:"totalPages" dc:"总页数。"`
 }
 
 type FilterGroupingsReq struct {
