@@ -78,7 +78,6 @@ const ConfigI18nPage: React.FC = () => {
           id: "pages.configI18n.search.placeholder",
           defaultMessage: "请输入键值、语言、翻译内容或描述",
         }),
-        style: { width: 400 },
       },
     },
     {
@@ -99,7 +98,6 @@ const ConfigI18nPage: React.FC = () => {
       dataIndex: "langCode",
       key: "langCode",
       search: false,
-      width: 120,
       render: (text: any, record: I18nDataType) => {
         // 为不同语言定义不同颜色
         const getLanguageColor = (lang: string) => {
@@ -145,7 +143,6 @@ const ConfigI18nPage: React.FC = () => {
       }),
       key: "action",
       search: false,
-      width: 150,
       render: (_: any, record: I18nDataType) => (
         <Space size="small">
           <Button
@@ -551,7 +548,6 @@ const ConfigI18nPage: React.FC = () => {
           }}
           tableAlertRender={({
             selectedRowKeys: alertSelectedRowKeys,
-            selectedRows: alertSelectedRows,
             onCleanSelected,
           }) => {
             return (
