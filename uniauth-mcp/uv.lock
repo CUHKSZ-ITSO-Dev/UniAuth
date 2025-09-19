@@ -1107,14 +1107,12 @@ source = { virtual = "." }
 dependencies = [
     { name = "aiohttp" },
     { name = "fastmcp" },
-    { name = "httpx" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.12.15" },
     { name = "fastmcp", specifier = ">=2.12.3" },
-    { name = "httpx", specifier = ">=0.25.0" },
 ]
 
 [[package]]
