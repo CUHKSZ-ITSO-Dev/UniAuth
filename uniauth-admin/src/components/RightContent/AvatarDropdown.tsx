@@ -52,7 +52,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
   const loginOut = async () => {
     // 移除API调用，直接清除用户状态
     // await outLogin();
-    
+
     // 简化退出登录逻辑，直接跳转到欢迎页面
     history.replace('/welcome');
   };
@@ -64,7 +64,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
     const { key } = event;
     if (key === 'logout') {
       flushSync(() => {
-        setInitialState((s) => ({ ...s, currentUser: undefined }));
+        setInitialState((s) => ({ ...s, currentUser: null as any }));
       });
       loginOut();
       return;
@@ -102,20 +102,20 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
   const menuItems = [
     ...(menu
       ? [
-          {
-            key: 'center',
-            icon: <UserOutlined />,
-            label: '个人中心',
-          },
-          {
-            key: 'settings',
-            icon: <SettingOutlined />,
-            label: '个人设置',
-          },
-          {
-            type: 'divider' as const,
-          },
-        ]
+        {
+          key: 'center',
+          icon: <UserOutlined />,
+          label: '个人中心',
+        },
+        {
+          key: 'settings',
+          icon: <SettingOutlined />,
+          label: '个人设置',
+        },
+        {
+          type: 'divider' as const,
+        },
+      ]
       : []),
     {
       key: 'logout',

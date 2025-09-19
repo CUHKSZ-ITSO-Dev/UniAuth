@@ -26,8 +26,8 @@ const UserListPage: React.FC = () => {
   // 使用 useMemo 确保初始参数响应 URL 变化
   const initialSearchParams = useMemo(() => {
     const keyword = searchParams.get("keyword") || "";
-    const current = parseInt(searchParams.get("current") || "1");
-    const pageSize = parseInt(searchParams.get("pageSize") || "10");
+    const current = parseInt(searchParams.get("current") || "1", 10);
+    const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
 
     return {
       keyword,
@@ -164,9 +164,8 @@ const UserListPage: React.FC = () => {
           );
 
         const queryString = linkParams.toString();
-        const detailUrl = `/user-list/userDetail/${record.key}${
-          queryString ? `?${queryString}` : ""
-        }`;
+        const detailUrl = `/user-list/userDetail/${record.key}${queryString ? `?${queryString}` : ""
+          }`;
 
         return (
           <Space size="middle">
@@ -246,7 +245,7 @@ const UserListPage: React.FC = () => {
             showTotal: (total) => `共 ${total} 条数据`,
           }}
           request={async (params) => {
-            const { current, pageSize, keyword, ...searchParams } = params;
+            const { current, pageSize, keyword } = params;
 
             // 更新URL参数
             updateURLParams({
@@ -265,7 +264,7 @@ const UserListPage: React.FC = () => {
               // 搜索字段：姓名、邮箱、UPN、学号、部门，确保支持模糊匹配
               const searchFields = ["name", "upn", "email", "employeeId"];
               searchFields.forEach((field) => {
-                filter.conditions!.push({
+                filter.conditions?.push({
                   field,
                   op: "like",
                   value: `%${keyword}%`,
