@@ -27,8 +27,8 @@ type EditAutoQuotaPoolConfigReq struct {
 	CronCycle string `json:"cronCycle" v:"required" dc:"刷新周期，Cron 表达式" example:"0 0 3 * * *"`
 	// 定期配额（每周期重置）
 	RegularQuota decimal.Decimal `json:"regularQuota" v:"required" dc:"定期配额（每周期重置）" example:"1000"`
-	// 是否启用该规则
-	Enabled bool `json:"enabled" dc:"是否启用该规则" d:"true" example:"true"`
+	// 是否启用该配额池
+	Enabled bool `json:"enabled" dc:"是否启用该配额池" d:"true" example:"true"`
 	// 过滤条件组，满足条件的用户将应用该规则
 	FilterGroup *userinfosv1.FilterGroup `json:"filterGroup" dc:"过滤条件组，满足条件的用户将应用该规则"`
 	// 规则说明

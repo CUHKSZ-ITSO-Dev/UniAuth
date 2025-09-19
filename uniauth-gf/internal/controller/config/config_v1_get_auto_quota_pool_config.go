@@ -10,12 +10,12 @@ import (
 )
 
 func (c *ControllerV1) GetAutoQuotaPoolConfig(ctx context.Context, req *v1.GetAutoQuotaPoolConfigReq) (res *v1.GetAutoQuotaPoolConfigRes, err error) {
-	res = &v1.GetAutoQuotaPoolConfigRes{}
-	var items []v1.AutoQuotaPoolItem
-	if err = dao.ConfigAutoQuotaPool.Ctx(ctx).Scan(&items); err != nil {
+	res = &v1.GetAutoQuotaPoolConfigRes{
+		Items: []v1.AutoQuotaPoolItem{},
+	}
+	if err = dao.ConfigAutoQuotaPool.Ctx(ctx).Scan(&res.Items); err != nil {
 		err = gerror.Wrap(err, "查询自动配额池规则失败")
 		return
 	}
-	res.Items = items
 	return
 }
