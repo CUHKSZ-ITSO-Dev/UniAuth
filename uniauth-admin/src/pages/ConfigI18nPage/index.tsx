@@ -1,26 +1,26 @@
-import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import type { ProColumns } from "@ant-design/pro-components";
-import {
-  Typography,
-  Space,
-  message,
-  Button,
-  Modal,
-  Form,
-  Input,
-  Select,
-  Table,
-  Tag,
-} from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import React, { useState, useRef } from "react";
+import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
 import {
-  postConfigI18NFilter,
-  putConfigI18N,
-  postConfigI18N,
+  Button,
+  Form,
+  Input,
+  Modal,
+  message,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Typography,
+} from "antd";
+import React, { useRef, useState } from "react";
+import {
   deleteConfigI18N,
   getConfigI18N,
+  postConfigI18N,
+  postConfigI18NFilter,
+  putConfigI18N,
 } from "@/services/uniauthService/i18N";
 
 const { Title, Text } = Typography;
@@ -39,7 +39,6 @@ const ConfigI18nPage: React.FC = () => {
   const intl = useIntl();
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
-  const [editingRecord, setEditingRecord] = useState<I18nDataType | null>(null);
   const [form] = Form.useForm();
   const actionRef = useRef<any>(null);
   const [availableLangs, setAvailableLangs] = useState<string[]>([]);
@@ -175,8 +174,6 @@ const ConfigI18nPage: React.FC = () => {
 
   // 编辑翻译配置
   const handleEdit = (record: I18nDataType) => {
-    setEditingRecord(record);
-
     // 为编辑模式设置表单值
     form.setFieldsValue({
       lang: record.langCode,
@@ -201,7 +198,7 @@ const ConfigI18nPage: React.FC = () => {
           id: "pages.configI18n.delete.confirm.content",
           defaultMessage: '确定要删除键值 "{key}" 的所有语言配置吗？',
         },
-        { key: record.keyValue }
+        { key: record.keyValue },
       ),
       onOk: async () => {
         try {
@@ -210,7 +207,7 @@ const ConfigI18nPage: React.FC = () => {
             intl.formatMessage({
               id: "pages.configI18n.delete.success",
               defaultMessage: "删除成功",
-            })
+            }),
           );
           actionRef.current?.reload();
         } catch (error) {
@@ -219,7 +216,7 @@ const ConfigI18nPage: React.FC = () => {
             intl.formatMessage({
               id: "pages.configI18n.delete.error",
               defaultMessage: "删除失败",
-            })
+            }),
           );
         }
       },
@@ -231,10 +228,13 @@ const ConfigI18nPage: React.FC = () => {
     form.resetFields();
 
     // 为新增模式初始化翻译对象
-    const initialTranslations = availableLangs.reduce((acc, lang) => {
-      acc[lang] = "";
-      return acc;
-    }, {} as Record<string, string>);
+    const initialTranslations = availableLangs.reduce(
+      (acc, lang) => {
+        acc[lang] = "";
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 
     form.setFieldsValue({
       key: "",
@@ -242,7 +242,6 @@ const ConfigI18nPage: React.FC = () => {
       translations: initialTranslations,
     });
 
-    setEditingRecord(null);
     setModalMode("add");
     setModalVisible(true);
   };
@@ -254,14 +253,14 @@ const ConfigI18nPage: React.FC = () => {
         intl.formatMessage({
           id: "pages.configI18n.batchDelete.noSelection",
           defaultMessage: "请至少选择一项进行删除",
-        })
+        }),
       );
       return;
     }
 
     // 获取所有选中的唯一键值
     const uniqueKeys = Array.from(
-      new Set(selectedRows.map((row) => row.keyValue))
+      new Set(selectedRows.map((row) => row.keyValue)),
     );
 
     Modal.confirm({
@@ -275,13 +274,13 @@ const ConfigI18nPage: React.FC = () => {
           defaultMessage:
             "确定要删除选中的 {count} 个键值的所有语言配置吗？此操作不可恢复。",
         },
-        { count: uniqueKeys.length }
+        { count: uniqueKeys.length },
       ),
       onOk: async () => {
         try {
           // 批量删除所有选中的键值
           const deletePromises = uniqueKeys.map((key) =>
-            deleteConfigI18N({ key })
+            deleteConfigI18N({ key }),
           );
 
           await Promise.all(deletePromises);
@@ -290,7 +289,7 @@ const ConfigI18nPage: React.FC = () => {
             intl.formatMessage({
               id: "pages.configI18n.batchDelete.success",
               defaultMessage: "批量删除成功",
-            })
+            }),
           );
 
           // 清空选择并刷新表格
@@ -303,7 +302,7 @@ const ConfigI18nPage: React.FC = () => {
             intl.formatMessage({
               id: "pages.configI18n.batchDelete.error",
               defaultMessage: "批量删除失败",
-            })
+            }),
           );
         }
       },
@@ -327,7 +326,7 @@ const ConfigI18nPage: React.FC = () => {
           intl.formatMessage({
             id: "pages.configI18n.edit.success",
             defaultMessage: "编辑成功",
-          })
+          }),
         );
       } else {
         // 新增模式：为每个语言发送单独的新增请求
@@ -338,7 +337,7 @@ const ConfigI18nPage: React.FC = () => {
             intl.formatMessage({
               id: "pages.configI18n.add.noTranslations",
               defaultMessage: "请至少为一种语言添加翻译",
-            })
+            }),
           );
           return;
         }
@@ -347,7 +346,7 @@ const ConfigI18nPage: React.FC = () => {
         const addPromises = Object.entries(translations)
           .filter(
             ([_, value]) =>
-              value && typeof value === "string" && value.trim() !== ""
+              value && typeof value === "string" && value.trim() !== "",
           ) // 过滤空值
           .map(([lang, value]) =>
             postConfigI18N({
@@ -355,7 +354,7 @@ const ConfigI18nPage: React.FC = () => {
               key,
               value: value as string,
               description: description || "",
-            })
+            }),
           );
 
         if (addPromises.length === 0) {
@@ -363,7 +362,7 @@ const ConfigI18nPage: React.FC = () => {
             intl.formatMessage({
               id: "pages.configI18n.add.noValidTranslations",
               defaultMessage: "请输入有效的翻译内容",
-            })
+            }),
           );
           return;
         }
@@ -376,8 +375,8 @@ const ConfigI18nPage: React.FC = () => {
               id: "pages.configI18n.add.success",
               defaultMessage: "成功为 {count} 种语言添加配置",
             },
-            { count: addPromises.length }
-          )
+            { count: addPromises.length },
+          ),
         );
       }
 
@@ -393,14 +392,14 @@ const ConfigI18nPage: React.FC = () => {
           intl.formatMessage({
             id: "pages.configI18n.add.error.detailed",
             defaultMessage: "添加配置失败，请检查网络连接或联系管理员",
-          })
+          }),
         );
       } else {
         message.error(
           intl.formatMessage({
             id: "pages.configI18n.operation.error",
             defaultMessage: "操作失败",
-          })
+          }),
         );
       }
     }
@@ -408,7 +407,7 @@ const ConfigI18nPage: React.FC = () => {
 
   // 表格数据请求
   const columnRequest = async (params: any) => {
-    const { current, pageSize, keyword, ...searchParams } = params;
+    const { current, pageSize, keyword } = params;
 
     // 构建搜索条件
     const filter: API.I18nFilterGroup = {
@@ -420,7 +419,7 @@ const ConfigI18nPage: React.FC = () => {
       // 搜索字段：键值、语言、翻译内容、描述
       const searchFields = ["key", "langCode", "value", "description"];
       searchFields.forEach((field) => {
-        filter.conditions!.push({
+        filter.conditions?.push({
           field,
           op: "like",
           value: `%${keyword}%`,
@@ -470,17 +469,15 @@ const ConfigI18nPage: React.FC = () => {
       }
 
       // 数据转换逻辑
-      const tableData: I18nDataType[] = response.i18nItems.map(
-        (item, index) => ({
-          key: `${item.langCode}-${item.key}`,
-          langCode: item.langCode || "",
-          keyValue: item.key || "",
-          value: item.value || "",
-          description: item.description || "",
-          createdAt: item.createdAt || "",
-          updatedAt: item.updatedAt || "",
-        })
-      );
+      const tableData: I18nDataType[] = response.i18nItems.map((item) => ({
+        key: `${item.langCode}-${item.key}`,
+        langCode: item.langCode || "",
+        keyValue: item.key || "",
+        value: item.value || "",
+        description: item.description || "",
+        createdAt: item.createdAt || "",
+        updatedAt: item.updatedAt || "",
+      }));
 
       // 搜索结果提示
       if (keyword && tableData.length === 0) {
@@ -761,8 +758,8 @@ const ConfigI18nPage: React.FC = () => {
                               lang === "zh"
                                 ? "#2db7f5"
                                 : lang === "en-US"
-                                ? "#87d068"
-                                : "#2db7f5"
+                                  ? "#87d068"
+                                  : "#2db7f5"
                             }
                             style={{ marginRight: 8 }}
                           >
@@ -782,7 +779,7 @@ const ConfigI18nPage: React.FC = () => {
                               id: "pages.configI18n.form.translation.required",
                               defaultMessage: "请输入 {lang} 的翻译内容",
                             },
-                            { lang }
+                            { lang },
                           ),
                         },
                       ]}
@@ -794,7 +791,7 @@ const ConfigI18nPage: React.FC = () => {
                             id: "pages.configI18n.form.translation.placeholder",
                             defaultMessage: "请输入 {lang} 的翻译内容",
                           },
-                          { lang }
+                          { lang },
                         )}
                         rows={2}
                       />
