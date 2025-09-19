@@ -16,9 +16,9 @@ import (
 
 // 字段白名单，防止用户查询任意字段
 var allowedI18nFields = g.MapStrStr{
-	"langCode":    dao.ConfigInternationalization.Columns().LangCode,
 	"key":         dao.ConfigInternationalization.Columns().Key,
-	"value":       dao.ConfigInternationalization.Columns().Value,
+	"zhCn":        dao.ConfigInternationalization.Columns().ZhCn,
+	"enUs":        dao.ConfigInternationalization.Columns().EnUs,
 	"description": dao.ConfigInternationalization.Columns().Description,
 	"createdAt":   dao.ConfigInternationalization.Columns().CreatedAt,
 	"updatedAt":   dao.ConfigInternationalization.Columns().UpdatedAt,
@@ -26,8 +26,9 @@ var allowedI18nFields = g.MapStrStr{
 
 // 支持排序的字段（加了索引的）
 var sortableI18nFields = g.MapStrBool{
-	"langCode":  true,
 	"key":       true,
+	"zhCn":      true,
+	"enUs":      true,
 	"createdAt": true,
 	"updatedAt": true,
 }

@@ -6,20 +6,20 @@ import (
 )
 
 type GetI18nConfigReq struct {
-	g.Meta `path:"/i18n/:lang" tags:"Config/I18n" method:"get" summary:"获取i18n" dc:"获取一个语言的所有翻译配置"`
-	Lang   string `json:"lang" v:"required" dc:"语言" example:"en-US"`
+	g.Meta `path:"/i18n/:lang" tags:"Config/I18n" method:"get" summary:"获取i18n语言包" dc:"获取指定语言的所有翻译配置"`
+	Lang   string `json:"lang" v:"required|in:zh-CN,en-US" dc:"语言代码" example:"zh-CN"`
 }
 
 type GetI18nConfigRes struct {
-	g.Meta `mime:"application/json" dc:"返回某个指定语言的所有翻译配置"`
-	Config *gjson.Json
+	g.Meta   `mime:"application/json" dc:"返回指定语言的所有翻译配置"`
+	Langpack *gjson.Json `json:"langpack" dc:"语言包键值对，支持嵌套结构"`
 }
 
 type AddI18nItemReq struct {
-	g.Meta      `path:"/i18n" tags:"Config/I18n" method:"post" summary:"添加i18n" dc:"添加一项i18n一个语言的配置"`
-	Lang        string `json:"lang" v:"required" dc:"语言" example:"en-US"`
-	Key         string `json:"key" v:"required" dc:"键" example:"navBar.title"`
-	Value       string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
+	g.Meta      `path:"/i18n" tags:"Config/I18n" method:"post" summary:"添加i18n项目" dc:"添加一项i18n配置，包含多个语言的翻译"`
+	Key         string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
+	ZhCn        string `json:"zh_cn" dc:"中文翻译" example:"统一鉴权"`
+	EnUs        string `json:"en_us" dc:"英文翻译" example:"Unified Auth"`
 	Description string `json:"description" dc:"描述" example:"导航栏标题"`
 }
 
@@ -28,10 +28,10 @@ type AddI18nItemRes struct {
 }
 
 type EditI18nItemReq struct {
-	g.Meta      `path:"/i18n" tags:"Config/I18n" method:"put" summary:"编辑i18n" dc:"编辑一项i18n一个语言的配置"`
-	Lang        string `json:"lang" v:"required" dc:"语言" example:"en-US"`
-	Key         string `json:"key" v:"required" dc:"键" example:"navBar.title"`
-	Value       string `json:"value" v:"required" dc:"值" example:"统一鉴权"`
+	g.Meta      `path:"/i18n" tags:"Config/I18n" method:"put" summary:"编辑i18n项目" dc:"编辑一项i18n配置的翻译"`
+	Key         string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
+	ZhCn        string `json:"zh_cn" dc:"中文翻译" example:"统一鉴权"`
+	EnUs        string `json:"en_us" dc:"英文翻译" example:"Unified Auth"`
 	Description string `json:"description" dc:"描述" example:"导航栏标题"`
 }
 
@@ -40,8 +40,8 @@ type EditI18nItemRes struct {
 }
 
 type DeleteI18ConfigReq struct {
-	g.Meta `path:"/i18n" tags:"Config/I18n" method:"delete" summary:"删除i18n" dc:"删除指定Key的所有语言配置。"`
-	Key    string `json:"key" v:"required" dc:"键" example:"navBar.title"`
+	g.Meta `path:"/i18n" tags:"Config/I18n" method:"delete" summary:"删除i18n配置" dc:"删除指定Key的i18n配置项"`
+	Key    string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
 }
 
 type DeleteI18ConfigRes struct {
@@ -49,11 +49,11 @@ type DeleteI18ConfigRes struct {
 }
 
 type GetAllLangsReq struct {
-	g.Meta `path:"/i18n" tags:"Config/I18n" method:"get" summary:"获取所有语言的列表"`
+	g.Meta `path:"/i18n/langs" tags:"Config/I18n" method:"get" summary:"获取所有支持的语言列表" dc:"获取系统支持的所有语言代码"`
 }
 
 type GetAllLangsRes struct {
-	Langs []string `json:"langs" dc:"语言列表" example:"['en-US', 'zh-CN']"`
+	Langs []string `json:"langs" dc:"语言代码列表" example:"[\"zh-cn\", \"en-us\"]"`
 }
 
 // ==================== I18n Filter ====================
@@ -84,30 +84,30 @@ type I18nPaginationReq struct {
 	All      bool `json:"all" dc:"是否返回全部数据，true时忽略分页参数，但仍有最大限制保护"`
 }
 
-// I18nItem 表示单个i18n条目
+// I18nItem 表示单个i18n配置项
 type I18nItem struct {
-	LangCode    string `json:"langCode" dc:"语言代码" example:"en-US"`
-	Key         string `json:"key" dc:"键" example:"navBar.title"`
-	Value       string `json:"value" dc:"值" example:"统一鉴权"`
-	Description string `json:"description" dc:"描述"`
-	CreatedAt   string `json:"createdAt" dc:"创建时间"`
-	UpdatedAt   string `json:"updatedAt" dc:"更新时间"`
+	Key         string `json:"key" dc:"翻译键" example:"navBar.title"`
+	ZhCn        string `json:"zh_cn" dc:"中文翻译" example:"统一鉴权"`
+	EnUs        string `json:"en_us" dc:"英文翻译" example:"Unified Auth"`
+	Description string `json:"description" dc:"描述" example:"导航栏标题"`
+	CreatedAt   string `json:"created_at" dc:"创建时间"`
+	UpdatedAt   string `json:"updated_at" dc:"更新时间"`
 }
 
 type FilterI18nReq struct {
-	g.Meta     `path:"/i18n/filter" tags:"Config/I18n" method:"post" summary:"自定义筛选i18n配置" dc:"根据过滤条件，返回i18n配置。支持复杂条件查询、排序和分页。"`
-	Filter     *I18nFilterGroup     `json:"filter" v:"required#需要filter" dc:"过滤条件，支持复杂的逻辑组合查询"`
+	g.Meta     `path:"/i18n/filter" tags:"Config/I18n" method:"post" summary:"筛选i18n配置" dc:"根据过滤条件筛选i18n配置，支持复杂条件查询、排序和分页"`
+	Filter     *I18nFilterGroup     `json:"filter" v:"required#过滤条件不能为空" dc:"过滤条件，支持复杂的逻辑组合查询"`
 	Sort       []*I18nSortCondition `json:"sort" dc:"排序条件，支持多字段排序"`
 	Pagination *I18nPaginationReq   `json:"pagination" dc:"分页参数，支持分页或查询全部"`
-	Verbose    bool                 `json:"verbose" dc:"是否返回详细i18n信息，false时仅返回键值对"`
+	Verbose    bool                 `json:"verbose" dc:"是否返回详细i18n信息，false时仅返回键列表"`
 }
 
 type FilterI18nRes struct {
-	I18nKeys   []string   `json:"i18nKeys" dc:"i18n键列表" example:"['navBar.title', 'sidebar.title']"`
-	I18nItems  []I18nItem `json:"i18nItems,omitempty" dc:"详细i18n信息（verbose=true时返回）"`
+	I18nKeys   []string   `json:"i18n_keys" dc:"i18n键列表" example:"[\"navBar.title\", \"sidebar.title\"]"`
+	I18nItems  []I18nItem `json:"i18n_items,omitempty" dc:"详细i18n信息（verbose=true时返回）"`
 	Total      int        `json:"total" dc:"总记录数"`
 	Page       int        `json:"page" dc:"当前页码"`
-	PageSize   int        `json:"pageSize" dc:"每页条数"`
-	TotalPages int        `json:"totalPages" dc:"总页数"`
-	IsAll      bool       `json:"isAll" dc:"是否为全部数据查询"`
+	PageSize   int        `json:"page_size" dc:"每页条数"`
+	TotalPages int        `json:"total_pages" dc:"总页数"`
+	IsAll      bool       `json:"is_all" dc:"是否为全部数据查询"`
 }
