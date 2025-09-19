@@ -1,7 +1,7 @@
 import {
   GridContent,
   PageContainer,
-  ProColumns,
+  type ProColumns,
   ProTable,
   RouteContext,
 } from "@ant-design/pro-components";
@@ -10,9 +10,9 @@ import {
   Button,
   Card,
   Descriptions,
+  Progress,
   Space,
   Statistic,
-  Progress,
 } from "antd";
 
 import type { FC } from "react";
@@ -118,22 +118,22 @@ const QuotaPoolDetailsPage: FC = () => {
 
     if (params.upn) {
       example_data = example_data.filter((item) =>
-        item.upn.includes(params.upn as string)
+        item.upn.includes(params.upn as string),
       );
     }
     if (params.displayName) {
       example_data = example_data.filter((item) =>
-        item.displayName.includes(params.displayName as string)
+        item.displayName.includes(params.displayName as string),
       );
     }
     if (params.identity) {
       example_data = example_data.filter((item) =>
-        item.identity.includes(params.identity as string)
+        item.identity.includes(params.identity as string),
       );
     }
     if (params.department) {
       example_data = example_data.filter((item) =>
-        item.department.includes(params.department as string)
+        item.department.includes(params.department as string),
       );
     }
 
@@ -193,9 +193,9 @@ const QuotaPoolDetailsPage: FC = () => {
     },
   ];
 
-  const itToolsRulesDataRequest = async (params: any) => {
+  const itToolsRulesDataRequest = async (_params: any) => {
     // TODO: 替换为实际请求
-    let example_data = [
+    const example_data = [
       {
         id: 1,
         sub: "alice",
@@ -243,7 +243,7 @@ const QuotaPoolDetailsPage: FC = () => {
 
   const action = (
     <RouteContext.Consumer>
-      {({ isMobile }) => {
+      {() => {
         return (
           <Space>
             <Button type="primary">重置配额池</Button>
@@ -331,7 +331,7 @@ const QuotaPoolDetailsPage: FC = () => {
               <Descriptions.Item label="余额百分比">
                 <Progress
                   percent={Number(
-                    (((328 + 168) / (648 + 168)) * 100).toFixed(1)
+                    (((328 + 168) / (648 + 168)) * 100).toFixed(1),
                   )}
                   success={{
                     percent: Number(((328 / (648 + 168)) * 100).toFixed(1)),

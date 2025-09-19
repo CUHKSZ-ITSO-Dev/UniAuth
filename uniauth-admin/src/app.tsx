@@ -117,6 +117,7 @@ export async function getInitialState(): Promise<{
 }
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
+// @ts-expect-error
 export const layout: RunTimeLayoutConfig = ({
   initialState,
   setInitialState,
@@ -185,7 +186,7 @@ export const layout: RunTimeLayoutConfig = ({
             <SettingDrawer
               disableUrlParams
               enableDarkTheme
-              settings={initialState?.settings}
+              settings={initialState?.settings || {}}
               onSettingChange={(settings) => {
                 setInitialState((preInitialState) => ({
                   ...preInitialState,
