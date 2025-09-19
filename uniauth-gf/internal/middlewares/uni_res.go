@@ -21,11 +21,11 @@ var (
 )
 
 type UnifiedResponse struct {
-	Success      bool        `json:"success" dc:"Success flag"`
-	ErrorCode    int         `json:"code"    dc:"Error code"`
-	ErrorMessage string      `json:"message" dc:"Error message"`
-	Data         interface{} `json:"data"    dc:"Result data for certain request according API definition"`
-	ShowType     int         `json:"showType" dc:"Show type"`
+	Success      bool   `json:"success" dc:"Success flag"`
+	ErrorCode    int    `json:"code"    dc:"Error code"`
+	ErrorMessage string `json:"message" dc:"Error message"`
+	Data         any    `json:"data"    dc:"Result data for certain request according API definition"`
+	ShowType     int    `json:"showType" dc:"Show type"`
 }
 
 func UniResMiddleware(r *ghttp.Request) {
