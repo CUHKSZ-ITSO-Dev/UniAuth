@@ -8,6 +8,7 @@ import {
   Input,
   Modal,
   message,
+  Popconfirm,
   Space,
   Table,
   Tag,
@@ -48,7 +49,6 @@ const ConfigI18nPage: React.FC = () => {
     {
       title: intl.formatMessage({
         id: "pages.configI18n.search",
-        defaultMessage: "搜索配置",
       }),
       dataIndex: "keyword",
       key: "keyword",
@@ -59,14 +59,12 @@ const ConfigI18nPage: React.FC = () => {
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.configI18n.search.placeholder",
-          defaultMessage: "请输入键值、语言、翻译内容或描述",
         }),
       },
     },
     {
       title: intl.formatMessage({
         id: "pages.configI18n.key",
-        defaultMessage: "键值",
       }),
       dataIndex: "keyValue",
       key: "keyValue",
@@ -76,7 +74,6 @@ const ConfigI18nPage: React.FC = () => {
     {
       title: intl.formatMessage({
         id: "pages.configI18n.translations",
-        defaultMessage: "翻译内容",
       }),
       dataIndex: "translations",
       key: "translations",
@@ -120,7 +117,6 @@ const ConfigI18nPage: React.FC = () => {
     {
       title: intl.formatMessage({
         id: "pages.configI18n.desc",
-        defaultMessage: "描述",
       }),
       dataIndex: "description",
       key: "description",
@@ -130,7 +126,6 @@ const ConfigI18nPage: React.FC = () => {
     {
       title: intl.formatMessage({
         id: "pages.configI18n.actions",
-        defaultMessage: "操作",
       }),
       key: "action",
       search: false,
@@ -145,21 +140,29 @@ const ConfigI18nPage: React.FC = () => {
           >
             {intl.formatMessage({
               id: "pages.configI18n.edit",
-              defaultMessage: "编辑",
             })}
           </Button>
-          <Button
-            type="link"
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record)}
+          <Popconfirm
+            title={intl.formatMessage({
+              id: "pages.configI18n.delete.confirm.title",
+            })}
+            description={intl.formatMessage({
+              id: "pages.configI18n.delete.confirm.description",
+            })}
+            onConfirm={() => handleDelete(record)}
           >
-            {intl.formatMessage({
-              id: "pages.configI18n.delete",
-              defaultMessage: "删除",
-            })}
-          </Button>
+            <Button
+              type="link"
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => {}}
+            >
+              {intl.formatMessage({
+                id: "pages.configI18n.delete",
+              })}
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -185,40 +188,13 @@ const ConfigI18nPage: React.FC = () => {
   };
 
   // 删除翻译配置
-  const handleDelete = (record: I18nDataType) => {
-    Modal.confirm({
-      title: intl.formatMessage({
-        id: "pages.configI18n.delete.confirm.title",
-        defaultMessage: "确认删除",
+  const handleDelete = async (record: I18nDataType) => {
+    await deleteConfigI18N({ key: record.keyValue });
+    message.success(
+      intl.formatMessage({
+        id: "pages.configI18n.delete.success",
       }),
-      content: intl.formatMessage(
-        {
-          id: "pages.configI18n.delete.confirm.content",
-          defaultMessage: '确定要删除键值 "{key}" 的所有语言配置吗？',
-        },
-        { key: record.keyValue },
-      ),
-      onOk: async () => {
-        try {
-          await deleteConfigI18N({ key: record.keyValue });
-          message.success(
-            intl.formatMessage({
-              id: "pages.configI18n.delete.success",
-              defaultMessage: "删除成功",
-            }),
-          );
-          actionRef.current?.reload();
-        } catch (error) {
-          console.error("删除失败:", error);
-          message.error(
-            intl.formatMessage({
-              id: "pages.configI18n.delete.error",
-              defaultMessage: "删除失败",
-            }),
-          );
-        }
-      },
-    });
+    );
   };
 
   // 新增翻译配置
@@ -243,7 +219,6 @@ const ConfigI18nPage: React.FC = () => {
       message.warning(
         intl.formatMessage({
           id: "pages.configI18n.batchDelete.noSelection",
-          defaultMessage: "请至少选择一项进行删除",
         }),
       );
       return;
@@ -257,7 +232,6 @@ const ConfigI18nPage: React.FC = () => {
     Modal.confirm({
       title: intl.formatMessage({
         id: "pages.configI18n.batchDelete.confirm.title",
-        defaultMessage: "确认批量删除",
       }),
       content: intl.formatMessage(
         {
@@ -279,7 +253,6 @@ const ConfigI18nPage: React.FC = () => {
           message.success(
             intl.formatMessage({
               id: "pages.configI18n.batchDelete.success",
-              defaultMessage: "批量删除成功",
             }),
           );
 
@@ -292,7 +265,6 @@ const ConfigI18nPage: React.FC = () => {
           message.error(
             intl.formatMessage({
               id: "pages.configI18n.batchDelete.error",
-              defaultMessage: "批量删除失败",
             }),
           );
         }
@@ -316,7 +288,6 @@ const ConfigI18nPage: React.FC = () => {
         message.success(
           intl.formatMessage({
             id: "pages.configI18n.edit.success",
-            defaultMessage: "编辑成功",
           }),
         );
       } else {
@@ -333,7 +304,6 @@ const ConfigI18nPage: React.FC = () => {
         message.success(
           intl.formatMessage({
             id: "pages.configI18n.add.success",
-            defaultMessage: "添加配置成功",
           }),
         );
       }
@@ -346,7 +316,6 @@ const ConfigI18nPage: React.FC = () => {
       message.error(
         intl.formatMessage({
           id: "pages.configI18n.operation.error",
-          defaultMessage: "操作失败",
         }),
       );
     }
@@ -372,123 +341,108 @@ const ConfigI18nPage: React.FC = () => {
       });
     }
 
-    try {
-      // 发送搜索请求
-      const response = await postConfigI18NFilter({
-        filter,
-        pagination: {
-          page: current || 1,
-          pageSize: pageSize || 10,
-          all: false,
+    // 发送搜索请求
+    const response = await postConfigI18NFilter({
+      filter,
+      pagination: {
+        page: current || 1,
+        pageSize: pageSize || 10,
+        all: false,
+      },
+      sort: [
+        {
+          field: "key",
+          order: "asc",
         },
-        sort: [
-          {
-            field: "key",
-            order: "asc",
-          },
-        ],
-        verbose: true,
-      });
+      ],
+      verbose: true,
+    });
 
-      // 增强错误边界检查
-      if (!response || typeof response !== "object") {
-        console.error("API返回格式错误", response);
-        message.error("搜索失败，返回数据格式不正确");
-        return {
-          data: [],
-          success: false,
-          total: 0,
-        };
-      }
-
-      if (!response.i18n_items || !Array.isArray(response.i18n_items)) {
-        console.warn("没有找到i18n数据");
-        return {
-          data: [],
-          success: true,
-          total: 0,
-        };
-      }
-
-      // 数据转换逻辑：按key分组，将同一key的不同语言合并到一行
-      const groupedData = new Map<string, I18nDataType>();
-
-      response.i18n_items.forEach((item: API.I18nItem) => {
-        const key = item.key || "";
-
-        if (groupedData.has(key)) {
-          // 如果已经存在这个key，添加新的语言翻译
-          const existingItem = groupedData.get(key)!;
-
-          // 添加中文翻译
-          if (item.zh_cn) {
-            existingItem.translations.push({
-              lang: "zh_cn",
-              value: item.zh_cn,
-            });
-          }
-
-          // 添加英文翻译
-          if (item.en_us) {
-            existingItem.translations.push({
-              lang: "en_us",
-              value: item.en_us,
-            });
-          }
-        } else {
-          // 创建新的分组项
-          const translations = [];
-
-          // 添加中文翻译
-          if (item.zh_cn) {
-            translations.push({
-              lang: "zh_cn",
-              value: item.zh_cn,
-            });
-          }
-
-          // 添加英文翻译
-          if (item.en_us) {
-            translations.push({
-              lang: "en_us",
-              value: item.en_us,
-            });
-          }
-
-          groupedData.set(key, {
-            key: key,
-            keyValue: key,
-            description: item.description || "",
-            translations: translations,
-            createdAt: item.created_at || "",
-            updatedAt: item.updated_at || "",
-          });
-        }
-      });
-
-      const tableData: I18nDataType[] = Array.from(groupedData.values());
-
-      // 搜索结果提示
-      if (keyword && tableData.length === 0) {
-        message.info(`未找到包含 "${keyword}" 的配置信息`);
-      }
-
-      return {
-        data: tableData,
-        success: true,
-        total: response.total || tableData.length,
-      };
-    } catch (error) {
-      console.error("搜索API错误:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "搜索失败，请稍后重试";
-      message.error(errorMessage);
+    // 增强错误边界检查
+    if (!response || typeof response !== "object") {
+      console.error("API返回格式错误", response);
+      message.error("搜索失败，返回数据格式不正确");
       return {
         data: [],
         success: false,
         total: 0,
       };
     }
+
+    if (!response.i18n_items || !Array.isArray(response.i18n_items)) {
+      console.warn("没有找到i18n数据");
+      return {
+        data: [],
+        success: true,
+        total: 0,
+      };
+    }
+
+    // 数据转换逻辑：按key分组，将同一key的不同语言合并到一行
+    const groupedData = new Map<string, I18nDataType>();
+
+    response.i18n_items.forEach((item: API.I18nItem) => {
+      const key = item.key || "";
+
+      if (groupedData.has(key)) {
+        // 如果已经存在这个key，添加新的语言翻译
+        const existingItem = groupedData.get(key);
+
+        if (!existingItem) return;
+
+        // 添加中文翻译
+        if (item.zh_cn) {
+          existingItem.translations.push({
+            lang: "zh_cn",
+            value: item.zh_cn,
+          });
+        }
+
+        // 添加英文翻译
+        if (item.en_us) {
+          existingItem.translations.push({
+            lang: "en_us",
+            value: item.en_us,
+          });
+        }
+      } else {
+        // 创建新的分组项
+        const translations = [];
+
+        // 添加中文翻译
+        if (item.zh_cn) {
+          translations.push({
+            lang: "zh_cn",
+            value: item.zh_cn,
+          });
+        }
+
+        // 添加英文翻译
+        if (item.en_us) {
+          translations.push({
+            lang: "en_us",
+            value: item.en_us,
+          });
+        }
+
+        groupedData.set(key, {
+          key: key,
+          keyValue: key,
+          description: item.description || "",
+          translations: translations,
+          createdAt: item.created_at || "",
+          updatedAt: item.updated_at || "",
+        });
+      }
+    });
+
+    const tableData: I18nDataType[] = Array.from(groupedData.values());
+
+    return {
+      data: tableData,
+      success: true,
+      total: response.total || tableData.length,
+    };
   };
 
   return (
@@ -497,16 +451,15 @@ const ConfigI18nPage: React.FC = () => {
         <Title level={4}>
           {intl.formatMessage({
             id: "pages.configI18n.title",
-            defaultMessage: "国际化配置管理",
           })}
         </Title>
         <Text type="secondary">
           {intl.formatMessage({
             id: "pages.configI18n.description",
-            defaultMessage: "管理系统中的多语言翻译配置",
           })}
         </Text>
         <ProTable<I18nDataType>
+          options={false}
           columns={columns}
           rowKey={(record) => record.keyValue}
           actionRef={actionRef}
@@ -519,7 +472,6 @@ const ConfigI18nPage: React.FC = () => {
             >
               {intl.formatMessage({
                 id: "pages.configI18n.add",
-                defaultMessage: "新增配置",
               })}
             </Button>,
           ]}
@@ -539,7 +491,12 @@ const ConfigI18nPage: React.FC = () => {
             return (
               <Space size={24}>
                 <span>
-                  已选 {alertSelectedRowKeys.length} 项
+                  {intl.formatMessage(
+                    {
+                      id: "pages.configI18n.batchDelete.info",
+                    },
+                    { count: alertSelectedRowKeys.length },
+                  )}
                   <a
                     style={{ marginInlineStart: 8 }}
                     onClick={() => {
@@ -548,7 +505,9 @@ const ConfigI18nPage: React.FC = () => {
                       setSelectedRows([]);
                     }}
                   >
-                    取消选择
+                    {intl.formatMessage({
+                      id: "pages.configI18n.batchDelete.clear",
+                    })}
                   </a>
                 </span>
               </Space>
@@ -557,14 +516,27 @@ const ConfigI18nPage: React.FC = () => {
           tableAlertOptionRender={() => {
             return (
               <Space size={16}>
-                <a onClick={handleBatchDeleteClick}>批量删除</a>
+                <a onClick={handleBatchDeleteClick}>
+                  {intl.formatMessage({
+                    id: "pages.configI18n.batchDelete.delete",
+                  })}
+                </a>
               </Space>
             );
           }}
           size="middle"
           pagination={{
             showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 条数据`,
+            showTotal: (total) => {
+              return intl.formatMessage(
+                {
+                  id: "pages.configI18n.pagination.total",
+                },
+                { total },
+              );
+            },
+            defaultPageSize: 10,
+            pageSizeOptions: ["5", "10", "20", "50", "100"],
           }}
         />
       </ProCard>
@@ -575,11 +547,9 @@ const ConfigI18nPage: React.FC = () => {
           modalMode === "edit"
             ? intl.formatMessage({
                 id: "pages.configI18n.modal.edit.title",
-                defaultMessage: "编辑配置",
               })
             : intl.formatMessage({
                 id: "pages.configI18n.modal.add.title",
-                defaultMessage: "新增配置",
               })
         }
         open={modalVisible}
@@ -594,14 +564,12 @@ const ConfigI18nPage: React.FC = () => {
             name="key"
             label={intl.formatMessage({
               id: "pages.configI18n.form.key",
-              defaultMessage: "键值",
             })}
             rules={[
               {
                 required: true,
                 message: intl.formatMessage({
                   id: "pages.configI18n.form.key.required",
-                  defaultMessage: "请输入键值",
                 }),
               },
               {
@@ -618,7 +586,6 @@ const ConfigI18nPage: React.FC = () => {
               disabled={modalMode === "edit"}
               placeholder={intl.formatMessage({
                 id: "pages.configI18n.form.key.placeholder",
-                defaultMessage: "例如：navBar.title",
               })}
             />
           </Form.Item>
@@ -627,13 +594,11 @@ const ConfigI18nPage: React.FC = () => {
             name="description"
             label={intl.formatMessage({
               id: "pages.configI18n.form.description",
-              defaultMessage: "描述",
             })}
           >
             <Input.TextArea
               placeholder={intl.formatMessage({
                 id: "pages.configI18n.form.description.placeholder",
-                defaultMessage: "请输入该配置项的描述信息（可选）",
               })}
               rows={2}
             />
@@ -642,7 +607,6 @@ const ConfigI18nPage: React.FC = () => {
           <Form.Item
             label={intl.formatMessage({
               id: "pages.configI18n.form.translations",
-              defaultMessage: "各语言翻译",
             })}
           >
             <div
@@ -672,7 +636,6 @@ const ConfigI18nPage: React.FC = () => {
                       message: intl.formatMessage(
                         {
                           id: "pages.configI18n.form.translation.required",
-                          defaultMessage: "请输入 {lang} 的翻译内容",
                         },
                         { lang: item.lang },
                       ),
@@ -684,7 +647,6 @@ const ConfigI18nPage: React.FC = () => {
                     placeholder={intl.formatMessage(
                       {
                         id: "pages.configI18n.form.translation.placeholder",
-                        defaultMessage: "请输入 {lang} 的翻译内容",
                       },
                       { lang: item.lang },
                     )}
