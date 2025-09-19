@@ -16,6 +16,8 @@ import (
 	"uniauth-gf/internal/controller/hello"
 	"uniauth-gf/internal/controller/quotaPool"
 	"uniauth-gf/internal/controller/userinfos"
+	
+    "uniauth-gf/internal/middlewares"
 )
 
 var (
@@ -30,7 +32,7 @@ var (
 			}
 
 			s := g.Server()
-			s.Use(ghttp.MiddlewareHandlerResponse)
+			s.Use(middlewares.UniResMiddleware)
 			s.Group("/", func(group *ghttp.RouterGroup) {
 				group.Bind(
 					hello.NewV1(),
