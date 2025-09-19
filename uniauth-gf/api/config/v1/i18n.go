@@ -6,7 +6,7 @@ import (
 )
 
 type GetI18nConfigReq struct {
-	g.Meta `path:"/i18n/:lang" tags:"Config/I18n" method:"get" summary:"获取i18n语言包" dc:"获取指定语言的所有翻译配置"`
+	g.Meta `path:"/i18n/lang" tags:"Config/I18n" method:"get" summary:"获取i18n语言包" dc:"获取指定语言的所有翻译配置"`
 	Lang   string `json:"lang" v:"required|in:zh-CN,en-US" dc:"语言代码" example:"zh-CN"`
 }
 
