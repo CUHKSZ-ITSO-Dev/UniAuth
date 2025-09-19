@@ -7,12 +7,12 @@ declare namespace API {
   };
 
   type AddI18nItemReq = {
-    /** 语言 */
-    lang: string;
-    /** 键 */
+    /** 翻译键 */
     key: string;
-    /** 值 */
-    value: string;
+    /** 中文翻译 */
+    zh_cn?: string;
+    /** 英文翻译 */
+    en_us?: string;
     /** 描述 */
     description?: string;
   };
@@ -72,8 +72,6 @@ declare namespace API {
   type ChatPreCheckOneStopReq = {
     /** UPN */
     upn: string;
-    /** Domain */
-    Dom: string;
     /** 微服务 */
     svc: string;
     /** 产品 */
@@ -99,7 +97,7 @@ declare namespace API {
 
   type CheckAndExplainRes = {
     allow?: boolean;
-    /** 注意只有 allow = true 的时候才会返回 [4]string, 按顺序依次是 sub, dom, obj, act。 */
+    /** 注意只有 allow = true 的时候才会返回 [3]string, 按顺序依次是 sub, obj, act。 */
     reason?: string[];
   };
 
@@ -110,7 +108,7 @@ declare namespace API {
   type CheckBalanceRes = {
     ok?: boolean;
     percentage?: string;
-    nextíResetAt?: string;
+    nextResetAt?: string;
   };
 
   type CheckReq = {
@@ -146,12 +144,12 @@ declare namespace API {
   };
 
   type deleteConfigI18nParams = {
-    /** 键 */
+    /** 翻译键 */
     key: string;
   };
 
   type DeleteI18ConfigReq = {
-    /** 键 */
+    /** 翻译键 */
     key: string;
   };
 
@@ -189,12 +187,12 @@ declare namespace API {
   };
 
   type EditI18nItemReq = {
-    /** 语言 */
-    lang: string;
-    /** 键 */
+    /** 翻译键 */
     key: string;
-    /** 值 */
-    value: string;
+    /** 中文翻译 */
+    zh_cn?: string;
+    /** 英文翻译 */
+    en_us?: string;
     /** 描述 */
     description?: string;
   };
@@ -296,25 +294,25 @@ declare namespace API {
     sort?: I18nSortCondition[];
     /** 分页参数，支持分页或查询全部 */
     pagination?: I18nPaginationReq;
-    /** 是否返回详细i18n信息，false时仅返回键值对 */
+    /** 是否返回详细i18n信息，false时仅返回键列表 */
     verbose?: boolean;
   };
 
   type FilterI18nRes = {
     /** i18n键列表 */
-    i18nKeys?: string[];
+    i18n_keys?: string[];
     /** 详细i18n信息（verbose=true时返回） */
-    i18nItems?: I18nItem[];
+    i18n_items?: I18nItem[];
     /** 总记录数 */
     total?: number;
     /** 当前页码 */
     page?: number;
     /** 每页条数 */
-    pageSize?: number;
+    page_size?: number;
     /** 总页数 */
-    totalPages?: number;
+    total_pages?: number;
     /** 是否为全部数据查询 */
-    isAll?: boolean;
+    is_all?: boolean;
   };
 
   type FilterPoliciesReq = {
@@ -365,17 +363,10 @@ declare namespace API {
     actions?: string[];
   };
 
-  type GetAllDomainsReq = {};
-
-  type GetAllDomainsRes = {
-    /** Domains */
-    domains?: string[];
-  };
-
   type GetAllLangsReq = {};
 
   type GetAllLangsRes = {
-    /** 语言列表 */
+    /** 语言代码列表 */
     langs?: string[];
   };
 
@@ -482,17 +473,18 @@ declare namespace API {
   };
 
   type getConfigI18nLangParams = {
-    /** 语言 */
-    lang: string;
+    /** 语言代码 */
+    lang: "zh-CN" | "en-US";
   };
 
   type GetI18nConfigReq = {
-    /** 语言 */
-    lang: string;
+    /** 语言代码 */
+    lang: "zh-CN" | "en-US";
   };
 
   type GetI18nConfigRes = {
-    Config?: Json;
+    /** 语言包键值对，支持嵌套结构 */
+    langpack?: Json;
   };
 
   type GetModelConfigReq = {};
@@ -607,18 +599,18 @@ declare namespace API {
   };
 
   type I18nItem = {
-    /** 语言代码 */
-    langCode?: string;
-    /** 键 */
+    /** 翻译键 */
     key?: string;
-    /** 值 */
-    value?: string;
+    /** 中文翻译 */
+    zh_cn?: string;
+    /** 英文翻译 */
+    en_us?: string;
     /** 描述 */
     description?: string;
     /** 创建时间 */
-    createdAt?: string;
+    created_at?: string;
     /** 更新时间 */
-    updatedAt?: string;
+    updated_at?: string;
   };
 
   type I18nPaginationReq = {
