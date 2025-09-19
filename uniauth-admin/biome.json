@@ -42,7 +42,7 @@
   "javascript": {
     "jsxRuntime": "reactClassic",
     "formatter": {
-      "quoteStyle": "single"
+      "quoteStyle": "double"
     }
   }
 }
