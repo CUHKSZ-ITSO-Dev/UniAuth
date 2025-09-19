@@ -361,16 +361,15 @@ const ConfigI18nPage: React.FC = () => {
     };
 
     if (keyword) {
-      // 搜索字段：键值、语言、翻译内容、描述
-      const searchFields = ["key", "langCode", "value", "description"];
+      // 搜索字段：键值、翻译内容、描述
+      const searchFields = ["key", "zhCn", "enUs", "description"];
       searchFields.forEach((field) => {
         filter.conditions?.push({
           field,
-          op: "like",
-          value: `%${keyword}%`,
+          op: "contains",
+          value: `${keyword}`,
         });
       });
-      console.log("构建的搜索条件:", filter);
     }
 
     try {
@@ -390,8 +389,6 @@ const ConfigI18nPage: React.FC = () => {
         ],
         verbose: true,
       });
-
-      console.log("API响应数据:", response);
 
       // 增强错误边界检查
       if (!response || typeof response !== "object") {
@@ -691,7 +688,7 @@ const ConfigI18nPage: React.FC = () => {
                       },
                       { lang: item.lang },
                     )}
-                    rows={2}
+                    rows={1}
                   />
                 </Form.Item>
               ))}
