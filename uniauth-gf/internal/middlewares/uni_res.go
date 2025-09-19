@@ -32,7 +32,7 @@ func UniResMiddleware(r *ghttp.Request) {
 	r.Middleware.Next()
 
 	// 如果 Response 已经被认为修改，则直接返回不做处理
-	if r.Response.BufferLength() > 0 || r.Response.Writer.BytesWritten() > 0 {
+	if r.Response.BufferLength() > 0 || r.Response.BytesWritten() > 0 {
 		return
 	}
 
