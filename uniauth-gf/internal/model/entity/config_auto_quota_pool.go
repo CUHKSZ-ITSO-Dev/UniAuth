@@ -1,5 +1,5 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 00:51:49
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 22:47:28
 // =================================================================================
 
 package entity
@@ -17,8 +17,9 @@ type ConfigAutoQuotaPool struct {
 	Description     string          `json:"description"     orm:"description"       description:"规则说明"`         // 规则说明
 	CronCycle       string          `json:"cronCycle"       orm:"cron_cycle"        description:"刷新周期"`         // 刷新周期
 	RegularQuota    decimal.Decimal `json:"regularQuota"    orm:"regular_quota"     description:"定期配额"`         // 定期配额
-	Enabled         bool            `json:"enabled"         orm:"enabled"           description:"是否启用该规则"`      // 是否启用该规则
+	Enabled         bool            `json:"enabled"         orm:"enabled"           description:"是否启用该配额池"`     // 是否启用该配额池
 	FilterGroup     *gjson.Json     `json:"filterGroup"     orm:"filter_group"      description:"过滤条件组"`        // 过滤条件组
+	UpnsCache       *gjson.Json     `json:"upnsCache"       orm:"upns_cache"        description:"UPN缓存列表"`      // UPN缓存列表
 	Priority        int             `json:"priority"        orm:"priority"          description:"优先级，数值越小优先匹配"` // 优先级，数值越小优先匹配
 	LastEvaluatedAt *gtime.Time     `json:"lastEvaluatedAt" orm:"last_evaluated_at" description:"该规则上次评估时间"`    // 该规则上次评估时间
 	CreatedAt       *gtime.Time     `json:"createdAt"       orm:"created_at"        description:"创建时间"`         // 创建时间

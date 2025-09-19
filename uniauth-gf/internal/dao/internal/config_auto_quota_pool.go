@@ -1,5 +1,5 @@
 // ==========================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 00:51:49
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 22:47:28
 // ==========================================================================
 
 package internal
@@ -26,8 +26,9 @@ type ConfigAutoQuotaPoolColumns struct {
 	Description     string // 规则说明
 	CronCycle       string // 刷新周期
 	RegularQuota    string // 定期配额
-	Enabled         string // 是否启用该规则
+	Enabled         string // 是否启用该配额池
 	FilterGroup     string // 过滤条件组
+	UpnsCache       string // UPN缓存列表
 	Priority        string // 优先级，数值越小优先匹配
 	LastEvaluatedAt string // 该规则上次评估时间
 	CreatedAt       string // 创建时间
@@ -43,6 +44,7 @@ var configAutoQuotaPoolColumns = ConfigAutoQuotaPoolColumns{
 	RegularQuota:    "regular_quota",
 	Enabled:         "enabled",
 	FilterGroup:     "filter_group",
+	UpnsCache:       "upns_cache",
 	Priority:        "priority",
 	LastEvaluatedAt: "last_evaluated_at",
 	CreatedAt:       "created_at",

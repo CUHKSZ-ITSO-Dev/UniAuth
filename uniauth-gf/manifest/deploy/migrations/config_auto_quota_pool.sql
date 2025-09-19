@@ -6,7 +6,7 @@ CREATE TABLE config_auto_quota_pool (
     regular_quota NUMERIC(25, 10) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     filter_group JSONB NULL,
-    upns_cache TEXT[] NULL,
+    upns_cache JSONB NULL,
     priority INTEGER NOT NULL DEFAULT 100,
     last_evaluated_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -16,7 +16,7 @@ CREATE TABLE config_auto_quota_pool (
 -- 规则表索引
 CREATE INDEX idx_config_auto_quota_pool_enabled ON config_auto_quota_pool(enabled);
 CREATE INDEX idx_config_auto_quota_pool_priority ON config_auto_quota_pool(priority);
-CREATE INDEX idx_config_auto_quota_pool_upns_cache ON config_auto_quota_pool(upns_cache);
+CREATE INDEX idx_config_auto_quota_pool_upns_cache ON config_auto_quota_pool USING GIN (upns_cache);
 
 -- 规则表注释
 COMMENT ON TABLE config_auto_quota_pool IS '自动配额池规则：定义规则基本信息和目标配额池';
