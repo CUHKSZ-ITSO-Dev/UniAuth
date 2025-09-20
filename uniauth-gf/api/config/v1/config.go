@@ -21,13 +21,13 @@ type GetModelConfigRes struct {
 
 type AddModelConfigReq struct {
 	g.Meta       `path:"/model" tags:"Config/Model" method:"post" summary:"添加模型配置"`
-	ApproachName string          `json:"approachName" v:"required" dc:"模型名称（唯一）"`
-	Pricing      *gjson.Json     `json:"pricing" dc:"定价配置（JSON）"`
-	Discount     decimal.Decimal `json:"discount" dc:"折扣（0-1 之间的小数）"`
-	ClientType   string          `json:"clientType" dc:"客户端类型（如：web、ios、android、server 等）"`
-	ClientArgs   *gjson.Json     `json:"clientArgs" dc:"客户端参数（JSON）"`
-	RequestArgs  *gjson.Json     `json:"requestArgs" dc:"请求参数（JSON）"`
-	Servicewares []string        `json:"servicewares" dc:"服务项标识"`
+	ApproachName string           `json:"approachName" v:"required" dc:"模型名称"`
+	Pricing      *gjson.Json      `json:"pricing" dc:"定价配置"`
+	Discount     *decimal.Decimal `json:"discount" dc:"折扣"`
+	ClientType   *string          `json:"clientType" dc:"客户端类型"`
+	ClientArgs   *gjson.Json      `json:"clientArgs" dc:"客户端参数"`
+	RequestArgs  *gjson.Json      `json:"requestArgs" dc:"请求参数"`
+	Servicewares []string         `json:"servicewares" dc:"服务项标识"`
 }
 type AddModelConfigRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
@@ -35,13 +35,13 @@ type AddModelConfigRes struct {
 
 type EditModelConfigReq struct {
 	g.Meta       `path:"/model" tags:"Config/Model" method:"put" summary:"编辑模型配置" dc:"编辑模型配置。"`
-	ApproachName string          `json:"approachName" v:"required" dc:"模型名称（作为定位键）"`
-	Pricing      *gjson.Json     `json:"pricing" dc:"定价配置（JSON）"`
-	Discount     decimal.Decimal `json:"discount" dc:"折扣（0-1 之间的小数）"`
-	ClientType   string          `json:"clientType" dc:"客户端类型（如：web、ios、android、server 等）"`
-	ClientArgs   *gjson.Json     `json:"clientArgs" dc:"客户端参数（JSON）"`
-	RequestArgs  *gjson.Json     `json:"requestArgs" dc:"请求参数（JSON）"`
-	Servicewares []string        `json:"servicewares" dc:"服务项标识"`
+	ApproachName string           `json:"approachName" v:"required" dc:"模型名称"`
+	Pricing      *gjson.Json      `json:"pricing" dc:"定价配置"`
+	Discount     *decimal.Decimal `json:"discount" dc:"折扣"`
+	ClientType   *string          `json:"clientType" dc:"客户端类型"`
+	ClientArgs   *gjson.Json      `json:"clientArgs" dc:"客户端参数"`
+	RequestArgs  *gjson.Json      `json:"requestArgs" dc:"请求参数"`
+	Servicewares []string         `json:"servicewares" dc:"服务项标识"`
 }
 type EditModelConfigRes struct {
 	OK bool `json:"ok" dc:"是否成功"`

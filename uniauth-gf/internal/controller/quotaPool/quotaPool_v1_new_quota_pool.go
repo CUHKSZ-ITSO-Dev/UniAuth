@@ -23,13 +23,6 @@ func (c *ControllerV1) NewQuotaPool(ctx context.Context, req *v1.NewQuotaPoolReq
 	}
 
 	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := dao.QuotapoolQuotaPool.Ctx(ctx).
-			Where("quota_pool_name = ?", req.QuotaPoolName).
-			LockUpdate().
-			Count()
-		if err != nil {
-			return gerror.Wrap(err, "检查配额池是否已存在失败")
-		}
 
 		now := gtime.Now()
 		data := &entity.QuotapoolQuotaPool{
@@ -50,6 +43,7 @@ func (c *ControllerV1) NewQuotaPool(ctx context.Context, req *v1.NewQuotaPoolReq
 		return nil
 	})
 	if err != nil {
+		err = gerror.Wrap(err, "创建配额池失败")
 		return
 	}
 	res.OK = true

@@ -32,6 +32,7 @@ func (c *ControllerV1) DeleteAutoQuotaPoolConfig(ctx context.Context, req *v1.De
 		return nil
 	})
 	if err != nil {
+		err = gerror.Wrap(err, "删除自动配额池规则失败")
 		return
 	}
 

@@ -56,6 +56,7 @@ func (c *ControllerV1) AddAutoQuotaPoolConfig(ctx context.Context, req *v1.AddAu
 		return nil
 	})
 	if err != nil {
+		err = gerror.Wrap(err, "新增自动配额池规则失败")
 		return
 	}
 

@@ -1,11 +1,11 @@
 CREATE TABLE config_single_model_approach (
     approach_name VARCHAR(255) PRIMARY KEY,
     pricing JSONB,
-    discount NUMERIC(25, 10),
+    discount NUMERIC(25, 10) NULL,
     client_type VARCHAR(255),
-    client_args JSONB,
-    request_args JSONB,
-    servicewares VARCHAR(255)[],
+    client_args JSONB NULL,
+    request_args JSONB NULL,
+    servicewares VARCHAR(255)[] NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
