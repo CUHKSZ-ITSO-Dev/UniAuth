@@ -1,5 +1,9 @@
 {
-  "**/*.{js,jsx,tsx,ts,md,css,less,json}": [
-    "npx @biomejs/biome check --write"
+  "**/*.{js,jsx,tsx,ts}": [
+    "pnpm run lint",
+    "pnpm run biome:staged"
+  ],
+  "**/*.{md,css,less,json}": [
+    "pnpm run biome:staged"
   ]
 }

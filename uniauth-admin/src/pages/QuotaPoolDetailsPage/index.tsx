@@ -1,9 +1,9 @@
 import {
   GridContent,
   PageContainer,
-  ProColumns,
   ProTable,
   RouteContext,
+  type ProColumns,
 } from "@ant-design/pro-components";
 import {
   Badge,
@@ -193,9 +193,9 @@ const QuotaPoolDetailsPage: FC = () => {
     },
   ];
 
-  const itToolsRulesDataRequest = async (params: any) => {
+  const itToolsRulesDataRequest = async (_params: any) => {
     // TODO: 替换为实际请求
-    let example_data = [
+    const example_data = [
       {
         id: 1,
         sub: "alice",
@@ -243,7 +243,7 @@ const QuotaPoolDetailsPage: FC = () => {
 
   const action = (
     <RouteContext.Consumer>
-      {({ isMobile }) => {
+      {() => {
         return (
           <Space>
             <Button type="primary">重置配额池</Button>
