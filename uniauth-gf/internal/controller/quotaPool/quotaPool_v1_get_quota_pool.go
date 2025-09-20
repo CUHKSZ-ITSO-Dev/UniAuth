@@ -10,18 +10,11 @@ import (
 )
 
 func (c *ControllerV1) GetQuotaPool(ctx context.Context, req *v1.GetQuotaPoolReq) (res *v1.GetQuotaPoolRes, err error) {
-	res = &v1.GetQuotaPoolRes{}
-	var items []v1.QuotaPoolItem
-	mdl := dao.QuotapoolQuotaPool.Ctx(ctx)
-	if req.QuotaPoolName != "" {
-		mdl = mdl.Where("quota_pool_name = ?", req.QuotaPoolName)
+	res = &v1.GetQuotaPoolRes{
+		Items: []v1.QuotaPoolItem{},
 	}
-	err = mdl.Scan(&items)
-	if err != nil {
-		err = gerror.Wrap(err, "查询配额池失败")
-		return
+	if err := dao.QuotapoolQuotaPool.Ctx(ctx).OmitEmpty().Where("quota_pool_name = ?", req.QuotaPoolName).Scan(&res.Items); err != nil {
+		return nil, gerror.Wrap(err, "查询配额池失败")
 	}
-	res.Items = make([]v1.QuotaPoolItem, 0, len(items))
-	res.Items = append(res.Items, items...)
 	return
 }
