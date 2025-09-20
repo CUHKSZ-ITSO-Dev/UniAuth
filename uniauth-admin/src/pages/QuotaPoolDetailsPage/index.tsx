@@ -1,25 +1,34 @@
 import {
   GridContent,
   PageContainer,
+  type ProColumns,
   ProTable,
   RouteContext,
-  type ProColumns,
 } from "@ant-design/pro-components";
 import {
   Badge,
   Button,
   Card,
   Descriptions,
+  Progress,
   Space,
   Statistic,
-  Progress,
 } from "antd";
 
 import type { FC } from "react";
+import { useState } from "react";
 import useStyles from "./style.style";
 
 const QuotaPoolDetailsPage: FC = () => {
   const { styles } = useStyles();
+
+  // Tab 状态管理
+  const [activeTabKey, setActiveTabKey] = useState("config_detail");
+
+  // Tab 切换处理函数
+  const handleTabChange = (key: string) => {
+    setActiveTabKey(key);
+  };
 
   const associatedUsersColumns: ProColumns<any>[] = [
     {
@@ -118,22 +127,22 @@ const QuotaPoolDetailsPage: FC = () => {
 
     if (params.upn) {
       example_data = example_data.filter((item) =>
-        item.upn.includes(params.upn as string)
+        item.upn.includes(params.upn as string),
       );
     }
     if (params.displayName) {
       example_data = example_data.filter((item) =>
-        item.displayName.includes(params.displayName as string)
+        item.displayName.includes(params.displayName as string),
       );
     }
     if (params.identity) {
       example_data = example_data.filter((item) =>
-        item.identity.includes(params.identity as string)
+        item.identity.includes(params.identity as string),
       );
     }
     if (params.department) {
       example_data = example_data.filter((item) =>
-        item.department.includes(params.department as string)
+        item.department.includes(params.department as string),
       );
     }
 
@@ -251,11 +260,9 @@ const QuotaPoolDetailsPage: FC = () => {
     };
   };
 
-
-
   const itToolsRulesDataRequest = async (params: any) => {
     // TODO: 替换为实际请求
-    let example_data = [
+    const example_data = [
       {
         id: 1,
         ruleName: "允许访问ITTools",
@@ -320,7 +327,132 @@ const QuotaPoolDetailsPage: FC = () => {
     console.log("查看用户详情", record);
   };
 
+  // 配置详情 tab
+  const renderConfigDetailContent = () => (
+    <GridContent>
+      <Card
+        title="详细信息"
+        style={{
+          marginBottom: 24,
+        }}
+        variant="borderless"
+      >
+        <Descriptions
+          style={{
+            marginBottom: 24,
+          }}
+        >
+          <Descriptions.Item label="配额池名称">
+            example@cuhk.edu.cn
+          </Descriptions.Item>
+          <Descriptions.Item label="刷新周期">每周</Descriptions.Item>
+          <Descriptions.Item label="上次刷新时间">
+            2025-8-29 19:30:00
+          </Descriptions.Item>
+          <Descriptions.Item label="定期配额">$648.00</Descriptions.Item>
+          <Descriptions.Item label="剩余配额">$328.00</Descriptions.Item>
 
+          <Descriptions.Item label="加油包">$168.00</Descriptions.Item>
+          <Descriptions.Item label="余额百分比">
+            <Progress
+              percent={Number((((328 + 168) / (648 + 168)) * 100).toFixed(1))}
+              success={{
+                percent: Number(((328 / (648 + 168)) * 100).toFixed(1)),
+              }}
+            />
+          </Descriptions.Item>
+        </Descriptions>
+      </Card>
+      <Card
+        title="配额池关联用户"
+        style={{
+          marginBottom: 24,
+        }}
+        variant="borderless"
+      >
+        <ProTable
+          columns={associatedUsersColumns}
+          rowKey="upn"
+          search={{ labelWidth: "auto" }}
+          pagination={{ pageSize: 5 }}
+          request={associatedUsersDataRequest}
+        />
+      </Card>
+      <Card
+        title="配额池权限规则"
+        style={{
+          marginBottom: 24,
+        }}
+        variant="borderless"
+      >
+        <ProTable
+          columns={quotaPoolRulesColumns}
+          rowKey="id"
+          search={false}
+          pagination={{ pageSize: 5 }}
+          request={quotaPoolRulesDataRequest}
+        />
+      </Card>
+      <Card
+        title="配额池ITTools规则"
+        style={{
+          marginBottom: 24,
+        }}
+        variant="borderless"
+      >
+        <ProTable
+          columns={itToolsRulesColumns}
+          rowKey="id"
+          search={false}
+          pagination={{ pageSize: 5 }}
+          request={itToolsRulesDataRequest}
+        />
+      </Card>
+    </GridContent>
+  );
+
+  // 账单详情 tab
+  const renderBillDetailContent = () => (
+    <GridContent>
+      <Card
+        title="账单概览"
+        style={{
+          marginBottom: 24,
+        }}
+        variant="borderless"
+      >
+        <Descriptions>
+          <Descriptions.Item label="本月消费">$120.00</Descriptions.Item>
+          <Descriptions.Item label="上月消费">$98.50</Descriptions.Item>
+          <Descriptions.Item label="累计消费">$1,256.30</Descriptions.Item>
+          <Descriptions.Item label="平均日消费">$4.00</Descriptions.Item>
+        </Descriptions>
+      </Card>
+      <Card
+        title="消费明细"
+        style={{
+          marginBottom: 24,
+        }}
+        variant="borderless"
+      >
+        <div style={{ textAlign: "center", padding: "50px" }}>
+          <p>账单详情功能开发中...</p>
+        </div>
+      </Card>
+    </GridContent>
+  );
+
+  // 根据当前激活的 tab 渲染对应内容
+  const renderTabContent = () => {
+    switch (activeTabKey) {
+      case "config_detail":
+        return renderConfigDetailContent();
+      case "bill_detail":
+        return renderBillDetailContent();
+      default:
+        return renderConfigDetailContent();
+    }
+  };
 
   return (
     <PageContainer
@@ -339,91 +471,10 @@ const QuotaPoolDetailsPage: FC = () => {
           tab: "账单详情",
         },
       ]}
+      tabActiveKey={activeTabKey}
+      onTabChange={handleTabChange}
     >
-      <div className={styles.main}>
-        <GridContent>
-          <Card
-            title="详细信息"
-            style={{
-              marginBottom: 24,
-            }}
-            variant="borderless"
-          >
-            <Descriptions
-              style={{
-                marginBottom: 24,
-              }}
-            >
-              <Descriptions.Item label="配额池名称">
-                example@cuhk.edu.cn
-              </Descriptions.Item>
-              <Descriptions.Item label="刷新周期">每周</Descriptions.Item>
-              <Descriptions.Item label="上次刷新时间">
-                2025-8-29 19:30:00
-              </Descriptions.Item>
-              <Descriptions.Item label="定期配额">$648.00</Descriptions.Item>
-              <Descriptions.Item label="剩余配额">$328.00</Descriptions.Item>
-
-              <Descriptions.Item label="加油包">$168.00</Descriptions.Item>
-              <Descriptions.Item label="余额百分比">
-                <Progress
-                  percent={Number(
-                    (((328 + 168) / (648 + 168)) * 100).toFixed(1)
-                  )}
-                  success={{
-                    percent: Number(((328 / (648 + 168)) * 100).toFixed(1)),
-                  }}
-                />
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
-          <Card
-            title="配额池关联用户"
-            style={{
-              marginBottom: 24,
-            }}
-            variant="borderless"
-          >
-            <ProTable
-              columns={associatedUsersColumns}
-              rowKey="upn"
-              search={{ labelWidth: "auto" }}
-              pagination={{ pageSize: 5 }}
-              request={associatedUsersDataRequest}
-            />
-          </Card>
-          <Card
-            title="配额池权限规则"
-            style={{
-              marginBottom: 24,
-            }}
-            variant="borderless"
-          >
-            <ProTable
-              columns={quotaPoolRulesColumns}
-              rowKey="id"
-              search={false}
-              pagination={{ pageSize: 5 }}
-              request={quotaPoolRulesDataRequest}
-            />
-          </Card>
-          <Card
-            title="配额池ITTools规则"
-            style={{
-              marginBottom: 24,
-            }}
-            variant="borderless"
-          >
-            <ProTable
-              columns={itToolsRulesColumns}
-              rowKey="id"
-              search={false}
-              pagination={{ pageSize: 5 }}
-              request={itToolsRulesDataRequest}
-            />
-          </Card>
-        </GridContent>
-      </div>
+      <div className={styles.main}>{renderTabContent()}</div>
     </PageContainer>
   );
 };
