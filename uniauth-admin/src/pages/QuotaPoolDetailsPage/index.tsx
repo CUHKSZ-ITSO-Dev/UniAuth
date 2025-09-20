@@ -193,7 +193,17 @@ const QuotaPoolDetailsPage: FC = () => {
     },
   ];
 
-  const itToolsRulesDataRequest = async (_params: any) => {
+  const itToolsRulesColumns: ProColumns<any>[] = [
+    {
+      title: "规则名称",
+      dataIndex: "ruleName",
+      valueType: "text",
+      ellipsis: true,
+      search: true,
+    },
+  ];
+
+  const quotaPoolRulesDataRequest = async (_params: any) => {
     // TODO: 替换为实际请求
     const example_data = [
       {
@@ -240,6 +250,9 @@ const QuotaPoolDetailsPage: FC = () => {
       total: 2,
     };
   };
+
+
+
   const itToolsRulesDataRequest = async (params: any) => {
     // TODO: 替换为实际请求
     let example_data = [
@@ -306,6 +319,8 @@ const QuotaPoolDetailsPage: FC = () => {
     // TODO: 跳转展示用户详情页
     console.log("查看用户详情", record);
   };
+
+
 
   return (
     <PageContainer
