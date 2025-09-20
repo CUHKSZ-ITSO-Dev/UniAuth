@@ -342,42 +342,42 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         >
           <Form.Item
             name="ruleName"
-            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.ruleName' })}
-            rules={[{ required: true, message: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.ruleNameRequired' }) }]}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.ruleName' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.ruleNameRequired' }) }]}
           >
-            <Input placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.ruleNamePlaceholder' })} disabled={!!editingRecord} />
+            <Input placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.ruleNamePlaceholder' })} disabled={!!editingRecord} />
           </Form.Item>
           
           <Form.Item
             name="description"
-            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.description' })}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.description' })}
           >
-            <Input placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.descriptionPlaceholder' })} />
+            <Input placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.descriptionPlaceholder' })} />
           </Form.Item>
           
           <Form.Item
             name="cronCycle"
-            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.cronCycle' })}
-            rules={[{ required: true, message: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.cronCycleRequired' }) }]}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.cronCycle' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.cronCycleRequired' }) }]}
           >
-            <Input placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.cronCyclePlaceholder' })} />
+            <Input placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.cronCyclePlaceholder' })} />
           </Form.Item>
           
           <Form.Item
             name="regularQuota"
-            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.regularQuota' })}
-            rules={[{ required: true, message: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.regularQuotaRequired' }) }]}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.regularQuota' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.regularQuotaRequired' }) }]}
           >
             <InputNumber 
               style={{ width: '100%' }}
-              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.regularQuotaPlaceholder' })}
+              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.regularQuotaPlaceholder' })}
               min={0}
             />
           </Form.Item>
           
           <Form.Item
             name="enabled"
-            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.enabled' })}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.enabled' })}
             valuePropName="checked"
           >
             <Switch />
@@ -385,18 +385,18 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           
           <Form.Item
             name="priority"
-            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.priority' })}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.priority' })}
           >
             <InputNumber 
               style={{ width: '100%' }}
-              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.priorityPlaceholder' })}
+              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.priorityPlaceholder' })}
               min={0}
             />
           </Form.Item>
           
           <Form.Item
             name="filterGroup"
-            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.filterGroup' })}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.filterGroup' })}
             rules={[
               {
                 validator: (_, value) => {
@@ -405,7 +405,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                     JSON.parse(value);
                     return Promise.resolve();
                   } catch (e) {
-                    return Promise.reject(new Error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.jsonInvalid' })));
+                    return Promise.reject(new Error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.jsonInvalid' })));
                   }
                 },
               },
@@ -413,13 +413,13 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           >
             <Input.TextArea
               rows={4}
-              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.filterGroupPlaceholder' })}
+              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.filterGroupPlaceholder' })}
             />
           </Form.Item>
           
           <Form.Item
             name="upnsCache"
-            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.upnsCache' })}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.upnsCache' })}
             rules={[
               {
                 validator: (_, value) => {
@@ -428,7 +428,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                     JSON.parse(value);
                     return Promise.resolve();
                   } catch (e) {
-                    return Promise.reject(new Error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.jsonInvalid' })));
+                    return Promise.reject(new Error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.jsonInvalid' })));
                   }
                 },
               },
@@ -436,7 +436,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           >
             <Input.TextArea
               rows={4}
-              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.upnsCachePlaceholder' })}
+              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.upnsCachePlaceholder' })}
             />
           </Form.Item>
         </Form>

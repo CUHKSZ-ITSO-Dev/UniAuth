@@ -1,6 +1,6 @@
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
-import { Typography, Button, Popconfirm, Table, Space, message, Modal, Form, Input, Select } from "antd";
+import { Typography, Button, Popconfirm, Table, Space, message, Modal, Form, Input  } from "antd";
 import { useRef, useState } from "react";
 import { useIntl } from '@umijs/max';
 import {
@@ -12,7 +12,6 @@ import {
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
-const { Option } = Select;
 
 const ModelConfigPage: React.FC = () => {
   const actionRef = useRef<ActionType | null>(null);
