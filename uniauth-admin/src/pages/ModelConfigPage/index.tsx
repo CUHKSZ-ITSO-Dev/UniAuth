@@ -73,7 +73,7 @@ const ModelConfigPage: React.FC = () => {
 					return JSON.parse(field);
 				} catch (e) {
 					console.error('JSON解析失败:', e);
-					message.error(intl.formatMessage({ id: 'pages.modelConfig.form.jsonInvalid' }));
+					message.error(intl.formatMessage({ id: 'pages.modelConfig.jsonInvalid' }));
 					throw e;
 				}
 			};
@@ -85,10 +85,10 @@ const ModelConfigPage: React.FC = () => {
 			};
 
 			// 处理折扣字段
-			const processDiscount = (field: string): number | null => {
-				if (!field) return null;
+			const processDiscount = (field: string): number => {
+				if (!field) return 0;
 				const num = parseFloat(field);
-				return isNaN(num) ? null : num;
+				return isNaN(num) ? 0 : num;
 			};
 
 			// 处理JSON字段
@@ -131,14 +131,14 @@ const ModelConfigPage: React.FC = () => {
 
 			if (response.items) {
 				// 根据查询参数过滤数据
-			let data = response.items || [];
+				let data = response.items || [];
 
-			// 模型名称过滤
-			if (params.approachName) {
-				data = data.filter((item: API.ModelConfigItem) =>
-					item.approachName && item.approachName.includes(params.approachName)
-				);
-			}
+				// 模型名称过滤
+				if (params.approachName) {
+					data = data.filter((item: API.ModelConfigItem) =>
+						item.approachName && item.approachName.includes(params.approachName)
+					);
+				}
 
 				return {
 					data,
@@ -371,66 +371,66 @@ const ModelConfigPage: React.FC = () => {
 				>
 					<Form.Item
 						name="approachName"
-						label={intl.formatMessage({ id: 'pages.modelConfig.form.approachName' })}
-						rules={[{ required: true, message: intl.formatMessage({ id: 'pages.modelConfig.form.approachNameRequired' }) }]}
+						label={intl.formatMessage({ id: 'pages.modelConfig.approachName' })}
+						rules={[{ required: true, message: intl.formatMessage({ id: 'pages.modelConfig.approachNameRequired' }) }]}
 					>
-						<Input placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.approachNamePlaceholder' })} disabled={!!editingRecord} />
+						<Input placeholder={intl.formatMessage({ id: 'pages.modelConfig.approachNamePlaceholder' })} disabled={!!editingRecord} />
 					</Form.Item>
 
 					<Form.Item
 						name="clientType"
-						label={intl.formatMessage({ id: 'pages.modelConfig.form.clientType' })}
+						label={intl.formatMessage({ id: 'pages.modelConfig.clientType' })}
 					>
-						<Input placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.clientTypePlaceholder' })} />
+						<Input placeholder={intl.formatMessage({ id: 'pages.modelConfig.clientTypePlaceholder' })} />
 					</Form.Item>
 
 					<Form.Item
 						name="discount"
-						label={intl.formatMessage({ id: 'pages.modelConfig.form.discount' })}
+						label={intl.formatMessage({ id: 'pages.modelConfig.discount' })}
 					>
 						<Input
 							type="number"
 							min="0"
 							max="1"
 							step="0.01"
-							placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.discountPlaceholder' })}
+							placeholder={intl.formatMessage({ id: 'pages.modelConfig.discountPlaceholder' })}
 						/>
 					</Form.Item>
 
 					<Form.Item
 						name="servicewares"
-						label={intl.formatMessage({ id: 'pages.modelConfig.form.servicewares' })}
+						label={intl.formatMessage({ id: 'pages.modelConfig.servicewares' })}
 					>
-						<Input placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.servicewaresPlaceholder' })} />
+						<Input placeholder={intl.formatMessage({ id: 'pages.modelConfig.servicewaresPlaceholder' })} />
 					</Form.Item>
 
 					<Form.Item
 						name="pricing"
-						label={intl.formatMessage({ id: 'pages.modelConfig.form.pricing' })}
+						label={intl.formatMessage({ id: 'pages.modelConfig.pricing' })}
 					>
 						<TextArea
 							rows={4}
-							placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.pricingPlaceholder' })}
+							placeholder={intl.formatMessage({ id: 'pages.modelConfig.pricingPlaceholder' })}
 						/>
 					</Form.Item>
 
 					<Form.Item
 						name="clientArgs"
-						label={intl.formatMessage({ id: 'pages.modelConfig.form.clientArgs' })}
+						label={intl.formatMessage({ id: 'pages.modelConfig.clientArgs' })}
 					>
 						<TextArea
 							rows={4}
-							placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.clientArgsPlaceholder' })}
+							placeholder={intl.formatMessage({ id: 'pages.modelConfig.clientArgsPlaceholder' })}
 						/>
 					</Form.Item>
 
 					<Form.Item
 						name="requestArgs"
-						label={intl.formatMessage({ id: 'pages.modelConfig.form.requestArgs' })}
+						label={intl.formatMessage({ id: 'pages.modelConfig.requestArgs' })}
 					>
 						<TextArea
 							rows={4}
-							placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.requestArgsPlaceholder' })}
+							placeholder={intl.formatMessage({ id: 'pages.modelConfig.requestArgsPlaceholder' })}
 						/>
 					</Form.Item>
 				</Form>
