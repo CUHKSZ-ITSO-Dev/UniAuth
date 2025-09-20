@@ -24,7 +24,7 @@ type EditAutoQuotaPoolConfigReq struct {
 	// 规则名称（唯一，作为定位要编辑的规则）
 	RuleName string `json:"ruleName" v:"required" dc:"规则名称（唯一）" example:"assign-student-daily"`
 	// 刷新周期（标准 Cron 表达式，支持 6 字段）
-	CronCycle string `json:"cronCycle" v:"required" dc:"刷新周期，Cron 表达式" example:"0 0 3 * * *"`
+	CronCycle string `json:"cronCycle" v:"required" dc:"刷新周期，Cron 表达式" example:"0 0 3 * *"`
 	// 定期配额（每周期重置）
 	RegularQuota decimal.Decimal `json:"regularQuota" v:"required" dc:"定期配额（每周期重置）" example:"1000"`
 	// 是否启用该配额池
@@ -54,7 +54,7 @@ type AddAutoQuotaPoolConfigReq struct {
 	// 规则名称（唯一）
 	RuleName string `json:"ruleName" v:"required" dc:"规则名称（唯一）" example:"assign-student-daily"`
 	// 刷新周期（标准 Cron 表达式，支持 6 字段）
-	CronCycle string `json:"cronCycle" v:"required" dc:"刷新周期，Cron 表达式" example:"0 0 3 * * *"`
+	CronCycle string `json:"cronCycle" v:"required" dc:"刷新周期，Cron 表达式" example:"0 0 3 * *"`
 	// 定期配额（每周期重置）
 	RegularQuota decimal.Decimal `json:"regularQuota" v:"required" dc:"定期配额（每周期重置）" example:"1000"`
 	// 是否启用该规则

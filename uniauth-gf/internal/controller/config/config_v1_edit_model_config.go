@@ -16,7 +16,7 @@ func (c *ControllerV1) EditModelConfig(ctx context.Context, req *v1.EditModelCon
 	res = &v1.EditModelConfigRes{}
 
 	err = dao.ConfigSingleModelApproach.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		cnt, err := dao.ConfigSingleModelApproach.Ctx(ctx).
+		_, err := dao.ConfigSingleModelApproach.Ctx(ctx).
 			Where("approach_name = ?", req.ApproachName).
 			LockUpdate().
 			Count()

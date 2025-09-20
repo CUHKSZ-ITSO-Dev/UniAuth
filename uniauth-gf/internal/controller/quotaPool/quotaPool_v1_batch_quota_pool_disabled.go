@@ -6,7 +6,6 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gtime"
 
 	v1 "uniauth-gf/api/quotaPool/v1"
 	"uniauth-gf/internal/dao"
@@ -14,12 +13,6 @@ import (
 
 func (c *ControllerV1) BatchQuotaPoolDisabled(ctx context.Context, req *v1.BatchQuotaPoolDisabledReq) (res *v1.BatchQuotaPoolDisabledRes, err error) {
 	res = &v1.BatchQuotaPoolDisabledRes{}
-
-	if len(req.QuotaPools) == 0 {
-		err = gerror.New("quotaPools 不能为空")
-		return
-	}
-
 	var column string
 	switch req.Field {
 	case "disabled":
@@ -42,8 +35,7 @@ func (c *ControllerV1) BatchQuotaPoolDisabled(ctx context.Context, req *v1.Batch
 		if _, updErr := dao.QuotapoolQuotaPool.Ctx(ctx).
 			WhereIn("quota_pool_name", req.QuotaPools).
 			Data(g.Map{
-				column:       req.Value,
-				"updated_at": gtime.Now(),
+				column: req.Value,
 			}).
 			Update(); updErr != nil {
 			return gerror.Wrap(updErr, "批量更新配额池失败")
@@ -51,6 +43,7 @@ func (c *ControllerV1) BatchQuotaPoolDisabled(ctx context.Context, req *v1.Batch
 		return nil
 	})
 	if err != nil {
+		err = gerror.Wrap(err, "批量更新配额池失败")
 		return
 	}
 

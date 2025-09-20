@@ -6,7 +6,6 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/robfig/cron/v3"
 
 	v1 "uniauth-gf/api/quotaPool/v1"
@@ -22,17 +21,6 @@ func (c *ControllerV1) EditQuotaPool(ctx context.Context, req *v1.EditQuotaPoolR
 	}
 
 	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		count, err := dao.QuotapoolQuotaPool.Ctx(ctx).
-			Where("quota_pool_name = ?", req.QuotaPoolName).
-			LockUpdate().
-			Count()
-		if err != nil {
-			return gerror.Wrap(err, "检查配额池是否存在失败")
-		}
-		if count == 0 {
-			return gerror.Newf("配额池不存在: %s", req.QuotaPoolName)
-		}
-
 		// 执行更新（不改 remaining_quota 与 last_reset_at）
 		if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).
 			Where("quota_pool_name = ?", req.QuotaPoolName).
@@ -43,7 +31,6 @@ func (c *ControllerV1) EditQuotaPool(ctx context.Context, req *v1.EditQuotaPoolR
 				"personal":        req.Personal,
 				"disabled":        req.Disabled,
 				"userinfos_rules": req.UserinfosRules,
-				"updated_at":      gtime.Now(),
 			}).
 			Update(); err != nil {
 			return gerror.Wrap(err, "更新配额池失败")
@@ -51,6 +38,7 @@ func (c *ControllerV1) EditQuotaPool(ctx context.Context, req *v1.EditQuotaPoolR
 		return nil
 	})
 	if err != nil {
+		err = gerror.Wrap(err, "更新配额池失败")
 		return
 	}
 
