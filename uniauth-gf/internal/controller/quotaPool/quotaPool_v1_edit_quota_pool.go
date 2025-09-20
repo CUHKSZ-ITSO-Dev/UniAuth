@@ -21,6 +21,14 @@ func (c *ControllerV1) EditQuotaPool(ctx context.Context, req *v1.EditQuotaPoolR
 	}
 
 	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		_, err := dao.QuotapoolQuotaPool.Ctx(ctx).
+			Where("quota_pool_name = ?", req.QuotaPoolName).
+			LockUpdate().
+			Count()
+		if err != nil {
+			return gerror.Wrap(err, "检查配额池是否存在失败")
+		}
+
 		// 执行更新（不改 remaining_quota 与 last_reset_at）
 		if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).
 			Where("quota_pool_name = ?", req.QuotaPoolName).

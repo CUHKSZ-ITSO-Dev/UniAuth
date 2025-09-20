@@ -23,15 +23,12 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 	}
 
 	err = dao.ConfigAutoQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		count, err := dao.ConfigAutoQuotaPool.Ctx(ctx).
+		_, err := dao.ConfigAutoQuotaPool.Ctx(ctx).
 			Where("rule_name = ?", req.RuleName).
 			LockUpdate().
 			Count()
 		if err != nil {
 			return gerror.Wrap(err, "检查规则是否存在失败")
-		}
-		if count == 0 {
-			return gerror.Newf("规则不存在: %s", req.RuleName)
 		}
 
 		data := g.Map{
@@ -41,8 +38,13 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 			"description":   req.Description,
 			"priority":      req.Priority,
 		}
-		if req.FilterGroup != nil {
-			data["filter_group"] = gjson.New(req.FilterGroup)
+		// 仅当字段在请求中出现时才处理；显式 null 或空对象 {} 则置为数据库 NULL
+		if _, ok := g.RequestFromCtx(ctx).GetRequestMap()["filterGroup"]; ok {
+			if req.FilterGroup == nil {
+				data["filter_group"] = nil
+			} else {
+				data["filter_group"] = gjson.New(req.FilterGroup)
+			}
 		}
 
 		if _, err := dao.ConfigAutoQuotaPool.Ctx(ctx).
@@ -54,6 +56,7 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 		return nil
 	})
 	if err != nil {
+		err = gerror.Wrap(err, "更新自动配额池规则失败")
 		return
 	}
 
