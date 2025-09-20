@@ -49,14 +49,32 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       const values = await form.validateFields();
       
       // 处理JSON字段
-      const processedValues = {
+      let processedValues: any = {
         ...values,
-        filterGroup: values.filterGroup ? JSON.parse(values.filterGroup) : null,
-        upnsCache: values.upnsCache ? JSON.parse(values.upnsCache) : null,
         regularQuota: values.regularQuota ? parseFloat(values.regularQuota) : null,
         priority: values.priority ? parseInt(values.priority) : null,
         enabled: values.enabled !== undefined ? values.enabled : true,
       };
+      
+      // 处理filterGroup JSON字段
+      if (values.filterGroup) {
+        try {
+          processedValues.filterGroup = JSON.parse(values.filterGroup);
+        } catch (e) {
+          message.error("保存失败：过滤条件组(JSON)格式不正确，请检查语法");
+          return;
+        }
+      }
+      
+      // 处理upnsCache JSON字段
+      if (values.upnsCache) {
+        try {
+          processedValues.upnsCache = JSON.parse(values.upnsCache);
+        } catch (e) {
+          message.error("保存失败：UPN缓存列表(JSON)格式不正确，请检查语法");
+          return;
+        }
+      }
       
       if (editingRecord) {
         // 编辑现有配置
@@ -70,9 +88,30 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       
       setModalVisible(false);
       actionRef.current?.reload();
-    } catch (error) {
+    } catch (error: any) {
       console.error("保存自动配额池配置失败:", error);
-      message.error("保存失败，请检查JSON格式是否正确");
+      
+      // 提供更详细的错误信息
+      let errorMessage = "保存失败";
+      
+      // 检查是否是字段验证错误
+      if (error.message && error.message.includes("ruleName")) {
+        errorMessage = "保存失败：规则名称不能为空";
+      } else if (error.message && error.message.includes("cronCycle")) {
+        errorMessage = "保存失败：刷新周期(Cron表达式)不能为空";
+      } else if (error.message && error.message.includes("regularQuota")) {
+        errorMessage = "保存失败：定期配额不能为空或格式不正确";
+      } 
+      // 检查是否是网络或服务器错误
+      else if (error.message && (error.message.includes("请求失败") || error.message.includes("network"))) {
+        errorMessage = "保存失败：网络或服务器错误，请稍后重试";
+      } 
+      // 其他错误
+      else {
+        errorMessage = error.message || "保存失败，请检查输入内容是否正确";
+      }
+      
+      message.error(errorMessage);
     }
   };
 
@@ -335,6 +374,19 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           <Form.Item
             name="filterGroup"
             label="过滤条件组 (JSON)"
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  try {
+                    JSON.parse(value);
+                    return Promise.resolve();
+                  } catch (e) {
+                    return Promise.reject(new Error('JSON格式不正确，请检查语法'));
+                  }
+                },
+              },
+            ]}
           >
             <Input.TextArea
               rows={4}
@@ -345,6 +397,19 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           <Form.Item
             name="upnsCache"
             label="UPN缓存列表 (JSON)"
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  try {
+                    JSON.parse(value);
+                    return Promise.resolve();
+                  } catch (e) {
+                    return Promise.reject(new Error('JSON格式不正确，请检查语法'));
+                  }
+                },
+              },
+            ]}
           >
             <Input.TextArea
               rows={4}
