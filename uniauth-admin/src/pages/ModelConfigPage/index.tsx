@@ -1,6 +1,6 @@
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
-import { Typography, Button, Popconfirm, Table, Space, message, Modal, Form, Input, Select } from "antd";
+import { Typography, Button, Popconfirm, Table, Space, message, Modal, Form, Input, Select, Collapse } from "antd";
 import { useRef, useState } from "react";
 import {
   getConfigModelAll,
@@ -12,27 +12,43 @@ import {
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
+const { Panel } = Collapse;
 
 const ModelConfigPage: React.FC = () => {
   const actionRef = useRef<ActionType | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState<API.ModelConfigItem | null>(null);
   const [form] = Form.useForm();
+  const [rawData, setRawData] = useState<any>(null);
 
   const handleEdit = (record: API.ModelConfigItem) => {
     setEditingRecord(record);
+    
+    // 安全地处理JSON字段的序列化
+    const formatJsonField = (field: any): string => {
+      if (!field) return '';
+      try {
+        return typeof field === 'string' ? field : JSON.stringify(field, null, 2);
+      } catch (e) {
+        console.error('JSON序列化失败:', e);
+        return typeof field === 'object' ? JSON.stringify(field) : String(field);
+      }
+    };
+    
     form.setFieldsValue({
       ...record,
-      pricing: record.pricing ? JSON.stringify(record.pricing, null, 2) : '',
-      clientArgs: record.clientArgs ? JSON.stringify(record.clientArgs, null, 2) : '',
-      requestArgs: record.requestArgs ? JSON.stringify(record.requestArgs, null, 2) : '',
+      pricing: formatJsonField(record.pricing),
+      clientArgs: formatJsonField(record.clientArgs),
+      requestArgs: formatJsonField(record.requestArgs),
+      servicewares: Array.isArray(record.servicewares) ? record.servicewares.join(', ') : (record.servicewares || ''),
+      discount: record.discount !== undefined && record.discount !== null ? String(record.discount) : ''
     });
     setModalVisible(true);
   };
 
   const handleDelete = async (record: API.ModelConfigItem) => {
     try {
-      await deleteConfigModel({ approachName: record.approachName });
+      await deleteConfigModel({ approachName: record.approachName || '' });
       message.success("删除成功");
       actionRef.current?.reload();
     } catch (error) {
@@ -51,14 +67,40 @@ const ModelConfigPage: React.FC = () => {
     try {
       const values = await form.validateFields();
       
+      // 安全地处理JSON字段的解析
+      const parseJsonField = (field: string): any => {
+        if (!field) return null;
+        try {
+          return JSON.parse(field);
+        } catch (e) {
+          console.error('JSON解析失败:', e);
+          message.error("JSON格式错误，请检查输入");
+          throw e;
+        }
+      };
+      
+      // 处理服务项标识
+      const processServicewares = (field: string): string[] => {
+        if (!field) return [];
+        return field.split(',').map(s => s.trim()).filter(s => s);
+      };
+      
+      // 处理折扣字段
+      const processDiscount = (field: string): number | null => {
+        if (!field) return null;
+        const num = parseFloat(field);
+        return isNaN(num) ? null : num;
+      };
+      
       // 处理JSON字段
       const processedValues = {
         ...values,
-        pricing: values.pricing ? JSON.parse(values.pricing) : null,
-        clientArgs: values.clientArgs ? JSON.parse(values.clientArgs) : null,
-        requestArgs: values.requestArgs ? JSON.parse(values.requestArgs) : null,
-        servicewares: values.servicewares ? values.servicewares.split(',').map((s: string) => s.trim()).filter((s: string) => s) : [],
-        discount: values.discount ? parseFloat(values.discount) : null,
+        approachName: values.approachName || '',
+        pricing: parseJsonField(values.pricing),
+        clientArgs: parseJsonField(values.clientArgs),
+        requestArgs: parseJsonField(values.requestArgs),
+        servicewares: processServicewares(values.servicewares),
+        discount: processDiscount(values.discount),
       };
       
       if (editingRecord) {
@@ -75,7 +117,7 @@ const ModelConfigPage: React.FC = () => {
       actionRef.current?.reload();
     } catch (error) {
       console.error("保存模型配置失败:", error);
-      message.error("保存失败，请检查JSON格式是否正确");
+      // 错误消息已经在parseJsonField中处理了
     }
   };
 
@@ -88,29 +130,40 @@ const ModelConfigPage: React.FC = () => {
     try {
       const response = await getConfigModelAll(params);
       
+      // 保存原始数据用于展示
+      setRawData(response);
+      
       if (response.data && response.data.items) {
         // 根据查询参数过滤数据
         let data = response.data.items || [];
         
+        // 模型名称过滤
         if (params.approachName) {
           data = data.filter((item: API.ModelConfigItem) => 
-            item.approachName?.includes(params.approachName)
+            item.approachName && item.approachName.includes(params.approachName)
           );
         }
         
+        // 客户端类型过滤
         if (params.clientType) {
           data = data.filter((item: API.ModelConfigItem) => 
-            item.clientType?.includes(params.clientType)
+            item.clientType && item.clientType.includes(params.clientType)
           );
         }
         
+        // 创建时间过滤
         if (params.createdAt && Array.isArray(params.createdAt) && params.createdAt.length === 2) {
           const [start, end] = params.createdAt;
           data = data.filter((item: API.ModelConfigItem) => {
-            const time = new Date(item.createdAt!).getTime();
+            // 安全处理 createdAt 字段可能为空的情况
+            if (!item.createdAt) return false;
+            const itemTime = new Date(item.createdAt).getTime();
+            const startTime = start ? new Date(start).getTime() : null;
+            const endTime = end ? new Date(end).getTime() : null;
+            
             return (
-              (!start || time >= new Date(start).getTime()) &&
-              (!end || time <= new Date(end).getTime())
+              (!startTime || itemTime >= startTime) &&
+              (!endTime || itemTime <= endTime)
             );
           });
         }
@@ -123,12 +176,13 @@ const ModelConfigPage: React.FC = () => {
       } else {
         return {
           data: [],
-          success: false,
+          success: true, // 即使没有数据也返回成功
           total: 0,
         };
       }
     } catch (error) {
       console.error("获取模型配置列表失败:", error);
+      message.error("获取模型配置列表失败");
       return {
         data: [],
         success: false,
@@ -143,6 +197,7 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "approachName",
       valueType: "text",
       search: true,
+      render: (_, record) => record.approachName || <Text type="secondary">未设置</Text>,
     },
     {
       title: "客户端类型",
@@ -156,14 +211,27 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "discount",
       valueType: "digit",
       search: false,
-      render: (_, record) => record.discount ? `${(record.discount * 100).toFixed(1)}%` : <Text type="secondary">未设置</Text>,
+      render: (_, record) => {
+        if (record.discount !== undefined && record.discount !== null) {
+          const discountValue = parseFloat(String(record.discount));
+          if (!isNaN(discountValue)) {
+            return `${(discountValue * 100).toFixed(1)}%`;
+          }
+        }
+        return <Text type="secondary">未设置</Text>;
+      },
     },
     {
       title: "服务项",
       dataIndex: "servicewares",
       valueType: "text",
       search: false,
-      render: (_, record) => record.servicewares ? record.servicewares.join(', ') : <Text type="secondary">未设置</Text>,
+      render: (_, record) => {
+        if (Array.isArray(record.servicewares) && record.servicewares.length > 0) {
+          return record.servicewares.join(', ');
+        }
+        return <Text type="secondary">未设置</Text>;
+      },
     },
     {
       title: "创建时间",
@@ -175,6 +243,15 @@ const ModelConfigPage: React.FC = () => {
         showTime: true,
         style: { width: "100%" },
       },
+      render: (_, record) => {
+        if (record.createdAt) {
+          const date = new Date(record.createdAt);
+          if (!isNaN(date.getTime())) {
+            return date.toLocaleString('zh-CN');
+          }
+        }
+        return <Text type="secondary">未设置</Text>;
+      },
     },
     {
       title: "更新时间",
@@ -185,6 +262,15 @@ const ModelConfigPage: React.FC = () => {
         format: "YYYY-MM-DD HH:mm:ss",
         showTime: true,
         style: { width: "100%" },
+      },
+      render: (_, record) => {
+        if (record.updatedAt) {
+          const date = new Date(record.updatedAt);
+          if (!isNaN(date.getTime())) {
+            return date.toLocaleString('zh-CN');
+          }
+        }
+        return <Text type="secondary">未设置</Text>;
       },
     },
     {
@@ -256,6 +342,28 @@ const ModelConfigPage: React.FC = () => {
           ]}
           request={modelConfigListRequest}
         />
+        
+        {/* 添加JSON数据展示区域 */}
+        <Collapse style={{ marginTop: 20 }}>
+          <Panel header="原始数据展示" key="1">
+            <Text type="secondary" style={{ marginBottom: 10, display: 'block' }}>
+              以下为从API接收到的原始模型配置数据：
+            </Text>
+            <div style={{ 
+              backgroundColor: '#f5f5f5', 
+              padding: 15, 
+              borderRadius: 4, 
+              maxHeight: 400, 
+              overflow: 'auto',
+              fontFamily: 'monospace',
+              fontSize: 12
+            }}>
+              <pre>
+                {rawData ? JSON.stringify(rawData, null, 2) : '暂无数据'}
+              </pre>
+            </div>
+          </Panel>
+        </Collapse>
       </ProCard>
 
       <Modal
@@ -317,7 +425,7 @@ const ModelConfigPage: React.FC = () => {
           >
             <TextArea
               rows={4}
-              placeholder="请输入JSON格式的定价配置"
+              placeholder='请输入JSON格式的定价配置，例如：{"type": "per_token", "input_price": 0.01, "output_price": 0.03}'
             />
           </Form.Item>
           
@@ -327,7 +435,7 @@ const ModelConfigPage: React.FC = () => {
           >
             <TextArea
               rows={4}
-              placeholder="请输入JSON格式的客户端参数"
+              placeholder='请输入JSON格式的客户端参数，例如：{"temperature": 0.7, "max_tokens": 1024}'
             />
           </Form.Item>
           
@@ -337,7 +445,7 @@ const ModelConfigPage: React.FC = () => {
           >
             <TextArea
               rows={4}
-              placeholder="请输入JSON格式的请求参数"
+              placeholder='请输入JSON格式的请求参数，例如：{"model": "gpt-4", "stream": true}'
             />
           </Form.Item>
         </Form>
