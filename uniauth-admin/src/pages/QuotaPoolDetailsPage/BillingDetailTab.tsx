@@ -5,135 +5,263 @@ import {
 } from "@ant-design/pro-components";
 import { Card, Descriptions, Tag, Typography } from "antd";
 import type { FC } from "react";
+import { useState } from "react";
+import { postBillingAdminGet } from "@/services/uniauthService/admin";
 
 const { Text } = Typography;
 
-const BillingDetailTab: FC = () => {
-  const billingRecordsColumns: ProColumns<any>[] = [
+// 定义账单记录的数据类型
+interface BillingRecord {
+  id: number;
+  upn: string;
+  svc: string;
+  product: string;
+  cost: number;
+  plan: string;
+  source: string;
+  remark?: any;
+  created_at: string;
+}
+
+// 从 props 接收配额池名称
+interface BillingDetailTabProps {
+  quotaPoolName?: string;
+}
+
+const BillingDetailTab: FC<BillingDetailTabProps> = ({
+  quotaPoolName = "student_pool",
+}) => {
+  const [statistics, setStatistics] = useState({
+    currentMonthCost: 0,
+    lastMonthCost: 0,
+    totalCost: 0,
+    avgDailyCost: 0,
+    recordCount: 0,
+  });
+
+  // 获取统计数据
+  const fetchStatistics = async () => {
+    try {
+      const now = new Date();
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+      const response = await postBillingAdminGet({
+        quotaPools: [quotaPoolName],
+        svc: [],
+        product: [],
+        startTime: startOfYear.toISOString().split("T")[0],
+        endTime: now.toISOString().split("T")[0],
+      });
+
+      if (response.records) {
+        const recordsData = response.records;
+        let allRecords: BillingRecord[] = [];
+
+        Object.keys(recordsData).forEach((poolName) => {
+          const poolRecords = (recordsData as any)[poolName] || [];
+          allRecords = allRecords.concat(poolRecords);
+        });
+
+        const stats = calculateStatistics(allRecords);
+        setStatistics({
+          ...stats,
+          recordCount: allRecords.length,
+        });
+      }
+    } catch (error) {
+      console.error("获取统计数据失败:", error);
+    }
+  };
+
+  // 页面加载时获取统计数据
+  useState(() => {
+    fetchStatistics();
+  });
+  const billingRecordsColumns: ProColumns<BillingRecord>[] = [
     {
       title: "时间",
-      dataIndex: "date",
+      dataIndex: "created_at",
       valueType: "dateTime",
       search: false,
       ellipsis: true,
+      width: 160,
     },
     {
-      title: "类型",
-      dataIndex: "type",
-      valueType: "select",
-      valueEnum: {
-        consumption: { text: "消费", status: "Error" },
-        refund: { text: "退款", status: "Success" },
-        recharge: { text: "充值", status: "Processing" },
-      },
+      title: "用户",
+      dataIndex: "upn",
+      valueType: "text",
+      search: true,
       ellipsis: true,
+      width: 200,
     },
     {
-      title: "金额",
-      dataIndex: "amount",
+      title: "服务",
+      dataIndex: "svc",
+      valueType: "select",
+      search: true,
+      ellipsis: true,
+      width: 120,
+      valueEnum: {
+        chat: { text: "聊天服务", status: "Default" },
+        voice: { text: "语音服务", status: "Processing" },
+        image: { text: "图像服务", status: "Success" },
+      },
+    },
+    {
+      title: "产品",
+      dataIndex: "product",
+      valueType: "select",
+      search: true,
+      ellipsis: true,
+      width: 120,
+      valueEnum: {
+        gpt4: { text: "GPT-4", status: "Default" },
+        gpt35: { text: "GPT-3.5", status: "Processing" },
+        claude: { text: "Claude", status: "Success" },
+      },
+    },
+    {
+      title: "费用",
+      dataIndex: "cost",
       valueType: "money",
       search: false,
+      width: 100,
       render: (_, record) => (
-        <Text type={record.type === "consumption" ? "danger" : "success"}>
-          {record.type === "consumption" ? "-" : "+"}${record.amount}
-        </Text>
+        <Text type="danger">${Number(record.cost).toFixed(4)}</Text>
       ),
     },
     {
-      title: "描述",
-      dataIndex: "description",
+      title: "计费方案",
+      dataIndex: "plan",
       valueType: "text",
+      search: true,
       ellipsis: true,
-      search: false,
+      width: 120,
     },
     {
-      title: "状态",
-      dataIndex: "status",
-      valueType: "select",
-      valueEnum: {
-        completed: { text: "已完成", status: "Success" },
-        pending: { text: "处理中", status: "Processing" },
-        failed: { text: "失败", status: "Error" },
-      },
+      title: "来源",
+      dataIndex: "source",
+      valueType: "text",
+      search: false,
+      ellipsis: true,
+      width: 120,
+      render: (_, record) => <Tag color="blue">{record.source}</Tag>,
+    },
+    {
+      title: "备注",
+      dataIndex: "remark",
+      valueType: "text",
+      search: false,
+      ellipsis: true,
+      width: 150,
       render: (_, record) => {
-        const colorMap: Record<string, string> = {
-          completed: "green",
-          pending: "orange",
-          failed: "red",
-        };
-        return (
-          <Tag color={colorMap[record.status] || "default"}>
-            {record.statusText}
-          </Tag>
-        );
+        if (!record.remark) return "-";
+        try {
+          const remarkObj =
+            typeof record.remark === "string"
+              ? JSON.parse(record.remark)
+              : record.remark;
+          return <Text ellipsis>{JSON.stringify(remarkObj)}</Text>;
+        } catch {
+          return <Text ellipsis>{String(record.remark)}</Text>;
+        }
       },
     },
   ];
 
   const billingRecordsDataRequest = async (params: any) => {
-    // TODO: 替换为实际请求
-    let example_data = [
-      {
-        id: 1,
-        date: "2025-09-20 10:30:00",
-        type: "consumption",
-        amount: 25.5,
-        description: "API调用费用",
-        status: "completed",
-        statusText: "已完成",
-      },
-      {
-        id: 2,
-        date: "2025-09-19 14:15:00",
-        type: "consumption",
-        amount: 18.2,
-        description: "模型使用费用",
-        status: "completed",
-        statusText: "已完成",
-      },
-      {
-        id: 3,
-        date: "2025-09-18 09:45:00",
-        type: "recharge",
-        amount: 100.0,
-        description: "账户充值",
-        status: "completed",
-        statusText: "已完成",
-      },
-      {
-        id: 4,
-        date: "2025-09-17 16:20:00",
-        type: "consumption",
-        amount: 32.8,
-        description: "数据处理费用",
-        status: "completed",
-        statusText: "已完成",
-      },
-      {
-        id: 5,
-        date: "2025-09-16 11:10:00",
-        type: "refund",
-        amount: 5.6,
-        description: "服务退款",
-        status: "completed",
-        statusText: "已完成",
-      },
-    ];
+    try {
+      // 构建API请求参数
+      const requestParams = {
+        quotaPools: [quotaPoolName],
+        svc: params.svc ? [params.svc] : [],
+        product: params.product ? [params.product] : [],
+        startTime: params.created_at?.[0] || "2024-01-01",
+        endTime: params.created_at?.[1] || "2025-12-31",
+      };
 
-    // 简单的筛选逻辑
-    if (params.type) {
-      example_data = example_data.filter((item) => item.type === params.type);
+      const response = await postBillingAdminGet(requestParams);
+
+      if (response.records) {
+        // 解析返回的数据 - records 是一个 Map，key 是配额池名称
+        const recordsData = response.records;
+        let allRecords: BillingRecord[] = [];
+
+        // 遍历所有配额池的数据
+        Object.keys(recordsData).forEach((poolName) => {
+          const poolRecords = (recordsData as any)[poolName] || [];
+          allRecords = allRecords.concat(poolRecords);
+        });
+
+        // 过滤数据
+        let filteredRecords = allRecords;
+        if (params.upn) {
+          filteredRecords = filteredRecords.filter((record: BillingRecord) =>
+            record.upn.toLowerCase().includes(params.upn.toLowerCase()),
+          );
+        }
+        if (params.plan) {
+          filteredRecords = filteredRecords.filter((record: BillingRecord) =>
+            record.plan.toLowerCase().includes(params.plan.toLowerCase()),
+          );
+        }
+
+        return {
+          data: filteredRecords,
+          success: true,
+          total: filteredRecords.length,
+        };
+      }
+    } catch (error) {
+      console.error("获取账单数据失败:", error);
     }
-    if (params.status) {
-      example_data = example_data.filter(
-        (item) => item.status === params.status,
-      );
-    }
+
+    // 如果 API 调用失败，返回空数据
+    return {
+      data: [],
+      success: false,
+      total: 0,
+    };
+  };
+
+  // 计算统计数据
+  const calculateStatistics = (records: BillingRecord[]) => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+    let currentMonthCost = 0;
+    let lastMonthCost = 0;
+    let totalCost = 0;
+
+    records.forEach((record) => {
+      const recordDate = new Date(record.created_at);
+      const cost = Number(record.cost);
+      totalCost += cost;
+
+      if (
+        recordDate.getFullYear() === currentYear &&
+        recordDate.getMonth() === currentMonth
+      ) {
+        currentMonthCost += cost;
+      }
+      if (
+        recordDate.getFullYear() === lastMonthYear &&
+        recordDate.getMonth() === lastMonth
+      ) {
+        lastMonthCost += cost;
+      }
+    });
+
+    const avgDailyCost = currentMonthCost / now.getDate();
 
     return {
-      data: example_data,
-      success: true,
-      total: example_data.length,
+      currentMonthCost,
+      lastMonthCost,
+      totalCost,
+      avgDailyCost,
     };
   };
 
@@ -146,63 +274,59 @@ const BillingDetailTab: FC = () => {
         }}
         variant="borderless"
       >
-        <Descriptions column={2}>
+        <Descriptions column={3}>
+          <Descriptions.Item label="配额池名称">
+            <Tag color="blue">{quotaPoolName}</Tag>
+          </Descriptions.Item>
           <Descriptions.Item label="本月消费">
-            <Text type="danger">$120.00</Text>
+            <Text type="danger">${statistics.currentMonthCost.toFixed(4)}</Text>
           </Descriptions.Item>
           <Descriptions.Item label="上月消费">
-            <Text>$98.50</Text>
+            <Text>${statistics.lastMonthCost.toFixed(4)}</Text>
           </Descriptions.Item>
           <Descriptions.Item label="累计消费">
-            <Text>$1,256.30</Text>
+            <Text strong>${statistics.totalCost.toFixed(4)}</Text>
           </Descriptions.Item>
           <Descriptions.Item label="平均日消费">
-            <Text>$4.00</Text>
+            <Text>${statistics.avgDailyCost.toFixed(4)}</Text>
           </Descriptions.Item>
-          <Descriptions.Item label="本月充值">
-            <Text type="success">$200.00</Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="账户余额">
-            <Text strong>$496.00</Text>
+          <Descriptions.Item label="总记录数">
+            <Text>{statistics.recordCount} 条</Text>
           </Descriptions.Item>
         </Descriptions>
       </Card>
 
       <Card
-        title="消费明细"
+        title={`${quotaPoolName} - 消费明细`}
         style={{
           marginBottom: 24,
         }}
         variant="borderless"
       >
-        <ProTable
+        <ProTable<BillingRecord>
           columns={billingRecordsColumns}
           rowKey="id"
-          search={{ labelWidth: "auto" }}
+          search={{
+            labelWidth: "auto",
+            collapsed: false,
+            collapseRender: false,
+          }}
           pagination={{
-            pageSize: 10,
+            pageSize: 20,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条记录`,
           }}
           request={billingRecordsDataRequest}
           dateFormatter="string"
-          headerTitle="账单记录"
-          toolBarRender={() => []}
+          headerTitle="消费记录"
+          scroll={{ x: 1200 }}
+          options={{
+            reload: true,
+            density: true,
+            fullScreen: true,
+          }}
         />
-      </Card>
-
-      <Card
-        title="使用统计"
-        style={{
-          marginBottom: 24,
-        }}
-        variant="borderless"
-      >
-        <div style={{ textAlign: "center", padding: "50px" }}>
-          <p>使用统计图表功能开发中...</p>
-          <p>此处将显示消费趋势图、使用量分析等可视化内容</p>
-        </div>
       </Card>
     </GridContent>
   );

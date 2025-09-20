@@ -23,6 +23,9 @@ const QuotaPoolDetailsPage: FC = () => {
       {() => {
         return (
           <Space>
+            <Button color="cyan" variant="solid">
+              导出账单
+            </Button>
             <Button type="primary">重置配额池</Button>
             <Button color="danger" variant="solid">
               禁用配额池
@@ -63,7 +66,7 @@ const QuotaPoolDetailsPage: FC = () => {
       case "config_detail":
         return <ConfigDetailTab />;
       case "bill_detail":
-        return <BillingDetailTab />;
+        return <BillingDetailTab quotaPoolName="student_pool" />;
       default:
         return <ConfigDetailTab />;
     }
