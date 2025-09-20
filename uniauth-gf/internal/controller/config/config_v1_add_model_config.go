@@ -27,12 +27,17 @@ func (c *ControllerV1) AddModelConfig(ctx context.Context, req *v1.AddModelConfi
 			return gerror.Newf("该模型配置已存在，请重新检查：%v", req.ApproachName)
 		}
 		now := gtime.Now()
+		// 确保 Servicewares 不为 nil，避免 PostgreSQL 数组字面量错误
+		servicewares := req.Servicewares
+		if servicewares == nil {
+			servicewares = []string{}
+		}
 		data := &entity.ConfigSingleModelApproach{
 			ApproachName: req.ApproachName,
 			Pricing:      req.Pricing,
 			ClientArgs:   req.ClientArgs,
 			RequestArgs:  req.RequestArgs,
-			Servicewares: req.Servicewares,
+			Servicewares: servicewares,
 			CreatedAt:    now,
 			UpdatedAt:    now,
 		}

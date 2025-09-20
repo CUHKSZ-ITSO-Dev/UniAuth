@@ -26,12 +26,17 @@ func (c *ControllerV1) EditModelConfig(ctx context.Context, req *v1.EditModelCon
 			return gerror.Newf("该模型配置不存在，请重新检查：%v", req.ApproachName)
 		}
 
+		// 确保 Servicewares 不为 nil，避免 PostgreSQL 数组字面量错误
+		servicewares := req.Servicewares
+		if servicewares == nil {
+			servicewares = []string{}
+		}
 		data := &entity.ConfigSingleModelApproach{
 			ApproachName: req.ApproachName,
 			Pricing:      req.Pricing,
 			ClientArgs:   req.ClientArgs,
 			RequestArgs:  req.RequestArgs,
-			Servicewares: req.Servicewares,
+			Servicewares: servicewares,
 		}
 
 		// 安全地处理可能为 nil 的指针字段
