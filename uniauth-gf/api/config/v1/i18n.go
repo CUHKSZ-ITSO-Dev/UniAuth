@@ -57,20 +57,6 @@ type GetAllLangsRes struct {
 }
 
 // ==================== I18n Filter ====================
-// I18nFilterCondition 表示单个过滤条件
-type I18nFilterCondition struct {
-	Field string `json:"field" v:"required|length:1,50" dc:"字段名"`
-	Op    string `json:"op" v:"required|in:eq,neq,gt,gte,lt,lte,like,ilike,in,notin,contains,notcontains,startswith,endswith,isnull,isnotnull" dc:"操作符: eq(等于), neq(不等于), gt(大于), gte(大于等于), lt(小于), lte(小于等于), like(模糊匹配), ilike(不区分大小写模糊匹配), in(包含), notin(不包含), contains(包含子串), notcontains(不包含子串), startswith(以...开头), endswith(以...结尾), isnull(为空), isnotnull(不为空)"`
-	Value *g.Var `json:"value" dc:"条件值，根据操作符类型可以是字符串、数字、数组等"`
-}
-
-// I18nFilterGroup 表示一组过滤条件，支持嵌套
-type I18nFilterGroup struct {
-	Logic      string                 `json:"logic" v:"in:and,or" dc:"逻辑关系: and(且), or(或)"`
-	Conditions []*I18nFilterCondition `json:"conditions" dc:"过滤条件列表"`
-	Groups     []*I18nFilterGroup     `json:"groups" dc:"嵌套的条件组，支持复杂逻辑"`
-}
-
 // I18nSortCondition 表示排序条件
 type I18nSortCondition struct {
 	Field string `json:"field" v:"required|length:1,50" dc:"排序字段"`
@@ -79,9 +65,8 @@ type I18nSortCondition struct {
 
 // I18nPaginationReq 分页请求参数
 type I18nPaginationReq struct {
-	Page     int  `json:"page" v:"min:1" dc:"页码，从1开始" default:"1"`
-	PageSize int  `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" default:"20"`
-	All      bool `json:"all" dc:"是否返回全部数据，true时忽略分页参数，但仍有最大限制保护"`
+	Page     int `json:"page" v:"min:1" dc:"页码，从1开始" default:"1"`
+	PageSize int `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" default:"10"`
 }
 
 // I18nItem 表示单个i18n配置项
@@ -95,8 +80,8 @@ type I18nItem struct {
 }
 
 type FilterI18nReq struct {
-	g.Meta     `path:"/i18n/filter" tags:"Config/I18n" method:"post" summary:"筛选i18n配置" dc:"根据过滤条件筛选i18n配置，支持复杂条件查询、排序和分页"`
-	Filter     *I18nFilterGroup     `json:"filter" v:"required#过滤条件不能为空" dc:"过滤条件，支持复杂的逻辑组合查询"`
+	g.Meta     `path:"/i18n/filter" tags:"Config/I18n" method:"post" summary:"筛选i18n配置" dc:"根据关键词筛选i18n配置，支持排序和分页"`
+	Keyword    string               `json:"keyword" dc:"搜索关键词，对key、zh_cn、en_us、description字段进行模糊匹配"`
 	Sort       []*I18nSortCondition `json:"sort" dc:"排序条件，支持多字段排序"`
 	Pagination *I18nPaginationReq   `json:"pagination" dc:"分页参数，支持分页或查询全部"`
 	Verbose    bool                 `json:"verbose" dc:"是否返回详细i18n信息，false时仅返回键列表"`
@@ -109,5 +94,4 @@ type FilterI18nRes struct {
 	Page       int        `json:"page" dc:"当前页码"`
 	PageSize   int        `json:"page_size" dc:"每页条数"`
 	TotalPages int        `json:"total_pages" dc:"总页数"`
-	IsAll      bool       `json:"is_all" dc:"是否为全部数据查询"`
 }
