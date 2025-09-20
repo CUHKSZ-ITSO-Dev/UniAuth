@@ -136,10 +136,11 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
 					);
 				}
 
-				// 是否启用过滤
+				// 是否启用过滤 - 处理字符串和布尔值类型匹配问题
 				if (params.enabled !== undefined) {
+					const searchEnabled = params.enabled === 'true' || params.enabled === true;
 					data = data.filter((item: API.AutoQuotaPoolItem) =>
-						item.enabled === params.enabled
+						item.enabled === searchEnabled
 					);
 				}
 
