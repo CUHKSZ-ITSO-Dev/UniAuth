@@ -38,6 +38,7 @@ func (c *ControllerV1) ResetBalance(ctx context.Context, req *v1.ResetBalanceReq
 		return nil
 	})
 	if err != nil {
+		err = gerror.Wrap(err, "重置配额池余额失败")
 		return
 	}
 
