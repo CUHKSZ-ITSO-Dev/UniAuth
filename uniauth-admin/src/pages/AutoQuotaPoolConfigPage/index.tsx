@@ -29,22 +29,14 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleDelete = (record: API.AutoQuotaPoolItem) => {
-    Modal.confirm({
-      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteConfirm' }),
-      content: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteConfirmContent' }),
-      okText: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.delete' }),
-      cancelText: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.cancel' }),
-      onOk: async () => {
-        try {
-          await deleteConfigAutoConfig({ ruleName: record.ruleName });
-          message.success(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteSuccess' }));
-          actionRef.current?.reload();
-        } catch (error) {
-          message.error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteFailed' }, { error: (error as Error).message }));
-        }
-      },
-    });
+  const handleDelete = async (record: API.AutoQuotaPoolItem) => {
+    try {
+      await deleteConfigAutoConfig({ ruleName: record.ruleName });
+      message.success(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteSuccess' }));
+      actionRef.current?.reload();
+    } catch (error) {
+      message.error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteFailed' }, { error: (error as Error).message }));
+    }
   };
 
   const handleNewConfig = () => {

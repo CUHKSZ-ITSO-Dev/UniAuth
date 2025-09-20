@@ -46,23 +46,15 @@ const ModelConfigPage: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleDelete = (record: API.ModelConfigItem) => {
-    Modal.confirm({
-      title: intl.formatMessage({ id: 'pages.modelConfig.deleteConfirm' }),
-      content: intl.formatMessage({ id: 'pages.modelConfig.deleteConfirmContent' }),
-      okText: intl.formatMessage({ id: 'pages.modelConfig.delete' }),
-      cancelText: intl.formatMessage({ id: 'pages.modelConfig.cancel' }),
-      onOk: async () => {
-        try {
-          await deleteConfigModel({ approachName: record.approachName || '' });
-          message.success(intl.formatMessage({ id: 'pages.modelConfig.deleteSuccess' }));
-          actionRef.current?.reload();
-        } catch (error) {
-          message.error(intl.formatMessage({ id: 'pages.modelConfig.deleteFailed' }));
-          console.error("删除模型配置失败:", error);
-        }
-      },
-    });
+  const handleDelete = async (record: API.ModelConfigItem) => {
+    try {
+      await deleteConfigModel({ approachName: record.approachName || '' });
+      message.success(intl.formatMessage({ id: 'pages.modelConfig.deleteSuccess' }));
+      actionRef.current?.reload();
+    } catch (error) {
+      message.error(intl.formatMessage({ id: 'pages.modelConfig.deleteFailed' }));
+      console.error("删除模型配置失败:", error);
+    }
   };
 
   const handleNewModelConfig = () => {
