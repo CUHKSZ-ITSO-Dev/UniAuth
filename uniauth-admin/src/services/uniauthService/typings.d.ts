@@ -569,9 +569,7 @@ declare namespace API {
 
   type GetModelConfigRes = {
     /** 模型配置列表 */
-    data: {
-      items: ModelConfigItem[];
-    };
+    items: ModelConfigItem[];
   };
 
   type GetOneReq = {

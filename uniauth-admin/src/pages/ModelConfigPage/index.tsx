@@ -133,9 +133,9 @@ const ModelConfigPage: React.FC = () => {
       // 保存原始数据用于展示
       setRawData(response);
       
-      if (response.data && response.data.items) {
+      if (response.items) {
         // 根据查询参数过滤数据
-        let data = response.data.items || [];
+        let data = response.items || [];
         
         // 模型名称过滤
         if (params.approachName) {
