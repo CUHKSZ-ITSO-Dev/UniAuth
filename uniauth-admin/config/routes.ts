@@ -46,25 +46,6 @@ export default [
         icon: "Database",
         component: "@/pages/ModelConfigPage",
       },
-      {
-        path: "/config/auto-config",
-        name: "auto-config",
-        icon: "Container",
-        component: "@/pages/AutoQuotaPoolConfigPage",
-      },
-      {
-        path: "/config/auto-config/edit",
-        name: "auto-config-edit",
-        component: "@/pages/AutoQuotaPoolConfigPage/EditRulePage",
-        hideInMenu: true,
-      },
-      
-      {
-        path: "/config/model-edit",
-        name: "model-edit",
-        component: "@/pages/ModelEditPage",
-        hideInMenu: true,
-      },
     ],
   },
   {
