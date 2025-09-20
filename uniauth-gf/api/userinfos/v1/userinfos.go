@@ -12,7 +12,7 @@ type GetOneReq struct {
 	Upn    string `json:"upn" v:"required" dc:"UPN" example:"sadt@cuhk.edu.cn"`
 }
 type GetOneRes struct {
-	entity.UserinfosUserInfos
+	*entity.UserinfosUserInfos
 }
 
 // ==================== Filter ====================

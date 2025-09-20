@@ -6,7 +6,8 @@
   "repository": "git@github.com:uniauth/uniauth-umi.git",
   "scripts": {
     "analyze": "cross-env ANALYZE=1 max build",
-    "biome:lint": "npx @biomejs/biome lint",
+    "biome:lint": "pnpm exec biome lint",
+    "biome:staged": "pnpm exec biome check --write",
     "build": "max build",
     "deploy": "pnpm run build && pnpm run gh-pages",
     "dev": "pnpm run start:dev",
@@ -17,7 +18,7 @@
     "lint": "pnpm run biome:lint && pnpm run tsc",
     "lint-staged": "lint-staged",
     "openapi": "max openapi",
-    "prepare": "husky",
+    "prepare": "cd .. && husky uniauth-admin/.husky",
     "preview": "pnpm run build && max preview --port 8000",
     "record": "cross-env NODE_ENV=development REACT_APP_ENV=test max record --scene=login",
     "serve": "umi-serve",
