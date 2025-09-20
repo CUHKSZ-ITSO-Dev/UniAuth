@@ -46,6 +46,12 @@ export default [
         icon: "Database",
         component: "@/pages/ModelConfigPage",
       },
+      {
+        path: "/config/auto-quota-pool-config",
+        name: "auto-quota-pool-config",
+        icon: "Database",
+        component: "@/pages/AutoQuotaPoolConfigPage",
+      },
     ],
   },
   {

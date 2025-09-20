@@ -407,10 +407,91 @@ declare namespace API {
 
   type GetAutoQuotaPoolConfigRes = {
     /** 自动配额池规则 */
-    autoQuotaPoolConfigs?: string[];
+    items?: AutoQuotaPoolItem[];
   };
 
-  type GetAvailableModelForQuotaPoolReq = {
+  type AutoQuotaPoolItem = {
+    /** 自增主键 */
+    id?: number;
+    /** 规则名称，唯一 */
+    ruleName?: string;
+    /** 规则说明 */
+    description?: string;
+    /** 刷新周期 */
+    cronCycle?: string;
+    /** 定期配额 */
+    regularQuota?: number;
+    /** 是否启用该规则 */
+    enabled?: boolean;
+    /** 过滤条件组 */
+    filterGroup?: any;
+    /** UPN缓存列表 */
+    upnsCache?: any;
+    /** 优先级，数值越小优先匹配 */
+    priority?: number;
+    /** 该规则上次评估时间 */
+    lastEvaluatedAt?: string;
+    /** 创建时间 */
+    createdAt?: string;
+    /** 更新时间 */
+    updatedAt?: string;
+  };
+
+  type AddAutoQuotaPoolConfigReq = {
+    /** 规则名称（唯一） */
+    ruleName: string;
+    /** 刷新周期，Cron 表达式 */
+    cronCycle: string;
+    /** 定期配额（每周期重置） */
+    regularQuota: number;
+    /** 是否启用该规则 */
+    enabled?: boolean;
+    /** 过滤条件组，满足条件的用户将应用该规则 */
+    filterGroup?: any;
+    /** 规则说明 */
+    description?: string;
+    /** 优先级，数值越小优先匹配 */
+    priority?: number;
+  };
+
+  type AddAutoQuotaPoolConfigRes = {
+    /** 是否成功 */
+    ok?: boolean;
+  };
+
+  type EditAutoQuotaPoolConfigReq = {
+    /** 规则名称（唯一） */
+    ruleName: string;
+    /** 刷新周期，Cron 表达式 */
+    cronCycle?: string;
+    /** 定期配额（每周期重置） */
+    regularQuota?: number;
+    /** 是否启用该配额池 */
+    enabled?: boolean;
+    /** 过滤条件组，满足条件的用户将应用该规则 */
+    filterGroup?: any;
+    /** 规则说明 */
+    description?: string;
+    /** 优先级，数值越小优先匹配 */
+    priority?: number;
+  };
+
+  type EditAutoQuotaPoolConfigRes = {
+    /** 是否成功 */
+    ok?: boolean;
+  };
+
+  type DeleteAutoQuotaPoolConfigReq = {
+    /** 规则名称（唯一） */
+    ruleName: string;
+  };
+
+  type DeleteAutoQuotaPoolConfigRes = {
+    /** 是否成功 */
+    ok?: boolean;
+  };
+
+  type getAvailableModelForQuotaPoolReq = {
     /** QuotaPool */
     quotaPool: string;
   };
