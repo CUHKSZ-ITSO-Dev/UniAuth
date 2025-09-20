@@ -20,7 +20,22 @@ declare namespace API {
     ok?: boolean;
   };
 
-  type AddModelConfigReq = {};
+  type AddModelConfigReq = {
+    /** 模型名称 */
+    approachName: string;
+    /** 定价配置 */
+    pricing?: any;
+    /** 折扣 */
+    discount?: number;
+    /** 客户端类型 */
+    clientType?: string;
+    /** 客户端参数 */
+    clientArgs?: any;
+    /** 请求参数 */
+    requestArgs?: any;
+    /** 服务项标识 */
+    servicewares?: string[];
+  };
 
   type AddModelConfigRes = {
     /** 配置 */
@@ -200,7 +215,22 @@ declare namespace API {
     ok?: boolean;
   };
 
-  type EditModelConfigReq = {};
+  type EditModelConfigReq = {
+    /** 模型名称 */
+    approachName: string;
+    /** 定价配置 */
+    pricing?: any;
+    /** 折扣 */
+    discount?: number;
+    /** 客户端类型 */
+    clientType?: string;
+    /** 客户端参数 */
+    clientArgs?: any;
+    /** 请求参数 */
+    requestArgs?: any;
+    /** 服务项标识 */
+    servicewares?: string[];
+  };
 
   type EditModelConfigRes = {
     /** 配置 */

@@ -1,6 +1,6 @@
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
-import { Typography, Button, Popconfirm, Table, Space, message, Modal, Form, Input, Select, Collapse } from "antd";
+import { Typography, Button, Popconfirm, Table, Space, message, Modal, Form, Input, Select } from "antd";
 import { useRef, useState } from "react";
 import {
   getConfigModelAll,
@@ -12,14 +12,12 @@ import {
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
-const { Panel } = Collapse;
 
 const ModelConfigPage: React.FC = () => {
   const actionRef = useRef<ActionType | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState<API.ModelConfigItem | null>(null);
   const [form] = Form.useForm();
-  const [rawData, setRawData] = useState<any>(null);
 
   const handleEdit = (record: API.ModelConfigItem) => {
     setEditingRecord(record);
@@ -130,9 +128,6 @@ const ModelConfigPage: React.FC = () => {
     try {
       const response = await getConfigModelAll(params);
       
-      // 保存原始数据用于展示
-      setRawData(response);
-      
       if (response.items) {
         // 根据查询参数过滤数据
         let data = response.items || [];
@@ -197,6 +192,8 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "approachName",
       valueType: "text",
       search: true,
+      fixed: "left",
+      width: 150,
       render: (_, record) => record.approachName || <Text type="secondary">未设置</Text>,
     },
     {
@@ -204,6 +201,7 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "clientType",
       valueType: "text",
       search: true,
+      width: 120,
       render: (_, record) => record.clientType || <Text type="secondary">未设置</Text>,
     },
     {
@@ -211,6 +209,7 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "discount",
       valueType: "digit",
       search: false,
+      width: 80,
       render: (_, record) => {
         if (record.discount !== undefined && record.discount !== null) {
           const discountValue = parseFloat(String(record.discount));
@@ -226,9 +225,65 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "servicewares",
       valueType: "text",
       search: false,
+      width: 150,
       render: (_, record) => {
         if (Array.isArray(record.servicewares) && record.servicewares.length > 0) {
           return record.servicewares.join(', ');
+        }
+        return <Text type="secondary">未设置</Text>;
+      },
+    },
+    {
+      title: "定价配置",
+      dataIndex: "pricing",
+      valueType: "text",
+      search: false,
+      width: 200,
+      render: (_, record) => {
+        if (record.pricing) {
+          try {
+            return typeof record.pricing === 'string' ? record.pricing : JSON.stringify(record.pricing, null, 2);
+          } catch (e) {
+            return typeof record.pricing === 'object' ? JSON.stringify(record.pricing) : String(record.pricing);
+          }
+        }
+        return <Text type="secondary">未设置</Text>;
+      },
+    },
+    {
+      title: "客户端参数",
+      dataIndex: "clientArgs",
+      valueType: "text",
+      search: false,
+      width: 200,
+      render: (_, record) => {
+        if (record.clientArgs) {
+          try {
+            const clientArgs = typeof record.clientArgs === 'string' ? record.clientArgs : JSON.stringify(record.clientArgs, null, 2);
+            // 限制显示长度
+            return clientArgs.length > 50 ? clientArgs.substring(0, 50) + '...' : clientArgs;
+          } catch (e) {
+            return typeof record.clientArgs === 'object' ? JSON.stringify(record.clientArgs) : String(record.clientArgs);
+          }
+        }
+        return <Text type="secondary">未设置</Text>;
+      },
+    },
+    {
+      title: "请求参数",
+      dataIndex: "requestArgs",
+      valueType: "text",
+      search: false,
+      width: 200,
+      render: (_, record) => {
+        if (record.requestArgs) {
+          try {
+            const requestArgs = typeof record.requestArgs === 'string' ? record.requestArgs : JSON.stringify(record.requestArgs, null, 2);
+            // 限制显示长度
+            return requestArgs.length > 50 ? requestArgs.substring(0, 50) + '...' : requestArgs;
+          } catch (e) {
+            return typeof record.requestArgs === 'object' ? JSON.stringify(record.requestArgs) : String(record.requestArgs);
+          }
         }
         return <Text type="secondary">未设置</Text>;
       },
@@ -238,6 +293,7 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "createdAt",
       valueType: "dateTime",
       search: true,
+      width: 180,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
         showTime: true,
@@ -258,6 +314,7 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "updatedAt",
       valueType: "dateTime",
       search: true,
+      width: 180,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
         showTime: true,
@@ -277,6 +334,7 @@ const ModelConfigPage: React.FC = () => {
       title: "操作",
       valueType: "option",
       width: 200,
+      fixed: "right",
       ellipsis: true,
       render: (_, record) => (
         <div style={{ textAlign: "center" }}>
@@ -308,6 +366,7 @@ const ModelConfigPage: React.FC = () => {
           actionRef={actionRef}
           rowKey="approachName"
           search={{ labelWidth: "auto" }}
+          scroll={{ x: 1500 }}
           rowSelection={{
             selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
           }}
@@ -342,28 +401,6 @@ const ModelConfigPage: React.FC = () => {
           ]}
           request={modelConfigListRequest}
         />
-        
-        {/* 添加JSON数据展示区域 */}
-        <Collapse style={{ marginTop: 20 }}>
-          <Panel header="原始数据展示" key="1">
-            <Text type="secondary" style={{ marginBottom: 10, display: 'block' }}>
-              以下为从API接收到的原始模型配置数据：
-            </Text>
-            <div style={{ 
-              backgroundColor: '#f5f5f5', 
-              padding: 15, 
-              borderRadius: 4, 
-              maxHeight: 400, 
-              overflow: 'auto',
-              fontFamily: 'monospace',
-              fontSize: 12
-            }}>
-              <pre>
-                {rawData ? JSON.stringify(rawData, null, 2) : '暂无数据'}
-              </pre>
-            </div>
-          </Panel>
-        </Collapse>
       </ProCard>
 
       <Modal
@@ -372,6 +409,7 @@ const ModelConfigPage: React.FC = () => {
         onOk={handleModalOk}
         onCancel={handleModalCancel}
         width={800}
+        destroyOnClose
       >
         <Form
           form={form}
