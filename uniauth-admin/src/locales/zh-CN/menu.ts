@@ -52,6 +52,8 @@ export default {
   "menu.editor.mind": "脑图编辑器",
   "menu.editor.koni": "拓扑编辑器",
   "menu.Config": "配置管理",
+  "menu.Config.model-config": "模型配置",
+  "menu.Config.auto-quota-pool-config": "自动配额池配置",
   "menu.user-list": "用户列表",
   "menu.user-detail": "用户详情",
 };

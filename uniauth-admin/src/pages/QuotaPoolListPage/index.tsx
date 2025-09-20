@@ -2,6 +2,7 @@ import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
 import { Typography, Button, Popconfirm, Table, Space } from "antd";
 import { useRef } from "react";
+import { useIntl } from '@umijs/max';
 
 const { Title, Text } = Typography;
 
@@ -53,31 +54,31 @@ const quotaPoolsExampleData = [
 
 const columns: ProColumns<any>[] = [
   {
-    title: "配额池名称",
+    title: intl.formatMessage({ id: 'pages.quotaPoolList.columns.name' }),
     dataIndex: "name",
     valueType: "text",
     search: true,
   },
   {
-    title: "管理者",
+    title: intl.formatMessage({ id: 'pages.quotaPoolList.columns.manager' }),
     dataIndex: "manager",
     valueType: "text",
     search: true,
-    render: (_, record) => record.manager || <Text type="secondary">无</Text>,
+    render: (_, record) => record.manager || <Text type="secondary">{intl.formatMessage({ id: 'pages.quotaPoolList.notSet' })}</Text>,
   },
   {
-    title: "自动创建",
+    title: intl.formatMessage({ id: 'pages.quotaPoolList.columns.autoCreated' }),
     dataIndex: "autoCreated",
     valueType: "select",
     valueEnum: {
-      true: { text: "是" },
-      false: { text: "否" },
+      true: { text: intl.formatMessage({ id: 'pages.quotaPoolList.yes' }) },
+      false: { text: intl.formatMessage({ id: 'pages.quotaPoolList.no' }) },
     },
     search: true,
-    render: (_, record) => (record.autoCreated ? "是" : "否"),
+    render: (_, record) => (record.autoCreated ? intl.formatMessage({ id: 'pages.quotaPoolList.yes' }) : intl.formatMessage({ id: 'pages.quotaPoolList.no' })),
   },
   {
-    title: "创建时间",
+    title: intl.formatMessage({ id: 'pages.quotaPoolList.columns.createdAt' }),
     dataIndex: "createdAt",
     valueType: "dateTime",
     search: true,
@@ -88,22 +89,22 @@ const columns: ProColumns<any>[] = [
     },
   },
   {
-    title: "操作",
+    title: intl.formatMessage({ id: 'pages.quotaPoolList.columns.actions' }),
     valueType: "option",
     width: 200,
     ellipsis: true,
     render: (_, record) => (
       <div style={{ textAlign: "center" }}>
         <a key="detail" onClick={() => handleViewDetail(record)}>
-          详情
+          {intl.formatMessage({ id: 'pages.quotaPoolList.detail' })}
         </a>
         <span style={{ margin: "0 8px" }} />
         <Popconfirm
           key="delete"
-          title="确定要删除该配额池吗？"
+          title={intl.formatMessage({ id: 'pages.quotaPoolList.deleteConfirm' })}
           onConfirm={() => handleDelete(record)}
         >
-          <a style={{ color: "red" }}>删除</a>
+          <a style={{ color: "red" }}>{intl.formatMessage({ id: 'pages.quotaPoolList.delete' })}</a>
         </Popconfirm>
       </div>
     ),
@@ -177,14 +178,15 @@ const quotaPoolListRequest = async (params: any) => {
 };
 
 const QuotaPoolListPage: React.FC = () => {
+  const intl = useIntl();
   const actionRef = useRef<ActionType | null>(null);
 
   return (
     <PageContainer>
       <ProCard>
-        <Title level={4}>配额池列表</Title>
+        <Title level={4}>{intl.formatMessage({ id: 'pages.quotaPoolList.title' })}</Title>
         <Text type="secondary">
-          管理系统中的所有配额池及其配置，查看使用情况、获取账单等
+          {intl.formatMessage({ id: 'pages.quotaPoolList.description' })}
         </Text>
         <ProTable
           columns={columns}
@@ -203,9 +205,9 @@ const QuotaPoolListPage: React.FC = () => {
             return (
               <Space size={24}>
                 <span>
-                  已选 {selectedRowKeys.length} 项
+                  {intl.formatMessage({ id: 'pages.quotaPoolList.selectedItems' }, { count: selectedRowKeys.length })}
                   <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
-                    取消选择
+                    {intl.formatMessage({ id: 'pages.quotaPoolList.cancelSelection' })}
                   </a>
                 </span>
               </Space>
@@ -214,14 +216,14 @@ const QuotaPoolListPage: React.FC = () => {
           tableAlertOptionRender={() => {
             return (
               <Space size={16}>
-                <a onClick={handleBatchResetClick}>批量重置</a>
-                <a onClick={handleBatchDisableClick}>批量禁用</a>
+                <a onClick={handleBatchResetClick}>{intl.formatMessage({ id: 'pages.quotaPoolList.batchReset' })}</a>
+                <a onClick={handleBatchDisableClick}>{intl.formatMessage({ id: 'pages.quotaPoolList.batchDisable' })}</a>
               </Space>
             );
           }}
           toolBarRender={() => [
             <Button type="primary" key="new" onClick={handleNewQuotaPoolClick}>
-              添加新的配额池
+              {intl.formatMessage({ id: 'pages.quotaPoolList.addNew' })}
             </Button>,
           ]}
           request={quotaPoolListRequest}

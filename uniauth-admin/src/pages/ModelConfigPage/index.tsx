@@ -2,6 +2,7 @@ import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
 import { Typography, Button, Popconfirm, Table, Space, message, Modal, Form, Input, Select } from "antd";
 import { useRef, useState } from "react";
+import { useIntl } from '@umijs/max';
 import {
   getConfigModelAll,
   postConfigModel,
@@ -18,6 +19,7 @@ const ModelConfigPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState<API.ModelConfigItem | null>(null);
   const [form] = Form.useForm();
+  const intl = useIntl();
 
   const handleEdit = (record: API.ModelConfigItem) => {
     setEditingRecord(record);
@@ -44,15 +46,23 @@ const ModelConfigPage: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleDelete = async (record: API.ModelConfigItem) => {
-    try {
-      await deleteConfigModel({ approachName: record.approachName || '' });
-      message.success("删除成功");
-      actionRef.current?.reload();
-    } catch (error) {
-      message.error("删除失败");
-      console.error("删除模型配置失败:", error);
-    }
+  const handleDelete = (record: API.ModelConfigItem) => {
+    Modal.confirm({
+      title: intl.formatMessage({ id: 'pages.modelConfig.deleteConfirm' }),
+      content: intl.formatMessage({ id: 'pages.modelConfig.deleteConfirmContent' }),
+      okText: intl.formatMessage({ id: 'pages.modelConfig.delete' }),
+      cancelText: intl.formatMessage({ id: 'pages.modelConfig.cancel' }),
+      onOk: async () => {
+        try {
+          await deleteConfigModel({ approachName: record.approachName || '' });
+          message.success(intl.formatMessage({ id: 'pages.modelConfig.deleteSuccess' }));
+          actionRef.current?.reload();
+        } catch (error) {
+          message.error(intl.formatMessage({ id: 'pages.modelConfig.deleteFailed' }));
+          console.error("删除模型配置失败:", error);
+        }
+      },
+    });
   };
 
   const handleNewModelConfig = () => {
@@ -72,7 +82,7 @@ const ModelConfigPage: React.FC = () => {
           return JSON.parse(field);
         } catch (e) {
           console.error('JSON解析失败:', e);
-          message.error("JSON格式错误，请检查输入");
+          message.error(intl.formatMessage({ id: 'pages.modelConfig.form.jsonInvalid' }));
           throw e;
         }
       };
@@ -104,18 +114,18 @@ const ModelConfigPage: React.FC = () => {
       if (editingRecord) {
         // 编辑现有配置
         await putConfigModel(processedValues);
-        message.success("更新成功");
+        message.success(intl.formatMessage({ id: 'pages.modelConfig.updateSuccess' }));
       } else {
         // 添加新配置
         await postConfigModel(processedValues);
-        message.success("添加成功");
+        message.success(intl.formatMessage({ id: 'pages.modelConfig.createSuccess' }));
       }
       
       setModalVisible(false);
       actionRef.current?.reload();
     } catch (error) {
       console.error("保存模型配置失败:", error);
-      // 错误消息已经在parseJsonField中处理了
+      message.error(intl.formatMessage({ id: 'pages.modelConfig.operationFailed' }));
     }
   };
 
@@ -177,7 +187,7 @@ const ModelConfigPage: React.FC = () => {
       }
     } catch (error) {
       console.error("获取模型配置列表失败:", error);
-      message.error("获取模型配置列表失败");
+      message.error(intl.formatMessage({ id: 'pages.modelConfig.fetchFailed' }));
       return {
         data: [],
         success: false,
@@ -188,24 +198,24 @@ const ModelConfigPage: React.FC = () => {
 
   const columns: ProColumns<API.ModelConfigItem>[] = [
     {
-      title: "模型名称",
+      title: intl.formatMessage({ id: 'pages.modelConfig.approachName' }),
       dataIndex: "approachName",
       valueType: "text",
       search: true,
       fixed: "left",
       width: 150,
-      render: (_, record) => record.approachName || <Text type="secondary">未设置</Text>,
+      render: (_, record) => record.approachName || <Text type="secondary">{intl.formatMessage({ id: 'pages.modelConfig.notSet' })}</Text>,
     },
     {
-      title: "客户端类型",
+      title: intl.formatMessage({ id: 'pages.modelConfig.clientType' }),
       dataIndex: "clientType",
       valueType: "text",
       search: true,
       width: 120,
-      render: (_, record) => record.clientType || <Text type="secondary">未设置</Text>,
+      render: (_, record) => record.clientType || <Text type="secondary">{intl.formatMessage({ id: 'pages.modelConfig.notSet' })}</Text>,
     },
     {
-      title: "折扣",
+      title: intl.formatMessage({ id: 'pages.modelConfig.discount' }),
       dataIndex: "discount",
       valueType: "digit",
       search: false,
@@ -217,11 +227,11 @@ const ModelConfigPage: React.FC = () => {
             return `${(discountValue * 100).toFixed(1)}%`;
           }
         }
-        return <Text type="secondary">未设置</Text>;
+        return <Text type="secondary">{intl.formatMessage({ id: 'pages.modelConfig.notSet' })}</Text>;
       },
     },
     {
-      title: "服务项",
+      title: intl.formatMessage({ id: 'pages.modelConfig.servicewares' }),
       dataIndex: "servicewares",
       valueType: "text",
       search: false,
@@ -230,11 +240,11 @@ const ModelConfigPage: React.FC = () => {
         if (Array.isArray(record.servicewares) && record.servicewares.length > 0) {
           return record.servicewares.join(', ');
         }
-        return <Text type="secondary">未设置</Text>;
+        return <Text type="secondary">{intl.formatMessage({ id: 'pages.modelConfig.notSet' })}</Text>;
       },
     },
     {
-      title: "定价配置",
+      title: intl.formatMessage({ id: 'pages.modelConfig.pricing' }),
       dataIndex: "pricing",
       valueType: "text",
       search: false,
@@ -247,11 +257,11 @@ const ModelConfigPage: React.FC = () => {
             return typeof record.pricing === 'object' ? JSON.stringify(record.pricing) : String(record.pricing);
           }
         }
-        return <Text type="secondary">未设置</Text>;
+        return <Text type="secondary">{intl.formatMessage({ id: 'pages.modelConfig.notSet' })}</Text>;
       },
     },
     {
-      title: "客户端参数",
+      title: intl.formatMessage({ id: 'pages.modelConfig.clientArgs' }),
       dataIndex: "clientArgs",
       valueType: "text",
       search: false,
@@ -266,11 +276,11 @@ const ModelConfigPage: React.FC = () => {
             return typeof record.clientArgs === 'object' ? JSON.stringify(record.clientArgs) : String(record.clientArgs);
           }
         }
-        return <Text type="secondary">未设置</Text>;
+        return <Text type="secondary">{intl.formatMessage({ id: 'pages.modelConfig.notSet' })}</Text>;
       },
     },
     {
-      title: "请求参数",
+      title: intl.formatMessage({ id: 'pages.modelConfig.requestArgs' }),
       dataIndex: "requestArgs",
       valueType: "text",
       search: false,
@@ -285,11 +295,11 @@ const ModelConfigPage: React.FC = () => {
             return typeof record.requestArgs === 'object' ? JSON.stringify(record.requestArgs) : String(record.requestArgs);
           }
         }
-        return <Text type="secondary">未设置</Text>;
+        return <Text type="secondary">{intl.formatMessage({ id: 'pages.modelConfig.notSet' })}</Text>;
       },
     },
     {
-      title: "创建时间",
+      title: intl.formatMessage({ id: 'pages.modelConfig.createdAt' }),
       dataIndex: "createdAt",
       valueType: "dateTime",
       search: true,
@@ -306,11 +316,11 @@ const ModelConfigPage: React.FC = () => {
             return date.toLocaleString('zh-CN');
           }
         }
-        return <Text type="secondary">未设置</Text>;
+        return <Text type="secondary">{intl.formatMessage({ id: 'pages.modelConfig.notSet' })}</Text>;
       },
     },
     {
-      title: "更新时间",
+      title: intl.formatMessage({ id: 'pages.modelConfig.updatedAt' }),
       dataIndex: "updatedAt",
       valueType: "dateTime",
       search: true,
@@ -327,11 +337,11 @@ const ModelConfigPage: React.FC = () => {
             return date.toLocaleString('zh-CN');
           }
         }
-        return <Text type="secondary">未设置</Text>;
+        return <Text type="secondary">{intl.formatMessage({ id: 'pages.modelConfig.notSet' })}</Text>;
       },
     },
     {
-      title: "操作",
+      title: intl.formatMessage({ id: 'pages.modelConfig.actions' }),
       valueType: "option",
       width: 200,
       fixed: "right",
@@ -339,15 +349,15 @@ const ModelConfigPage: React.FC = () => {
       render: (_, record) => (
         <div style={{ textAlign: "center" }}>
           <a key="edit" onClick={() => handleEdit(record)}>
-            编辑
+            {intl.formatMessage({ id: 'pages.modelConfig.edit' })}
           </a>
           <span style={{ margin: "0 8px" }} />
           <Popconfirm
             key="delete"
-            title="确定要删除该模型配置吗？"
+            title={intl.formatMessage({ id: 'pages.modelConfig.deleteConfirm' })}
             onConfirm={() => handleDelete(record)}
           >
-            <a style={{ color: "red" }}>删除</a>
+            <a style={{ color: "red" }}>{intl.formatMessage({ id: 'pages.modelConfig.delete' })}</a>
           </Popconfirm>
         </div>
       ),
@@ -357,9 +367,9 @@ const ModelConfigPage: React.FC = () => {
   return (
     <PageContainer>
       <ProCard>
-        <Title level={4}>模型配置列表</Title>
+        <Title level={4}>{intl.formatMessage({ id: 'pages.modelConfig.title' })}</Title>
         <Text type="secondary">
-          管理系统中的所有AI模型配置，包括模型参数、访问权限等设置
+          {intl.formatMessage({ id: 'pages.modelConfig.description' })}
         </Text>
         <ProTable
           columns={columns}
@@ -374,9 +384,9 @@ const ModelConfigPage: React.FC = () => {
             return (
               <Space size={24}>
                 <span>
-                  已选 {selectedRowKeys.length} 项
+                  {intl.formatMessage({ id: 'pages.modelConfig.selectedItems' }, { count: selectedRowKeys.length })}
                   <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
-                    取消选择
+                    {intl.formatMessage({ id: 'pages.modelConfig.cancelSelection' })}
                   </a>
                 </span>
               </Space>
@@ -385,18 +395,18 @@ const ModelConfigPage: React.FC = () => {
           tableAlertOptionRender={() => {
             return (
               <Space size={16}>
-                <a onClick={() => message.info("批量操作功能待开发")}>
-                  批量启用
+                <a onClick={() => message.info(intl.formatMessage({ id: 'pages.modelConfig.batchOperationPending' }))}>
+                  {intl.formatMessage({ id: 'pages.modelConfig.batchEnable' })}
                 </a>
-                <a onClick={() => message.info("批量操作功能待开发")}>
-                  批量禁用
+                <a onClick={() => message.info(intl.formatMessage({ id: 'pages.modelConfig.batchOperationPending' }))}>
+                  {intl.formatMessage({ id: 'pages.modelConfig.batchDisable' })}
                 </a>
               </Space>
             );
           }}
           toolBarRender={() => [
             <Button type="primary" key="new" onClick={handleNewModelConfig}>
-              添加新的模型配置
+              {intl.formatMessage({ id: 'pages.modelConfig.addNew' })}
             </Button>,
           ]}
           request={modelConfigListRequest}
@@ -404,7 +414,7 @@ const ModelConfigPage: React.FC = () => {
       </ProCard>
 
       <Modal
-        title={editingRecord ? "编辑模型配置" : "添加模型配置"}
+        title={editingRecord ? intl.formatMessage({ id: 'pages.modelConfig.editModalTitle' }) : intl.formatMessage({ id: 'pages.modelConfig.addModalTitle' })}
         open={modalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
@@ -418,66 +428,66 @@ const ModelConfigPage: React.FC = () => {
         >
           <Form.Item
             name="approachName"
-            label="模型名称"
-            rules={[{ required: true, message: "请输入模型名称" }]}
+            label={intl.formatMessage({ id: 'pages.modelConfig.form.approachName' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pages.modelConfig.form.approachNameRequired' }) }]}
           >
-            <Input placeholder="请输入唯一的模型名称" disabled={!!editingRecord} />
+            <Input placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.approachNamePlaceholder' })} disabled={!!editingRecord} />
           </Form.Item>
           
           <Form.Item
             name="clientType"
-            label="客户端类型"
+            label={intl.formatMessage({ id: 'pages.modelConfig.form.clientType' })}
           >
-            <Input placeholder="请输入客户端类型，如：web, ios, android, server, desktop" />
+            <Input placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.clientTypePlaceholder' })} />
           </Form.Item>
           
           <Form.Item
             name="discount"
-            label="折扣"
+            label={intl.formatMessage({ id: 'pages.modelConfig.form.discount' })}
           >
             <Input 
               type="number" 
               min="0" 
               max="1" 
               step="0.01"
-              placeholder="请输入0-1之间的折扣值，如0.9表示9折" 
+              placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.discountPlaceholder' })} 
             />
           </Form.Item>
           
           <Form.Item
             name="servicewares"
-            label="服务项标识"
+            label={intl.formatMessage({ id: 'pages.modelConfig.form.servicewares' })}
           >
-            <Input placeholder="请输入服务项标识，多个用逗号分隔" />
+            <Input placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.servicewaresPlaceholder' })} />
           </Form.Item>
           
           <Form.Item
             name="pricing"
-            label="定价配置 (JSON)"
+            label={intl.formatMessage({ id: 'pages.modelConfig.form.pricing' })}
           >
             <TextArea
               rows={4}
-              placeholder='请输入JSON格式的定价配置，例如：{"type": "per_token", "input_price": 0.01, "output_price": 0.03}'
+              placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.pricingPlaceholder' })}
             />
           </Form.Item>
           
           <Form.Item
             name="clientArgs"
-            label="客户端参数 (JSON)"
+            label={intl.formatMessage({ id: 'pages.modelConfig.form.clientArgs' })}
           >
             <TextArea
               rows={4}
-              placeholder='请输入JSON格式的客户端参数，例如：{"temperature": 0.7, "max_tokens": 1024}'
+              placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.clientArgsPlaceholder' })}
             />
           </Form.Item>
           
           <Form.Item
             name="requestArgs"
-            label="请求参数 (JSON)"
+            label={intl.formatMessage({ id: 'pages.modelConfig.form.requestArgs' })}
           >
             <TextArea
               rows={4}
-              placeholder='请输入JSON格式的请求参数，例如：{"model": "gpt-4", "stream": true}'
+              placeholder={intl.formatMessage({ id: 'pages.modelConfig.form.requestArgsPlaceholder' })}
             />
           </Form.Item>
         </Form>

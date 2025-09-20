@@ -16,35 +16,37 @@ import {
 } from "antd";
 
 import type { FC } from "react";
+import { useIntl } from '@umijs/max';
 import useStyles from "./style.style";
 
-const QuotaPoolDetailsPage: FC = () => {
+const QuotaPoolDetailsPage: FC<{}> = () => {
+  const intl = useIntl();
   const { styles } = useStyles();
 
   const associatedUsersColumns: ProColumns<any>[] = [
     {
-      title: "UPN",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.associatedUsersColumns.upn' }),
       valueType: "text",
       dataIndex: "upn",
       search: true,
       ellipsis: true,
     },
     {
-      title: "显示名",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.associatedUsersColumns.displayName' }),
       valueType: "text",
       dataIndex: "displayName",
       search: true,
       ellipsis: true,
     },
     {
-      title: "身份",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.associatedUsersColumns.identity' }),
       valueType: "text",
       dataIndex: "identity",
       search: true,
       ellipsis: true,
     },
     {
-      title: "标签",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.associatedUsersColumns.tags' }),
       valueType: "text",
       dataIndex: "tags",
       search: false,
@@ -54,14 +56,14 @@ const QuotaPoolDetailsPage: FC = () => {
         )),
     },
     {
-      title: "部门信息",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.associatedUsersColumns.department' }),
       valueType: "text",
       dataIndex: "department",
       search: true,
       ellipsis: true,
     },
     {
-      title: "操作",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.associatedUsersColumns.actions' }),
       valueType: "option",
       width: 100,
       render: (_, record) => [
@@ -70,7 +72,7 @@ const QuotaPoolDetailsPage: FC = () => {
           key="detail"
           onClick={() => handleUserDetail(record)}
         >
-          查看详情
+          {intl.formatMessage({ id: 'pages.quotaPoolDetails.associatedUsersColumns.viewDetails' })}
         </Button>,
       ],
     },
@@ -146,46 +148,46 @@ const QuotaPoolDetailsPage: FC = () => {
 
   const itToolsRulesColumns: ProColumns<any>[] = [
     {
-      title: "主体",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.columns.subject' }),
       dataIndex: "sub",
       valueType: "text",
       ellipsis: true,
       search: true,
     },
     {
-      title: "域",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.columns.domain' }),
       dataIndex: "dom",
       valueType: "text",
       ellipsis: true,
       search: true,
     },
     {
-      title: "对象",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.columns.object' }),
       dataIndex: "obj",
       valueType: "text",
       ellipsis: true,
       search: true,
     },
     {
-      title: "操作",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.columns.action' }),
       dataIndex: "act",
       valueType: "text",
       ellipsis: true,
       search: true,
     },
     {
-      title: "效果",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.columns.effect' }),
       dataIndex: "eft",
       valueType: "select",
       valueEnum: {
-        allow: { text: "允许", status: "Success" },
-        deny: { text: "拒绝", status: "Error" },
+        allow: { text: intl.formatMessage({ id: 'pages.quotaPoolDetails.allow' }), status: "Success" },
+        deny: { text: intl.formatMessage({ id: 'pages.quotaPoolDetails.deny' }), status: "Error" },
       },
       ellipsis: true,
       search: true,
     },
     {
-      title: "角色分组",
+      title: intl.formatMessage({ id: 'pages.quotaPoolDetails.columns.roleGroup' }),
       dataIndex: "g",
       valueType: "text",
       ellipsis: true,
@@ -246,9 +248,9 @@ const QuotaPoolDetailsPage: FC = () => {
       {() => {
         return (
           <Space>
-            <Button type="primary">重置配额池</Button>
+            <Button type="primary">{intl.formatMessage({ id: 'pages.quotaPoolDetails.resetPool' })}</Button>
             <Button color="danger" variant="solid">
-              禁用配额池
+              {intl.formatMessage({ id: 'pages.quotaPoolDetails.disablePool' })}
             </Button>
           </Space>
         );
@@ -258,8 +260,8 @@ const QuotaPoolDetailsPage: FC = () => {
 
   const extra = (
     <div className={styles.moreInfo}>
-      <Statistic title="状态" value="使用中" valueStyle={{ color: "green" }} />
-      <Statistic title="配额池余额" value={496} prefix="$" />
+      <Statistic title={intl.formatMessage({ id: 'pages.quotaPoolDetails.status' })} value={intl.formatMessage({ id: 'pages.quotaPoolDetails.inUse' })} valueStyle={{ color: "green" }} />
+      <Statistic title={intl.formatMessage({ id: 'pages.quotaPoolDetails.balance' })} value={496} prefix="$" />
     </div>
   );
 
@@ -271,10 +273,10 @@ const QuotaPoolDetailsPage: FC = () => {
           size="small"
           column={isMobile ? 1 : 2}
         >
-          <Descriptions.Item label="配额池名称">sutdent_pool</Descriptions.Item>
-          <Descriptions.Item label="创建人">IT管理员</Descriptions.Item>
-          <Descriptions.Item label="配额池类型">自建配额池</Descriptions.Item>
-          <Descriptions.Item label="创建时间">2025-9-8</Descriptions.Item>
+          <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.poolName' })}>sutdent_pool</Descriptions.Item>
+          <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.creator' })}>{intl.formatMessage({ id: 'pages.quotaPoolDetails.itAdmin' })}</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.poolType' })}>{intl.formatMessage({ id: 'pages.quotaPoolDetails.selfBuiltPool' })}</Descriptions.Item>
+          <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.createTime' })}>2025-9-8</Descriptions.Item>
         </Descriptions>
       )}
     </RouteContext.Consumer>
@@ -282,12 +284,12 @@ const QuotaPoolDetailsPage: FC = () => {
 
   const handleUserDetail = (record: any) => {
     // TODO: 跳转展示用户详情页
-    console.log("查看用户详情", record);
+    console.log(intl.formatMessage({ id: 'pages.quotaPoolDetails.viewUserDetails' }), record);
   };
 
   return (
     <PageContainer
-      title="配额池详情"
+      title={intl.formatMessage({ id: 'pages.quotaPoolDetails.title' })}
       extra={action}
       className={styles.pageHeader}
       content={description}
@@ -295,18 +297,18 @@ const QuotaPoolDetailsPage: FC = () => {
       tabList={[
         {
           key: "config_detail",
-          tab: "配置详情",
+          tab: intl.formatMessage({ id: 'pages.quotaPoolDetails.configTab' }),
         },
         {
           key: "bill_detail",
-          tab: "账单详情",
+          tab: intl.formatMessage({ id: 'pages.quotaPoolDetails.billTab' }),
         },
       ]}
     >
       <div className={styles.main}>
         <GridContent>
           <Card
-            title="详细信息"
+            title={intl.formatMessage({ id: 'pages.quotaPoolDetails.detailsTitle' })}
             style={{
               marginBottom: 24,
             }}
@@ -317,18 +319,18 @@ const QuotaPoolDetailsPage: FC = () => {
                 marginBottom: 24,
               }}
             >
-              <Descriptions.Item label="配额池名称">
+              <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.poolName' })}>
                 example@cuhk.edu.cn
               </Descriptions.Item>
-              <Descriptions.Item label="刷新周期">每周</Descriptions.Item>
-              <Descriptions.Item label="上次刷新时间">
+              <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.refreshCycle' })}>{intl.formatMessage({ id: 'pages.quotaPoolDetails.weekly' })}</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.lastRefreshTime' })}>
                 2025-8-29 19:30:00
               </Descriptions.Item>
-              <Descriptions.Item label="定期配额">$648.00</Descriptions.Item>
-              <Descriptions.Item label="剩余配额">$328.00</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.regularQuota' })}>$648.00</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.remainingQuota' })}>$328.00</Descriptions.Item>
 
-              <Descriptions.Item label="加油包">$168.00</Descriptions.Item>
-              <Descriptions.Item label="余额百分比">
+              <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.topUpPackage' })}>$168.00</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.balancePercentage' })}>
                 <Progress
                   percent={Number(
                     (((328 + 168) / (648 + 168)) * 100).toFixed(1)
@@ -341,7 +343,7 @@ const QuotaPoolDetailsPage: FC = () => {
             </Descriptions>
           </Card>
           <Card
-            title="配额池关联用户"
+            title={intl.formatMessage({ id: 'pages.quotaPoolDetails.associatedUsersTitle' })}
             style={{
               marginBottom: 24,
             }}
@@ -356,7 +358,7 @@ const QuotaPoolDetailsPage: FC = () => {
             />
           </Card>
           <Card
-            title="配置池 ITTools 规则"
+            title={intl.formatMessage({ id: 'pages.quotaPoolDetails.itToolsRulesTitle' })}
             style={{
               marginBottom: 24,
             }}

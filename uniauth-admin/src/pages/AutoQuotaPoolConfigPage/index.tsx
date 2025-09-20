@@ -2,6 +2,7 @@ import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
 import { Typography, Button, Popconfirm, Table, Space, message, Modal, Form, Input, InputNumber, Switch } from "antd";
 import { useRef, useState } from "react";
+import { useIntl } from "@umijs/max";
 import {
   getConfigAutoConfig,
   postConfigAutoConfig,
@@ -12,6 +13,7 @@ import {
 const { Title, Text } = Typography;
 
 const AutoQuotaPoolConfigPage: React.FC = () => {
+  const intl = useIntl();
   const actionRef = useRef<ActionType | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState<API.AutoQuotaPoolItem | null>(null);
@@ -27,15 +29,22 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleDelete = async (record: API.AutoQuotaPoolItem) => {
-    try {
-      await deleteConfigAutoConfig({ ruleName: record.ruleName });
-      message.success("删除成功");
-      actionRef.current?.reload();
-    } catch (error) {
-      message.error("删除失败");
-      console.error("删除自动配额池配置失败:", error);
-    }
+  const handleDelete = (record: API.AutoQuotaPoolItem) => {
+    Modal.confirm({
+      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteConfirm' }),
+      content: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteConfirmContent' }),
+      okText: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.delete' }),
+      cancelText: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.cancel' }),
+      onOk: async () => {
+        try {
+          await deleteConfigAutoConfig({ ruleName: record.ruleName });
+          message.success(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteSuccess' }));
+          actionRef.current?.reload();
+        } catch (error) {
+          message.error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteFailed' }, { error: (error as Error).message }));
+        }
+      },
+    });
   };
 
   const handleNewConfig = () => {
@@ -61,7 +70,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         try {
           processedValues.filterGroup = JSON.parse(values.filterGroup);
         } catch (e) {
-          message.error("保存失败：过滤条件组(JSON)格式不正确，请检查语法");
+          message.error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup' }));
           return;
         }
       }
@@ -71,7 +80,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         try {
           processedValues.upnsCache = JSON.parse(values.upnsCache);
         } catch (e) {
-          message.error("保存失败：UPN缓存列表(JSON)格式不正确，请检查语法");
+          message.error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache' }));
           return;
         }
       }
@@ -79,11 +88,11 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       if (editingRecord) {
         // 编辑现有配置
         await putConfigAutoConfig(processedValues);
-        message.success("更新成功");
+        message.success(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.updateSuccess' }));
       } else {
         // 添加新配置
         await postConfigAutoConfig(processedValues);
-        message.success("添加成功");
+        message.success(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.createSuccess' }));
       }
       
       setModalVisible(false);
@@ -92,23 +101,23 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       console.error("保存自动配额池配置失败:", error);
       
       // 提供更详细的错误信息
-      let errorMessage = "保存失败";
+      let errorMessage = intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.saveFailed' });
       
       // 检查是否是字段验证错误
       if (error.message && error.message.includes("ruleName")) {
-        errorMessage = "保存失败：规则名称不能为空";
+        errorMessage = intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.saveFailedRuleNameRequired' });
       } else if (error.message && error.message.includes("cronCycle")) {
-        errorMessage = "保存失败：刷新周期(Cron表达式)不能为空";
+        errorMessage = intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.saveFailedCronCycleRequired' });
       } else if (error.message && error.message.includes("regularQuota")) {
-        errorMessage = "保存失败：定期配额不能为空或格式不正确";
+        errorMessage = intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.saveFailedRegularQuotaInvalid' });
       } 
       // 检查是否是网络或服务器错误
-      else if (error.message && (error.message.includes("请求失败") || error.message.includes("network"))) {
-        errorMessage = "保存失败：网络或服务器错误，请稍后重试";
+      else if (error.message && (error.message.includes(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.requestFailed' })) || error.message.includes("network"))) {
+        errorMessage = intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.saveFailedNetworkError' });
       } 
       // 其他错误
       else {
-        errorMessage = error.message || "保存失败，请检查输入内容是否正确";
+        errorMessage = error.message ? error.message : intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.saveFailedCheckInput' });
       }
       
       message.error(errorMessage);
@@ -170,87 +179,108 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
 
   const columns: ProColumns<API.AutoQuotaPoolItem>[] = [
     {
-      title: "规则名称",
+      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.ruleName' }),
       dataIndex: "ruleName",
       valueType: "text",
       search: true,
     },
     {
-      title: "规则说明",
+      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.descriptionLabel' }),
       dataIndex: "description",
       valueType: "text",
       search: true,
-      render: (_, record) => record.description || <Text type="secondary">未设置</Text>,
+      render: (_, record) => record.description || <Text type="secondary">{intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.notSet' })}</Text>,
     },
     {
-      title: "刷新周期",
+      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.cronCycle' }),
       dataIndex: "cronCycle",
       valueType: "text",
       search: false,
     },
     {
-      title: "定期配额",
+      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.regularQuota' }),
       dataIndex: "regularQuota",
       valueType: "digit",
       search: false,
-      render: (_, record) => record.regularQuota || <Text type="secondary">未设置</Text>,
+      render: (_, record) => record.regularQuota || <Text type="secondary">{intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.notSet' })}</Text>,
     },
     {
-      title: "是否启用",
+      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.enabled' }),
       dataIndex: "enabled",
       valueType: "select",
       search: true,
       valueEnum: {
-        true: { text: '启用', status: 'Success' },
-        false: { text: '禁用', status: 'Default' },
+        true: { text: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.enabledStatus' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.disabledStatus' }), status: 'Default' },
       },
-      render: (_, record) => record.enabled ? '启用' : '禁用',
+      render: (_, record) => record.enabled ? intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.enabledStatus' }) : intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.disabledStatus' }),
     },
     {
-      title: "优先级",
+      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.priority' }),
       dataIndex: "priority",
       valueType: "digit",
       search: false,
+      render: (_, record) => record.priority || <Text type="secondary">{intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.notSet' })}</Text>,
     },
     {
-      title: "创建时间",
+      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.createdAt' }),
       dataIndex: "createdAt",
       valueType: "dateTime",
       search: true,
+      width: 180,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
         showTime: true,
         style: { width: "100%" },
       },
+      render: (_, record) => {
+        if (record.createdAt) {
+          const date = new Date(record.createdAt);
+          if (!isNaN(date.getTime())) {
+            return date.toLocaleString('zh-CN');
+          }
+        }
+        return <Text type="secondary">{intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.notSet' })}</Text>;
+      },
     },
     {
-      title: "更新时间",
+      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.updatedAt' }),
       dataIndex: "updatedAt",
       valueType: "dateTime",
       search: true,
+      width: 180,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
         showTime: true,
         style: { width: "100%" },
       },
+      render: (_, record) => {
+        if (record.updatedAt) {
+          const date = new Date(record.updatedAt);
+          if (!isNaN(date.getTime())) {
+            return date.toLocaleString('zh-CN');
+          }
+        }
+        return <Text type="secondary">{intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.notSet' })}</Text>;
+      },
     },
     {
-      title: "操作",
+      title: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.actions' }),
       valueType: "option",
       width: 200,
       ellipsis: true,
       render: (_, record) => (
         <div style={{ textAlign: "center" }}>
           <a key="edit" onClick={() => handleEdit(record)}>
-            编辑
+            {intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.edit' })}
           </a>
           <span style={{ margin: "0 8px" }} />
           <Popconfirm
             key="delete"
-            title="确定要删除该自动配额池配置吗？"
+            title={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.deleteConfirm' })}
             onConfirm={() => handleDelete(record)}
           >
-            <a style={{ color: "red" }}>删除</a>
+            <a style={{ color: "red" }}>{intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.delete' })}</a>
           </Popconfirm>
         </div>
       ),
@@ -260,9 +290,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   return (
     <PageContainer>
       <ProCard>
-        <Title level={4}>自动配额池配置列表</Title>
+        <Title level={4}>{intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.title' })}</Title>
         <Text type="secondary">
-          管理系统中的自动配额池配置规则
+          {intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.description' })}
         </Text>
         <ProTable
           columns={columns}
@@ -276,9 +306,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             return (
               <Space size={24}>
                 <span>
-                  已选 {selectedRowKeys.length} 项
+                  {intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.selectedItems' }, { count: selectedRowKeys.length })}
                   <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
-                    取消选择
+                    {intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.cancelSelection' })}
                   </a>
                 </span>
               </Space>
@@ -287,18 +317,18 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           tableAlertOptionRender={() => {
             return (
               <Space size={16}>
-                <a onClick={() => message.info("批量操作功能待开发")}>
-                  批量启用
+                <a onClick={() => message.info(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.batchOperationPending' }))}>
+                  {intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.batchEnable' })}
                 </a>
-                <a onClick={() => message.info("批量操作功能待开发")}>
-                  批量禁用
+                <a onClick={() => message.info(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.batchOperationPending' }))}>
+                  {intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.batchDisable' })}
                 </a>
               </Space>
             );
           }}
           toolBarRender={() => [
             <Button type="primary" key="new" onClick={handleNewConfig}>
-              添加新的自动配额池配置
+              {intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.addNew' })}
             </Button>,
           ]}
           request={configListRequest}
@@ -306,11 +336,12 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       </ProCard>
 
       <Modal
-        title={editingRecord ? "编辑自动配额池配置" : "添加自动配额池配置"}
+        title={editingRecord ? intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.editModalTitle' }) : intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.addModalTitle' })}
         open={modalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
         width={800}
+        destroyOnClose
       >
         <Form
           form={form}
@@ -319,42 +350,42 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         >
           <Form.Item
             name="ruleName"
-            label="规则名称"
-            rules={[{ required: true, message: "请输入规则名称" }]}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.ruleName' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.ruleNameRequired' }) }]}
           >
-            <Input placeholder="请输入唯一的规则名称" disabled={!!editingRecord} />
+            <Input placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.ruleNamePlaceholder' })} disabled={!!editingRecord} />
           </Form.Item>
           
           <Form.Item
             name="description"
-            label="规则说明"
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.description' })}
           >
-            <Input placeholder="请输入规则说明" />
+            <Input placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.descriptionPlaceholder' })} />
           </Form.Item>
           
           <Form.Item
             name="cronCycle"
-            label="刷新周期 (Cron表达式)"
-            rules={[{ required: true, message: "请输入刷新周期" }]}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.cronCycle' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.cronCycleRequired' }) }]}
           >
-            <Input placeholder="请输入Cron表达式，如: 0 0 3 * * *" />
+            <Input placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.cronCyclePlaceholder' })} />
           </Form.Item>
           
           <Form.Item
             name="regularQuota"
-            label="定期配额"
-            rules={[{ required: true, message: "请输入定期配额" }]}
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.regularQuota' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.regularQuotaRequired' }) }]}
           >
             <InputNumber 
               style={{ width: '100%' }}
-              placeholder="请输入定期配额" 
+              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.regularQuotaPlaceholder' })}
               min={0}
             />
           </Form.Item>
           
           <Form.Item
             name="enabled"
-            label="是否启用"
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.enabled' })}
             valuePropName="checked"
           >
             <Switch />
@@ -362,18 +393,18 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           
           <Form.Item
             name="priority"
-            label="优先级"
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.priority' })}
           >
             <InputNumber 
               style={{ width: '100%' }}
-              placeholder="请输入优先级，数值越小优先级越高" 
+              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.priorityPlaceholder' })}
               min={0}
             />
           </Form.Item>
           
           <Form.Item
             name="filterGroup"
-            label="过滤条件组 (JSON)"
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.filterGroup' })}
             rules={[
               {
                 validator: (_, value) => {
@@ -382,7 +413,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                     JSON.parse(value);
                     return Promise.resolve();
                   } catch (e) {
-                    return Promise.reject(new Error('JSON格式不正确，请检查语法'));
+                    return Promise.reject(new Error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.jsonInvalid' })));
                   }
                 },
               },
@@ -390,13 +421,13 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           >
             <Input.TextArea
               rows={4}
-              placeholder="请输入JSON格式的过滤条件组"
+              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.filterGroupPlaceholder' })}
             />
           </Form.Item>
           
           <Form.Item
             name="upnsCache"
-            label="UPN缓存列表 (JSON)"
+            label={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.upnsCache' })}
             rules={[
               {
                 validator: (_, value) => {
@@ -405,7 +436,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                     JSON.parse(value);
                     return Promise.resolve();
                   } catch (e) {
-                    return Promise.reject(new Error('JSON格式不正确，请检查语法'));
+                    return Promise.reject(new Error(intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.jsonInvalid' })));
                   }
                 },
               },
@@ -413,7 +444,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           >
             <Input.TextArea
               rows={4}
-              placeholder="请输入JSON格式的UPN缓存列表"
+              placeholder={intl.formatMessage({ id: 'pages.autoQuotaPoolConfig.form.upnsCachePlaceholder' })}
             />
           </Form.Item>
         </Form>
