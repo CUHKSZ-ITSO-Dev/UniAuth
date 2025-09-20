@@ -1,3 +1,4 @@
+// @ts-expect-error
 /* eslint-disable */
 import { request } from "@/utils/request";
 
@@ -46,7 +47,7 @@ export async function deleteConfigI18N(
   });
 }
 
-/** 筛选i18n配置 根据过滤条件筛选i18n配置，支持复杂条件查询、排序和分页 POST /config/i18n/filter */
+/** 筛选i18n配置 根据关键词筛选i18n配置，支持排序和分页 POST /config/i18n/filter */
 export async function postConfigI18NFilter(
   body: API.FilterI18nReq,
   options?: { [key: string]: any },

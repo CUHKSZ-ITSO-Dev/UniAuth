@@ -288,8 +288,8 @@ declare namespace API {
   };
 
   type FilterI18nReq = {
-    /** 过滤条件，支持复杂的逻辑组合查询 */
-    filter: I18nFilterGroup;
+    /** 搜索关键词，对key、zh_cn、en_us、description字段进行模糊匹配 */
+    keyword?: string;
     /** 排序条件，支持多字段排序 */
     sort?: I18nSortCondition[];
     /** 分页参数，支持分页或查询全部 */
@@ -311,8 +311,6 @@ declare namespace API {
     page_size?: number;
     /** 总页数 */
     total_pages?: number;
-    /** 是否为全部数据查询 */
-    is_all?: boolean;
   };
 
   type FilterPoliciesReq = {
@@ -564,40 +562,6 @@ declare namespace API {
 
   type HelloRes = {};
 
-  type I18nFilterCondition = {
-    /** 字段名 */
-    field: string;
-    /** 操作符: eq(等于), neq(不等于), gt(大于), gte(大于等于), lt(小于), lte(小于等于), like(模糊匹配), ilike(不区分大小写模糊匹配), in(包含), notin(不包含), contains(包含子串), notcontains(不包含子串), startswith(以...开头), endswith(以...结尾), isnull(为空), isnotnull(不为空) */
-    op:
-      | "eq"
-      | "neq"
-      | "gt"
-      | "gte"
-      | "lt"
-      | "lte"
-      | "like"
-      | "ilike"
-      | "in"
-      | "notin"
-      | "contains"
-      | "notcontains"
-      | "startswith"
-      | "endswith"
-      | "isnull"
-      | "isnotnull";
-    /** 条件值，根据操作符类型可以是字符串、数字、数组等 */
-    value?: Var;
-  };
-
-  type I18nFilterGroup = {
-    /** 逻辑关系: and(且), or(或) */
-    logic?: "and" | "or";
-    /** 过滤条件列表 */
-    conditions?: I18nFilterCondition[];
-    /** 嵌套的条件组，支持复杂逻辑 */
-    groups?: I18nFilterGroup[];
-  };
-
   type I18nItem = {
     /** 翻译键 */
     key?: string;
@@ -618,8 +582,6 @@ declare namespace API {
     page?: number;
     /** 每页条数，最大1000 */
     pageSize?: number;
-    /** 是否返回全部数据，true时忽略分页参数，但仍有最大限制保护 */
-    all?: boolean;
   };
 
   type I18nSortCondition = {

@@ -319,35 +319,18 @@ const ConfigI18nPage: React.FC = () => {
         }),
       );
     }
-  }; // 表格数据请求
+  };
+
+  // 表格数据请求
   const columnRequest = async (params: any) => {
     const { current, pageSize, keyword } = params;
 
-    // 构建搜索条件
-    const filter: API.I18nFilterGroup = {
-      logic: "or",
-      conditions: [],
-    };
-
-    if (keyword) {
-      // 搜索字段：键值、翻译内容、描述
-      const searchFields = ["key", "zh_cn", "en_us", "description"];
-      searchFields.forEach((field) => {
-        filter.conditions?.push({
-          field,
-          op: "contains",
-          value: `${keyword}`,
-        });
-      });
-    }
-
     // 发送搜索请求
     const response = await postConfigI18NFilter({
-      filter,
+      keyword: keyword || "",
       pagination: {
         page: current || 1,
         pageSize: pageSize || 10,
-        all: false,
       },
       sort: [
         {
