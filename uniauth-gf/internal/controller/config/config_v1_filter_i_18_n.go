@@ -76,7 +76,7 @@ func (c *ControllerV1) FilterI18n(ctx context.Context, req *v1.FilterI18nReq) (r
 		}
 	} else {
 		// 默认按创建时间倒序排列
-		model = model.OrderDesc("created_at")
+		model = model.OrderDesc(dao.ConfigInternationalization.Columns().CreatedAt)
 	}
 
 	// 应用分页
@@ -109,7 +109,7 @@ func (c *ControllerV1) FilterI18n(ctx context.Context, req *v1.FilterI18nReq) (r
 	} else {
 		// 仅返回键列表
 		var keys []string
-		err = model.Fields("key").Scan(&keys)
+		err = model.Fields(dao.ConfigInternationalization.Columns().Key).Scan(&keys)
 		if err != nil {
 			return nil, gerror.Wrap(err, "查询i18n键列表失败")
 		}
