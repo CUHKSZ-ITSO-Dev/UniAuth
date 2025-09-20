@@ -23,6 +23,14 @@ func (c *ControllerV1) NewQuotaPool(ctx context.Context, req *v1.NewQuotaPoolReq
 	}
 
 	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		var quotaPool *entity.QuotapoolQuotaPool
+		err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPoolName).LockUpdate().Scan(&quotaPool)
+		if err != nil {
+			return gerror.Wrap(err, "查询配额池信息失败")
+		}
+		if quotaPool != nil {
+			return gerror.Newf("该配额池已存在，请重新检查：%v", req.QuotaPoolName)
+		}
 
 		now := gtime.Now()
 		data := &entity.QuotapoolQuotaPool{
