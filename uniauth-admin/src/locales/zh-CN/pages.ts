@@ -151,4 +151,5 @@ export default {
   "pages.configI18n.batchDelete.info": "已选中 {count} 项",
   "pages.configI18n.batchDelete.clear": "取消选择",
   "pages.configI18n.batchDelete.delete": "批量删除",
+  "pages.configI18n.updatedAt": "更新时间",
 };

@@ -125,6 +125,15 @@ const ConfigI18nPage: React.FC = () => {
     },
     {
       title: intl.formatMessage({
+        id: "pages.configI18n.updatedAt",
+      }),
+      dataIndex: "updatedAt",
+      key: "updatedAt",
+      ellipsis: true,
+      search: false,
+    },
+    {
+      title: intl.formatMessage({
         id: "pages.configI18n.actions",
       }),
       key: "action",
@@ -195,6 +204,7 @@ const ConfigI18nPage: React.FC = () => {
         id: "pages.configI18n.delete.success",
       }),
     );
+    actionRef.current?.reload();
   };
 
   // 新增翻译配置

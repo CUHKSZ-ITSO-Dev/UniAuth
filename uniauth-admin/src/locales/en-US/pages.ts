@@ -164,4 +164,5 @@ export default {
   "pages.configI18n.batchDelete.info": "Selected {count} items",
   "pages.configI18n.batchDelete.clear": "Clear Selection",
   "pages.configI18n.batchDelete.delete": "Batch Delete",
+  "pages.configI18n.updatedAt": "Updated Time",
 };
