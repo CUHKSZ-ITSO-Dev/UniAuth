@@ -465,9 +465,32 @@ declare namespace API {
 
   type GetModelConfigReq = {};
 
+  type ModelConfigItem = {
+    /** 模型名称 */
+    approachName?: string;
+    /** 定价配置（JSON） */
+    pricing?: any;
+    /** 折扣 */
+    discount?: number;
+    /** 客户端类型 */
+    clientType?: string;
+    /** 客户端参数（JSON） */
+    clientArgs?: any;
+    /** 请求参数（JSON） */
+    requestArgs?: any;
+    /** 服务项标识 */
+    servicewares?: string[];
+    /** 创建时间 */
+    createdAt?: string;
+    /** 更新时间 */
+    updatedAt?: string;
+  };
+
   type GetModelConfigRes = {
-    /** 配置 */
-    config?: string;
+    /** 模型配置列表 */
+    data: {
+      items: ModelConfigItem[];
+    };
   };
 
   type GetOneReq = {

@@ -1,6 +1,6 @@
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import type { ProColumns, ActionType } from "@ant-design/pro-components";
-import { Typography, Button, Popconfirm, Table, Space, message, Modal, Form, Input } from "antd";
+import { Typography, Button, Popconfirm, Table, Space, message, Modal, Form, Input, Select } from "antd";
 import { useRef, useState } from "react";
 import {
   getConfigModelAll,
@@ -11,32 +11,28 @@ import {
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
-
-interface ModelConfig {
-  id?: string;
-  name: string;
-  description: string;
-  config: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+const { Option } = Select;
 
 const ModelConfigPage: React.FC = () => {
   const actionRef = useRef<ActionType | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<ModelConfig | null>(null);
+  const [editingRecord, setEditingRecord] = useState<API.ModelConfigItem | null>(null);
   const [form] = Form.useForm();
 
-  const handleEdit = (record: ModelConfig) => {
+  const handleEdit = (record: API.ModelConfigItem) => {
     setEditingRecord(record);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      ...record,
+      pricing: record.pricing ? JSON.stringify(record.pricing, null, 2) : '',
+      clientArgs: record.clientArgs ? JSON.stringify(record.clientArgs, null, 2) : '',
+      requestArgs: record.requestArgs ? JSON.stringify(record.requestArgs, null, 2) : '',
+    });
     setModalVisible(true);
   };
 
-  const handleDelete = async (record: ModelConfig) => {
+  const handleDelete = async (record: API.ModelConfigItem) => {
     try {
-      // TODO: 替换为实际的删除API调用
-      // await deleteConfigModel({ id: record.id });
+      await deleteConfigModel({ approachName: record.approachName });
       message.success("删除成功");
       actionRef.current?.reload();
     } catch (error) {
@@ -55,15 +51,23 @@ const ModelConfigPage: React.FC = () => {
     try {
       const values = await form.validateFields();
       
+      // 处理JSON字段
+      const processedValues = {
+        ...values,
+        pricing: values.pricing ? JSON.parse(values.pricing) : null,
+        clientArgs: values.clientArgs ? JSON.parse(values.clientArgs) : null,
+        requestArgs: values.requestArgs ? JSON.parse(values.requestArgs) : null,
+        servicewares: values.servicewares ? values.servicewares.split(',').map((s: string) => s.trim()).filter((s: string) => s) : [],
+        discount: values.discount ? parseFloat(values.discount) : null,
+      };
+      
       if (editingRecord) {
         // 编辑现有配置
-        // TODO: 替换为实际的编辑API调用
-        // await putConfigModel({ ...values, id: editingRecord.id });
+        await putConfigModel(processedValues);
         message.success("更新成功");
       } else {
         // 添加新配置
-        // TODO: 替换为实际的添加API调用
-        // await postConfigModel(values);
+        await postConfigModel(processedValues);
         message.success("添加成功");
       }
       
@@ -71,6 +75,7 @@ const ModelConfigPage: React.FC = () => {
       actionRef.current?.reload();
     } catch (error) {
       console.error("保存模型配置失败:", error);
+      message.error("保存失败，请检查JSON格式是否正确");
     }
   };
 
@@ -81,61 +86,47 @@ const ModelConfigPage: React.FC = () => {
 
   const modelConfigListRequest = async (params: any) => {
     try {
-      // TODO: 替换为实际的API调用
-      // const response = await getConfigModelAll(params);
+      const response = await getConfigModelAll(params);
       
-      // 模拟数据
-      const mockData: ModelConfig[] = [
-        {
-          id: "1",
-          name: "GPT-4",
-          description: "OpenAI GPT-4 模型",
-          config: '{"model": "gpt-4", "max_tokens": 4096, "temperature": 0.7}',
-          createdAt: "2024-09-01 10:23:45",
-          updatedAt: "2024-09-01 10:23:45",
-        },
-        {
-          id: "2",
-          name: "Claude-2",
-          description: "Anthropic Claude 2 模型",
-          config: '{"model": "claude-2", "max_tokens": 8192, "temperature": 0.5}',
-          createdAt: "2024-09-02 09:15:30",
-          updatedAt: "2024-09-02 09:15:30",
-        },
-        {
-          id: "3",
-          name: "Llama-2",
-          description: "Meta Llama 2 70B 模型",
-          config: '{"model": "llama-2-70b", "max_tokens": 2048, "temperature": 0.8}',
-          createdAt: "2024-08-28 14:05:12",
-          updatedAt: "2024-08-28 14:05:12",
-        },
-      ];
-
-      // 简单的过滤逻辑
-      let data = mockData;
-      if (params.name) {
-        data = data.filter((item) => item.name.includes(params.name));
-      }
-      if (params.description) {
-        data = data.filter((item) => item.description.includes(params.description));
-      }
-      if (params.createdAt && Array.isArray(params.createdAt) && params.createdAt.length === 2) {
-        const [start, end] = params.createdAt;
-        data = data.filter((item) => {
-          const time = new Date(item.createdAt!).getTime();
-          return (
-            (!start || time >= new Date(start).getTime()) &&
-            (!end || time <= new Date(end).getTime())
+      if (response.data && response.data.items) {
+        // 根据查询参数过滤数据
+        let data = response.data.items || [];
+        
+        if (params.approachName) {
+          data = data.filter((item: API.ModelConfigItem) => 
+            item.approachName?.includes(params.approachName)
           );
-        });
-      }
+        }
+        
+        if (params.clientType) {
+          data = data.filter((item: API.ModelConfigItem) => 
+            item.clientType?.includes(params.clientType)
+          );
+        }
+        
+        if (params.createdAt && Array.isArray(params.createdAt) && params.createdAt.length === 2) {
+          const [start, end] = params.createdAt;
+          data = data.filter((item: API.ModelConfigItem) => {
+            const time = new Date(item.createdAt!).getTime();
+            return (
+              (!start || time >= new Date(start).getTime()) &&
+              (!end || time <= new Date(end).getTime())
+            );
+          });
+        }
 
-      return {
-        data,
-        success: true,
-        total: data.length,
-      };
+        return {
+          data,
+          success: true,
+          total: data.length,
+        };
+      } else {
+        return {
+          data: [],
+          success: false,
+          total: 0,
+        };
+      }
     } catch (error) {
       console.error("获取模型配置列表失败:", error);
       return {
@@ -146,32 +137,33 @@ const ModelConfigPage: React.FC = () => {
     }
   };
 
-  const columns: ProColumns<ModelConfig>[] = [
+  const columns: ProColumns<API.ModelConfigItem>[] = [
     {
       title: "模型名称",
-      dataIndex: "name",
+      dataIndex: "approachName",
       valueType: "text",
       search: true,
     },
     {
-      title: "描述",
-      dataIndex: "description",
+      title: "客户端类型",
+      dataIndex: "clientType",
       valueType: "text",
       search: true,
-      ellipsis: true,
-      render: (_, record) => record.description || <Text type="secondary">无</Text>,
+      render: (_, record) => record.clientType || <Text type="secondary">未设置</Text>,
     },
     {
-      title: "配置内容",
-      dataIndex: "config",
+      title: "折扣",
+      dataIndex: "discount",
+      valueType: "digit",
+      search: false,
+      render: (_, record) => record.discount ? `${(record.discount * 100).toFixed(1)}%` : <Text type="secondary">未设置</Text>,
+    },
+    {
+      title: "服务项",
+      dataIndex: "servicewares",
       valueType: "text",
       search: false,
-      ellipsis: true,
-      render: (_, record) => (
-        <Text type="secondary" ellipsis={{ tooltip: record.config }}>
-          {record.config.length > 50 ? record.config.substring(0, 50) + "..." : record.config}
-        </Text>
-      ),
+      render: (_, record) => record.servicewares ? record.servicewares.join(', ') : <Text type="secondary">未设置</Text>,
     },
     {
       title: "创建时间",
@@ -228,7 +220,7 @@ const ModelConfigPage: React.FC = () => {
         <ProTable
           columns={columns}
           actionRef={actionRef}
-          rowKey="id"
+          rowKey="approachName"
           search={{ labelWidth: "auto" }}
           rowSelection={{
             selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
@@ -271,7 +263,7 @@ const ModelConfigPage: React.FC = () => {
         open={modalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
-        width={600}
+        width={800}
       >
         <Form
           form={form}
@@ -279,26 +271,73 @@ const ModelConfigPage: React.FC = () => {
           requiredMark={false}
         >
           <Form.Item
-            name="name"
+            name="approachName"
             label="模型名称"
             rules={[{ required: true, message: "请输入模型名称" }]}
           >
-            <Input placeholder="请输入模型名称" />
+            <Input placeholder="请输入唯一的模型名称" disabled={!!editingRecord} />
           </Form.Item>
+          
           <Form.Item
-            name="description"
-            label="描述"
+            name="clientType"
+            label="客户端类型"
           >
-            <Input placeholder="请输入模型描述" />
+            <Select placeholder="请选择客户端类型">
+              <Option value="web">Web</Option>
+              <Option value="ios">iOS</Option>
+              <Option value="android">Android</Option>
+              <Option value="server">Server</Option>
+              <Option value="desktop">Desktop</Option>
+            </Select>
           </Form.Item>
+          
           <Form.Item
-            name="config"
-            label="配置内容"
-            rules={[{ required: true, message: "请输入配置内容" }]}
+            name="discount"
+            label="折扣"
+          >
+            <Input 
+              type="number" 
+              min="0" 
+              max="1" 
+              step="0.01"
+              placeholder="请输入0-1之间的折扣值，如0.9表示9折" 
+            />
+          </Form.Item>
+          
+          <Form.Item
+            name="servicewares"
+            label="服务项标识"
+          >
+            <Input placeholder="请输入服务项标识，多个用逗号分隔" />
+          </Form.Item>
+          
+          <Form.Item
+            name="pricing"
+            label="定价配置 (JSON)"
           >
             <TextArea
-              rows={6}
-              placeholder="请输入JSON格式的配置内容"
+              rows={4}
+              placeholder="请输入JSON格式的定价配置"
+            />
+          </Form.Item>
+          
+          <Form.Item
+            name="clientArgs"
+            label="客户端参数 (JSON)"
+          >
+            <TextArea
+              rows={4}
+              placeholder="请输入JSON格式的客户端参数"
+            />
+          </Form.Item>
+          
+          <Form.Item
+            name="requestArgs"
+            label="请求参数 (JSON)"
+          >
+            <TextArea
+              rows={4}
+              placeholder="请输入JSON格式的请求参数"
             />
           </Form.Item>
         </Form>
