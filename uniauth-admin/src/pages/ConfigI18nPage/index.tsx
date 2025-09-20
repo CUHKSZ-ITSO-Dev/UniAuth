@@ -331,7 +331,7 @@ const ConfigI18nPage: React.FC = () => {
 
     if (keyword) {
       // 搜索字段：键值、翻译内容、描述
-      const searchFields = ["key", "zhCn", "enUs", "description"];
+      const searchFields = ["key", "zh_cn", "en_us", "description"];
       searchFields.forEach((field) => {
         filter.conditions?.push({
           field,

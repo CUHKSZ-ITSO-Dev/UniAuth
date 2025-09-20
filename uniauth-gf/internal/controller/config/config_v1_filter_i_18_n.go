@@ -17,20 +17,20 @@ import (
 // 字段白名单，防止用户查询任意字段
 var allowedI18nFields = g.MapStrStr{
 	"key":         dao.ConfigInternationalization.Columns().Key,
-	"zhCn":        dao.ConfigInternationalization.Columns().ZhCn,
-	"enUs":        dao.ConfigInternationalization.Columns().EnUs,
+	"zh_cn":       dao.ConfigInternationalization.Columns().ZhCn,
+	"en_us":       dao.ConfigInternationalization.Columns().EnUs,
 	"description": dao.ConfigInternationalization.Columns().Description,
-	"createdAt":   dao.ConfigInternationalization.Columns().CreatedAt,
-	"updatedAt":   dao.ConfigInternationalization.Columns().UpdatedAt,
+	"created_at":  dao.ConfigInternationalization.Columns().CreatedAt,
+	"updated_at":  dao.ConfigInternationalization.Columns().UpdatedAt,
 }
 
 // 支持排序的字段（加了索引的）
 var sortableI18nFields = g.MapStrBool{
 	"key":       true,
-	"zhCn":      true,
-	"enUs":      true,
-	"createdAt": true,
-	"updatedAt": true,
+	"zh_cn":      true,
+	"en_us":      true,
+	"created_at": true,
+	"updated_at": true,
 }
 
 func (c *ControllerV1) FilterI18n(ctx context.Context, req *v1.FilterI18nReq) (res *v1.FilterI18nRes, err error) {

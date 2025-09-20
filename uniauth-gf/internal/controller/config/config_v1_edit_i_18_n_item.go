@@ -44,7 +44,7 @@ func (c *ControllerV1) EditI18nItem(ctx context.Context, req *v1.EditI18nItemReq
 	})
 
 	if err != nil {
-		return &v1.EditI18nItemRes{OK: false}, err
+		return nil, err
 	}
 
 	return &v1.EditI18nItemRes{OK: true}, nil
