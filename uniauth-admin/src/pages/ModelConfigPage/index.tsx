@@ -428,13 +428,7 @@ const ModelConfigPage: React.FC = () => {
             name="clientType"
             label="客户端类型"
           >
-            <Select placeholder="请选择客户端类型">
-              <Option value="web">Web</Option>
-              <Option value="ios">iOS</Option>
-              <Option value="android">Android</Option>
-              <Option value="server">Server</Option>
-              <Option value="desktop">Desktop</Option>
-            </Select>
+            <Input placeholder="请输入客户端类型，如：web, ios, android, server, desktop" />
           </Form.Item>
           
           <Form.Item
