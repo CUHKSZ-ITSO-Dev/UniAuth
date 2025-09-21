@@ -237,6 +237,18 @@ export default {
   "pages.modelConfig.jsonInvalid": "Invalid JSON format, please check input",
   "pages.modelConfig.createSuccess": "Create Successful",
   "pages.modelConfig.fetchFailed": "Failed to fetch model configurations",
+  "pages.modelConfig.saveFailed": "Failed to save model configuration",
+  "pages.modelConfig.saveFailedApproachNameRequired": "Model name is required",
+  "pages.modelConfig.saveFailedClientTypeInvalid": "Invalid client type",
+  "pages.modelConfig.saveFailedDiscountInvalid": "Invalid discount value",
+  "pages.modelConfig.saveFailedNetworkError":
+    "Network error, please check your connection",
+  "pages.modelConfig.saveFailedCheckInput":
+    "Save failed, please check your input",
+  "pages.modelConfig.requestFailed": "Request failed",
+  "pages.modelConfig.clientTypeRequired": "Please select the client type",
+  "pages.modelConfig.discountRequired": "Please enter the discount value",
+  "pages.modelConfig.discountRange": "Discount value must be between 0 and 1",
 
   // ConfigI18nPage
   "pages.configI18n.search": "Search",

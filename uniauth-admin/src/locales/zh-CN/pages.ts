@@ -218,6 +218,16 @@ export default {
   "pages.modelConfig.jsonInvalid": "JSON格式无效，请检查输入",
   "pages.modelConfig.createSuccess": "创建成功",
   "pages.modelConfig.fetchFailed": "获取模型配置失败",
+  "pages.modelConfig.saveFailed": "保存模型配置失败",
+  "pages.modelConfig.saveFailedApproachNameRequired": "模型名称为必填项",
+  "pages.modelConfig.saveFailedClientTypeInvalid": "客户端类型无效",
+  "pages.modelConfig.saveFailedDiscountInvalid": "折扣值无效",
+  "pages.modelConfig.saveFailedNetworkError": "网络错误，请检查网络连接",
+  "pages.modelConfig.saveFailedCheckInput": "保存失败，请检查输入",
+  "pages.modelConfig.requestFailed": "请求失败",
+  "pages.modelConfig.clientTypeRequired": "请选择客户端类型",
+  "pages.modelConfig.discountRequired": "请输入折扣值",
+  "pages.modelConfig.discountRange": "折扣值必须在0-1之间",
 
   // ConfigI18nPage
   "pages.configI18n.search": "搜索配置",

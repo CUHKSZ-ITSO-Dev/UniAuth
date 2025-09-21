@@ -169,28 +169,56 @@ const ModelConfigPage: React.FC = () => {
       setModalVisible(false);
       actionRef.current?.reload();
     } catch (error: any) {
-      // 表单验证错误
+      console.error("保存模型配置失败:", error);
+
+      // 提供更详细的错误信息
+      let errorMessage = intl.formatMessage({
+        id: "pages.modelConfig.saveFailed",
+      });
+
+      // 检查是否是字段验证错误
       if (error.errorFields) {
-        console.error("表单验证失败:", error);
-        message.error(
-          intl.formatMessage({ id: "pages.modelConfig.formInvalid" }),
-        );
-      } else {
-        // 提交数据错误
-        if (editingRecord) {
-          message.error(
-            intl.formatMessage({ id: "pages.modelConfig.editFailed" }),
-          );
-        } else {
-          message.error(
-            intl.formatMessage({ id: "pages.modelConfig.addFailed" }),
-          );
-        }
-        console.error("提交数据失败:", error);
-        // 输出详细的错误信息到控制台
-        if (error.data) {
-          console.error("错误详情:", JSON.stringify(error.data, null, 2));
-        }
+        errorMessage = intl.formatMessage({
+          id: "pages.modelConfig.formInvalid",
+        });
+      } else if (error.message && error.message.includes("approachName")) {
+        errorMessage = intl.formatMessage({
+          id: "pages.modelConfig.saveFailedApproachNameRequired",
+        });
+      } else if (error.message && error.message.includes("clientType")) {
+        errorMessage = intl.formatMessage({
+          id: "pages.modelConfig.saveFailedClientTypeInvalid",
+        });
+      } else if (error.message && error.message.includes("discount")) {
+        errorMessage = intl.formatMessage({
+          id: "pages.modelConfig.saveFailedDiscountInvalid",
+        });
+      }
+      // 检查是否是网络或服务器错误
+      else if (
+        error.message &&
+        (error.message.includes(
+          intl.formatMessage({ id: "pages.modelConfig.requestFailed" }),
+        ) ||
+          error.message.includes("network"))
+      ) {
+        errorMessage = intl.formatMessage({
+          id: "pages.modelConfig.saveFailedNetworkError",
+        });
+      }
+      // 其他错误
+      else {
+        errorMessage = error.message
+          ? error.message
+          : intl.formatMessage({
+              id: "pages.modelConfig.saveFailedCheckInput",
+            });
+      }
+
+      message.error(errorMessage);
+      // 输出详细的错误信息到控制台
+      if (error.data) {
+        console.error("错误详情:", JSON.stringify(error.data, null, 2));
       }
     }
   };
@@ -532,6 +560,14 @@ const ModelConfigPage: React.FC = () => {
           <Form.Item
             name="approachName"
             label={intl.formatMessage({ id: "pages.modelConfig.approachName" })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.modelConfig.approachNameRequired",
+                }),
+              },
+            ]}
           >
             <Input
               placeholder={intl.formatMessage({
@@ -544,6 +580,14 @@ const ModelConfigPage: React.FC = () => {
           <Form.Item
             name="clientType"
             label={intl.formatMessage({ id: "pages.modelConfig.clientType" })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.modelConfig.clientTypeRequired",
+                }),
+              },
+            ]}
           >
             <Select
               placeholder={intl.formatMessage({
@@ -559,6 +603,22 @@ const ModelConfigPage: React.FC = () => {
           <Form.Item
             name="discount"
             label={intl.formatMessage({ id: "pages.modelConfig.discount" })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.modelConfig.discountRequired",
+                }),
+              },
+              {
+                type: "number",
+                min: 0,
+                max: 1,
+                message: intl.formatMessage({
+                  id: "pages.modelConfig.discountRange",
+                }),
+              },
+            ]}
           >
             <Input
               type="number"
