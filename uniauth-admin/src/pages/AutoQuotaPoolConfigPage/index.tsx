@@ -20,18 +20,33 @@ import {
   putConfigAutoConfig,
 } from "@/services/uniauthService/autoQuotaPoolConfig";
 
+// UI组件解构
 const { Title, Text } = Typography;
 
+/**
+ * 自动配额池配置页面组件
+ * 提供自动配额池规则的增删改查功能
+ */
 const AutoQuotaPoolConfigPage: React.FC = () => {
+  // 国际化工具
   const intl = useIntl();
+  // 表格操作引用
   const actionRef = useRef<ActionType | null>(null);
+  // 控制模态框显示状态
   const [modalVisible, setModalVisible] = useState(false);
+  // 当前编辑的记录
   const [editingRecord, setEditingRecord] =
     useState<API.AutoQuotaPoolItem | null>(null);
+  // 表单实例
   const [form] = Form.useForm();
 
+  /**
+   * 编辑记录处理函数
+   * @param record 要编辑的记录
+   */
   const handleEdit = (record: API.AutoQuotaPoolItem) => {
     setEditingRecord(record);
+
     // 安全地处理JSON字段的序列化
     const formatJsonField = (field: any): string => {
       if (!field) return "";
@@ -55,13 +70,18 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     setModalVisible(true);
   };
 
+  /**
+   * 删除记录处理函数
+   * @param record 要删除的记录
+   */
   const handleDelete = async (record: API.AutoQuotaPoolItem) => {
     try {
-      // 按照API文档要求，删除操作通过请求体参数ruleName传递
+      // 调用删除API，通过ruleName参数指定要删除的记录
       await deleteConfigAutoConfig({ ruleName: record.ruleName || "" });
       message.success(
         intl.formatMessage({ id: "pages.autoQuotaPoolConfig.deleteSuccess" }),
       );
+      // 刷新表格数据
       actionRef.current?.reload();
     } catch (error: any) {
       message.error(
@@ -75,6 +95,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     }
   };
 
+  /**
+   * 新建配置处理函数
+   */
   const handleNewConfig = () => {
     setEditingRecord(null);
     form.resetFields();
@@ -93,15 +116,19 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     success?: boolean;
   }
 
+  /**
+   * 模态框确认处理函数
+   */
   const handleModalOk = async () => {
     try {
+      // 表单验证
       const values = await form.validateFields();
 
-      // 使用API.AutoQuotaPoolItem类型，确保所有字段都正确传递
+      // 处理表单数据，转换为API所需的格式
       const processedValues: Partial<API.AutoQuotaPoolItem> = {
-        ruleName: values.ruleName, // 根据API文档，ruleName是必填项
-        cronCycle: values.cronCycle, // 根据API文档，cronCycle是必填项
-        regularQuota: values.regularQuota ? parseFloat(values.regularQuota) : 0, // 根据API文档，regularQuota是必填项
+        ruleName: values.ruleName,
+        cronCycle: values.cronCycle,
+        regularQuota: values.regularQuota ? parseFloat(values.regularQuota) : 0,
         priority: values.priority ? parseInt(values.priority) : 0,
         enabled: values.enabled !== undefined ? values.enabled : true,
         description: values.description || "",
@@ -141,14 +168,15 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         processedValues.upnsCache = null;
       }
 
+      // 根据是否为编辑状态调用不同的API
       if (editingRecord) {
-        // 编辑现有配置 - 按照API文档要求使用EditAutoQuotaPoolConfigReq结构
+        // 编辑现有配置
         await putConfigAutoConfig(processedValues);
         message.success(
           intl.formatMessage({ id: "pages.autoQuotaPoolConfig.updateSuccess" }),
         );
       } else {
-        // 添加新配置 - 按照API文档要求使用AddAutoQuotaPoolConfigReq结构
+        // 添加新配置
         await postConfigAutoConfig(processedValues);
         message.success(
           intl.formatMessage({ id: "pages.autoQuotaPoolConfig.createSuccess" }),
@@ -212,16 +240,23 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     }
   };
 
+  /**
+   * 模态框取消处理函数
+   */
   const handleModalCancel = () => {
     setModalVisible(false);
     form.resetFields();
   };
 
+  /**
+   * 获取配置列表请求函数
+   * @param params 查询参数
+   */
   const configListRequest = async (
     params: any,
   ): Promise<Partial<RequestData<API.AutoQuotaPoolItem>>> => {
     try {
-      // 按照API文档要求，获取自动配额池规则列表
+      // 调用API获取自动配额池规则列表
       const response = await getConfigAutoConfig(params);
 
       if (response.items) {
@@ -275,6 +310,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     }
   };
 
+  /**
+   * 表格列配置
+   */
   const columns: ProColumns<API.AutoQuotaPoolItem>[] = [
     {
       title: intl.formatMessage({ id: "pages.autoQuotaPoolConfig.ruleName" }),
@@ -441,6 +479,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         <Text type="secondary">
           {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.description" })}
         </Text>
+        {/* 表格组件 */}
         <ProTable
           columns={columns}
           actionRef={actionRef}
@@ -455,6 +494,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         />
       </ProCard>
 
+      {/* 编辑/新建模态框 */}
       <Modal
         title={
           editingRecord

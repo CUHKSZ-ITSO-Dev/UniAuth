@@ -19,17 +19,31 @@ import {
   putConfigModel,
 } from "@/services/uniauthService/model";
 
+// UI组件解构
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
+/**
+ * 模型配置页面组件
+ * 提供模型配置的增删改查功能
+ */
 const ModelConfigPage: React.FC = () => {
+  // 表格操作引用
   const actionRef = useRef<ActionType | null>(null);
+  // 控制模态框显示状态
   const [modalVisible, setModalVisible] = useState(false);
+  // 当前编辑的记录
   const [editingRecord, setEditingRecord] =
     useState<API.ModelConfigItem | null>(null);
+  // 表单实例
   const [form] = Form.useForm();
+  // 国际化工具
   const intl = useIntl();
 
+  /**
+   * 编辑记录处理函数
+   * @param record 要编辑的记录
+   */
   const handleEdit = (record: API.ModelConfigItem) => {
     setEditingRecord(record);
 
@@ -64,13 +78,18 @@ const ModelConfigPage: React.FC = () => {
     setModalVisible(true);
   };
 
+  /**
+   * 删除记录处理函数
+   * @param record 要删除的记录
+   */
   const handleDelete = async (record: API.ModelConfigItem) => {
     try {
-      // 按照API文档要求，删除操作通过请求体参数approachName传递
+      // 调用删除API，通过approachName参数指定要删除的记录
       await deleteConfigModel({ approachName: record.approachName || "" });
       message.success(
         intl.formatMessage({ id: "pages.modelConfig.deleteSuccess" }),
       );
+      // 刷新表格数据
       actionRef.current?.reload();
     } catch (error: any) {
       message.error(
@@ -84,14 +103,21 @@ const ModelConfigPage: React.FC = () => {
     }
   };
 
+  /**
+   * 新建模型配置处理函数
+   */
   const handleNewModelConfig = () => {
     setEditingRecord(null);
     form.resetFields();
     setModalVisible(true);
   };
 
+  /**
+   * 模态框确认处理函数
+   */
   const handleModalOk = async () => {
     try {
+      // 表单验证
       const values = await form.validateFields();
 
       // 安全地处理JSON字段的解析
@@ -152,14 +178,15 @@ const ModelConfigPage: React.FC = () => {
           : "AsyncOpenAI", // 确保clientType字段存在且有效
       } as API.AddModelConfigReq | API.EditModelConfigReq;
 
+      // 根据是否为编辑状态调用不同的API
       if (editingRecord) {
-        // 编辑现有配置 - 按照API文档要求使用EditModelConfigReq结构
+        // 编辑现有配置
         await putConfigModel(processedValues as API.EditModelConfigReq);
         message.success(
           intl.formatMessage({ id: "pages.modelConfig.updateSuccess" }),
         );
       } else {
-        // 添加新配置 - 按照API文档要求使用AddModelConfigReq结构
+        // 添加新配置
         await postConfigModel(processedValues as API.AddModelConfigReq);
         message.success(
           intl.formatMessage({ id: "pages.modelConfig.createSuccess" }),
@@ -223,6 +250,9 @@ const ModelConfigPage: React.FC = () => {
     }
   };
 
+  /**
+   * 模态框取消处理函数
+   */
   const handleModalCancel = () => {
     setModalVisible(false);
     form.resetFields();
@@ -236,11 +266,15 @@ const ModelConfigPage: React.FC = () => {
     success?: boolean;
   }
 
+  /**
+   * 获取模型配置列表请求函数
+   * @param params 查询参数
+   */
   const modelConfigListRequest = async (
     params: any,
   ): Promise<Partial<RequestData<API.ModelConfigItem>>> => {
     try {
-      // 按照API文档要求，获取所有模型配置列表
+      // 调用API获取所有模型配置列表
       const response = await getConfigModelAll(params);
 
       if (response.items) {
@@ -294,6 +328,9 @@ const ModelConfigPage: React.FC = () => {
     }
   };
 
+  /**
+   * 表格列配置
+   */
   const columns: ProColumns<API.ModelConfigItem>[] = [
     {
       title: intl.formatMessage({ id: "pages.modelConfig.approachName" }),
@@ -530,6 +567,7 @@ const ModelConfigPage: React.FC = () => {
         <Text type="secondary">
           {intl.formatMessage({ id: "pages.modelConfig.description" })}
         </Text>
+        {/* 表格组件 */}
         <ProTable
           columns={columns}
           actionRef={actionRef}
@@ -544,6 +582,7 @@ const ModelConfigPage: React.FC = () => {
         />
       </ProCard>
 
+      {/* 编辑/新建模态框 */}
       <Modal
         title={
           editingRecord
