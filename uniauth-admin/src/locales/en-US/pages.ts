@@ -160,6 +160,8 @@ export default {
   "pages.autoQuotaPoolConfig.createSuccess": "Create Successful",
   "pages.autoQuotaPoolConfig.saveFailed": "Save Failed",
   "pages.autoQuotaPoolConfig.jsonInvalid": "Invalid JSON format",
+  "pages.autoQuotaPoolConfig.formInvalid":
+    "Form validation failed, please check input",
   "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup":
     "Save Failed: Invalid filter group format",
   "pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache":

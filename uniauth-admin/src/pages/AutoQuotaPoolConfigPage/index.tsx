@@ -93,24 +93,14 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     try {
       const values = await form.validateFields();
 
-      // 处理服务项标识
-      const processServicewares = (field: string): string[] => {
-        if (!field) return [];
-        return field
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s);
-      };
-
-      // 使用API.AutoQuotaPoolItem类型，因为它包含了filterGroup和upnsCache属性
+      // 使用API.AutoQuotaPoolItem类型，确保所有字段都正确传递
       const processedValues: Partial<API.AutoQuotaPoolItem> = {
-        ...values,
         ruleName: values.ruleName, // 根据API文档，ruleName是必填项
         cronCycle: values.cronCycle, // 根据API文档，cronCycle是必填项
         regularQuota: values.regularQuota ? parseFloat(values.regularQuota) : 0, // 根据API文档，regularQuota是必填项
         priority: values.priority ? parseInt(values.priority) : 0,
-        servicewares: processServicewares(values.servicewares || ""),
         enabled: values.enabled !== undefined ? values.enabled : true,
+        description: values.description || "",
       };
 
       // 处理filterGroup JSON字段
@@ -125,6 +115,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           );
           return;
         }
+      } else {
+        // 如果没有提供filterGroup，确保传递null而不是undefined
+        processedValues.filterGroup = null;
       }
 
       // 处理upnsCache JSON字段
@@ -139,6 +132,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           );
           return;
         }
+      } else {
+        // 如果没有提供upnsCache，确保传递null而不是undefined
+        processedValues.upnsCache = null;
       }
 
       if (editingRecord) {

@@ -153,6 +153,7 @@ export default {
   "pages.autoQuotaPoolConfig.createSuccess": "创建成功",
   "pages.autoQuotaPoolConfig.saveFailed": "保存失败",
   "pages.autoQuotaPoolConfig.jsonInvalid": "JSON格式错误",
+  "pages.autoQuotaPoolConfig.formInvalid": "表单验证失败，请检查输入",
   "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup":
     "保存失败：过滤条件组格式不正确",
   "pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache":
