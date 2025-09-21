@@ -21,13 +21,13 @@ type GetModelConfigRes struct {
 
 type AddModelConfigReq struct {
 	g.Meta       `path:"/model" tags:"Config/Model" method:"post" summary:"添加模型配置"`
-	ApproachName string           `json:"approachName" v:"required" dc:"模型名称"`
-	Pricing      *gjson.Json      `json:"pricing" dc:"定价配置"`
-	Discount     *decimal.Decimal `json:"discount" dc:"折扣"`
-	ClientType   *string          `json:"clientType" dc:"客户端类型"`
-	ClientArgs   *gjson.Json      `json:"clientArgs" dc:"客户端参数"`
-	RequestArgs  *gjson.Json      `json:"requestArgs" dc:"请求参数"`
-	Servicewares []string         `json:"servicewares" dc:"服务项标识"`
+	ApproachName string          `json:"approachName" v:"required" dc:"模型名称" example:"gpt-4o"`
+	Pricing      *gjson.Json     `json:"pricing" v:"required" dc:"定价配置"`
+	Discount     decimal.Decimal `json:"discount" d:"1" dc:"折扣" example:"1.0"`
+	ClientType   string          `json:"clientType" v:"required|in:AsyncAzureOpenAI,AsyncOpenAI" dc:"客户端类型"`
+	ClientArgs   *gjson.Json     `json:"clientArgs" dc:"客户端参数"`
+	RequestArgs  *gjson.Json     `json:"requestArgs" dc:"请求参数"`
+	Servicewares []string        `json:"servicewares" d:"[]" dc:"服务中间件标识"`
 }
 type AddModelConfigRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
