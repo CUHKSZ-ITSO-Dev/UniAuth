@@ -362,6 +362,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       valueType: "dateTime",
       search: false,
       width: 180,
+      hideInTable: true,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
         showTime: true,
@@ -387,6 +388,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       valueType: "dateTime",
       search: false,
       width: 180,
+      hideInTable: true,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
         showTime: true,

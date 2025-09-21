@@ -417,6 +417,7 @@ const ModelConfigPage: React.FC = () => {
       valueType: "dateTime",
       search: false,
       width: 150,
+      hideInTable: true,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
         showTime: true,
@@ -442,6 +443,7 @@ const ModelConfigPage: React.FC = () => {
       valueType: "dateTime",
       search: false,
       width: 150,
+      hideInTable: true,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
         showTime: true,
