@@ -22,6 +22,8 @@ interface DataType {
 
 const UserListPage: React.FC = () => {
   const intl = useIntl();
+  // 使用message实例代替静态方法，避免主题上下文警告
+  const [messageApi, contextHolder] = message.useMessage();
 
   const columns: ProColumns<DataType>[] = [
     {
@@ -105,6 +107,7 @@ const UserListPage: React.FC = () => {
 
   return (
     <PageContainer>
+      {contextHolder}
       <ProCard>
         <Title level={4}>
           {intl.formatMessage({
@@ -181,7 +184,7 @@ const UserListPage: React.FC = () => {
               // 增强错误边界检查
               if (!response || typeof response !== "object") {
                 console.error("API返回格式错误", response);
-                message.error("搜索失败，返回数据格式不正确");
+                messageApi.error("搜索失败，返回数据格式不正确");
                 return {
                   data: [],
                   success: false,
@@ -211,7 +214,7 @@ const UserListPage: React.FC = () => {
 
               // 搜索结果提示
               if (keyword && tableData.length === 0) {
-                message.info(`未找到包含 "${keyword}" 的用户信息`);
+                messageApi.info(`未找到包含 "${keyword}" 的用户信息`);
               }
 
               return {
@@ -222,7 +225,7 @@ const UserListPage: React.FC = () => {
             } catch (error) {
               console.error("搜索API错误:", error);
               const errorMessage = error instanceof Error ? error.message : "搜索失败，请稍后重试";
-              message.error(errorMessage);
+              messageApi.error(errorMessage);
               return {
                 data: [],
                 success: false,

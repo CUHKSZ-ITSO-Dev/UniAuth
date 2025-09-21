@@ -11,17 +11,23 @@
  * @doc https://umijs.org/docs/guides/routes
  */
 export default [
-  // {
-  //   path: '/user',
-  //   layout: false,
-  //   routes: [
-  //     {
-  //       name: 'login',
-  //       path: '/user/login',
-  //       component: '@/pages/user/login',
-  //     },
-  //   ],
-  // },
+  {    
+    path: '/user',
+    layout: false,
+    routes: [
+      {
+        name: 'login',
+        path: '/user/login',
+        component: '@/pages/SignInPage',
+      },
+    ],
+  },
+  {    
+    path: '/permission-demo',
+    name: 'permission-demo',
+    icon: 'KeyOutlined',
+    component: '@/pages/PermissionPage',
+  },
   {
     path: "/welcome",
     name: "welcome",
@@ -61,7 +67,7 @@ export default [
   },
   {
     path: "/",
-    redirect: "/welcome",
+    redirect: "/user/login",
   },
   {
     path: "*",

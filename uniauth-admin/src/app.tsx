@@ -2,7 +2,7 @@ import { LinkOutlined } from "@ant-design/icons";
 import type { Settings as LayoutSettings } from "@ant-design/pro-components";
 import { SettingDrawer } from "@ant-design/pro-components";
 import type { RequestConfig, RunTimeLayoutConfig } from "@umijs/max";
-import { Link } from "@umijs/max";
+import { Link, history } from "@umijs/max";
 import {
   AvatarDropdown,
   AvatarName,
@@ -15,106 +15,67 @@ import { errorConfig } from "./requestErrorConfig";
 import "@ant-design/v5-patch-for-react-19";
 
 const isDev = process.env.NODE_ENV === "development";
-// 移除不再使用的登录路径定义
-// const loginPath = '/user/login';
+// 登录路径定义
+const loginPath = '/user/login';
 
-// 定义模拟的用户类型
-interface MockUser {
-  name: string;
-  avatar?: string;
-  userid?: string;
-  email?: string;
-  signature?: string;
-  title?: string;
-  group?: string;
-  tags?: { key?: string; label?: string }[];
-  notifyCount?: number;
-  unreadCount?: number;
-  country?: string;
-  access?: string;
-  geographic?: {
-    province?: { label?: string; key?: string };
-    city?: { label?: string; key?: string };
-  };
-  address?: string;
-  phone?: string;
-}
+// 定义用户类型
+  interface User {
+    name: string;
+    avatar?: string;
+    userid?: string;
+    email?: string;
+    signature?: string;
+    title?: string;
+    group?: string;
+    tags?: { key?: string; label?: string }[];
+    notifyCount?: number;
+    unreadCount?: number;
+    country?: string;
+    access?: string;
+    geographic?: {
+      province?: { label?: string; key?: string };
+      city?: { label?: string; key?: string };
+    };
+    address?: string;
+    phone?: string;
+  }
 
-/**
- * @see https://umijs.org/docs/api/runtime-config#getinitialstate
- * */
-export async function getInitialState(): Promise<{
-  settings?: Partial<LayoutSettings>;
-  currentUser?: MockUser;
-  loading?: boolean;
-  fetchUserInfo?: () => Promise<MockUser | undefined>;
-}> {
-  // 创建模拟的admin用户
-  const mockAdminUser: MockUser = {
-    name: "Admin User",
-    avatar:
-      "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png",
-    userid: "00000001",
-    email: "admin@example.com",
-    signature: "海纳百川，有容乃大",
-    title: "系统管理员",
-    group: "前端组",
-    tags: [
-      {
-        key: "0",
-        label: "很有想法的",
-      },
-      {
-        key: "1",
-        label: "专注设计",
-      },
-      {
-        key: "2",
-        label: "辣~",
-      },
-      {
-        key: "3",
-        label: "大长腿",
-      },
-      {
-        key: "4",
-        label: "川妹子",
-      },
-      {
-        key: "5",
-        label: "海纳百川",
-      },
-    ],
-    notifyCount: 12,
-    unreadCount: 11,
-    country: "China",
-    access: "admin",
-    geographic: {
-      province: {
-        label: "浙江省",
-        key: "330000",
-      },
-      city: {
-        label: "杭州市",
-        key: "330100",
-      },
-    },
-    address: "西湖区工专路 77 号",
-    phone: "0752-268888888",
-  };
+  /**
+   * @see https://umijs.org/docs/api/runtime-config#getinitialstate
+   * */
+  export async function getInitialState(): Promise<{
+    settings?: Partial<LayoutSettings>;
+    currentUser?: User;
+    loading?: boolean;
+    fetchUserInfo?: () => Promise<User | undefined>;
+  }> {
+    const fetchUserInfo = async () => {
+      try {
+        console.log('Fetching user info from localStorage');
+        // 从localStorage获取用户信息
+        const userInfo = localStorage.getItem('userInfo');
+        console.log('User info from localStorage:', userInfo);
+        if (userInfo) {
+          const parsedUserInfo = JSON.parse(userInfo);
+          console.log('Parsed user info:', parsedUserInfo);
+          return parsedUserInfo;
+        }
+      } catch (error) {
+        console.error('Failed to fetch user info:', error);
+      }
+      return undefined;
+    };
 
-  const fetchUserInfo = async () => {
-    // 直接返回模拟用户，不需要API调用
-    return mockAdminUser;
-  };
+    // 初始化时检查是否有用户信息
+    const currentUser = await fetchUserInfo();
+    console.log('Initial state currentUser:', currentUser);
 
-  // 总是返回模拟的admin用户
-  return {
-    fetchUserInfo,
-    currentUser: mockAdminUser,
-    settings: defaultSettings as Partial<LayoutSettings>,
-  };
-}
+    return {
+      fetchUserInfo,
+      currentUser,
+      settings: defaultSettings as Partial<LayoutSettings>,
+    };
+  }
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({
@@ -138,11 +99,14 @@ export const layout: RunTimeLayoutConfig = ({
     // },
     footerRender: () => <Footer />,
     onPageChange: () => {
-      // 移除登录检查
-      // const { location } = history;
-      // if (!initialState?.currentUser && location.pathname !== loginPath) {
-      //   history.push(loginPath);
-      // }
+      // 添加登录检查
+      const { location } = history;
+      console.log('onPageChange:', location.pathname);
+      console.log('Current user status:', initialState?.currentUser ? 'LoggedIn' : 'NotLoggedIn');
+      if (!initialState?.currentUser && location.pathname !== loginPath) {
+        console.log('Redirecting to login page:', loginPath);
+        history.push(loginPath);
+      }
     },
     bgLayoutImgList: [
       {

@@ -2,8 +2,8 @@
  * @see https://umijs.org/docs/max/access#access
  * */
 
-// 定义模拟的用户类型
-interface MockUser {
+// 定义用户类型
+interface User {
   name: string;
   avatar?: string;
   userid?: string;
@@ -22,13 +22,52 @@ interface MockUser {
   };
   address?: string;
   phone?: string;
+  roles?: string[];
+  permissions?: string[];
 }
 
-export default function access(
-  initialState: { currentUser?: MockUser } | undefined,
-) {
+// 权限检查函数
+const checkPermission = (currentUser: User | undefined, permission: string): boolean => {
+  if (!currentUser) return false;
+  // 如果是admin角色，拥有所有权限
+  if (currentUser.access === 'admin') return true;
+  // 检查用户是否有指定权限
+  if (currentUser.permissions && currentUser.permissions.includes(permission)) {
+    return true;
+  }
+  return false;
+};
+
+// 导出access函数，符合Umi.js要求
+export default function(initialState: { currentUser?: User } | undefined) {
   const { currentUser } = initialState ?? {};
+  
   return {
+    // 管理员权限
     canAdmin: currentUser && currentUser.access === 'admin',
+    
+    // 判断用户是否登录
+    isLoggedIn: !!currentUser,
+    
+    // 通用权限检查方法
+    hasPermission: (permission: string) => checkPermission(currentUser, permission),
+    
+    // 数据查看权限
+    canViewData: checkPermission(currentUser, 'data:view'),
+    
+    // 数据编辑权限
+    canEditData: checkPermission(currentUser, 'data:edit'),
+    
+    // 数据创建权限
+    canCreateData: checkPermission(currentUser, 'data:create'),
+    
+    // 数据删除权限
+    canDeleteData: checkPermission(currentUser, 'data:delete'),
+    
+    // 用户管理权限
+    canManageUsers: checkPermission(currentUser, 'user:manage'),
+    
+    // 系统配置权限
+    canConfigSystem: checkPermission(currentUser, 'system:config'),
   };
 }

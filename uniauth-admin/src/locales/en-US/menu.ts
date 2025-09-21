@@ -53,4 +53,5 @@ export default {
   "menu.editor.koni": "Koni Editor",
   "menu.user-list": "User List",
   "menu.user-detail": "User Details",
+  "menu.permission-demo": "Permission Demo",
 };
