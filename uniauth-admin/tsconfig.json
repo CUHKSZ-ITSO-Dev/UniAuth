@@ -28,5 +28,12 @@
     }
   },
   "include": ["./**/*.d.ts", "./**/*.ts", "./**/*.tsx"],
-  "exclude": ["mock/**/*", "dist/**/*", "node_modules/**/*", ".umi/**/*", ".umi-production/**/*", ".umi-test/**/*"]
+  "exclude": [
+    "mock/**/*",
+    "dist/**/*",
+    "node_modules/**/*",
+    ".umi/**/*",
+    ".umi-production/**/*",
+    ".umi-test/**/*"
+  ]
 }

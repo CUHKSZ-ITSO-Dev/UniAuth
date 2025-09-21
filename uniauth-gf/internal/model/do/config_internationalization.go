@@ -1,5 +1,5 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-16 12:07:45
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-20 21:36:19
 // =================================================================================
 
 package do
@@ -12,9 +12,9 @@ import (
 // ConfigInternationalization is the golang structure of table config_internationalization for DAO operations like Where/Data.
 type ConfigInternationalization struct {
 	g.Meta      `orm:"table:config_internationalization, do:true"`
-	LangCode    any         //
 	Key         any         //
-	Value       any         //
+	ZhCn        any         //
+	EnUs        any         //
 	Description any         //
 	CreatedAt   *gtime.Time //
 	UpdatedAt   *gtime.Time //
