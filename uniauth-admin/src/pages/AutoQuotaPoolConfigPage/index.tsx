@@ -63,11 +63,15 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         intl.formatMessage({ id: "pages.autoQuotaPoolConfig.deleteSuccess" }),
       );
       actionRef.current?.reload();
-    } catch (error) {
+    } catch (error: any) {
       message.error(
         intl.formatMessage({ id: "pages.autoQuotaPoolConfig.deleteFailed" }),
       );
-      console.error("删除自动配额池规则失败:", error);
+      console.error("删除自动配额池配置失败:", error);
+      // 输出详细的错误信息到控制台
+      if (error.data) {
+        console.error("错误详情:", JSON.stringify(error.data, null, 2));
+      }
     }
   };
 
@@ -162,7 +166,11 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       });
 
       // 检查是否是字段验证错误
-      if (error.message && error.message.includes("ruleName")) {
+      if (error.errorFields) {
+        errorMessage = intl.formatMessage({
+          id: "pages.autoQuotaPoolConfig.formInvalid",
+        });
+      } else if (error.message && error.message.includes("ruleName")) {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired",
         });
@@ -197,6 +205,10 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       }
 
       message.error(errorMessage);
+      // 输出详细的错误信息到控制台
+      if (error.data) {
+        console.error("错误详情:", JSON.stringify(error.data, null, 2));
+      }
     }
   };
 
@@ -246,8 +258,15 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           total: 0,
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("获取自动配额池配置列表失败:", error);
+      message.error(
+        intl.formatMessage({ id: "pages.autoQuotaPoolConfig.fetchFailed" }),
+      );
+      // 输出详细的错误信息到控制台
+      if (error.data) {
+        console.error("错误详情:", JSON.stringify(error.data, null, 2));
+      }
       return {
         data: [],
         success: false,

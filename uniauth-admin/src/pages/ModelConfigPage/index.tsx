@@ -8,6 +8,7 @@ import {
   Modal,
   message,
   Popconfirm,
+  Select,
   Typography,
 } from "antd";
 import { useRef, useState } from "react";
@@ -65,17 +66,21 @@ const ModelConfigPage: React.FC = () => {
 
   const handleDelete = async (record: API.ModelConfigItem) => {
     try {
-      // 按照API文档要求，删除操作通过query参数approachName传递
+      // 按照API文档要求，删除操作通过请求体参数approachName传递
       await deleteConfigModel({ approachName: record.approachName || "" });
       message.success(
         intl.formatMessage({ id: "pages.modelConfig.deleteSuccess" }),
       );
       actionRef.current?.reload();
-    } catch (error) {
+    } catch (error: any) {
       message.error(
         intl.formatMessage({ id: "pages.modelConfig.deleteFailed" }),
       );
       console.error("删除模型配置失败:", error);
+      // 输出详细的错误信息到控制台
+      if (error.data) {
+        console.error("错误详情:", JSON.stringify(error.data, null, 2));
+      }
     }
   };
 
@@ -93,7 +98,10 @@ const ModelConfigPage: React.FC = () => {
       const parseJsonField = (field: string): any => {
         if (!field) return {};
         try {
-          return JSON.parse(field);
+          const parsed = JSON.parse(field);
+          return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+            ? parsed
+            : {};
         } catch (e) {
           console.error("JSON解析失败:", e);
           message.error(
@@ -114,9 +122,14 @@ const ModelConfigPage: React.FC = () => {
 
       // 处理折扣字段
       const processDiscount = (field: string): number => {
-        if (!field) return 0;
+        if (!field) return 1; // 默认折扣为1（无折扣）
         const num = parseFloat(field);
-        return isNaN(num) ? 0 : num;
+        return isNaN(num) ? 1 : num;
+      };
+
+      // 处理客户端类型字段，直接传递
+      const processClientType = (field: string): string => {
+        return field || "AsyncOpenAI"; // 如果没有值则使用默认值
       };
 
       // 处理JSON字段和参数格式，确保符合API要求
@@ -124,11 +137,19 @@ const ModelConfigPage: React.FC = () => {
       const processedValues = {
         ...values,
         approachName: values.approachName, // 根据API文档，approachName是必填项
-        pricing: parseJsonField(values.pricing),
-        clientArgs: parseJsonField(values.clientArgs),
-        requestArgs: parseJsonField(values.requestArgs),
+        pricing: values.pricing ? parseJsonField(values.pricing) : {}, // 确保pricing字段始终有值
+        clientArgs: values.clientArgs
+          ? parseJsonField(values.clientArgs)
+          : undefined,
+        requestArgs: values.requestArgs
+          ? parseJsonField(values.requestArgs)
+          : undefined,
         servicewares: processServicewares(values.servicewares),
-        discount: processDiscount(values.discount),
+        discount:
+          values.discount !== undefined ? processDiscount(values.discount) : 1, // 默认折扣为1
+        clientType: values.clientType
+          ? processClientType(values.clientType)
+          : "AsyncOpenAI", // 确保clientType字段存在且有效
       } as API.AddModelConfigReq | API.EditModelConfigReq;
 
       if (editingRecord) {
@@ -147,11 +168,30 @@ const ModelConfigPage: React.FC = () => {
 
       setModalVisible(false);
       actionRef.current?.reload();
-    } catch (error) {
-      console.error("保存模型配置失败:", error);
-      message.error(
-        intl.formatMessage({ id: "pages.modelConfig.operationFailed" }),
-      );
+    } catch (error: any) {
+      // 表单验证错误
+      if (error.errorFields) {
+        console.error("表单验证失败:", error);
+        message.error(
+          intl.formatMessage({ id: "pages.modelConfig.formInvalid" }),
+        );
+      } else {
+        // 提交数据错误
+        if (editingRecord) {
+          message.error(
+            intl.formatMessage({ id: "pages.modelConfig.editFailed" }),
+          );
+        } else {
+          message.error(
+            intl.formatMessage({ id: "pages.modelConfig.addFailed" }),
+          );
+        }
+        console.error("提交数据失败:", error);
+        // 输出详细的错误信息到控制台
+        if (error.data) {
+          console.error("错误详情:", JSON.stringify(error.data, null, 2));
+        }
+      }
     }
   };
 
@@ -201,11 +241,15 @@ const ModelConfigPage: React.FC = () => {
           total: 0,
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("获取模型配置列表失败:", error);
       message.error(
         intl.formatMessage({ id: "pages.modelConfig.fetchFailed" }),
       );
+      // 输出详细的错误信息到控制台
+      if (error.data) {
+        console.error("错误详情:", JSON.stringify(error.data, null, 2));
+      }
       return {
         data: [],
         success: false,
@@ -485,14 +529,6 @@ const ModelConfigPage: React.FC = () => {
           <Form.Item
             name="approachName"
             label={intl.formatMessage({ id: "pages.modelConfig.approachName" })}
-            rules={[
-              {
-                required: true,
-                message: intl.formatMessage({
-                  id: "pages.modelConfig.approachNameRequired",
-                }),
-              },
-            ]}
           >
             <Input
               placeholder={intl.formatMessage({
@@ -506,10 +542,14 @@ const ModelConfigPage: React.FC = () => {
             name="clientType"
             label={intl.formatMessage({ id: "pages.modelConfig.clientType" })}
           >
-            <Input
+            <Select
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.clientTypePlaceholder",
               })}
+              options={[
+                { label: "AsyncAzureOpenAI", value: "AsyncAzureOpenAI" },
+                { label: "AsyncOpenAI", value: "AsyncOpenAI" },
+              ]}
             />
           </Form.Item>
 
