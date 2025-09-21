@@ -149,19 +149,14 @@ export default {
   "pages.autoQuotaPoolConfig.notSet": "未设置",
   "pages.autoQuotaPoolConfig.deleteSuccess": "删除成功",
   "pages.autoQuotaPoolConfig.deleteFailed": "删除失败",
-  "pages.autoQuotaPoolConfig.saveSuccess": "保存成功",
   "pages.autoQuotaPoolConfig.updateSuccess": "更新成功",
-  "pages.autoQuotaPoolConfig.addSuccess": "添加成功",
+  "pages.autoQuotaPoolConfig.createSuccess": "创建成功",
   "pages.autoQuotaPoolConfig.saveFailed": "保存失败",
   "pages.autoQuotaPoolConfig.jsonInvalid": "JSON格式错误",
-  "pages.autoQuotaPoolConfig.selectedItems": "已选 {count} 项",
-  "pages.autoQuotaPoolConfig.cancelSelection": "取消选择",
-  "pages.autoQuotaPoolConfig.batchOperationPending": "批量操作功能待开发",
   "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup":
     "保存失败：过滤条件组格式不正确",
   "pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache":
     "保存失败：UPN缓存列表格式不正确",
-  "pages.autoQuotaPoolConfig.createSuccess": "创建成功",
   "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired":
     "保存失败：规则名称为必填项",
   "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired":
@@ -209,19 +204,16 @@ export default {
     '请输入JSON格式的客户端参数，例如：{"temperature": 0.7, "max_tokens": 1024}',
   "pages.modelConfig.requestArgsPlaceholder":
     '请输入JSON格式的请求参数，例如：{"model": "gpt-4", "stream": true}',
+  "pages.modelConfig.formInvalid": "表单验证失败，请检查输入",
+  "pages.modelConfig.editFailed": "编辑失败",
+  "pages.modelConfig.addFailed": "添加失败",
   "pages.modelConfig.notSet": "未设置",
   "pages.modelConfig.deleteSuccess": "删除成功",
   "pages.modelConfig.deleteFailed": "删除失败",
-  "pages.modelConfig.saveSuccess": "保存成功",
   "pages.modelConfig.updateSuccess": "更新成功",
-  "pages.modelConfig.addSuccess": "添加成功",
   "pages.modelConfig.jsonInvalid": "JSON格式错误，请检查输入",
   "pages.modelConfig.createSuccess": "创建成功",
-  "pages.modelConfig.operationFailed": "操作失败",
   "pages.modelConfig.fetchFailed": "获取模型配置失败",
-  "pages.modelConfig.selectedItems": "已选 {count} 项",
-  "pages.modelConfig.cancelSelection": "取消选择",
-  "pages.modelConfig.batchOperationPending": "批量操作功能待开发",
 
   // ConfigI18nPage
   "pages.configI18n.search": "搜索配置",

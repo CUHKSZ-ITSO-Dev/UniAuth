@@ -156,26 +156,20 @@ export default {
   "pages.autoQuotaPoolConfig.notSet": "Not Set",
   "pages.autoQuotaPoolConfig.deleteSuccess": "Delete Successful",
   "pages.autoQuotaPoolConfig.deleteFailed": "Delete Failed",
-  "pages.autoQuotaPoolConfig.saveSuccess": "Save Successful",
   "pages.autoQuotaPoolConfig.updateSuccess": "Update Successful",
-  "pages.autoQuotaPoolConfig.addSuccess": "Add Successful",
+  "pages.autoQuotaPoolConfig.createSuccess": "Create Successful",
   "pages.autoQuotaPoolConfig.saveFailed": "Save Failed",
   "pages.autoQuotaPoolConfig.jsonInvalid": "Invalid JSON format",
-  "pages.autoQuotaPoolConfig.selectedItems": "Selected {count} items",
-  "pages.autoQuotaPoolConfig.cancelSelection": "Cancel Selection",
-  "pages.autoQuotaPoolConfig.batchOperationPending":
-    "Batch operation feature pending development",
   "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup":
-    "Save Failed: Invalid Filter Group format",
+    "Save Failed: Invalid filter group format",
   "pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache":
-    "Save Failed: Invalid UPN Cache format",
-  "pages.autoQuotaPoolConfig.createSuccess": "Create Successful",
+    "Save Failed: Invalid UPN cache list format",
   "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired":
     "Save Failed: Rule name is required",
   "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired":
-    "Save Failed: Cron cycle is required",
+    "Save Failed: Refresh cycle is required",
   "pages.autoQuotaPoolConfig.saveFailedRegularQuotaInvalid":
-    "Save Failed: Regular quota is invalid",
+    "Save Failed: Invalid regular quota",
   "pages.autoQuotaPoolConfig.requestFailed": "Request Failed",
   "pages.autoQuotaPoolConfig.saveFailedNetworkError":
     "Save Failed: Network error, please try again later",
@@ -221,20 +215,16 @@ export default {
     'Please enter client arguments in JSON format, e.g.: {"temperature": 0.7, "max_tokens": 1024}',
   "pages.modelConfig.requestArgsPlaceholder":
     'Please enter request arguments in JSON format, e.g.: {"model": "gpt-4", "stream": true}',
+  "pages.modelConfig.formInvalid": "Form validation failed, please check input",
+  "pages.modelConfig.editFailed": "Edit Failed",
+  "pages.modelConfig.addFailed": "Add Failed",
   "pages.modelConfig.notSet": "Not Set",
   "pages.modelConfig.deleteSuccess": "Delete Successful",
   "pages.modelConfig.deleteFailed": "Delete Failed",
-  "pages.modelConfig.saveSuccess": "Save Successful",
   "pages.modelConfig.updateSuccess": "Update Successful",
-  "pages.modelConfig.addSuccess": "Add Successful",
   "pages.modelConfig.jsonInvalid": "Invalid JSON format, please check input",
   "pages.modelConfig.createSuccess": "Create Successful",
-  "pages.modelConfig.operationFailed": "Operation Failed",
   "pages.modelConfig.fetchFailed": "Failed to fetch model configurations",
-  "pages.modelConfig.selectedItems": "Selected {count} items",
-  "pages.modelConfig.cancelSelection": "Cancel Selection",
-  "pages.modelConfig.batchOperationPending":
-    "Batch operation feature pending development",
 
   // ConfigI18nPage
   "pages.configI18n.search": "Search",
