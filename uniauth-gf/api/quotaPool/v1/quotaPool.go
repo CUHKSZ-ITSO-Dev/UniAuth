@@ -8,16 +8,12 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// PaginationReq 分页请求参数
-type PaginationReq struct {
-	Page     int  `json:"page" v:"min:1" dc:"页码，从1开始" default:"1"`
-	PageSize int  `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" default:"20"`
-	All      bool `json:"all" dc:"是否返回全部数据，true时忽略分页参数，但仍有最大限制保护"`
-}
 type GetQuotaPoolReq struct {
 	g.Meta        `path:"/" tags:"QuotaPool" method:"get" summary:"获取配额池的详细配置"`
-	QuotaPoolName string         `json:"quotaPoolName" dc:"指定配额池名称（可选）"`
-	Pagination    *PaginationReq `json:"pagination" dc:"分页参数，支持分页或查询全部"`
+	QuotaPoolName string `json:"quotaPoolName" dc:"指定配额池名称（可选）"`
+	Page          int    `json:"page" v:"min:1" dc:"页码，从1开始" default:"1"`
+	PageSize      int    `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" default:"20"`
+	All           bool   `json:"all" dc:"是否返回全部数据，true时忽略分页参数，但仍有最大限制保护" default:"false"`
 }
 
 type QuotaPoolItem struct {

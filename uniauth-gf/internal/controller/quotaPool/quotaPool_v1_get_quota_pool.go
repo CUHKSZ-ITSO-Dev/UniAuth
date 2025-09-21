@@ -26,13 +26,6 @@ func (c *ControllerV1) GetQuotaPool(ctx context.Context, req *v1.GetQuotaPoolReq
 		}
 		return
 	} else { // 未指定配额池名称，查询配额池列表
-		// 设置默认分页参数
-		if req.Pagination == nil {
-			req.Pagination = &v1.PaginationReq{
-				Page:     1,
-				PageSize: 20,
-			}
-		}
 		// 获取总数（在排序和分页之前）
 		total, err := model.Count()
 		if err != nil {
@@ -40,18 +33,18 @@ func (c *ControllerV1) GetQuotaPool(ctx context.Context, req *v1.GetQuotaPoolReq
 		}
 
 		// 检查是否请求全部数据
-		if req.Pagination.All {
+		if req.All {
 			// 安全检查：防止返回过多数据
 			const maxAllLimit = 10000
 			if total > maxAllLimit {
 				return nil, gerror.Newf("查询结果过多(%d)，超过最大限制(%d)，请添加更精确的过滤条件", total, maxAllLimit)
 			}
 			// 重置分页参数为全部数据
-			req.Pagination.Page = 1
-			req.Pagination.PageSize = total
+			req.Page = 1
+			req.PageSize = total
 		} else {
 			// 检查分页参数
-			if req.Pagination.PageSize > 1000 {
+			if req.PageSize > 1000 {
 				return nil, gerror.New("分页大小不能超过1000")
 			}
 		}
@@ -59,9 +52,9 @@ func (c *ControllerV1) GetQuotaPool(ctx context.Context, req *v1.GetQuotaPoolReq
 		model = model.OrderDesc(dao.QuotapoolQuotaPool.Columns().CreatedAt)
 
 		// 应用分页（如果不是查询全部）
-		if !req.Pagination.All {
-			offset := (req.Pagination.Page - 1) * req.Pagination.PageSize
-			model = model.Limit(req.Pagination.PageSize).Offset(offset)
+		if !req.All {
+			offset := (req.Page - 1) * req.PageSize
+			model = model.Limit(req.PageSize).Offset(offset)
 		}
 
 		err = model.Scan(&items)
@@ -72,10 +65,10 @@ func (c *ControllerV1) GetQuotaPool(ctx context.Context, req *v1.GetQuotaPoolReq
 		// 构建响应
 		res = &v1.GetQuotaPoolRes{
 			Total:      total,
-			Page:       req.Pagination.Page,
-			PageSize:   req.Pagination.PageSize,
-			TotalPages: int(math.Ceil(float64(total) / float64(req.Pagination.PageSize))),
-			IsAll:      req.Pagination.All,
+			Page:       req.Page,
+			PageSize:   req.PageSize,
+			TotalPages: int(math.Ceil(float64(total) / float64(req.PageSize))),
+			IsAll:      req.All,
 			Items:      items,
 		}
 	}
