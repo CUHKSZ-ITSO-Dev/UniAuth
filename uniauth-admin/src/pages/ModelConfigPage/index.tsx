@@ -593,7 +593,8 @@ const ModelConfigPage: React.FC = () => {
         onOk={handleModalOk}
         onCancel={handleModalCancel}
         width={800}
-        destroyOnClose
+        destroyOnHidden
+        forceRender
       >
         <Form form={form} layout="vertical" requiredMark={false}>
           <Form.Item
