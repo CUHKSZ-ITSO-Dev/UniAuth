@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/shopspring/decimal"
 )
 
 type GetModelConfigReq struct {
@@ -20,10 +21,18 @@ type AddModelConfigRes struct {
 }
 
 type EditModelConfigReq struct {
-	g.Meta `path:"/model" tags:"Config/Model" method:"put" summary:"编辑模型配置" dc:"编辑模型配置。"`
+	g.Meta       `path:"/model" tags:"Config/Model" method:"put" summary:"编辑模型配置" dc:"编辑模型配置。"`
+	ApproachName string          `json:"approachName" v:"required" dc:"模型名称" example:"gpt-4o"`
+	Pricing      *gjson.Json     `json:"pricing" v:"required" dc:"定价配置"`
+	Discount     decimal.Decimal `json:"discount" d:"1" dc:"折扣" example:"1.0"`
+	ClientType   string          `json:"clientType" v:"required|in:AsyncAzureOpenAI,AsyncOpenAI" dc:"客户端类型"`
+	ClientArgs   *gjson.Json     `json:"clientArgs" dc:"客户端参数"`
+	RequestArgs  *gjson.Json     `json:"requestArgs" dc:"请求参数"`
+	Servicewares []string        `json:"servicewares" d:"[]" dc:"服务中间件标识"`
 }
 type EditModelConfigRes struct {
 	Config string `json:"config" dc:"配置"`
+	OK     bool   `json:"ok" dc:"是否成功"`
 }
 
 type DeleteModelConfigReq struct {

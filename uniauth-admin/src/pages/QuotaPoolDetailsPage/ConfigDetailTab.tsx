@@ -1,98 +1,51 @@
+import type { ActionType } from "@ant-design/pro-components";
 import {
   GridContent,
   type ProColumns,
   ProTable,
 } from "@ant-design/pro-components";
+import { useIntl } from "@umijs/max";
 import { Badge, Button, Card, Descriptions, Progress } from "antd";
 import type { FC } from "react";
-import { useState, useEffect } from "react";
-import { getQuotaPool } from "@/services/uniauthService/quotaPool";
-
-export interface RequestGetQuotaPoolReqParams {
-    // 是否返回全部数据，true时忽略分页参数，但仍有最大限制保护
-    all?: boolean;
-    // 页码，从1开始
-    page?: number;
-    // 每页条数，最大1000
-    pageSize?: number;
-    // 指定配额池名称（可选）
-    quotaPoolName?: string;
-    [property: string]: any;
-}
+import { useRef, useState } from "react";
+import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService/auth";
+import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthService/query";
+import { getQuotaPool as getConfigAPI } from "@/services/uniauthService/quotaPool";
 
 // uniauth-gf.api.quotaPool.v1.GetQuotaPoolRes
-interface GetQuotaPoolResData {
-    // 是否为全部数据查询
-    isAll?: boolean;
-    // 配额池列表或单个配置
-    items?: UniauthGfapiQuotaPoolV1QuotaPoolItem[];
-    // 当前页码
-    page?: number;
-    // 每页条数
-    pageSize?: number;
-    // 总记录数
-    total?: number;
-    // 总页数
-    totalPages?: number;
-    [property: string]: any;
-}
-
-// uniauth-gf.api.quotaPool.v1.QuotaPoolItem
-export interface UniauthGfapiQuotaPoolV1QuotaPoolItem {
-    // 创建时间
-    createdAt?: string;
-    // 刷新周期
-    cronCycle?: string;
-    // 是否禁用
-    disabled?: boolean;
-    // 加油包
-    extraQuota?: { [key: string]: any };
-    // 自增主键
-    id?: number;
-    // 上次刷新时间
-    lastResetAt?: string;
-    // 是否个人配额池
-    personal?: boolean;
-    // 配额池名称
-    quotaPoolName?: string;
-    // 定期配额
-    regularQuota?: { [key: string]: any };
-    // 剩余配额
-    remainingQuota?: { [key: string]: any };
-    // 修改时间
-    updatedAt?: string;
-    // ITTools规则
-    userinfosRules?: { [key: string]: any };
-    [property: string]: any;
+interface GetQuotaPoolConfigData {
+  // 是否为全部数据查询
+  isAll?: boolean;
+  // 配额池列表或单个配置
+  items?: [
+    {
+      createdAt?: string;
+      cronCycle?: string;
+      disabled?: boolean;
+      extraQuota?: { [key: string]: any };
+      id?: number;
+      lastResetAt?: string;
+      personal?: boolean;
+      quotaPoolName?: string;
+      regularQuota?: { [key: string]: any };
+      remainingQuota?: { [key: string]: any };
+      updatedAt?: string;
+      userinfosRules?: { [key: string]: any };
+      [property: string]: any;
+    },
+  ][];
+  total?: number;
+  // 当前页码
+  page?: number;
+  // 总页数
+  totalPages?: number;
+  // 每页条数
+  pageSize?: number;
+  //
+  [property: string]: any;
 }
 
 const ConfigDetailTab: FC = () => {
-
-  const [quotaPool, setQuotaPool] = useState<UniauthGfapiQuotaPoolV1QuotaPoolItem | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const fetchQuotaPool = async () => {
-    setLoading(true);
-    const res = await getQuotaPool({
-      all: false,
-      page: 1,
-      pageSize: 1000,
-      quotaPoolName: "student_pool",
-    });
-    if (res.items && res.items.length > 0) {
-      setQuotaPool(res.items[0]);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchQuotaPool();
-  }, []);
-
-  if (loading || !quotaPool) {
-    return <div>loading...</div>;
-  }
-
   const associatedUsersColumns: ProColumns<any>[] = [
     {
       title: "UPN",
@@ -157,13 +110,6 @@ const ConfigDetailTab: FC = () => {
       search: true,
     },
     {
-      title: "域",
-      dataIndex: "dom",
-      valueType: "text",
-      ellipsis: true,
-      search: true,
-    },
-    {
       title: "对象",
       dataIndex: "obj",
       valueType: "text",
@@ -182,8 +128,14 @@ const ConfigDetailTab: FC = () => {
       dataIndex: "eft",
       valueType: "select",
       valueEnum: {
-        allow: { text: "允许", status: "Success" },
-        deny: { text: "拒绝", status: "Error" },
+        allow: {
+          text: "允许",
+          status: "Success",
+        },
+        deny: {
+          text: "拒绝",
+          status: "Error",
+        },
       },
       ellipsis: true,
       search: true,
@@ -199,8 +151,8 @@ const ConfigDetailTab: FC = () => {
 
   const itToolsRulesColumns: ProColumns<any>[] = [
     {
-      title: "规则名称",
-      dataIndex: "ruleName",
+      title: "完整规则",
+      dataIndex: "userinfosRules",
       valueType: "text",
       ellipsis: true,
       search: true,
@@ -275,74 +227,57 @@ const ConfigDetailTab: FC = () => {
     };
   };
 
-  const quotaPoolRulesDataRequest = async (_params: any) => {
-    // TODO: 替换为实际请求
-    const example_data = [
-      {
-        id: 1,
-        sub: "alice",
-        dom: "domain1",
-        obj: "data1",
-        act: "read",
-        eft: "allow",
-        g: "group1",
-      },
-      {
-        id: 2,
-        sub: "bob",
-        dom: "domain2",
-        obj: "data2",
-        act: "write",
-        eft: "deny",
-        g: "group2",
-      },
-      {
-        id: 3,
-        sub: "data2_admin",
-        dom: "domain2",
-        obj: "data2",
-        act: "read|write|delete",
-        eft: "allow",
-        g: "group3",
-      },
-      {
-        id: 4,
-        sub: "data1_admin",
-        dom: "domain1",
-        obj: "data1",
-        act: "read|write|delete",
-        eft: "allow",
-        g: "group1",
-      },
-    ];
+  const quotaPoolRulesDataRequest = async (params: any) => {
+    // 请求参数
+    const getPolicyRequestParams = {
+      sub: params.sub,
+      obj: params.obj,
+      act: params.act,
+      eft: params.eft,
+    };
+
+    const res = await getPolcyAPI(getPolicyRequestParams);
+
+    const formattedData = res.policies?.map((policy: any) => ({
+      id: policy.join(","),
+      subject: policy[0] || "",
+      object: policy[1] || "",
+      action: policy[2] || "",
+      effect: policy[3] || "",
+      raw: policy,
+    }));
 
     return {
-      data: example_data,
+      data: formattedData,
       success: true,
-      total: example_data.length,
     };
   };
 
-  const itToolsRulesDataRequest = async (_params: any) => {
-    // TODO: 替换为实际请求
-    const example_data = [
-      {
-        id: 1,
-        ruleName: "允许访问ITTools",
-      },
-      {
-        id: 2,
-        ruleName: "禁止删除资源",
-      },
-      {
-        id: 3,
-        ruleName: "允许读写数据",
-      },
-    ];
+  const itToolsRulesDataRequest = async (params: any) => {
+    // 请求参数
+    const getRequestParams = {
+      quotaPoolName: "student_pool",
+    };
+
+    const res = await getConfigAPI({ ...getRequestParams });
+
+    const formattedData = res.items?.map((item: any) => ({
+      id: item.id,
+      quotaPoolName: item.quotaPoolName,
+      cronCycle: item.cronCycle,
+      regularQuota: item.regularQuota,
+      remainingQuota: item.remainingQuota,
+      lastResetAt: item.lastResetAt,
+      extraQuota: item.extraQuota,
+      personal: item.personal,
+      disabled: item.disabled,
+      userinfosRules: item.userinfosRules,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    }));
     return {
-      data: example_data,
+      data: formattedData,
       success: true,
-      total: example_data.length,
     };
   };
 
@@ -427,7 +362,6 @@ const ConfigDetailTab: FC = () => {
       >
         <ProTable
           columns={itToolsRulesColumns}
-          rowKey="id"
           search={false}
           pagination={{ pageSize: 5 }}
           request={itToolsRulesDataRequest}
