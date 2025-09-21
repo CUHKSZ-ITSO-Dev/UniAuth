@@ -60,7 +60,7 @@ type AddAutoQuotaPoolConfigReq struct {
 	// 是否启用该规则
 	Enabled bool `json:"enabled" d:"true" dc:"是否启用该规则" example:"true"`
 	// 过滤条件组，满足条件的用户将应用该规则
-	FilterGroup *userinfosv1.FilterGroup `json:"filterGroup" dc:"过滤条件组，满足条件的用户将应用该规则"`
+	FilterGroup *userinfosv1.FilterGroup `json:"filterGroup" d:"{}" dc:"过滤条件组，满足条件的用户将应用该规则"`
 	// 规则说明
 	Description string `json:"description" dc:"规则说明" example:"为学生每日分配基础额度"`
 	// 优先级，数值越小优先匹配

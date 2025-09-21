@@ -1,5 +1,5 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 00:51:49
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-20 21:12:16
 // =================================================================================
 
 package do
@@ -13,7 +13,6 @@ import (
 // QuotapoolQuotaPool is the golang structure of table quotapool_quota_pool for DAO operations like Where/Data.
 type QuotapoolQuotaPool struct {
 	g.Meta         `orm:"table:quotapool_quota_pool, do:true"`
-	Id             any         // 自增主键
 	QuotaPoolName  any         // 配额池名称
 	CronCycle      any         // 刷新周期
 	RegularQuota   any         // 定期配额

@@ -3,57 +3,35 @@ package quotaPool
 import (
 	"context"
 
-	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/frame/g"
 
 	v1 "uniauth-gf/api/quotaPool/v1"
 	"uniauth-gf/internal/dao"
-	"uniauth-gf/internal/model/entity"
 
 	"github.com/robfig/cron/v3"
 )
 
 func (c *ControllerV1) NewQuotaPool(ctx context.Context, req *v1.NewQuotaPoolReq) (res *v1.NewQuotaPoolRes, err error) {
-	res = &v1.NewQuotaPoolRes{}
 	// 校验 cron 表达式
 	if _, cronErr := cron.ParseStandard(req.CronCycle); cronErr != nil {
 		err = gerror.Newf("cronCycle 无效: %v", cronErr)
 		return
 	}
-
-	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		var quotaPool *entity.QuotapoolQuotaPool
-		err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPoolName).LockUpdate().Scan(&quotaPool)
-		if err != nil {
-			return gerror.Wrap(err, "查询配额池信息失败")
-		}
-		if quotaPool != nil {
-			return gerror.Newf("该配额池已存在，请重新检查：%v", req.QuotaPoolName)
-		}
-
-		now := gtime.Now()
-		data := &entity.QuotapoolQuotaPool{
-			QuotaPoolName:  req.QuotaPoolName,
-			CronCycle:      req.CronCycle,
-			RegularQuota:   req.RegularQuota,
-			RemainingQuota: req.RegularQuota,
-			LastResetAt:    now,
-			ExtraQuota:     req.ExtraQuota,
-			Personal:       req.Personal,
-			Disabled:       req.Disabled,
-			UserinfosRules: req.UserinfosRules,
-		}
-
-		if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).Data(data).Insert(); err != nil {
-			return gerror.Wrap(err, "创建配额池失败")
-		}
-		return nil
-	})
-	if err != nil {
-		err = gerror.Wrap(err, "创建配额池失败")
-		return
+	data := g.Map{
+		"quota_pool_name": req.QuotaPoolName,
+		"cron_cycle":      req.CronCycle,
+		"regular_quota":   req.RegularQuota,
+		"remaining_quota": req.RegularQuota, // 需要初始化剩余配额为定期配额
+		"extra_quota":     req.ExtraQuota,
+		"personal":        req.Personal,
+		"disabled":        req.Disabled,
+		"userinfos_rules": req.UserinfosRules,
 	}
-	res.OK = true
-	return
+	if _, err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPoolName).Data(data).Insert(); err != nil {
+		return nil, gerror.Wrap(err, "新增配额池失败")
+	}
+	return &v1.NewQuotaPoolRes{
+		OK: true,
+	}, nil
 }

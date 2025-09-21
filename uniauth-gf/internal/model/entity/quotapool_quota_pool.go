@@ -1,5 +1,5 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-20 21:36:19
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-20 21:12:16
 // =================================================================================
 
 package entity
@@ -12,7 +12,6 @@ import (
 
 // QuotapoolQuotaPool is the golang structure for table quotapool_quota_pool.
 type QuotapoolQuotaPool struct {
-	Id             int64           `json:"id"             orm:"id"              description:"自增主键"`      // 自增主键
 	QuotaPoolName  string          `json:"quotaPoolName"  orm:"quota_pool_name" description:"配额池名称"`     // 配额池名称
 	CronCycle      string          `json:"cronCycle"      orm:"cron_cycle"      description:"刷新周期"`      // 刷新周期
 	RegularQuota   decimal.Decimal `json:"regularQuota"   orm:"regular_quota"   description:"定期配额"`      // 定期配额
