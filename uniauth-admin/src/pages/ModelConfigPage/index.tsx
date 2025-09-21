@@ -645,25 +645,26 @@ const ModelConfigPage: React.FC = () => {
             label={intl.formatMessage({ id: "pages.modelConfig.discount" })}
             rules={[
               {
-                required: true,
-                message: intl.formatMessage({
-                  id: "pages.modelConfig.discountRequired",
-                }),
-              },
-              {
-                type: "number",
-                min: 0,
-                max: 1,
-                message: intl.formatMessage({
-                  id: "pages.modelConfig.discountRange",
-                }),
+                validator: (_, value) => {
+                  if (value === undefined || value === null || value === "") {
+                    return Promise.resolve();
+                  }
+                  if (isNaN(value)) {
+                    return Promise.reject(
+                      new Error(
+                        intl.formatMessage({
+                          id: "pages.modelConfig.discountNumber",
+                        }),
+                      ),
+                    );
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
           >
             <Input
               type="number"
-              min="0"
-              max="1"
               step="0.01"
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.discountPlaceholder",
@@ -685,6 +686,14 @@ const ModelConfigPage: React.FC = () => {
           <Form.Item
             name="pricing"
             label={intl.formatMessage({ id: "pages.modelConfig.pricing" })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.modelConfig.pricingRequired",
+                }),
+              },
+            ]}
           >
             <TextArea
               rows={4}

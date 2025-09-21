@@ -227,7 +227,9 @@ export default {
   "pages.modelConfig.requestFailed": "请求失败",
   "pages.modelConfig.clientTypeRequired": "请选择客户端类型",
   "pages.modelConfig.discountRequired": "请输入折扣值",
+  "pages.modelConfig.discountNumber": "折扣值必须为数字",
   "pages.modelConfig.discountRange": "折扣值必须在0-1之间",
+  "pages.modelConfig.pricingRequired": "请输入定价配置",
 
   // ConfigI18nPage
   "pages.configI18n.search": "搜索配置",

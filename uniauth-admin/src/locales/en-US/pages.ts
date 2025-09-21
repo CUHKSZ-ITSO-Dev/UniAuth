@@ -248,7 +248,9 @@ export default {
   "pages.modelConfig.requestFailed": "Request failed",
   "pages.modelConfig.clientTypeRequired": "Please select the client type",
   "pages.modelConfig.discountRequired": "Please enter the discount value",
+  "pages.modelConfig.discountNumber": "Discount value must be a number",
   "pages.modelConfig.discountRange": "Discount value must be between 0 and 1",
+  "pages.modelConfig.pricingRequired": "Please enter the pricing configuration",
 
   // ConfigI18nPage
   "pages.configI18n.search": "Search",
