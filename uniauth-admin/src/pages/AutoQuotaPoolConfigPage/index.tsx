@@ -361,7 +361,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       dataIndex: "createdAt",
       valueType: "dateTime",
       search: false,
-      width: 180,
       hideInTable: true,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
@@ -387,7 +386,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       dataIndex: "updatedAt",
       valueType: "dateTime",
       search: false,
-      width: 180,
       hideInTable: true,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
@@ -411,7 +409,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     {
       title: intl.formatMessage({ id: "pages.autoQuotaPoolConfig.actions" }),
       valueType: "option",
-      width: 200,
       ellipsis: true,
       render: (_, record: API.AutoQuotaPoolItem) => (
         <div style={{ textAlign: "left" }}>

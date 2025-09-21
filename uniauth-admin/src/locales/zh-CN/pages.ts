@@ -129,18 +129,21 @@ export default {
   "pages.autoQuotaPoolConfig.addNew": "添加新的自动配额池配置",
   "pages.autoQuotaPoolConfig.editModalTitle": "编辑自动配额池配置",
   "pages.autoQuotaPoolConfig.addModalTitle": "添加自动配额池配置",
-  "pages.autoQuotaPoolConfig.ruleNamePlaceholder": "请输入唯一的规则名称",
+  "pages.autoQuotaPoolConfig.ruleNamePlaceholder":
+    "请输入唯一的规则名称（唯一）",
   "pages.autoQuotaPoolConfig.ruleNameRequired": "请输入规则名称",
   "pages.autoQuotaPoolConfig.descriptionPlaceholder": "请输入规则说明",
   "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
-    "请输入刷新周期的Cron表达式",
+    "请输入刷新周期的Cron表达式，例如：0 0 3 * * *",
   "pages.autoQuotaPoolConfig.cronCycleRequired": "请输入刷新周期的Cron表达式",
-  "pages.autoQuotaPoolConfig.regularQuotaPlaceholder": "请输入定期配额",
+  "pages.autoQuotaPoolConfig.regularQuotaPlaceholder":
+    "请输入定期配额（每周期重置）",
   "pages.autoQuotaPoolConfig.regularQuotaRequired": "请输入定期配额",
-  "pages.autoQuotaPoolConfig.priorityPlaceholder": "请输入优先级",
+  "pages.autoQuotaPoolConfig.priorityPlaceholder":
+    "请输入优先级，数值越小优先匹配",
   "pages.autoQuotaPoolConfig.filterGroup": "过滤条件组 (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
-    "请输入过滤条件组的JSON格式数据",
+    "请输入过滤条件组的JSON格式数据，满足条件的用户将应用该规则",
   "pages.autoQuotaPoolConfig.upnsCache": "UPN缓存列表 (JSON)",
   "pages.autoQuotaPoolConfig.upnsCachePlaceholder":
     "请输入UPN缓存列表的JSON格式数据",
@@ -172,11 +175,11 @@ export default {
   // 模型配置页面翻译
   "pages.modelConfig.title": "模型配置列表",
   "pages.modelConfig.description":
-    "管理系统中的所有AI模型配置，包括模型参数、访问权限等设置",
+    "管理系统中所有AI模型的配置，包括模型参数、访问权限等",
   "pages.modelConfig.approachName": "模型名称",
   "pages.modelConfig.clientType": "客户端类型",
   "pages.modelConfig.discount": "折扣",
-  "pages.modelConfig.servicewares": "服务项",
+  "pages.modelConfig.servicewares": "服务项目",
   "pages.modelConfig.pricing": "定价配置",
   "pages.modelConfig.clientArgs": "客户端参数",
   "pages.modelConfig.requestArgs": "请求参数",
@@ -185,20 +188,20 @@ export default {
   "pages.modelConfig.actions": "操作",
   "pages.modelConfig.edit": "编辑",
   "pages.modelConfig.delete": "删除",
-  "pages.modelConfig.deleteConfirm": "确定要删除该模型配置吗？",
+  "pages.modelConfig.deleteConfirm": "确定要删除此模型配置吗？",
   "pages.modelConfig.batchEnable": "批量启用",
   "pages.modelConfig.batchDisable": "批量禁用",
-  "pages.modelConfig.addNew": "添加新的模型配置",
+  "pages.modelConfig.addNew": "新增模型配置",
   "pages.modelConfig.editModalTitle": "编辑模型配置",
-  "pages.modelConfig.addModalTitle": "添加模型配置",
-  "pages.modelConfig.approachNamePlaceholder": "请输入唯一的模型名称",
+  "pages.modelConfig.addModalTitle": "新增模型配置",
+  "pages.modelConfig.approachNamePlaceholder": "请输入唯一的模型名称（定位键）",
   "pages.modelConfig.approachNameRequired": "请输入模型名称",
-  "pages.modelConfig.approachNameDisabled": "编辑时不能修改模型名称",
+  "pages.modelConfig.approachNameDisabled": "编辑时模型名称不可修改",
   "pages.modelConfig.clientTypePlaceholder": "请选择客户端类型",
   "pages.modelConfig.discountPlaceholder":
-    "请输入0-1之间的折扣值，如0.9表示9折",
+    "请输入0-1之间的小数折扣值，例如0.9表示9折",
   "pages.modelConfig.servicewaresPlaceholder":
-    "请输入服务项标识，多个用逗号分隔",
+    "请输入服务项目标识，多个以逗号分隔",
   "pages.modelConfig.pricingPlaceholder":
     '请输入JSON格式的定价配置，例如：{"type": "per_token", "input_price": 0.01, "output_price": 0.03}',
   "pages.modelConfig.clientArgsPlaceholder":
@@ -207,12 +210,12 @@ export default {
     '请输入JSON格式的请求参数，例如：{"model": "gpt-4", "stream": true}',
   "pages.modelConfig.formInvalid": "表单验证失败，请检查输入",
   "pages.modelConfig.editFailed": "编辑失败",
-  "pages.modelConfig.addFailed": "添加失败",
+  "pages.modelConfig.addFailed": "新增失败",
   "pages.modelConfig.notSet": "未设置",
   "pages.modelConfig.deleteSuccess": "删除成功",
   "pages.modelConfig.deleteFailed": "删除失败",
   "pages.modelConfig.updateSuccess": "更新成功",
-  "pages.modelConfig.jsonInvalid": "JSON格式错误，请检查输入",
+  "pages.modelConfig.jsonInvalid": "JSON格式无效，请检查输入",
   "pages.modelConfig.createSuccess": "创建成功",
   "pages.modelConfig.fetchFailed": "获取模型配置失败",
 

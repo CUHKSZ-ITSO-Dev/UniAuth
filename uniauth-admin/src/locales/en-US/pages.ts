@@ -141,13 +141,23 @@ export default {
   "pages.autoQuotaPoolConfig.addModalTitle":
     "Add Auto Quota Pool Configuration",
   "pages.autoQuotaPoolConfig.ruleNamePlaceholder":
-    "Please enter a unique rule name",
+    "Please enter a unique rule name (unique)",
   "pages.autoQuotaPoolConfig.ruleNameRequired": "Please enter the rule name",
   "pages.autoQuotaPoolConfig.descriptionPlaceholder":
     "Please enter rule description",
+  "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
+    "Please enter refresh cycle Cron expression, e.g.: 0 0 3 * * *",
+  "pages.autoQuotaPoolConfig.cronCycleRequired":
+    "Please enter the refresh cycle Cron expression",
+  "pages.autoQuotaPoolConfig.regularQuotaPlaceholder":
+    "Please enter regular quota (reset per cycle)",
+  "pages.autoQuotaPoolConfig.regularQuotaRequired":
+    "Please enter regular quota",
+  "pages.autoQuotaPoolConfig.priorityPlaceholder":
+    "Please enter priority, smaller values match first",
   "pages.autoQuotaPoolConfig.filterGroup": "Filter Group (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
-    "Please enter filter group data in JSON format",
+    "Please enter filter group data in JSON format, users meeting the conditions will apply this rule",
   "pages.autoQuotaPoolConfig.upnsCache": "UPN Cache List (JSON)",
   "pages.autoQuotaPoolConfig.upnsCachePlaceholder":
     "Please enter UPN cache list data in JSON format",
@@ -202,7 +212,7 @@ export default {
   "pages.modelConfig.editModalTitle": "Edit Model Configuration",
   "pages.modelConfig.addModalTitle": "Add Model Configuration",
   "pages.modelConfig.approachNamePlaceholder":
-    "Please enter a unique model name",
+    "Please enter a unique model name (locator key)",
   "pages.modelConfig.approachNameRequired": "Please enter the model name",
   "pages.modelConfig.approachNameDisabled":
     "Model name cannot be modified when editing",

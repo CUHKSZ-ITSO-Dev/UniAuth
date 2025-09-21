@@ -273,7 +273,6 @@ const ModelConfigPage: React.FC = () => {
       valueType: "text",
       search: true,
       fixed: "left",
-      width: 150,
       render: (_, record: API.ModelConfigItem) =>
         record.approachName || (
           <Text type="secondary">
@@ -286,7 +285,6 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "clientType",
       valueType: "select",
       search: true,
-      width: 120,
       valueEnum: {
         AsyncAzureOpenAI: { text: "AsyncAzureOpenAI" },
         AsyncOpenAI: { text: "AsyncOpenAI" },
@@ -303,7 +301,6 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "discount",
       valueType: "digit",
       search: false,
-      width: 80,
       render: (_, record: API.ModelConfigItem) => {
         if (record.discount !== undefined && record.discount !== null) {
           const discountValue = parseFloat(String(record.discount));
@@ -323,7 +320,6 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "servicewares",
       valueType: "text",
       search: false,
-      width: 150,
       render: (_, record: API.ModelConfigItem) => {
         if (
           Array.isArray(record.servicewares) &&
@@ -343,7 +339,6 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "pricing",
       valueType: "text",
       search: false,
-      width: 200,
       render: (_, record: API.ModelConfigItem) => {
         if (record.pricing) {
           try {
@@ -368,7 +363,6 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "clientArgs",
       valueType: "text",
       search: false,
-      width: 200,
       render: (_, record: API.ModelConfigItem) => {
         if (record.clientArgs) {
           try {
@@ -398,7 +392,6 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "requestArgs",
       valueType: "text",
       search: false,
-      width: 200,
       render: (_, record: API.ModelConfigItem) => {
         if (record.requestArgs) {
           try {
@@ -428,7 +421,6 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "createdAt",
       valueType: "dateTime",
       search: false,
-      width: 150,
       hideInTable: true,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
@@ -454,7 +446,6 @@ const ModelConfigPage: React.FC = () => {
       dataIndex: "updatedAt",
       valueType: "dateTime",
       search: false,
-      width: 150,
       hideInTable: true,
       fieldProps: {
         format: "YYYY-MM-DD HH:mm:ss",
@@ -478,7 +469,6 @@ const ModelConfigPage: React.FC = () => {
     {
       title: intl.formatMessage({ id: "pages.modelConfig.actions" }),
       valueType: "option",
-      width: 200,
       fixed: "right",
       ellipsis: true,
       render: (_, record: API.ModelConfigItem) => (
@@ -517,7 +507,6 @@ const ModelConfigPage: React.FC = () => {
           actionRef={actionRef}
           rowKey="approachName"
           search={{ labelWidth: "auto" }}
-          scroll={{ x: 1500 }}
           toolBarRender={() => [
             <Button type="primary" key="new" onClick={handleNewModelConfig}>
               {intl.formatMessage({ id: "pages.modelConfig.addNew" })}
