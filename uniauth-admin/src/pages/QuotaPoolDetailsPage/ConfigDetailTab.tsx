@@ -137,13 +137,6 @@ const ConfigDetailTab: FC = () => {
       search: true,
     },
     {
-      title: "域",
-      dataIndex: "dom",
-      valueType: "text",
-      ellipsis: true,
-      search: true,
-    },
-    {
       title: "对象",
       dataIndex: "obj",
       valueType: "text",
@@ -162,8 +155,14 @@ const ConfigDetailTab: FC = () => {
       dataIndex: "eft",
       valueType: "select",
       valueEnum: {
-        allow: { text: "允许", status: "Success" },
-        deny: { text: "拒绝", status: "Error" },
+        allow: {
+          text: "允许",
+          status: "Success",
+        },
+        deny: {
+          text: "拒绝",
+          status: "Error",
+        },
       },
       ellipsis: true,
       search: true,
