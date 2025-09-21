@@ -78,6 +78,10 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const handleNewConfig = () => {
     setEditingRecord(null);
     form.resetFields();
+    // 设置默认值，新规则默认启用
+    form.setFieldsValue({
+      enabled: true,
+    });
     setModalVisible(true);
   };
 
