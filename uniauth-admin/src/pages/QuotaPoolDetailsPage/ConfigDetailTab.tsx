@@ -5,8 +5,94 @@ import {
 } from "@ant-design/pro-components";
 import { Badge, Button, Card, Descriptions, Progress } from "antd";
 import type { FC } from "react";
+import { useState, useEffect } from "react";
+import { getQuotaPool } from "@/services/uniauthService/quotaPool";
+
+export interface RequestGetQuotaPoolReqParams {
+    // 是否返回全部数据，true时忽略分页参数，但仍有最大限制保护
+    all?: boolean;
+    // 页码，从1开始
+    page?: number;
+    // 每页条数，最大1000
+    pageSize?: number;
+    // 指定配额池名称（可选）
+    quotaPoolName?: string;
+    [property: string]: any;
+}
+
+// uniauth-gf.api.quotaPool.v1.GetQuotaPoolRes
+interface GetQuotaPoolResData {
+    // 是否为全部数据查询
+    isAll?: boolean;
+    // 配额池列表或单个配置
+    items?: UniauthGfapiQuotaPoolV1QuotaPoolItem[];
+    // 当前页码
+    page?: number;
+    // 每页条数
+    pageSize?: number;
+    // 总记录数
+    total?: number;
+    // 总页数
+    totalPages?: number;
+    [property: string]: any;
+}
+
+// uniauth-gf.api.quotaPool.v1.QuotaPoolItem
+export interface UniauthGfapiQuotaPoolV1QuotaPoolItem {
+    // 创建时间
+    createdAt?: string;
+    // 刷新周期
+    cronCycle?: string;
+    // 是否禁用
+    disabled?: boolean;
+    // 加油包
+    extraQuota?: { [key: string]: any };
+    // 自增主键
+    id?: number;
+    // 上次刷新时间
+    lastResetAt?: string;
+    // 是否个人配额池
+    personal?: boolean;
+    // 配额池名称
+    quotaPoolName?: string;
+    // 定期配额
+    regularQuota?: { [key: string]: any };
+    // 剩余配额
+    remainingQuota?: { [key: string]: any };
+    // 修改时间
+    updatedAt?: string;
+    // ITTools规则
+    userinfosRules?: { [key: string]: any };
+    [property: string]: any;
+}
 
 const ConfigDetailTab: FC = () => {
+
+  const [quotaPool, setQuotaPool] = useState<UniauthGfapiQuotaPoolV1QuotaPoolItem | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const fetchQuotaPool = async () => {
+    setLoading(true);
+    const res = await getQuotaPool({
+      all: false,
+      page: 1,
+      pageSize: 1000,
+      quotaPoolName: "student_pool",
+    });
+    if (res.items && res.items.length > 0) {
+      setQuotaPool(res.items[0]);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchQuotaPool();
+  }, []);
+
+  if (loading || !quotaPool) {
+    return <div>loading...</div>;
+  }
+
   const associatedUsersColumns: ProColumns<any>[] = [
     {
       title: "UPN",
