@@ -228,6 +228,14 @@ const ModelConfigPage: React.FC = () => {
           );
         }
 
+        // 客户端类型过滤
+        if (params.clientType) {
+          data = data.filter(
+            (item: API.ModelConfigItem) =>
+              item.clientType && item.clientType === params.clientType,
+          );
+        }
+
         return {
           data: data,
           items: data,
@@ -276,9 +284,13 @@ const ModelConfigPage: React.FC = () => {
     {
       title: intl.formatMessage({ id: "pages.modelConfig.clientType" }),
       dataIndex: "clientType",
-      valueType: "text",
-      search: false,
+      valueType: "select",
+      search: true,
       width: 120,
+      valueEnum: {
+        AsyncAzureOpenAI: { text: "AsyncAzureOpenAI" },
+        AsyncOpenAI: { text: "AsyncOpenAI" },
+      },
       render: (_, record: API.ModelConfigItem) =>
         record.clientType || (
           <Text type="secondary">
