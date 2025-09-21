@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/shopspring/decimal"
 )
 
 type GetModelConfigReq struct {
@@ -31,6 +32,7 @@ type EditModelConfigReq struct {
 }
 type EditModelConfigRes struct {
 	Config string `json:"config" dc:"配置"`
+	OK     bool   `json:"ok" dc:"是否成功"`
 }
 
 type DeleteModelConfigReq struct {
