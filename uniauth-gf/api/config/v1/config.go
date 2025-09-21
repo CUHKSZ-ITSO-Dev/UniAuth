@@ -36,10 +36,11 @@ type EditModelConfigRes struct {
 }
 
 type DeleteModelConfigReq struct {
-	g.Meta `path:"/model" tags:"Config/Model" method:"delete" summary:"删除模型配置"`
+	g.Meta       `path:"/model" tags:"Config/Model" method:"delete" summary:"删除模型配置"`
+	ApproachName string `json:"ApproachName" v:"required" dc:"Approach 名称"`
 }
 type DeleteModelConfigRes struct {
-	Config string `json:"config" dc:"配置"`
+	OK bool `json:"ok" dc:"是否成功"`
 }
 
 type GetI18nConfigReq struct {
