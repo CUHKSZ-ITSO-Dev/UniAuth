@@ -55,5 +55,6 @@ export default {
   "menu.Config.model-config": "模型配置",
   "menu.Config.auto-quota-pool-config": "自动配额池配置",
   "menu.user-list": "用户列表",
+  "menu.config-i18n": "国际化配置",
   "menu.user-detail": "用户详情",
 };

@@ -2,6 +2,7 @@ ignoredBuiltDependencies:
   - unrs-resolver
 
 onlyBuiltDependencies:
+  - '@scarf/scarf'
   - core-js
   - core-js-pure
   - es5-ext

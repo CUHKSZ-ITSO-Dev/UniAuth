@@ -54,6 +54,7 @@ export default {
   "menu.Config": "Configuration",
   "menu.Config.model-config": "Model Configuration",
   "menu.Config.auto-quota-pool-config": "Auto Quota Pool Configuration",
+  "menu.config-i18n": "I18N Configuration",
   "menu.user-list": "User List",
   "menu.user-detail": "User Details",
 };

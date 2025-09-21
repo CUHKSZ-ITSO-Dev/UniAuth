@@ -11,6 +11,7 @@ import (
 
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
+	"uniauth-gf/internal/model/entity"
 )
 
 func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.EditAutoQuotaPoolConfigReq) (res *v1.EditAutoQuotaPoolConfigRes, err error) {
@@ -23,12 +24,13 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 	}
 
 	err = dao.ConfigAutoQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := dao.ConfigAutoQuotaPool.Ctx(ctx).
-			Where("rule_name = ?", req.RuleName).
-			LockUpdate().
-			Count()
+		var configAutoQuotaPool *entity.ConfigAutoQuotaPool
+		err = dao.ConfigAutoQuotaPool.Ctx(ctx).Where("rule_name = ?", req.RuleName).LockUpdate().Scan(&configAutoQuotaPool)
 		if err != nil {
-			return gerror.Wrap(err, "检查规则是否存在失败")
+			return gerror.Wrap(err, "查询规则是否存在失败")
+		}
+		if configAutoQuotaPool == nil {
+			return gerror.Newf("该规则不存在，请重新检查：%v", req.RuleName)
 		}
 
 		data := g.Map{

@@ -11,6 +11,9 @@ import (
 type GetQuotaPoolReq struct {
 	g.Meta        `path:"/" tags:"QuotaPool" method:"get" summary:"获取配额池的详细配置"`
 	QuotaPoolName string `json:"quotaPoolName" dc:"指定配额池名称（可选）"`
+	Page          int    `json:"page" v:"min:1" dc:"页码，从1开始" default:"1"`
+	PageSize      int    `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" default:"20"`
+	All           bool   `json:"all" dc:"是否返回全部数据，true时忽略分页参数，但仍有最大限制保护" default:"false"`
 }
 
 type QuotaPoolItem struct {
@@ -18,7 +21,12 @@ type QuotaPoolItem struct {
 }
 
 type GetQuotaPoolRes struct {
-	Items []QuotaPoolItem `json:"items" dc:"配额池列表或单个配置"`
+	Total      int             `json:"total" dc:"总记录数"`
+	Page       int             `json:"page" dc:"当前页码"`
+	PageSize   int             `json:"pageSize" dc:"每页条数"`
+	TotalPages int             `json:"totalPages" dc:"总页数"`
+	IsAll      bool            `json:"isAll" dc:"是否为全部数据查询"`
+	Items      []QuotaPoolItem `json:"items" dc:"配额池列表或单个配置"`
 }
 
 type NewQuotaPoolReq struct {

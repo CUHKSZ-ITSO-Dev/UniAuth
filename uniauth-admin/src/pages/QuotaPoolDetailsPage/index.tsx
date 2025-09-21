@@ -1,18 +1,18 @@
 import {
   GridContent,
   PageContainer,
+  type ProColumns,
   ProTable,
   RouteContext,
-  type ProColumns,
 } from "@ant-design/pro-components";
 import {
   Badge,
   Button,
   Card,
   Descriptions,
+  Progress,
   Space,
   Statistic,
-  Progress,
 } from "antd";
 
 import type { FC } from "react";
@@ -120,22 +120,22 @@ const QuotaPoolDetailsPage: FC<{}> = () => {
 
     if (params.upn) {
       example_data = example_data.filter((item) =>
-        item.upn.includes(params.upn as string)
+        item.upn.includes(params.upn as string),
       );
     }
     if (params.displayName) {
       example_data = example_data.filter((item) =>
-        item.displayName.includes(params.displayName as string)
+        item.displayName.includes(params.displayName as string),
       );
     }
     if (params.identity) {
       example_data = example_data.filter((item) =>
-        item.identity.includes(params.identity as string)
+        item.identity.includes(params.identity as string),
       );
     }
     if (params.department) {
       example_data = example_data.filter((item) =>
-        item.department.includes(params.department as string)
+        item.department.includes(params.department as string),
       );
     }
 
@@ -333,7 +333,7 @@ const QuotaPoolDetailsPage: FC<{}> = () => {
               <Descriptions.Item label={intl.formatMessage({ id: 'pages.quotaPoolDetails.balancePercentage' })}>
                 <Progress
                   percent={Number(
-                    (((328 + 168) / (648 + 168)) * 100).toFixed(1)
+                    (((328 + 168) / (648 + 168)) * 100).toFixed(1),
                   )}
                   success={{
                     percent: Number(((328 / (648 + 168)) * 100).toFixed(1)),

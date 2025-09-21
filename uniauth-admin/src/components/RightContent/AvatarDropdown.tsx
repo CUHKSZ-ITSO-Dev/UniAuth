@@ -2,16 +2,16 @@ import {
   LogoutOutlined,
   SettingOutlined,
   UserOutlined,
-} from '@ant-design/icons';
-import { history, useModel } from '@umijs/max';
-import type { MenuProps } from 'antd';
-import { Spin } from 'antd';
-import { createStyles } from 'antd-style';
-import React from 'react';
-import { flushSync } from 'react-dom';
+} from "@ant-design/icons";
+import { history, useModel } from "@umijs/max";
+import type { MenuProps } from "antd";
+import { Spin } from "antd";
+import { createStyles } from "antd-style";
+import React from "react";
+import { flushSync } from "react-dom";
 // 移除不存在的API引用
 // import { outLogin } from '@/services/ant-design-pro/api';
-import HeaderDropdown from '../HeaderDropdown';
+import HeaderDropdown from "../HeaderDropdown";
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -19,7 +19,7 @@ export type GlobalHeaderRightProps = {
 };
 
 export const AvatarName = () => {
-  const { initialState } = useModel('@@initialState');
+  const { initialState } = useModel("@@initialState");
   const { currentUser } = initialState || {};
   return <span className="anticon">{currentUser?.name}</span>;
 };
@@ -27,15 +27,15 @@ export const AvatarName = () => {
 const useStyles = createStyles(({ token }) => {
   return {
     action: {
-      display: 'flex',
-      height: '48px',
-      marginLeft: 'auto',
-      overflow: 'hidden',
-      alignItems: 'center',
-      padding: '0 8px',
-      cursor: 'pointer',
+      display: "flex",
+      height: "48px",
+      marginLeft: "auto",
+      overflow: "hidden",
+      alignItems: "center",
+      padding: "0 8px",
+      cursor: "pointer",
       borderRadius: token.borderRadius,
-      '&:hover': {
+      "&:hover": {
         backgroundColor: token.colorBgTextHover,
       },
     },
@@ -54,15 +54,15 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
     // await outLogin();
 
     // 简化退出登录逻辑，直接跳转到欢迎页面
-    history.replace('/welcome');
+    history.replace("/welcome");
   };
   const { styles } = useStyles();
 
-  const { initialState, setInitialState } = useModel('@@initialState');
+  const { initialState, setInitialState } = useModel("@@initialState");
 
-  const onMenuClick: MenuProps['onClick'] = (event) => {
+  const onMenuClick: MenuProps["onClick"] = (event) => {
     const { key } = event;
-    if (key === 'logout') {
+    if (key === "logout") {
       flushSync(() => {
         setInitialState((s) => ({ ...s, currentUser: null as any }));
       });
@@ -70,9 +70,9 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
       return;
     }
     // 简化个人中心和个人设置的跳转
-    if (key === 'center' || key === 'settings') {
+    if (key === "center" || key === "settings") {
       // 暂时跳转到欢迎页面，因为相关页面可能不存在
-      history.push('/welcome');
+      history.push("/welcome");
       return;
     }
   };
@@ -102,25 +102,25 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
   const menuItems = [
     ...(menu
       ? [
-        {
-          key: 'center',
-          icon: <UserOutlined />,
-          label: '个人中心',
-        },
-        {
-          key: 'settings',
-          icon: <SettingOutlined />,
-          label: '个人设置',
-        },
-        {
-          type: 'divider' as const,
-        },
-      ]
+          {
+            key: "center",
+            icon: <UserOutlined />,
+            label: "个人中心",
+          },
+          {
+            key: "settings",
+            icon: <SettingOutlined />,
+            label: "个人设置",
+          },
+          {
+            type: "divider" as const,
+          },
+        ]
       : []),
     {
-      key: 'logout',
+      key: "logout",
       icon: <LogoutOutlined />,
-      label: '退出登录',
+      label: "退出登录",
     },
   ];
 

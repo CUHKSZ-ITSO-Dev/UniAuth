@@ -29,7 +29,7 @@ func ResetBalance(ctx context.Context, quotaPoolName string) error {
 		quotaPool.LastResetAt = gtime.Now()
 
 		if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).
-			WherePri(quotaPool.Id).
+			WherePri(quotaPool.QuotaPoolName).
 			Data(quotaPool).
 			Update(); err != nil {
 			return gerror.Wrap(err, "更新配额池信息失败")

@@ -9,18 +9,19 @@ import (
 
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
+	"uniauth-gf/internal/model/entity"
 )
 
 func (c *ControllerV1) DeleteAutoQuotaPoolConfig(ctx context.Context, req *v1.DeleteAutoQuotaPoolConfigReq) (res *v1.DeleteAutoQuotaPoolConfigRes, err error) {
 	res = &v1.DeleteAutoQuotaPoolConfigRes{}
 
 	err = dao.ConfigAutoQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		_, err := dao.ConfigAutoQuotaPool.Ctx(ctx).
-			Where("rule_name = ?", req.RuleName).
-			LockUpdate().
-			Count()
-		if err != nil {
-			return gerror.WrapCode(gcode.CodeDbOperationError, err, "检查规则是否存在失败")
+		var configAutoQuotaPool *entity.ConfigAutoQuotaPool
+		if err := dao.ConfigAutoQuotaPool.Ctx(ctx).Where("rule_name = ?", req.RuleName).LockUpdate().Scan(&configAutoQuotaPool); err != nil {
+			return gerror.Wrap(err, "检查规则是否存在失败")
+		}
+		if configAutoQuotaPool == nil {
+			return gerror.Newf("该规则不存在，请重新检查：%v", req.RuleName)
 		}
 
 		_, delErr := dao.ConfigAutoQuotaPool.Ctx(ctx).

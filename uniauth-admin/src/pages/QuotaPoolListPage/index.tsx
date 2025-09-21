@@ -1,6 +1,6 @@
+import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
-import type { ProColumns, ActionType } from "@ant-design/pro-components";
-import { Typography, Button, Popconfirm, Table, Space } from "antd";
+import { Button, Popconfirm, Space, Table, Typography } from "antd";
 import { useRef } from "react";
 import { useIntl } from '@umijs/max';
 
@@ -153,7 +153,7 @@ const quotaPoolListRequest = async (params: any) => {
   }
   if (params.autoCreated !== undefined) {
     data = data.filter(
-      (item) => String(item.autoCreated) === String(params.autoCreated)
+      (item) => String(item.autoCreated) === String(params.autoCreated),
     );
   }
   if (
