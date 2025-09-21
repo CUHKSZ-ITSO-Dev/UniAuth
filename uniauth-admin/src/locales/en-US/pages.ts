@@ -222,11 +222,11 @@ export default {
   "pages.modelConfig.servicewaresPlaceholder":
     "Please enter service item identifiers, separated by commas",
   "pages.modelConfig.pricingPlaceholder":
-    'Please enter pricing configuration in JSON format, e.g.: {"type": "per_token", "input_price": 0.01, "output_price": 0.03}',
+    'Please enter pricing configuration in JSON format, e.g.: \'{"type": "per_token", "input_price": 0.01, "output_price": 0.03}\'',
   "pages.modelConfig.clientArgsPlaceholder":
-    'Please enter client arguments in JSON format, e.g.: {"temperature": 0.7, "max_tokens": 1024}',
+    'Please enter client arguments in JSON format, e.g.: \'{"temperature": 0.7, "max_tokens": 1024}\'',
   "pages.modelConfig.requestArgsPlaceholder":
-    'Please enter request arguments in JSON format, e.g.: {"model": "gpt-4", "stream": true}',
+    'Please enter request arguments in JSON format, e.g.: \'{"model": "gpt-4", "stream": true}\'',
   "pages.modelConfig.formInvalid": "Form validation failed, please check input",
   "pages.modelConfig.editFailed": "Edit Failed",
   "pages.modelConfig.addFailed": "Add Failed",

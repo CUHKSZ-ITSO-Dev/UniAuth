@@ -203,11 +203,11 @@ export default {
   "pages.modelConfig.servicewaresPlaceholder":
     "请输入服务项目标识，多个以逗号分隔",
   "pages.modelConfig.pricingPlaceholder":
-    '请输入JSON格式的定价配置，例如：{"type": "per_token", "input_price": 0.01, "output_price": 0.03}',
+    '请输入JSON格式的定价配置，例如：\'{"type": "per_token", "input_price": 0.01, "output_price": 0.03}\'',
   "pages.modelConfig.clientArgsPlaceholder":
-    '请输入JSON格式的客户端参数，例如：{"temperature": 0.7, "max_tokens": 1024}',
+    '请输入JSON格式的客户端参数，例如：\'{"temperature": 0.7, "max_tokens": 1024}\'',
   "pages.modelConfig.requestArgsPlaceholder":
-    '请输入JSON格式的请求参数，例如：{"model": "gpt-4", "stream": true}',
+    '请输入JSON格式的请求参数，例如：\'{"model": "gpt-4", "stream": true}\'',
   "pages.modelConfig.formInvalid": "表单验证失败，请检查输入",
   "pages.modelConfig.editFailed": "编辑失败",
   "pages.modelConfig.addFailed": "新增失败",
