@@ -8,6 +8,7 @@ import { useIntl } from "@umijs/max";
 import { Badge, Button, Card, Descriptions, Progress } from "antd";
 import type { FC } from "react";
 import { useRef, useState } from "react";
+import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthService/query";
 import { getQuotaPool as getConfigAPI } from "@/services/uniauthService/quotaPool";
 
 // uniauth-gf.api.quotaPool.v1.GetQuotaPoolRes
@@ -42,35 +43,6 @@ interface GetQuotaPoolConfigData {
   //
   [property: string]: any;
 }
-
-const getData = async (params: any) => {
-  // 请求参数
-  const getRequestParams = {
-    quotaPoolName: "student_pool",
-  };
-
-  const res = await getConfigAPI({ ...getRequestParams, ...params });
-
-  const formattedData = res.items?.map((item: any) => ({
-    id: item.id,
-    quotaPoolName: item.quotaPoolName,
-    cronCycle: item.cronCycle,
-    regularQuota: item.regularQuota,
-    remainingQuota: item.remainingQuota,
-    lastResetAt: item.lastResetAt,
-    extraQuota: item.extraQuota,
-    personal: item.personal,
-    disabled: item.disabled,
-    userinfosRules: item.userinfosRules,
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt,
-  }));
-  return {
-    data: formattedData,
-    success: true,
-    total: formattedData?.length,
-  };
-};
 
 const ConfigDetailTab: FC = () => {
   const associatedUsersColumns: ProColumns<any>[] = [
@@ -254,51 +226,29 @@ const ConfigDetailTab: FC = () => {
     };
   };
 
-  const quotaPoolRulesDataRequest = async (_params: any) => {
-    // TODO: 替换为实际请求
-    const example_data = [
-      {
-        id: 1,
-        sub: "alice",
-        dom: "domain1",
-        obj: "data1",
-        act: "read",
-        eft: "allow",
-        g: "group1",
-      },
-      {
-        id: 2,
-        sub: "bob",
-        dom: "domain2",
-        obj: "data2",
-        act: "write",
-        eft: "deny",
-        g: "group2",
-      },
-      {
-        id: 3,
-        sub: "data2_admin",
-        dom: "domain2",
-        obj: "data2",
-        act: "read|write|delete",
-        eft: "allow",
-        g: "group3",
-      },
-      {
-        id: 4,
-        sub: "data1_admin",
-        dom: "domain1",
-        obj: "data1",
-        act: "read|write|delete",
-        eft: "allow",
-        g: "group1",
-      },
-    ];
+  const quotaPoolRulesDataRequest = async (params: any) => {
+    // 请求参数
+    const getPolicyRequestParams = {
+      sub: params.sub,
+      obj: params.obj,
+      act: params.act,
+      eft: params.eft,
+    };
+
+    const res = await getPolcyAPI(getPolicyRequestParams);
+
+    const formattedData = res.policies?.map((policy: any) => ({
+      id: policy.join(","),
+      subject: policy[0] || "",
+      object: policy[1] || "",
+      action: policy[2] || "",
+      effect: policy[3] || "",
+      raw: policy,
+    }));
 
     return {
-      data: example_data,
+      data: formattedData,
       success: true,
-      total: example_data.length,
     };
   };
 
