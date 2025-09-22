@@ -125,8 +125,6 @@ const ConfigDetailTab: FC = () => {
 
   const associatedUsersDataRequest = async (params: any) => {
     try {
-      console.log("开始获取配额池关联用户...", params);
-
       // 构建API请求参数
       const requestParams = {
         quotaPool: "student_pool", // 可以从props或URL参数获取
@@ -134,8 +132,6 @@ const ConfigDetailTab: FC = () => {
 
       // 调用真实API获取配额池关联用户
       const response = await getUsersAPI(requestParams);
-
-      console.log("API响应:", response);
 
       if (response && response.users) {
         // Mock API返回的是随机字符串数组，转换为表格需要的格式
@@ -193,13 +189,6 @@ const ConfigDetailTab: FC = () => {
         const endIndex = startIndex + pageSize;
         const paginatedData = filteredData.slice(startIndex, endIndex);
 
-        console.log("处理后的用户数据:", {
-          total: filteredData.length,
-          current,
-          pageSize,
-          paginatedData,
-        });
-
         return {
           data: paginatedData,
           success: true,
@@ -207,8 +196,7 @@ const ConfigDetailTab: FC = () => {
         };
       }
 
-      // 如果没有数据，直接返回错误
-      console.log("没有用户数据");
+      // 如果没有数据，直接返回空数据
       return {
         data: [],
         success: false,
@@ -226,8 +214,6 @@ const ConfigDetailTab: FC = () => {
 
   const quotaPoolRulesDataRequest = async (params: any) => {
     try {
-      console.log("开始获取权限规则...", params);
-
       // 请求参数
       const getPolicyRequestParams = {
         sub: params.sub,
@@ -238,10 +224,8 @@ const ConfigDetailTab: FC = () => {
 
       const res = await getPolcyAPI(getPolicyRequestParams);
 
-      console.log("权限规则API响应:", res);
-
       if (res && res.policies) {
-        // Mock API返回的是二维字符串数组，转换为策略格式
+        // 格式化数据
         const formattedData = res.policies.map(
           (policy: any, index: number) => ({
             id: `policy_${index}`,
@@ -260,13 +244,6 @@ const ConfigDetailTab: FC = () => {
         const endIndex = startIndex + pageSize;
         const paginatedData = formattedData.slice(startIndex, endIndex);
 
-        console.log("权限规则分页数据:", {
-          total: formattedData.length,
-          current,
-          pageSize,
-          paginatedData,
-        });
-
         return {
           data: paginatedData,
           success: true,
@@ -274,8 +251,7 @@ const ConfigDetailTab: FC = () => {
         };
       }
 
-      // 没有数据直接返回错误
-      console.log("没有权限规则数据");
+      // 没有数据直接返回空数据
       return {
         data: [],
         success: false,
@@ -293,8 +269,6 @@ const ConfigDetailTab: FC = () => {
 
   const itToolsRulesDataRequest = async (params: any = {}) => {
     try {
-      console.log("开始获取ITTools规则...");
-
       // 请求参数
       const getRequestParams = {
         quotaPoolName: "student_pool",
@@ -302,10 +276,8 @@ const ConfigDetailTab: FC = () => {
 
       const res = await getConfigAPI({ ...getRequestParams });
 
-      console.log("ITTools规则API响应:", res);
-
       if (res && (res as any).quotaPool) {
-        // Mock API返回的格式与类型定义不完全匹配，使用any类型处理
+        // 格式化数据
         const mockQuotaPool = (res as any).quotaPool;
         const formattedData = [
           {
@@ -321,13 +293,6 @@ const ConfigDetailTab: FC = () => {
         const endIndex = startIndex + pageSize;
         const paginatedData = formattedData.slice(startIndex, endIndex);
 
-        console.log("ITTools规则分页数据:", {
-          total: formattedData.length,
-          current,
-          pageSize,
-          paginatedData,
-        });
-
         return {
           data: paginatedData,
           success: true,
@@ -335,15 +300,13 @@ const ConfigDetailTab: FC = () => {
         };
       }
 
-      // 没有数据直接返回错误
-      console.log("没有ITTools规则数据");
+      // 没有数据直接返回空数据
       return {
         data: [],
         success: false,
         total: 0,
       };
     } catch (error) {
-      console.error("获取ITTools规则失败:", error);
       return {
         data: [],
         success: false,
@@ -354,7 +317,6 @@ const ConfigDetailTab: FC = () => {
 
   const handleUserDetail = (record: any) => {
     // TODO: 跳转展示用户详情页
-    console.log("查看用户详情", record);
   };
 
   return (
