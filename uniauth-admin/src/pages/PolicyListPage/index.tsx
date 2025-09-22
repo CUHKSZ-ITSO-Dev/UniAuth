@@ -309,6 +309,8 @@ const PolicyListPage: React.FC = () => {
           rowKey="id"
           search={{
             labelWidth: "auto",
+            collapsed: false,
+            collapseRender: false,
             searchText: intl.formatMessage({
               id: "pages.userList.search.query",
               defaultMessage: "查询",
@@ -319,7 +321,6 @@ const PolicyListPage: React.FC = () => {
             }),
             span: 6,
             defaultCollapsed: false,
-            collapseRender: false,
             optionRender: ({ searchText, resetText }, { form }) => [
               <Button
                 key="search"
