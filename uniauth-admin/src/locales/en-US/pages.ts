@@ -136,7 +136,8 @@ export default {
   "pages.policyList.search.reset": "Reset",
   "pages.policyList.tableAlert.selected": "Selected {count} items",
   "pages.policyList.tableAlert.cancel": "Cancel Selection",
-  "pages.policyList.deleteConfirmTitle2": `Are you sure you want to delete the selected ${count} policies?`,
+  "pages.policyList.deleteConfirmTitle2":
+    "Are you sure you want to delete the selected {count} policies?",
   "pages.policyList.batchDelete": "Batch Delete",
   "pages.policyList.searchTable.new": "New",
   "pages.policyList.searchTable.newPolicy": "New Policy",

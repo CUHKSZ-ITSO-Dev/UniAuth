@@ -18,7 +18,6 @@ import {
   Tag,
   Typography,
 } from "antd";
-import { count } from "console";
 import { useRef, useState } from "react";
 import {
   postAuthAdminPoliciesAdd as addPoliciesAPI,
@@ -49,23 +48,45 @@ const filterPolicies = async (params: any) => {
     eft: params.effect,
   };
 
-  const response = await filterPoliciesAPI(filterRequest);
+  try {
+    const response = await filterPoliciesAPI(filterRequest);
 
-  // 将 API 返回的二维数组转换为表格需要的格式
-  // @ts-expect-error
-  const formattedData = response.policies.map((policy: any) => ({
-    id: policy.join(","),
-    subject: policy[0] || "",
-    object: policy[1] || "",
-    action: policy[2] || "",
-    effect: policy[3] || "",
-    raw: policy,
-  }));
-  return {
-    data: formattedData,
-    success: true,
-    total: formattedData.length,
-  };
+    if (!response || !response.policies) {
+      return {
+        data: [],
+        success: false,
+        total: 0,
+      };
+    }
+
+    // 将 API 返回的二维数组转换为表格需要的格式
+    const formattedData = response.policies.map((policy: any) => ({
+      id: policy.join(","),
+      subject: policy[0] || "",
+      object: policy[1] || "",
+      action: policy[2] || "",
+      effect: policy[3] || "",
+      raw: policy,
+    }));
+
+    // 处理分页参数
+    const { current = 1, pageSize = 10 } = params;
+    const startIndex = (current - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedData = formattedData.slice(startIndex, endIndex);
+
+    return {
+      data: paginatedData,
+      success: true,
+      total: formattedData.length,
+    };
+  } catch (error) {
+    return {
+      data: [],
+      success: false,
+      total: 0,
+    };
+  }
 };
 
 const addPolicies = async (policies: string[][]) => {
@@ -325,8 +346,8 @@ const PolicyListPage: React.FC = () => {
           }}
           pagination={{
             pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
+            showSizeChanger: false,
+            showQuickJumper: false,
             showTotal: (total) => `共 ${total} 条记录`,
           }}
           rowSelection={{
@@ -367,7 +388,7 @@ const PolicyListPage: React.FC = () => {
                   title={intl.formatMessage(
                     {
                       id: "pages.policyList.deleteConfirmTitle2",
-                      defaultMessage: `确定要删除选中的 ${count} 条规则吗？`,
+                      defaultMessage: "确定要删除选中的 {count} 条规则吗？",
                     },
                     {
                       count: selectedRowKeys.length,
