@@ -1,5 +1,5 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 22:47:28
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-21 23:58:44
 // =================================================================================
 
 package do
@@ -20,7 +20,7 @@ type ConfigAutoQuotaPool struct {
 	RegularQuota    any         // 定期配额
 	Enabled         any         // 是否启用该配额池
 	FilterGroup     *gjson.Json // 过滤条件组
-	UpnsCache       *gjson.Json // UPN缓存列表
+	UpnsCache       []string    // UPN缓存列表
 	Priority        any         // 优先级，数值越小优先匹配
 	LastEvaluatedAt *gtime.Time // 该规则上次评估时间
 	CreatedAt       *gtime.Time // 创建时间
