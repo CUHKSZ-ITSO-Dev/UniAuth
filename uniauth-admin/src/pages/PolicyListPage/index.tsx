@@ -40,12 +40,12 @@ interface PolicyItem {
 
 // API 请求函数
 const filterPolicies = async (params: any) => {
-  // 构建筛选参数
+  // 构建筛选参数，使用字符串格式（符合API类型定义）
   const filterRequest = {
-    sub: params.subject,
-    obj: params.object,
-    act: params.action,
-    eft: params.effect,
+    sub: params.sub || undefined,
+    obj: params.obj || undefined,
+    act: params.act || undefined,
+    eft: params.eft || undefined,
   };
 
   try {
@@ -180,6 +180,12 @@ const PolicyListPage: React.FC = () => {
       width: 200,
       ellipsis: true,
       render: (_, record) => <Tag color="blue">{record.subject}</Tag>,
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.policyList.search.subject.placeholder",
+          defaultMessage: "请输入主体进行搜索",
+        }),
+      },
     },
     {
       title: intl.formatMessage({
@@ -191,6 +197,12 @@ const PolicyListPage: React.FC = () => {
       width: 200,
       ellipsis: true,
       render: (_, record) => <Tag color="green">{record.object}</Tag>,
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.policyList.search.object.placeholder",
+          defaultMessage: "请输入对象进行搜索",
+        }),
+      },
     },
     {
       title: intl.formatMessage({
@@ -202,6 +214,12 @@ const PolicyListPage: React.FC = () => {
       width: 150,
       ellipsis: true,
       render: (_, record) => <Tag color="orange">{record.action}</Tag>,
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.policyList.search.action.placeholder",
+          defaultMessage: "请输入操作进行搜索",
+        }),
+      },
     },
     {
       title: intl.formatMessage({
@@ -209,7 +227,7 @@ const PolicyListPage: React.FC = () => {
         defaultMessage: "效果",
       }),
       dataIndex: "eft",
-      valueType: "text",
+      valueType: "select",
       width: 150,
       render: (_, record) => (
         <Tag
@@ -224,6 +242,28 @@ const PolicyListPage: React.FC = () => {
           {record.effect}
         </Tag>
       ),
+      valueEnum: {
+        allow: {
+          text: intl.formatMessage({
+            id: "pages.policyList.effect.allow",
+            defaultMessage: "Allow",
+          }),
+          status: "Success",
+        },
+        deny: {
+          text: intl.formatMessage({
+            id: "pages.policyList.effect.deny",
+            defaultMessage: "Deny",
+          }),
+          status: "Error",
+        },
+      },
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.policyList.search.effect.placeholder",
+          defaultMessage: "请选择效果",
+        }),
+      },
     },
     {
       title: intl.formatMessage({
@@ -309,8 +349,6 @@ const PolicyListPage: React.FC = () => {
           rowKey="id"
           search={{
             labelWidth: "auto",
-            collapsed: false,
-            collapseRender: false,
             searchText: intl.formatMessage({
               id: "pages.userList.search.query",
               defaultMessage: "查询",
@@ -321,6 +359,7 @@ const PolicyListPage: React.FC = () => {
             }),
             span: 6,
             defaultCollapsed: false,
+            collapseRender: false,
             optionRender: ({ searchText, resetText }, { form }) => [
               <Button
                 key="search"
