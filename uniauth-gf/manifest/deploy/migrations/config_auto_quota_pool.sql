@@ -6,7 +6,7 @@ CREATE TABLE config_auto_quota_pool (
     regular_quota NUMERIC(25, 10) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     filter_group JSONB,
-    upns_cache JSONB,
+    upns_cache VARCHAR(255)[],
     priority INTEGER NOT NULL DEFAULT 100,
     last_evaluated_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
