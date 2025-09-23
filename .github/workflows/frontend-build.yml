@@ -67,7 +67,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: uniauth-admin-dist
-          path: ./uniauth-admin/dist
+          path: ./dist-temp
+
+      - name: Prepare Docker context
+        run: |
+          rm -rf ./uniauth-admin/dist
+          mv ./dist-temp ./uniauth-admin/dist
+
+      - name: Verify Docker context
+        run: |
+          echo "Listing uniauth-admin directory:"
+          ls -la uniauth-admin/
+          echo "Listing dist directory:"
+          ls -la uniauth-admin/dist/
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
