@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/shopspring/decimal"
 )
