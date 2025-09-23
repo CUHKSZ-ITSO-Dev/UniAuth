@@ -37,11 +37,18 @@ interface PolicyItem {
   effect: string;
   raw?: string[];
 }
+interface PoliciesRes {
+  policies: string[][];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPage: number;
+}
 
 // API 请求函数
 const filterPolicies = async (params: any) => {
   // 构建筛选参数，使用字符串格式（符合API类型定义）
-  const filterRequest = {
+  const filterRequestParams = {
     sub: params.sub || undefined,
     obj: params.obj || undefined,
     act: params.act || undefined,
@@ -49,9 +56,9 @@ const filterPolicies = async (params: any) => {
   };
 
   try {
-    const response = await filterPoliciesAPI(filterRequest);
+    const res = await filterPoliciesAPI(filterRequestParams);
 
-    if (!response || !response.policies) {
+    if (!res || !res.policies) {
       return {
         data: [],
         success: false,
@@ -60,7 +67,7 @@ const filterPolicies = async (params: any) => {
     }
 
     // 将 API 返回的二维数组转换为表格需要的格式
-    const formattedData = response.policies.map((policy: any) => ({
+    const formattedData = res.policies.map((policy: any) => ({
       id: policy.join(","),
       subject: policy[0] || "",
       object: policy[1] || "",
