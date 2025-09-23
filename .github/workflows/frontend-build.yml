@@ -82,7 +82,23 @@ jobs:
 
       - name: Move artifacts to correct location
         run: |
-          mv ./artifacts/dist ./uniauth-admin/dist
+          # 检查 artifacts 目录结构
+          echo "Artifacts directory contents:"
+          ls -la ./artifacts/
+
+          # 根据实际结构移动文件
+          if [ -d "./artifacts/dist" ]; then
+            echo "Found dist subdirectory, moving dist folder"
+            mv ./artifacts/dist ./uniauth-admin/dist
+          else
+            echo "No dist subdirectory, moving all contents as dist"
+            mkdir -p ./uniauth-admin/dist
+            mv ./artifacts/* ./uniauth-admin/dist/
+          fi
+
+          # 验证最终结构
+          echo "Final uniauth-admin/dist contents:"
+          ls -la ./uniauth-admin/dist/
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
