@@ -64,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: uniauth-admin-dist
-          path: uniauth-admin/dist/
+          path: uniauth-admin/dist
 
   # Job2 构建 Docker 镜像
   build-docker:
@@ -78,36 +78,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: uniauth-admin-dist
-          path: ./uniauth-admin/dist
-
-      - name: Verify artifacts structure
-        run: |
-          echo "=== Current working directory ==="
-          pwd
-          echo "=== Checking workspace structure ==="
-          ls -la ./
-          echo "=== Checking uniauth-admin directory ==="
-          ls -la uniauth-admin/ || echo "uniauth-admin directory not found"
-          echo "=== Checking dist directory ==="
-          ls -la uniauth-admin/dist/ || echo "dist directory not found"
-          echo "=== Checking if dist contains expected files ==="
-          find uniauth-admin/dist -name "*.html" -o -name "*.js" -o -name "*.css" | head -10 || echo "No web files found"
-
-          # 尝试查找所有可能的 dist 相关目录
-          echo "=== Finding all directories named 'dist' ==="
-          find . -type d -name "dist" 2>/dev/null || echo "No dist directories found"
-
-          # 检查 artifacts 下载的确切内容
-          echo "=== Total files in uniauth-admin/dist ==="
-          find uniauth-admin/dist -type f | wc -l || echo "Cannot count files in dist"
-
-          # 如果 dist 目录为空或不存在，创建一个测试文件
-          if [ ! -d "uniauth-admin/dist" ] || [ -z "$(ls -A uniauth-admin/dist)" ]; then
-            echo "=== Dist directory missing or empty, creating test structure ==="
-            mkdir -p uniauth-admin/dist
-            echo "<html><body>Test</body></html>" > uniauth-admin/dist/index.html
-            echo "Test file created"
-          fi
+          path: ./uniauth-admin
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
