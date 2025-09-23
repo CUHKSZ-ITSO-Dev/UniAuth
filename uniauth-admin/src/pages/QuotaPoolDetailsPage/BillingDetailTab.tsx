@@ -4,7 +4,7 @@ import {
   ProTable,
 } from "@ant-design/pro-components";
 import { Card, Descriptions, Tag, Typography } from "antd";
-import { type FC, useEffect, useState } from "react";
+import { type FC, useState } from "react";
 import { postBillingAdminGet } from "@/services/uniauthService/admin";
 
 const { Text } = Typography;
