@@ -1,32 +1,11 @@
-# 多阶段构建
-FROM node:20-alpine AS builder
-
-# 设置工作目录
-WORKDIR /app
-
-# 复制 package.json 和 pnpm-lock.yaml
-COPY ../package.json ../pnpm-lock.yaml* ./
-
-# 安装 pnpm 使用 corepack
-RUN corepack enable
-
-# 安装依赖
-RUN pnpm install --frozen-lockfile
-
-# 复制源代码
-COPY .. .
-
-# 构建应用
-RUN pnpm run build
-
-# 生产阶段
+# 生产阶段 - 使用预构建的静态资源
 FROM nginx:alpine
 
 # 复制自定义 nginx 配置
 COPY deploy/nginx.conf /etc/nginx/nginx.conf
 
-# 从构建阶段复制构建结果到 nginx
-COPY --chown=nginx:nginx --from=builder /app/dist /usr/share/nginx/html
+# 从预构建的 dist 目录复制静态文件到 nginx
+COPY --chown=nginx:nginx dist /usr/share/nginx/html
 
 # 暴露端口
 EXPOSE 80

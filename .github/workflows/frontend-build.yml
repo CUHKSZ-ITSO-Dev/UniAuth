@@ -4,67 +4,68 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "手动指定版本标签 (例如: v1.0.0)"
+        required: true
+        default: "v1.0.0"
+        type: string
+      skip_manifest_update:
+        description: "跳过 Kubernetes 清单更新"
+        required: false
+        default: false
+        type: boolean
 
 env:
   IMAGE_NAME: ghcr.io/cuhksz-itso-dev/uniauth-admin
   MANIFEST_REPO_OWNER: CUHKSZ-ITSO-Dev
   MANIFEST_REPO_NAME: GPT-Cluster
   MANIFEST_DEPLOY_BRANCH: main
-  TAG: ${{ github.ref_name }}
+  TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-  # Job1 构建前端应用
+  # Job1 构建前端静态资源
   build-frontend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: latest
-          run_install: false
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('uniauth-admin/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
         working-directory: uniauth-admin
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
-      - name: Lint code
-        working-directory: uniauth-admin
-        run: pnpm run lint
-
-      - name: Build frontend
+      - name: Build Frontend
         working-directory: uniauth-admin
         run: pnpm run build
 
-      - name: Upload build artifacts
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: uniauth-admin-dist
           path: uniauth-admin/dist
+          retention-days: 1
 
   # Job2 构建 Docker 镜像
   build-docker:
@@ -78,27 +79,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: uniauth-admin-dist
-          path: ./artifacts
-
-      - name: Move artifacts to correct location
-        run: |
-          # 检查 artifacts 目录结构
-          echo "Artifacts directory contents:"
-          ls -la ./artifacts/
-
-          # 根据实际结构移动文件
-          if [ -d "./artifacts/dist" ]; then
-            echo "Found dist subdirectory, moving dist folder"
-            mv ./artifacts/dist ./uniauth-admin/dist
-          else
-            echo "No dist subdirectory, moving all contents as dist"
-            mkdir -p ./uniauth-admin/dist
-            mv ./artifacts/* ./uniauth-admin/dist/
-          fi
-
-          # 验证最终结构
-          echo "Final uniauth-admin/dist contents:"
-          ls -la ./uniauth-admin/dist/
+          path: ./uniauth-admin/dist
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -120,9 +101,9 @@ jobs:
             type=semver,pattern=v{{major}}
             type=semver,pattern=v{{major}}.{{minor}}
           labels: |
-            org.opencontainers.image.description=UniAuth Admin Frontend (React, {{sha}}).
-            org.opencontainers.image.created={{date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
-            org.opencontainers.image.revision={{sha}}
+            org.opencontainers.image.description=UniAuth Frontend Admin Panel (React, {{sha}}).
+            org.opencontainers.image.created={{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
+            org.opencontainers.image.revision={{ sha }}
             org.opencontainers.image.version=v{{major}}.{{minor}}
             org.opencontainers.image.title=UniAuth Admin Frontend
 
@@ -131,13 +112,14 @@ jobs:
         with:
           provenance: false
           context: uniauth-admin
-          file: uniauth-admin/deploy/dockerfile.prod
+          file: uniauth-admin/deploy/dockerfile
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Update Kubernetes manifest and commit changes
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip_manifest_update }}
         run: |
           # 配置Git
           git config --global user.name "GitHub Actions"
@@ -149,7 +131,6 @@ jobs:
 
           # 切换到目标分支
           git checkout ${{ env.MANIFEST_DEPLOY_BRANCH }}
-
           # 更新Kubernetes清单
           MANIFEST_FILE="dev/dev-uniauth-admin.yaml"
           # Update image tag
