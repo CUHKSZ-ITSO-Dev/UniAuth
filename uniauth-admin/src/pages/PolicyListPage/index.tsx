@@ -53,6 +53,8 @@ const filterPolicies = async (params: any) => {
     obj: params.obj || undefined,
     act: params.act || undefined,
     eft: params.eft || undefined,
+    page: params.current || 1,
+    pageSize: params.pageSize || 10,
   };
 
   try {
@@ -354,6 +356,12 @@ const PolicyListPage: React.FC = () => {
           columns={columns}
           actionRef={actionRef}
           rowKey="id"
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: false,
+            showQuickJumper: false,
+            showTotal: (total) => `共 ${total} 条记录`,
+          }}
           search={{
             labelWidth: "auto",
             searchText: intl.formatMessage({
@@ -390,12 +398,6 @@ const PolicyListPage: React.FC = () => {
           }}
           form={{
             syncToUrl: false,
-          }}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: false,
-            showQuickJumper: false,
-            showTotal: (total) => `共 ${total} 条记录`,
           }}
           rowSelection={{
             selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
@@ -476,9 +478,9 @@ const PolicyListPage: React.FC = () => {
           ]}
           request={async (params) => {
             const searchParams = {
-              subject: params.subject,
-              object: params.object,
-              action: params.action,
+              subject: params.sub,
+              object: params.obj,
+              action: params.act,
               ...params,
             };
             return await filterPolicies(searchParams);
