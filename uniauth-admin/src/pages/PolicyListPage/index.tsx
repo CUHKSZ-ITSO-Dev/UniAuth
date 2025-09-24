@@ -77,7 +77,7 @@ const filterPolicies = async (params: any) => {
       success: true,
       total: res.total,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       data: [],
       success: false,

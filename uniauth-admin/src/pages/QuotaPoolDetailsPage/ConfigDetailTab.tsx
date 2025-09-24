@@ -133,7 +133,7 @@ const ConfigDetailTab: FC = () => {
       // 调用真实API获取配额池关联用户
       const response = await getUsersAPI(requestParams);
 
-      if (response && response.users) {
+      if (response?.users) {
         // Mock API返回的是随机字符串数组，转换为表格需要的格式
         const userData = response.users.map((userId: string, index: number) => {
           // 为Mock数据生成合理的显示信息
@@ -227,7 +227,7 @@ const ConfigDetailTab: FC = () => {
 
       const res = await getPolcyAPI(getPolicyRequestParams);
 
-      if (res && res.policies) {
+      if (res?.policies) {
         // 格式化数据
         const formattedData = res.policies.map(
           (policy: any, index: number) => ({
@@ -264,7 +264,7 @@ const ConfigDetailTab: FC = () => {
     }
   };
 
-  const itToolsRulesDataRequest = async (params: any = {}) => {
+  const itToolsRulesDataRequest = async () => {
     try {
       // 请求参数
       const getRequestParams = {
@@ -297,7 +297,7 @@ const ConfigDetailTab: FC = () => {
         success: false,
         total: 0,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         data: [],
         success: false,
