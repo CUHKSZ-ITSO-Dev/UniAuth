@@ -128,12 +128,12 @@ const ModelConfigPage: React.FC = () => {
           return parsed && typeof parsed === "object" && !Array.isArray(parsed)
             ? parsed
             : {};
-        } catch (e) {
-          console.error("JSON解析失败:", e);
+        } catch (_e) {
+          console.error("JSON解析失败:", _e);
           message.error(
             intl.formatMessage({ id: "pages.modelConfig.jsonInvalid" }),
           );
-          throw e;
+          throw _e;
         }
       };
 
@@ -150,7 +150,7 @@ const ModelConfigPage: React.FC = () => {
       const processDiscount = (field: string): number => {
         if (!field) return 1; // 默认折扣为1（无折扣）
         const num = parseFloat(field);
-        return isNaN(num) ? 1 : num;
+        return Number.isNaN(num) ? 1 : num;
       };
 
       // 处理客户端类型字段，直接传递
@@ -208,15 +208,15 @@ const ModelConfigPage: React.FC = () => {
         errorMessage = intl.formatMessage({
           id: "pages.modelConfig.formInvalid",
         });
-      } else if (error.message && error.message.includes("approachName")) {
+      } else if (error.message?.includes("approachName")) {
         errorMessage = intl.formatMessage({
           id: "pages.modelConfig.saveFailedApproachNameRequired",
         });
-      } else if (error.message && error.message.includes("clientType")) {
+      } else if (error.message?.includes("clientType")) {
         errorMessage = intl.formatMessage({
           id: "pages.modelConfig.saveFailedClientTypeInvalid",
         });
-      } else if (error.message && error.message.includes("discount")) {
+      } else if (error.message?.includes("discount")) {
         errorMessage = intl.formatMessage({
           id: "pages.modelConfig.saveFailedDiscountInvalid",
         });
@@ -283,10 +283,8 @@ const ModelConfigPage: React.FC = () => {
 
         // 模型名称过滤
         if (params.approachName) {
-          data = data.filter(
-            (item: API.ModelConfigItem) =>
-              item.approachName &&
-              item.approachName.includes(params.approachName),
+          data = data.filter((item: API.ModelConfigItem) =>
+            item.approachName?.includes(params.approachName),
           );
         }
 
@@ -369,7 +367,7 @@ const ModelConfigPage: React.FC = () => {
       render: (_, record: API.ModelConfigItem) => {
         if (record.discount !== undefined && record.discount !== null) {
           const discountValue = parseFloat(String(record.discount));
-          if (!isNaN(discountValue)) {
+          if (!Number.isNaN(discountValue)) {
             return `${(discountValue * 100).toFixed(1)}%`;
           }
         }
@@ -410,7 +408,7 @@ const ModelConfigPage: React.FC = () => {
             return typeof record.pricing === "string"
               ? record.pricing
               : JSON.stringify(record.pricing, null, 2);
-          } catch (e) {
+          } catch (_e) {
             return typeof record.pricing === "object"
               ? JSON.stringify(record.pricing)
               : String(record.pricing);
@@ -438,7 +436,7 @@ const ModelConfigPage: React.FC = () => {
       render: (_, record: API.ModelConfigItem) => {
         if (record.createdAt) {
           const date = new Date(record.createdAt);
-          if (!isNaN(date.getTime())) {
+          if (!Number.isNaN(date.getTime())) {
             return date.toLocaleString("zh-CN");
           }
         }
@@ -463,7 +461,7 @@ const ModelConfigPage: React.FC = () => {
       render: (_, record: API.ModelConfigItem) => {
         if (record.updatedAt) {
           const date = new Date(record.updatedAt);
-          if (!isNaN(date.getTime())) {
+          if (!Number.isNaN(date.getTime())) {
             return date.toLocaleString("zh-CN");
           }
         }
@@ -592,7 +590,7 @@ const ModelConfigPage: React.FC = () => {
                   if (value === undefined || value === null || value === "") {
                     return Promise.resolve();
                   }
-                  if (isNaN(value)) {
+                  if (Number.isNaN(value)) {
                     return Promise.reject(
                       new Error(
                         intl.formatMessage({

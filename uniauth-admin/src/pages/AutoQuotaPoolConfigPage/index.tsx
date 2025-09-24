@@ -129,7 +129,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         ruleName: values.ruleName,
         cronCycle: values.cronCycle,
         regularQuota: values.regularQuota ? parseFloat(values.regularQuota) : 0,
-        priority: values.priority ? parseInt(values.priority) : 0,
+        priority: values.priority ? parseInt(values.priority, 10) : 0,
         enabled: values.enabled !== undefined ? values.enabled : true,
         description: values.description || "",
       };
@@ -138,7 +138,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       if (values.filterGroup) {
         try {
           processedValues.filterGroup = JSON.parse(values.filterGroup);
-        } catch (e) {
+        } catch (_e) {
           message.error(
             intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup",
@@ -155,7 +155,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       if (values.upnsCache) {
         try {
           processedValues.upnsCache = JSON.parse(values.upnsCache);
-        } catch (e) {
+        } catch (_e) {
           message.error(
             intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache",
@@ -198,26 +198,25 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.formInvalid",
         });
-      } else if (error.message && error.message.includes("ruleName")) {
+      } else if (error.message?.includes("ruleName")) {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired",
         });
-      } else if (error.message && error.message.includes("cronCycle")) {
+      } else if (error.message?.includes("cronCycle")) {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired",
         });
-      } else if (error.message && error.message.includes("regularQuota")) {
+      } else if (error.message?.includes("regularQuota")) {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.saveFailedRegularQuotaInvalid",
         });
       }
       // 检查是否是网络或服务器错误
       else if (
-        error.message &&
-        (error.message.includes(
+        error.message?.includes(
           intl.formatMessage({ id: "pages.autoQuotaPoolConfig.requestFailed" }),
         ) ||
-          error.message.includes("network"))
+        error.message?.includes("network")
       ) {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.saveFailedNetworkError",
@@ -408,7 +407,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       render: (_, record: API.AutoQuotaPoolItem) => {
         if (record.createdAt) {
           const date = new Date(record.createdAt);
-          if (!isNaN(date.getTime())) {
+          if (!Number.isNaN(date.getTime())) {
             return date.toLocaleString("zh-CN");
           }
         }
@@ -433,7 +432,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       render: (_, record: API.AutoQuotaPoolItem) => {
         if (record.updatedAt) {
           const date = new Date(record.updatedAt);
-          if (!isNaN(date.getTime())) {
+          if (!Number.isNaN(date.getTime())) {
             return date.toLocaleString("zh-CN");
           }
         }
@@ -629,7 +628,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                   try {
                     JSON.parse(value);
                     return Promise.resolve();
-                  } catch (e) {
+                  } catch (_e) {
                     return Promise.reject(
                       new Error(
                         intl.formatMessage({
@@ -662,7 +661,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                   try {
                     JSON.parse(value);
                     return Promise.resolve();
-                  } catch (e) {
+                  } catch (_e) {
                     return Promise.reject(
                       new Error(
                         intl.formatMessage({
