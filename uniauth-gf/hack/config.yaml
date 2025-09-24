@@ -8,4 +8,4 @@ gfcli:
     path: "./bin"
     packSrc: "resource/public,resource/config"
     exitWhenError: true
-    extra: "-ldflags=\"-w -s\""
+    extra: '-ldflags="-w -s"'

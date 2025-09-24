@@ -60,6 +60,12 @@ export default [
     component: "@/pages/QuotaPoolDetailsPage",
   },
   {
+    path: "/config-i18n",
+    name: "config-i18n",
+    icon: "Global",
+    component: "@/pages/ConfigI18nPage",
+  },
+  {
     path: "/",
     redirect: "/welcome",
   },
@@ -68,10 +74,4 @@ export default [
     layout: false,
     component: "@/pages/404Page",
   },
-  {
-  path: "/policy-list",
-  name: "policy-list",
-  icon: "bars",
-  component: "@/pages/PolicyListPage",
-},
 ];

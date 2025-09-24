@@ -3,10 +3,8 @@ export default {
   "menu.more-blocks": "More Blocks",
   "menu.home": "Home",
   "menu.admin": "Admin",
-  "menu.user-list": "User List",
   "menu.quota-pool-list": "Quota Pool List",
   "menu.quota-pool-details": "Quota Pool Details",
-  "menu.policy-list": "Policy List",
   "menu.admin.sub-page": "Sub-Page",
   "menu.login": "Login",
   "menu.register": "Register",
@@ -53,5 +51,7 @@ export default {
   "menu.editor.flow": "Flow Editor",
   "menu.editor.mind": "Mind Editor",
   "menu.editor.koni": "Koni Editor",
+  "menu.config-i18n": "I18N Configuration",
+  "menu.user-list": "User List",
   "menu.user-detail": "User Details",
 };
