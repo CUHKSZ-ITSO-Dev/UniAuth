@@ -238,14 +238,8 @@ const ConfigDetailTab: FC = () => {
           }),
         );
 
-        // 处理分页参数
-        const { current = 1, pageSize = 5 } = params;
-        const startIndex = (current - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedData = formattedData.slice(startIndex, endIndex);
-
         return {
-          data: paginatedData,
+          data: formattedData,
           success: true,
           total: formattedData.length,
         };
@@ -287,14 +281,8 @@ const ConfigDetailTab: FC = () => {
           },
         ];
 
-        // 处理分页参数
-        const { current = 1, pageSize = 5 } = params;
-        const startIndex = (current - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedData = formattedData.slice(startIndex, endIndex);
-
         return {
-          data: paginatedData,
+          data: formattedData,
           success: true,
           total: formattedData.length,
         };
@@ -382,7 +370,12 @@ const ConfigDetailTab: FC = () => {
           columns={quotaPoolRulesColumns}
           rowKey="id"
           search={false}
-          pagination={{ pageSize: 5 }}
+          pagination={{
+            pageSize: 5,
+            showSizeChanger: false,
+            showQuickJumper: false,
+            showTotal: (total) => `共 ${total} 条`,
+          }}
           request={quotaPoolRulesDataRequest}
         />
       </Card>
