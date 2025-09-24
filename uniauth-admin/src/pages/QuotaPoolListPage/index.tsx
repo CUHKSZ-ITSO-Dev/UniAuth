@@ -1,6 +1,6 @@
+import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
-import type { ProColumns, ActionType } from "@ant-design/pro-components";
-import { Typography, Button, Popconfirm, Table, Space } from "antd";
+import { Button, Popconfirm, Space, Table, Typography } from "antd";
 import { useRef } from "react";
 
 const { Title, Text } = Typography;
@@ -125,7 +125,8 @@ function handleNewQuotaPoolClick() {
   console.log("新建配额池");
 }
 
-function handleRefreshQuotaPoolClick() {
+// @ts-expect-error
+function _handleRefreshQuotaPoolClick() {
   // TODO: 刷新逻辑
   console.log("刷新配额池");
 }
@@ -151,7 +152,7 @@ const quotaPoolListRequest = async (params: any) => {
   }
   if (params.autoCreated !== undefined) {
     data = data.filter(
-      (item) => String(item.autoCreated) === String(params.autoCreated)
+      (item) => String(item.autoCreated) === String(params.autoCreated),
     );
   }
   if (

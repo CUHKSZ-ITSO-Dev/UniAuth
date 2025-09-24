@@ -2,7 +2,7 @@ import { LinkOutlined } from "@ant-design/icons";
 import type { Settings as LayoutSettings } from "@ant-design/pro-components";
 import { SettingDrawer } from "@ant-design/pro-components";
 import type { RequestConfig, RunTimeLayoutConfig } from "@umijs/max";
-import { Link, history } from "@umijs/max";
+import { history, Link } from "@umijs/max";
 import {
   AvatarDropdown,
   AvatarName,
@@ -16,68 +16,69 @@ import "@ant-design/v5-patch-for-react-19";
 
 const isDev = process.env.NODE_ENV === "development";
 // 登录路径定义
-const loginPath = '/user/login';
+const loginPath = "/user/login";
 
 // 定义用户类型
-  interface User {
-    name: string;
-    avatar?: string;
-    userid?: string;
-    email?: string;
-    signature?: string;
-    title?: string;
-    group?: string;
-    tags?: { key?: string; label?: string }[];
-    notifyCount?: number;
-    unreadCount?: number;
-    country?: string;
-    access?: string;
-    geographic?: {
-      province?: { label?: string; key?: string };
-      city?: { label?: string; key?: string };
-    };
-    address?: string;
-    phone?: string;
-  }
+interface User {
+  name: string;
+  avatar?: string;
+  userid?: string;
+  email?: string;
+  signature?: string;
+  title?: string;
+  group?: string;
+  tags?: { key?: string; label?: string }[];
+  notifyCount?: number;
+  unreadCount?: number;
+  country?: string;
+  access?: string;
+  geographic?: {
+    province?: { label?: string; key?: string };
+    city?: { label?: string; key?: string };
+  };
+  address?: string;
+  phone?: string;
+}
 
-  /**
-   * @see https://umijs.org/docs/api/runtime-config#getinitialstate
-   * */
-  export async function getInitialState(): Promise<{
-    settings?: Partial<LayoutSettings>;
-    currentUser?: User;
-    loading?: boolean;
-    fetchUserInfo?: () => Promise<User | undefined>;
-  }> {
-    const fetchUserInfo = async () => {
-      try {
-        console.log('Fetching user info from localStorage');
-        // 从localStorage获取用户信息
-        const userInfo = localStorage.getItem('userInfo');
-        console.log('User info from localStorage:', userInfo);
-        if (userInfo) {
-          const parsedUserInfo = JSON.parse(userInfo);
-          console.log('Parsed user info:', parsedUserInfo);
-          return parsedUserInfo;
-        }
-      } catch (error) {
-        console.error('Failed to fetch user info:', error);
+/**
+ * @see https://umijs.org/docs/api/runtime-config#getinitialstate
+ * */
+export async function getInitialState(): Promise<{
+  settings?: Partial<LayoutSettings>;
+  currentUser?: User;
+  loading?: boolean;
+  fetchUserInfo?: () => Promise<User | undefined>;
+}> {
+  const fetchUserInfo = async () => {
+    try {
+      console.log("Fetching user info from localStorage");
+      // 从localStorage获取用户信息
+      const userInfo = localStorage.getItem("userInfo");
+      console.log("User info from localStorage:", userInfo);
+      if (userInfo) {
+        const parsedUserInfo = JSON.parse(userInfo);
+        console.log("Parsed user info:", parsedUserInfo);
+        return parsedUserInfo;
       }
-      return undefined;
-    };
+    } catch (error) {
+      console.error("Failed to fetch user info:", error);
+    }
+    return undefined;
+  };
 
-    // 初始化时检查是否有用户信息
-    const currentUser = await fetchUserInfo();
-    console.log('Initial state currentUser:', currentUser);
+  // 初始化时检查是否有用户信息
+  const currentUser = await fetchUserInfo();
+  console.log("Initial state currentUser:", currentUser);
 
-    return {
-      fetchUserInfo,
-      currentUser,
-      settings: defaultSettings as Partial<LayoutSettings>,
-    };
-  }
+  return {
+    fetchUserInfo,
+    currentUser,
+    settings: defaultSettings as Partial<LayoutSettings>,
+  };
+}
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
+// @ts-expect-error
 export const layout: RunTimeLayoutConfig = ({
   initialState,
   setInitialState,
@@ -101,10 +102,13 @@ export const layout: RunTimeLayoutConfig = ({
     onPageChange: () => {
       // 添加登录检查
       const { location } = history;
-      console.log('onPageChange:', location.pathname);
-      console.log('Current user status:', initialState?.currentUser ? 'LoggedIn' : 'NotLoggedIn');
+      console.log("onPageChange:", location.pathname);
+      console.log(
+        "Current user status:",
+        initialState?.currentUser ? "LoggedIn" : "NotLoggedIn",
+      );
       if (!initialState?.currentUser && location.pathname !== loginPath) {
-        console.log('Redirecting to login page:', loginPath);
+        console.log("Redirecting to login page:", loginPath);
         history.push(loginPath);
       }
     },
@@ -149,7 +153,7 @@ export const layout: RunTimeLayoutConfig = ({
             <SettingDrawer
               disableUrlParams
               enableDarkTheme
-              settings={initialState?.settings}
+              settings={initialState?.settings || {}}
               onSettingChange={(settings) => {
                 setInitialState((preInitialState) => ({
                   ...preInitialState,

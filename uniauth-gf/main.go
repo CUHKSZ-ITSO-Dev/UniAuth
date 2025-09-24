@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
-	"time"
-	_ "uniauth-gf/internal/packed"
 
 	"uniauth-gf/internal/cmd"
+	_ "uniauth-gf/internal/packed"
 
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	"github.com/gogf/gf/v2/os/gctx"
@@ -23,8 +22,5 @@ func main() {
 	fmt.Println("UniAuth Automated System")
 	fmt.Println("Copyright 2025 The Chinese University of Hong Kong, Shenzhen")
 	fmt.Println()
-	time.Sleep(time.Second)
-	// fmt.Println("GRes Directory List:")
-	// gres.Dump()
 	cmd.Main.Run(gctx.GetInitCtx())
 }
