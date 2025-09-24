@@ -121,8 +121,8 @@ export default {
   "pages.autoQuotaPoolConfig.description":
     "Manage auto quota pool configuration rules in the system",
   "pages.autoQuotaPoolConfig.ruleName": "Rule Name",
-  "pages.autoQuotaPoolConfig.descriptionLabel": "Rule Description",
-  "pages.autoQuotaPoolConfig.cronCycle": "Refresh Cycle",
+  "pages.autoQuotaPoolConfig.descriptionLabel": "Description",
+  "pages.autoQuotaPoolConfig.cronCycle": "Cron Cycle",
   "pages.autoQuotaPoolConfig.regularQuota": "Regular Quota",
   "pages.autoQuotaPoolConfig.enabled": "Enabled",
   "pages.autoQuotaPoolConfig.priority": "Priority",
@@ -158,9 +158,8 @@ export default {
   "pages.autoQuotaPoolConfig.filterGroup": "Filter Group (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
     "Please enter filter group data in JSON format, users meeting the conditions will apply this rule",
-  "pages.autoQuotaPoolConfig.upnsCache": "UPN Cache List (JSON)",
-  "pages.autoQuotaPoolConfig.upnsCachePlaceholder":
-    "Please enter UPN cache list data in JSON format",
+  "pages.autoQuotaPoolConfig.upnsCache": "UPN Cache",
+  "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "Please enter UPN cache",
   "pages.autoQuotaPoolConfig.enabledStatus": "Enabled",
   "pages.autoQuotaPoolConfig.disabledStatus": "Disabled",
   "pages.autoQuotaPoolConfig.notSet": "Not Set",
@@ -192,11 +191,11 @@ export default {
   "pages.modelConfig.title": "Model Configuration List",
   "pages.modelConfig.description":
     "Manage all AI model configurations in the system, including model parameters, access permissions, etc.",
-  "pages.modelConfig.approachName": "Model Name",
+  "pages.modelConfig.approachName": "Approach Name",
   "pages.modelConfig.clientType": "Client Type",
   "pages.modelConfig.discount": "Discount",
-  "pages.modelConfig.servicewares": "Service Items",
-  "pages.modelConfig.pricing": "Pricing Configuration",
+  "pages.modelConfig.servicewares": "Servicewares",
+  "pages.modelConfig.pricing": "Pricing",
   "pages.modelConfig.clientArgs": "Client Arguments",
   "pages.modelConfig.requestArgs": "Request Arguments",
   "pages.modelConfig.createdAt": "Created At",

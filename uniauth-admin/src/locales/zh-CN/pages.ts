@@ -144,9 +144,8 @@ export default {
   "pages.autoQuotaPoolConfig.filterGroup": "过滤条件组 (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
     "请输入过滤条件组的JSON格式数据，满足条件的用户将应用该规则",
-  "pages.autoQuotaPoolConfig.upnsCache": "UPN缓存列表 (JSON)",
-  "pages.autoQuotaPoolConfig.upnsCachePlaceholder":
-    "请输入UPN缓存列表的JSON格式数据",
+  "pages.autoQuotaPoolConfig.upnsCache": "UPN缓存",
+  "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "请输入UPN缓存",
   "pages.autoQuotaPoolConfig.enabledStatus": "启用",
   "pages.autoQuotaPoolConfig.disabledStatus": "禁用",
   "pages.autoQuotaPoolConfig.notSet": "未设置",
@@ -179,7 +178,7 @@ export default {
   "pages.modelConfig.approachName": "模型名称",
   "pages.modelConfig.clientType": "客户端类型",
   "pages.modelConfig.discount": "折扣",
-  "pages.modelConfig.servicewares": "服务项目",
+  "pages.modelConfig.servicewares": "服务",
   "pages.modelConfig.pricing": "定价配置",
   "pages.modelConfig.clientArgs": "客户端参数",
   "pages.modelConfig.requestArgs": "请求参数",
