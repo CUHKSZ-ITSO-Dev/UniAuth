@@ -164,4 +164,10 @@ export default {
   "pages.policyList.editRule": "Edit Rule",
   "pages.policyList.editRule.success": "Edit successful",
   "pages.policyList.title": "Policy List",
+  "pages.policyList.search.subject.placeholder":
+    "Please enter subject to search",
+  "pages.policyList.search.object.placeholder": "Please enter object to search",
+  "pages.policyList.search.action.placeholder": "Please enter action to search",
+  "pages.policyList.search.effect.placeholder":
+    "Please select effect to search",
 };
