@@ -94,11 +94,11 @@ jobs:
             type=semver,pattern=v{{major}}
             type=semver,pattern=v{{major}}.{{minor}}
           labels: |
-            org.opencontainers.image.description=UniAuth Frontend Admin Panel (React, {{sha}}).
+            org.opencontainers.image.description=UniAuth Automated System, Admin Panel (React, {{sha}}).
             org.opencontainers.image.created={{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
             org.opencontainers.image.revision={{ sha }}
             org.opencontainers.image.version=v{{major}}.{{minor}}
-            org.opencontainers.image.title=UniAuth Admin Frontend
+            org.opencontainers.image.title=UniAuth Admin Panel
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
