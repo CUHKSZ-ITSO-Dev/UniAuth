@@ -42,17 +42,17 @@ export default [
     component: "@/pages/UserListPage",
   },
   {
-    path: "/config/model-config",
-    name: "model-config",
-    icon: "Database",
-    component: "@/pages/ModelConfigPage",
-  },
-  {
     path: "/user-list/userDetail/:id",
     name: "user-detail",
     icon: "User",
     component: "@/pages/UserListPage/userDetail",
     hideInMenu: true,
+  },
+  {
+    path: "/config/model-config",
+    name: "model-config",
+    icon: "Database",
+    component: "@/pages/ModelConfigPage",
   },
   {
     path: "/quota-pool-list",
@@ -73,12 +73,6 @@ export default [
     component: "@/pages/AutoQuotaPoolConfigPage",
   },
   {
-    path: "/config-i18n",
-    name: "config-i18n",
-    icon: "Global",
-    component: "@/pages/ConfigI18nPage",
-  },
-  {
     path: "/",
     redirect: "/welcome",
   },
@@ -88,9 +82,9 @@ export default [
     component: "@/pages/404Page",
   },
   {
-  path: "/policy-list",
-  name: "policy-list",
-  icon: "bars",
-  component: "@/pages/PolicyListPage",
-},
+    path: "/policy-list",
+    name: "policy-list",
+    icon: "bars",
+    component: "@/pages/PolicyListPage",
+  },
 ];
