@@ -84,15 +84,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Debug Docker and GHCR connection
-        run: |
-          echo "Docker version:"
-          docker version
-          echo "Testing GHCR connectivity:"
-          curl -I https://ghcr.io/v2/
-          echo "Checking Docker login status:"
-          docker system info | grep -A5 "Registry:"
-
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
