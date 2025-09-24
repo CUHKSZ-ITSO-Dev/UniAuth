@@ -1,3 +1,4 @@
+import { EyeOutlined } from "@ant-design/icons";
 import {
   GridContent,
   type ProColumns,
@@ -11,7 +12,9 @@ import {
   Form,
   Modal,
   message,
+  Popover,
   Select,
+  Space,
   Tag,
   Typography,
 } from "antd";
@@ -61,6 +64,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
     recordCount: 0,
   });
 
+  // 状态管理
+  const [remarkModalVisible, setRemarkModalVisible] = useState(false);
+  const [selectedRemark, setSelectedRemark] = useState<any>(null);
+
   // 导出模态框相关状态
   const [exportModalVisible, setExportModalVisible] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
@@ -79,6 +86,56 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   const [productValueEnum, setProductValueEnum] = useState<
     Record<string, { text: string; status?: string }>
   >({});
+
+  // 工具函数：格式化JSON对象
+  const formatJsonObject = (obj: any): string => {
+    try {
+      if (obj === null || obj === undefined) return "-";
+      if (typeof obj === "string") {
+        // 尝试解析字符串是否为JSON
+        try {
+          const parsed = JSON.parse(obj);
+          return JSON.stringify(parsed, null, 2);
+        } catch {
+          return obj;
+        }
+      }
+      return JSON.stringify(obj, null, 2);
+    } catch {
+      return String(obj);
+    }
+  };
+
+  // 工具函数：获取JSON对象的简要描述
+  const getJsonSummary = (obj: any): string => {
+    try {
+      if (!obj) return "-";
+
+      const parsed = typeof obj === "string" ? JSON.parse(obj) : obj;
+
+      if (typeof parsed === "object" && parsed !== null) {
+        const keys = Object.keys(parsed);
+        if (keys.length === 0) return "{}";
+        if (keys.length === 1) return `{${keys[0]}: ...}`;
+        return `{${keys.slice(0, 2).join(", ")}, ...}`;
+      }
+
+      return (
+        String(parsed).substring(0, 20) +
+        (String(parsed).length > 20 ? "..." : "")
+      );
+    } catch {
+      return (
+        String(obj).substring(0, 20) + (String(obj).length > 20 ? "..." : "")
+      );
+    }
+  };
+
+  // 处理备注点击事件
+  const handleRemarkClick = (remark: any) => {
+    setSelectedRemark(remark);
+    setRemarkModalVisible(true);
+  };
 
   // 从记录中提取唯一的服务和产品选项
   const extractOptionsFromRecords = (records: BillingRecord[]) => {
@@ -278,18 +335,56 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       valueType: "text",
       search: false,
       ellipsis: true,
-
+      width: 180,
       render: (_, record) => {
-        if (!record.remark) return "-";
-        try {
-          const remarkObj =
-            typeof record.remark === "string"
-              ? JSON.parse(record.remark)
-              : record.remark;
-          return <Text ellipsis>{JSON.stringify(remarkObj)}</Text>;
-        } catch {
-          return <Text ellipsis>{String(record.remark)}</Text>;
-        }
+        if (!record.remark) return <Text type="secondary">-</Text>;
+
+        const summary = getJsonSummary(record.remark);
+        const formattedJson = formatJsonObject(record.remark);
+
+        return (
+          <Space size="small">
+            <Popover
+              title="备注详情"
+              content={
+                <pre
+                  style={{
+                    maxWidth: 400,
+                    maxHeight: 300,
+                    overflow: "auto",
+                    fontSize: "12px",
+                    margin: 0,
+                    background: "#f5f5f5",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {formattedJson}
+                </pre>
+              }
+              trigger="hover"
+              placement="left"
+              overlayStyle={{ maxWidth: 500 }}
+            >
+              <Text
+                ellipsis
+                style={{ cursor: "pointer" }}
+                title="悬停查看详情，点击查看完整内容"
+              >
+                {summary}
+              </Text>
+            </Popover>
+            <Button
+              type="link"
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => handleRemarkClick(record.remark)}
+              style={{ padding: "0 4px", fontSize: "12px" }}
+              title="查看完整备注"
+            />
+          </Space>
+        );
       },
     },
     {
@@ -582,6 +677,35 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 备注详情模态框 */}
+      <Modal
+        title="备注详情"
+        open={remarkModalVisible}
+        onCancel={() => setRemarkModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setRemarkModalVisible(false)}>
+            关闭
+          </Button>,
+        ]}
+        width={700}
+      >
+        <pre
+          style={{
+            maxHeight: "60vh",
+            overflow: "auto",
+            fontSize: "13px",
+            background: "#f8f9fa",
+            padding: "16px",
+            borderRadius: "6px",
+            border: "1px solid #e9ecef",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+          }}
+        >
+          {formatJsonObject(selectedRemark)}
+        </pre>
       </Modal>
     </GridContent>
   );
