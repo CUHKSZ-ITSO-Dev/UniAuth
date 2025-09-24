@@ -108,7 +108,6 @@ jobs:
           file: uniauth-admin/deploy/dockerfile
           platforms: linux/amd64
           push: true
-          no-cache: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
