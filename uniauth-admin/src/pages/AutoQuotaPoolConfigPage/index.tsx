@@ -144,8 +144,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           return;
         }
       } else {
-        // 如果没有提供filterGroup，确保传递null而不是undefined
-        processedValues.filterGroup = null;
+        // 如果没有提供filterGroup，不设置这个字段，让它保持undefined
       }
 
       // 处理upnsCache字段 - 现在作为字符串处理
@@ -160,13 +159,19 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       // 根据是否为编辑状态调用不同的API
       if (editingRecord) {
         // 编辑现有配置
-        await putConfigAutoConfig(processedValues);
+        // 确保processedValues满足EditAutoQuotaPoolConfigReq类型要求
+        await putConfigAutoConfig(
+          processedValues as API.EditAutoQuotaPoolConfigReq,
+        );
         message.success(
           intl.formatMessage({ id: "pages.autoQuotaPoolConfig.updateSuccess" }),
         );
       } else {
         // 添加新配置
-        await postConfigAutoConfig(processedValues);
+        // 确保processedValues满足AddAutoQuotaPoolConfigReq类型要求
+        await postConfigAutoConfig(
+          processedValues as API.AddAutoQuotaPoolConfigReq,
+        );
         message.success(
           intl.formatMessage({ id: "pages.autoQuotaPoolConfig.createSuccess" }),
         );
@@ -325,7 +330,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       valueType: "digit",
       search: false,
       render: (_, record: API.AutoQuotaPoolItem) =>
-        record.regularQuota || (
+        record.regularQuota !== undefined ? (
+          record.regularQuota.toString()
+        ) : (
           <Text type="secondary">
             {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.notSet" })}
           </Text>
