@@ -59,8 +59,8 @@ type GetAllQuotaPoolsReq struct {
 	Upn    string `json:"upn" v:"required" dc:"Upn" example:"sadt@cuhk.edu.cn"`
 }
 type GetAllQuotaPoolsRes struct {
-	g.Meta     `resEg:"resource/interface/auth/get_all_quota_pool_res.json"`
-	QuotaPools []string `json:"quotaPools" dc:"QuotaPools 列表。"`
+	QuotaPools  []string     `json:"quotaPools" dc:"QuotaPools 列表。"`
+	PersonalMap g.MapStrBool `json:"personalMap" dc:"PersonalMap。键为配额池名称，值为true时代表是自动配额池。"`
 }
 
 type GetAllUsersForQuotaPoolReq struct {
