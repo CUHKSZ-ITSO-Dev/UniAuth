@@ -1,11 +1,11 @@
-// @ts-expect-error
+// @ts-ignore
 /* eslint-disable */
 import { request } from "@/utils/request";
 
 /** 编辑模型配置 编辑模型配置。 PUT /config/model */
 export async function putConfigModel(
   body: API.EditModelConfigReq,
-  options?: { [key: string]: any },
+  options?: { [key: string]: any }
 ) {
   return request<API.EditModelConfigRes>("/config/model", {
     method: "PUT",
@@ -20,7 +20,7 @@ export async function putConfigModel(
 /** 添加模型配置 POST /config/model */
 export async function postConfigModel(
   body: API.AddModelConfigReq,
-  options?: { [key: string]: any },
+  options?: { [key: string]: any }
 ) {
   return request<API.AddModelConfigRes>("/config/model", {
     method: "POST",
@@ -36,7 +36,7 @@ export async function postConfigModel(
 export async function deleteConfigModel(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteConfigModelParams,
-  options?: { [key: string]: any },
+  options?: { [key: string]: any }
 ) {
   return request<API.DeleteModelConfigRes>("/config/model", {
     method: "DELETE",

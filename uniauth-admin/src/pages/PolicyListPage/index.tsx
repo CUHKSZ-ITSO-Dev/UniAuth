@@ -37,13 +37,6 @@ interface PolicyItem {
   effect: string;
   raw?: string[];
 }
-interface PoliciesRes {
-  policies: string[][];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPage: number;
-}
 
 // API 请求函数
 const filterPolicies = async (params: any) => {
@@ -53,6 +46,7 @@ const filterPolicies = async (params: any) => {
     obj: params.obj || undefined,
     act: params.act || undefined,
     eft: params.eft || undefined,
+    rule: params.raw || undefined,
     page: params.current || 1,
     pageSize: params.pageSize || 10,
   };

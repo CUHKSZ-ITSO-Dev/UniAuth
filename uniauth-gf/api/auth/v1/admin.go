@@ -31,6 +31,7 @@ type FilterPoliciesReq struct {
 	Obj      string `json:"obj" dc:"Object"`
 	Act      string `json:"act" dc:"Action"`
 	Eft      string `json:"eft" dc:"Effect"`
+	Rule     string `json:"rule" dc:"Rule"`
 	Page     int    `json:"page" d:"1" dc:"分页。当前页码。"`
 	PageSize int    `json:"pageSize" d:"10" dc:"分页。每页条数。"`
 }
