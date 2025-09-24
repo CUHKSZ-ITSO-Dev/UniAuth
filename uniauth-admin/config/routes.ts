@@ -36,29 +36,16 @@ export default [
   // },
 
   {
-    path: "/config",
-    name: "Config",
-    icon: "Setting",
-    routes: [
-      {
-        path: "/config/model-config",
-        name: "model-config",
-        icon: "Database",
-        component: "@/pages/ModelConfigPage",
-      },
-      {
-        path: "/config/auto-quota-pool-config",
-        name: "auto-quota-pool-config",
-        icon: "Database",
-        component: "@/pages/AutoQuotaPoolConfigPage",
-      },
-    ],
-  },
-  {
     path: "/user-list",
     name: "user-list",
     icon: "User",
     component: "@/pages/UserListPage",
+  },
+  {
+    path: "/config/model-config",
+    name: "model-config",
+    icon: "Database",
+    component: "@/pages/ModelConfigPage",
   },
   {
     path: "/user-list/userDetail/:id",
@@ -78,6 +65,12 @@ export default [
     name: "quota-pool-details",
     icon: "Container",
     component: "@/pages/QuotaPoolDetailsPage",
+  },
+  {
+    path: "/config/auto-quota-pool-config",
+    name: "auto-quota-pool-config",
+    icon: "Container",
+    component: "@/pages/AutoQuotaPoolConfigPage",
   },
   {
     path: "/config-i18n",

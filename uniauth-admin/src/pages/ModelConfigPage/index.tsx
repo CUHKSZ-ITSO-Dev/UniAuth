@@ -423,64 +423,7 @@ const ModelConfigPage: React.FC = () => {
         );
       },
     },
-    {
-      title: intl.formatMessage({ id: "pages.modelConfig.clientArgs" }),
-      dataIndex: "clientArgs",
-      valueType: "text",
-      search: false,
-      render: (_, record: API.ModelConfigItem) => {
-        if (record.clientArgs) {
-          try {
-            const clientArgs =
-              typeof record.clientArgs === "string"
-                ? record.clientArgs
-                : JSON.stringify(record.clientArgs, null, 2);
-            // 限制显示长度
-            return clientArgs.length > 50
-              ? clientArgs.substring(0, 50) + "..."
-              : clientArgs;
-          } catch (e) {
-            return typeof record.clientArgs === "object"
-              ? JSON.stringify(record.clientArgs)
-              : String(record.clientArgs);
-          }
-        }
-        return (
-          <Text type="secondary">
-            {intl.formatMessage({ id: "pages.modelConfig.notSet" })}
-          </Text>
-        );
-      },
-    },
-    {
-      title: intl.formatMessage({ id: "pages.modelConfig.requestArgs" }),
-      dataIndex: "requestArgs",
-      valueType: "text",
-      search: false,
-      render: (_, record: API.ModelConfigItem) => {
-        if (record.requestArgs) {
-          try {
-            const requestArgs =
-              typeof record.requestArgs === "string"
-                ? record.requestArgs
-                : JSON.stringify(record.requestArgs, null, 2);
-            // 限制显示长度
-            return requestArgs.length > 50
-              ? requestArgs.substring(0, 50) + "..."
-              : requestArgs;
-          } catch (e) {
-            return typeof record.requestArgs === "object"
-              ? JSON.stringify(record.requestArgs)
-              : String(record.requestArgs);
-          }
-        }
-        return (
-          <Text type="secondary">
-            {intl.formatMessage({ id: "pages.modelConfig.notSet" })}
-          </Text>
-        );
-      },
-    },
+
     {
       title: intl.formatMessage({ id: "pages.modelConfig.createdAt" }),
       dataIndex: "createdAt",
