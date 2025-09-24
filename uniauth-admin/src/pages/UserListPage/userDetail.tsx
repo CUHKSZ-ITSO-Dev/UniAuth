@@ -1,10 +1,21 @@
-import { ArrowLeftOutlined, UserOutlined } from "@ant-design/icons";
-import { PageContainer } from "@ant-design/pro-components";
-// 扩展Form.ItemProps类型以包含render属性
-import { useIntl, useNavigate, useParams, useSearchParams } from "@umijs/max";
-import { Button, Card, Form, Input, message, Spin, Tag } from "antd";
 import React, { useEffect, useState } from "react";
-import { getUserinfos } from "@/services/uniauthService/userInfo";
+import {
+  Spin,
+  message,
+  Form,
+  Input,
+  Card,
+  Button,
+  Tag,
+} from "antd";
+import { ArrowLeftOutlined, UserOutlined } from "@ant-design/icons";
+
+// 扩展Form.ItemProps类型以包含render属性
+import { useParams, useIntl, useNavigate, useSearchParams } from "@umijs/max";
+import { PageContainer } from "@ant-design/pro-components";
+import {
+  getUserinfos,
+} from "@/services/uniauthService/userInfo";
 
 interface UserDetailData {
   upn: string;
@@ -134,18 +145,18 @@ const UserDetail: React.FC = () => {
 
   const handleBack = () => {
     // 从URL参数中读取之前的搜索状态
-    const fromKeyword = searchParams.get("from_keyword");
-    const fromCurrent = searchParams.get("from_current");
-    const fromPageSize = searchParams.get("from_pageSize");
+    const fromKeyword = searchParams.get('from_keyword');
+    const fromCurrent = searchParams.get('from_current');
+    const fromPageSize = searchParams.get('from_pageSize');
 
     // 构建返回的URL参数
     const backParams = new URLSearchParams();
-    if (fromKeyword) backParams.set("keyword", fromKeyword);
-    if (fromCurrent) backParams.set("current", fromCurrent);
-    if (fromPageSize) backParams.set("pageSize", fromPageSize);
+    if (fromKeyword) backParams.set('keyword', fromKeyword);
+    if (fromCurrent) backParams.set('current', fromCurrent);
+    if (fromPageSize) backParams.set('pageSize', fromPageSize);
 
     // 构建完整的返回URL
-    const backUrl = `/user-list${backParams.toString() ? `?${backParams.toString()}` : ""}`;
+    const backUrl = `/user-list${backParams.toString() ? `?${backParams.toString()}` : ''}`;
 
     // 导航到用户列表页面并恢复搜索状态
     navigate(backUrl);
@@ -193,19 +204,7 @@ const UserDetail: React.FC = () => {
       if (key === "tags") {
         const tags = Array.isArray(userData.tags) ? userData.tags : [];
         // 标签颜色数组
-        const colors = [
-          "magenta",
-          "red",
-          "volcano",
-          "orange",
-          "gold",
-          "lime",
-          "green",
-          "cyan",
-          "blue",
-          "geekblue",
-          "purple",
-        ];
+        const colors = ['magenta', 'red', 'volcano', 'orange', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
 
         return (
           <Form.Item
@@ -214,22 +213,11 @@ const UserDetail: React.FC = () => {
             tooltip={fieldDescriptions[key as keyof typeof fieldDescriptions]}
             style={{ marginBottom: "16px" }}
           >
-            <div
-              style={{
-                width: "100%",
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "8px",
-              }}
-            >
+            <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {tags.length > 0 ? (
                 tags.map((tag, index) => {
                   const color = colors[index % colors.length];
-                  return (
-                    <Tag key={`tag-${tag}`} color={color}>
-                      {tag}
-                    </Tag>
-                  );
+                  return <Tag key={`tag-${tag}`} color={color}>{tag}</Tag>;
                 })
               ) : (
                 <Tag color="default">-</Tag>
@@ -277,23 +265,23 @@ const UserDetail: React.FC = () => {
         {renderField("employeeType", "pages.userDetail.employeeType")}
         {renderField(
           "fundingTypeOrAdmissionYear",
-          "pages.userDetail.fundingTypeOrAdmissionYear",
+          "pages.userDetail.fundingTypeOrAdmissionYear"
         )}
         {renderField(
           "studentCategoryPrimary",
-          "pages.userDetail.studentCategoryPrimary",
+          "pages.userDetail.studentCategoryPrimary"
         )}
         {renderField(
           "studentCategoryDetail",
-          "pages.userDetail.studentCategoryDetail",
+          "pages.userDetail.studentCategoryDetail"
         )}
         {renderField(
           "studentNationalityType",
-          "pages.userDetail.studentNationalityType",
+          "pages.userDetail.studentNationalityType"
         )}
         {renderField(
           "residentialCollege",
-          "pages.userDetail.residentialCollege",
+          "pages.userDetail.residentialCollege"
         )}
         {renderField("staffRole", "pages.userDetail.staffRole")}
         {renderField("samAccountName", "pages.userDetail.samAccountName")}
@@ -325,60 +313,69 @@ const UserDetail: React.FC = () => {
               <Spin size="large" />
               <p style={{ marginTop: 16 }}>正在加载用户详情...</p>
             </div>
-          ) : // 错误状态或用户数据
-          error ? (
-            <div style={{ textAlign: "center", padding: 60, color: "#f5222d" }}>
-              <UserOutlined style={{ fontSize: 48, marginBottom: 16 }} />
-              <p style={{ fontSize: 16, marginBottom: 16 }}>{error}</p>
-              <Button type="primary" onClick={() => window.location.reload()}>
-                重试
-              </Button>
-            </div>
-          ) : userData ? (
-            <>
-              {/* 用户基本信息概览 */}
-              <div
-                style={{
-                  padding: 16,
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: 8,
-                  marginBottom: 24,
-                }}
-              >
-                <h2 style={{ margin: 0, marginBottom: 8 }}>
-                  {userData.displayName || userData.name || "未知用户"}
-                </h2>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  <Tag color="blue">{userData.upn}</Tag>
-                  {userData.schoolStatus && (
-                    <Tag
-                      color={
-                        userData.schoolStatus === "Employed" ||
-                        userData.schoolStatus === "In-School"
-                          ? "green"
-                          : "orange"
-                      }
-                    >
-                      {userData.schoolStatus}
-                    </Tag>
-                  )}
-                  {userData.identityType && <Tag>{userData.identityType}</Tag>}
-                  {userData.department && <Tag>{userData.department}</Tag>}
-                </div>
-              </div>
-
-              {/* 用户详细信息表单 */}
-              <Form form={form} layout="vertical" size="middle">
-                {renderFormFields()}
-              </Form>
-            </>
           ) : (
-            <div style={{ textAlign: "center", padding: 60 }}>
-              <UserOutlined
-                style={{ fontSize: 48, marginBottom: 16, color: "#d9d9d9" }}
-              />
-              <p>无用户数据</p>
-            </div>
+            // 错误状态或用户数据
+            error ? (
+              <div
+                style={{ textAlign: "center", padding: 60, color: "#f5222d" }}
+              >
+                <UserOutlined style={{ fontSize: 48, marginBottom: 16 }} />
+                <p style={{ fontSize: 16, marginBottom: 16 }}>{error}</p>
+                <Button
+                  type="primary"
+                  onClick={() => window.location.reload()}
+                >
+                  重试
+                </Button>
+              </div>
+            ) : userData ? (
+              <>
+                {/* 用户基本信息概览 */}
+                <div
+                  style={{
+                    padding: 16,
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: 8,
+                    marginBottom: 24,
+                  }}
+                >
+                  <h2 style={{ margin: 0, marginBottom: 8 }}>
+                    {userData.displayName || userData.name || "未知用户"}
+                  </h2>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    <Tag color="blue">{userData.upn}</Tag>
+                    {userData.schoolStatus && (
+                      <Tag
+                        color={
+                          userData.schoolStatus === "Employed" ||
+                            userData.schoolStatus === "In-School"
+                            ? "green"
+                            : "orange"
+                        }
+                      >
+                        {userData.schoolStatus}
+                      </Tag>
+                    )}
+                    {userData.identityType && (
+                      <Tag>{userData.identityType}</Tag>
+                    )}
+                    {userData.department && <Tag>{userData.department}</Tag>}
+                  </div>
+                </div>
+
+                {/* 用户详细信息表单 */}
+                <Form form={form} layout="vertical" size="middle">
+                  {renderFormFields()}
+                </Form>
+              </>
+            ) : (
+              <div style={{ textAlign: "center", padding: 60 }}>
+                <UserOutlined
+                  style={{ fontSize: 48, marginBottom: 16, color: "#d9d9d9" }}
+                />
+                <p>无用户数据</p>
+              </div>
+            )
           )}
         </Card>
       </PageContainer>

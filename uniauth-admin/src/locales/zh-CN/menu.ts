@@ -3,8 +3,10 @@ export default {
   "menu.more-blocks": "更多区块",
   "menu.home": "首页",
   "menu.admin": "管理页",
+  "menu.user-list": "用户列表",
   "menu.quota-pool-list": "配额池列表",
   "menu.quota-pool-details": "配额池详情",
+  "menu.policy-list": "规则列表",
   "menu.admin.sub-page": "二级管理页",
   "menu.login": "登录",
   "menu.register": "注册",
@@ -53,7 +55,6 @@ export default {
   "menu.editor.koni": "拓扑编辑器",
   "menu.model-config": "模型列表",
   "menu.auto-quota-pool-config": "自动配额池列表",
-  "menu.user-list": "用户列表",
   "menu.config-i18n": "国际化配置",
   "menu.user-detail": "用户详情",
 };

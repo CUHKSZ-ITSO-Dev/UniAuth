@@ -82,6 +82,7 @@ export default {
   "pages.userList.search.placeholder": "请输入姓名、UPN、员工号/学号、邮箱",
   "pages.userList.search.query": "查询",
   "pages.userList.search.reset": "重置",
+  "pages.policyList.deleteConfirmTitle2": "确定要删除选中的 {count} 条规则吗？",
 
   // 用户详情页面翻译
   "pages.userDetail.backToList": "返回列表",

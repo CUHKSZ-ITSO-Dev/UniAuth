@@ -17,23 +17,21 @@ func (c *ControllerV1) EditI18nItem(ctx context.Context, req *v1.EditI18nItemReq
 		// 先检查记录是否存在
 		var existingConfig *entity.ConfigInternationalization
 		err := dao.ConfigInternationalization.Ctx(ctx).
-			Where("key = ?", req.Key).
+			Where("lang_code = ? AND key = ?", req.Lang, req.Key).
 			LockUpdate().Scan(&existingConfig)
 		if err != nil {
 			return gerror.Wrap(err, "查询国际化配置失败")
 		}
 
 		if existingConfig == nil {
-			return gerror.Newf("国际化配置不存在: key=%s", req.Key)
+			return gerror.Newf("国际化配置不存在: lang=%s, key=%s", req.Lang, req.Key)
 		}
 
 		// 执行更新操作
 		_, err = dao.ConfigInternationalization.Ctx(ctx).
-			Where("key = ?", req.Key).
+			Where("lang_code = ? AND key = ?", req.Lang, req.Key).
 			Data(g.Map{
-				"zh_cn":       req.ZhCn,
-				"en_us":       req.EnUs,
-				"description": req.Description,
+				"value": req.Value,
 			}).Update()
 
 		if err != nil {
@@ -44,7 +42,7 @@ func (c *ControllerV1) EditI18nItem(ctx context.Context, req *v1.EditI18nItemReq
 	})
 
 	if err != nil {
-		return nil, err
+		return &v1.EditI18nItemRes{OK: false}, err
 	}
 
 	return &v1.EditI18nItemRes{OK: true}, nil
