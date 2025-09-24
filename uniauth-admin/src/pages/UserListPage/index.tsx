@@ -1,8 +1,8 @@
-import type { ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
-import { Link, useIntl, useSearchParams } from "@umijs/max";
-import { message, Space, Typography } from "antd";
-import React, { useEffect, useMemo, useRef } from "react";
+import type { ProColumns } from "@ant-design/pro-components";
+import { Typography, Space, message } from "antd";
+import React, { useEffect, useRef, useMemo } from "react";
+import { useIntl, Link, useSearchParams } from "@umijs/max";
 import { postUserinfosFilter } from "@/services/uniauthService/userInfo";
 
 const { Title, Text } = Typography;
@@ -155,18 +155,17 @@ const UserListPage: React.FC = () => {
         if (initialSearchParams.current > 1)
           linkParams.set(
             "from_current",
-            initialSearchParams.current.toString(),
+            initialSearchParams.current.toString()
           );
         if (initialSearchParams.pageSize !== 10)
           linkParams.set(
             "from_pageSize",
-            initialSearchParams.pageSize.toString(),
+            initialSearchParams.pageSize.toString()
           );
 
         const queryString = linkParams.toString();
-        const detailUrl = `/user-list/userDetail/${record.key}${
-          queryString ? `?${queryString}` : ""
-        }`;
+        const detailUrl = `/user-list/userDetail/${record.key}${queryString ? `?${queryString}` : ""
+          }`;
 
         return (
           <Space size="middle">
@@ -324,7 +323,7 @@ const UserListPage: React.FC = () => {
                   displayName: user.displayName || "",
                   employeeId: user.employeeId || "",
                   department: user.department || "",
-                }),
+                })
               );
 
               // 搜索结果提示

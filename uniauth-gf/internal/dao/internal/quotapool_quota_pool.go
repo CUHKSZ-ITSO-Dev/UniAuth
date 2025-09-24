@@ -1,5 +1,5 @@
 // ==========================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-20 21:12:16
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-16 12:07:45
 // ==========================================================================
 
 package internal
@@ -21,6 +21,7 @@ type QuotapoolQuotaPoolDao struct {
 
 // QuotapoolQuotaPoolColumns defines and stores column names for the table quotapool_quota_pool.
 type QuotapoolQuotaPoolColumns struct {
+	Id             string // 自增主键
 	QuotaPoolName  string // 配额池名称
 	CronCycle      string // 刷新周期
 	RegularQuota   string // 定期配额
@@ -36,6 +37,7 @@ type QuotapoolQuotaPoolColumns struct {
 
 // quotapoolQuotaPoolColumns holds the columns for the table quotapool_quota_pool.
 var quotapoolQuotaPoolColumns = QuotapoolQuotaPoolColumns{
+	Id:             "id",
 	QuotaPoolName:  "quota_pool_name",
 	CronCycle:      "cron_cycle",
 	RegularQuota:   "regular_quota",
