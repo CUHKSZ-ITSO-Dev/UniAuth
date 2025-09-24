@@ -216,10 +216,13 @@ const ConfigDetailTab: FC = () => {
     try {
       // 请求参数
       const getPolicyRequestParams = {
-        sub: params.sub,
-        obj: params.obj,
-        act: params.act,
-        eft: params.eft,
+        sub: params.sub || undefined,
+        obj: params.obj || undefined,
+        act: params.act || undefined,
+        eft: params.eft || undefined,
+        rule: params.raw || undefined,
+        page: params.current || 1,
+        pageSize: params.pageSize || 5,
       };
 
       const res = await getPolcyAPI(getPolicyRequestParams);
@@ -241,7 +244,7 @@ const ConfigDetailTab: FC = () => {
         return {
           data: formattedData,
           success: true,
-          total: formattedData.length,
+          total: res.total,
         };
       }
 
