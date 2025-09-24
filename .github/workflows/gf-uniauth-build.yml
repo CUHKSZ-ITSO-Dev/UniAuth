@@ -36,7 +36,7 @@ jobs:
 
       - name: Build Uniauth
         working-directory: uniauth-gf
-        run: gf build -n uniauth -a amd64,arm64 -s darwin,windows,linux -p ./bin -e '-ldflags="-w -s"' -ps resource/public,resource/config -ew
+        run: gf build
 
       - name: Upload Artifacts 1
         uses: actions/upload-artifact@v4
