@@ -1,4 +1,4 @@
-name: UniAuth 后端交叉编译与 Docker 构建
+name: UniAuth 前端构建与 Docker 部署
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - "v*"
 
 env:
-  IMAGE_NAME: ghcr.io/cuhksz-itso-dev/uniauth-gf
+  IMAGE_NAME: ghcr.io/cuhksz-itso-dev/uniauth-admin
   MANIFEST_REPO_OWNER: CUHKSZ-ITSO-Dev
   MANIFEST_REPO_NAME: GPT-Cluster
   MANIFEST_DEPLOY_BRANCH: main
@@ -17,70 +17,62 @@ permissions:
   packages: write
 
 jobs:
-  # Job1 交叉编译，上传 Artifacts
-  build-binaries:
+  # Job1 构建前端静态资源
+  build-frontend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          cache: true
-          cache-dependency-path: uniauth-gf/go.sum
-          go-version: "1.25.0"
+          node-version: "20"
 
-      - name: Install GoFrame
-        run: go install github.com/gogf/gf/cmd/gf/v2@latest
+      - name: Enable Corepack
+        run: corepack enable
 
-      - name: Build Uniauth
-        working-directory: uniauth-gf
-        run: gf build
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('uniauth-admin/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-      - name: Upload Artifacts 1
+      - name: Install dependencies
+        working-directory: uniauth-admin
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Frontend
+        working-directory: uniauth-admin
+        run: pnpm run build
+
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: uniauth-gf-linux_amd64
-          path: uniauth-gf/bin/linux_amd64/uniauth
-
-      - name: Upload Artifacts 2
-        uses: actions/upload-artifact@v4
-        with:
-          name: uniauth-gf-windows_amd64
-          path: uniauth-gf/bin/windows_amd64/uniauth.exe
-
-      - name: Upload Artifacts 3
-        uses: actions/upload-artifact@v4
-        with:
-          name: uniauth-gf-darwin_arm64
-          path: uniauth-gf/bin/darwin_arm64/uniauth
-
-      - name: Upload Artifacts 4
-        uses: actions/upload-artifact@v4
-        with:
-          name: uniauth-gf-darwin_amd64
-          path: uniauth-gf/bin/darwin_amd64/uniauth
-
-      - name: Upload Artifacts 5
-        uses: actions/upload-artifact@v4
-        with:
-          name: uniauth-gf-linux_arm64
-          path: uniauth-gf/bin/linux_arm64/uniauth
+          name: uniauth-admin-dist
+          path: uniauth-admin/dist
+          retention-days: 1
 
   # Job2 构建 Docker 镜像
   build-docker:
-    needs: build-binaries
+    needs: build-frontend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
 
-      - name: Download binary artifact
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: uniauth-gf-linux_amd64
-          path: ./uniauth-gf/bin/linux_amd64
+          name: uniauth-admin-dist
+          path: ./dist-temp
+
+      - name: Prepare Docker context
+        run: |
+          rm -rf ./uniauth-admin/dist
+          mv ./dist-temp ./uniauth-admin/dist
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -102,18 +94,18 @@ jobs:
             type=semver,pattern=v{{major}}
             type=semver,pattern=v{{major}}.{{minor}}
           labels: |
-            org.opencontainers.image.description=UniAuth Automated System (GoFrame, {{sha}}).
+            org.opencontainers.image.description=UniAuth Automated System, Admin Panel (React, {{sha}}).
             org.opencontainers.image.created={{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
             org.opencontainers.image.revision={{ sha }}
             org.opencontainers.image.version=v{{major}}.{{minor}}
-            org.opencontainers.image.title=UniAuth GoFrame
+            org.opencontainers.image.title=UniAuth Admin Panel
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           provenance: false
-          context: uniauth-gf
-          file: uniauth-gf/manifest/deploy/kubernetes/Dockerfile
+          context: uniauth-admin
+          file: uniauth-admin/deploy/dockerfile
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -124,7 +116,7 @@ jobs:
           # 配置Git
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          
+
           # 克隆目标仓库（集群部署清单仓库）
           git clone https://${{ secrets.DEPLOY_REPO_TOKEN }}@github.com/${{ env.MANIFEST_REPO_OWNER }}/${{ env.MANIFEST_REPO_NAME }}.git manifest-repo
           cd manifest-repo
@@ -132,12 +124,11 @@ jobs:
           # 切换到目标分支
           git checkout ${{ env.MANIFEST_DEPLOY_BRANCH }}
           # 更新Kubernetes清单
-          MANIFEST_FILE="dev/dev-uniauth-gf.yaml"
+          MANIFEST_FILE="dev/dev-uniauth-admin.yaml"
           # Update image tag
-          sed -i "s|image: ghcr.io/cuhksz-itso-dev/uniauth-gf:.*|image: ghcr.io/cuhksz-itso-dev/uniauth-gf:${{ env.TAG }}|" ${MANIFEST_FILE}
-          
-      
+          sed -i "s|image: ghcr.io/cuhksz-itso-dev/uniauth-admin:.*|image: ghcr.io/cuhksz-itso-dev/uniauth-admin:${{ env.TAG }}|" ${MANIFEST_FILE}
+
           # 提交并推送更改到目标仓库
           git add ${MANIFEST_FILE}
-          git commit -m "Update ${MANIFEST_FILE} to  ${{ env.TAG }}"
+          git commit -m "Update ${MANIFEST_FILE} to ${{ env.TAG }}"
           git push origin ${{ env.MANIFEST_DEPLOY_BRANCH }}
