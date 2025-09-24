@@ -294,7 +294,11 @@ const PolicyListPage: React.FC = () => {
       render: (_, record) => (
         <Space>
           <a key="edit" onClick={() => handleEdit(record)}>
-            <EditOutlined /> 编辑
+            <EditOutlined />{" "}
+            {intl.formatMessage({
+              id: "pages.policyList.edit",
+              defaultMessage: "编辑",
+            })}
           </a>
           <Popconfirm
             key="delete"

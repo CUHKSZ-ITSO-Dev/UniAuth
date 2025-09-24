@@ -170,4 +170,5 @@ export default {
   "pages.policyList.search.action.placeholder": "Please enter action to search",
   "pages.policyList.search.effect.placeholder":
     "Please select effect to search",
+  "pages.policyList.edit": "Edit",
 };
