@@ -3,9 +3,16 @@
 import { request } from "@/utils/request";
 
 /** 获取配额池的详细配置 GET /quotaPool */
-export async function getQuotaPool(options?: { [key: string]: any }) {
+export async function getQuotaPool(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getQuotaPoolParams,
+  options?: { [key: string]: any }
+) {
   return request<API.GetQuotaPoolRes>("/quotaPool", {
     method: "GET",
+    params: {
+      ...params,
+    },
     ...(options || {}),
   });
 }
@@ -41,9 +48,16 @@ export async function postQuotaPool(
 }
 
 /** 删除配额池 DELETE /quotaPool */
-export async function deleteQuotaPool(options?: { [key: string]: any }) {
+export async function deleteQuotaPool(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.deleteQuotaPoolParams,
+  options?: { [key: string]: any }
+) {
   return request<API.DeleteQuotaPoolRes>("/quotaPool", {
     method: "DELETE",
+    params: {
+      ...params,
+    },
     ...(options || {}),
   });
 }

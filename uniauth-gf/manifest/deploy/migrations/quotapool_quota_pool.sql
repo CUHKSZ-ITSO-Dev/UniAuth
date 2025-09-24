@@ -1,5 +1,6 @@
 CREATE TABLE quotapool_quota_pool (
-    quota_pool_name VARCHAR(255) NOT NULL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
+    quota_pool_name VARCHAR(255) NOT NULL UNIQUE,
     cron_cycle VARCHAR(255) NOT NULL,
     regular_quota NUMERIC(25, 10) NOT NULL,
     remaining_quota NUMERIC(25, 10) NOT NULL,
@@ -14,6 +15,7 @@ CREATE TABLE quotapool_quota_pool (
 
 CREATE INDEX idx_quotapool_quota_pool_quota_pool_name ON quotapool_quota_pool(quota_pool_name);
 
+COMMENT ON COLUMN quotapool_quota_pool.id IS '自增主键';
 COMMENT ON COLUMN quotapool_quota_pool.quota_pool_name IS '配额池名称';
 COMMENT ON COLUMN quotapool_quota_pool.cron_cycle IS '刷新周期';
 COMMENT ON COLUMN quotapool_quota_pool.regular_quota IS '定期配额';

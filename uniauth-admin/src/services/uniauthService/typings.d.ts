@@ -1,5 +1,20 @@
 declare namespace API {
-  type AddAutoQuotaPoolConfigReq = {};
+  type AddAutoQuotaPoolConfigReq = {
+    /** 规则名称（唯一） */
+    ruleName: string;
+    /** 刷新周期，Cron 表达式 */
+    cronCycle: string;
+    /** 定期配额（每周期重置） */
+    regularQuota: Decimal;
+    /** 是否启用该规则 */
+    enabled?: boolean;
+    /** 过滤条件组，满足条件的用户将应用该规则 */
+    filterGroup?: FilterGroup;
+    /** 规则说明 */
+    description?: string;
+    /** 优先级，数值越小优先匹配 */
+    priority?: number;
+  };
 
   type AddAutoQuotaPoolConfigRes = {
     /** 是否成功 */
@@ -7,14 +22,12 @@ declare namespace API {
   };
 
   type AddI18nItemReq = {
-    /** 翻译键 */
+    /** 语言 */
+    lang: string;
+    /** 键 */
     key: string;
-    /** 中文翻译 */
-    zh_cn?: string;
-    /** 英文翻译 */
-    en_us?: string;
-    /** 描述 */
-    description?: string;
+    /** 值 */
+    value: string;
   };
 
   type AddI18nItemRes = {
@@ -40,8 +53,8 @@ declare namespace API {
   };
 
   type AddModelConfigRes = {
-    /** 配置 */
-    config?: string;
+    /** 是否成功 */
+    ok?: boolean;
   };
 
   type AddPoliciesReq = {
@@ -52,6 +65,33 @@ declare namespace API {
   };
 
   type AddPoliciesRes = {};
+
+  type AutoQuotaPoolItem = {
+    /** 自增主键 */
+    id?: number;
+    /** 规则名称，唯一 */
+    ruleName?: string;
+    /** 规则说明 */
+    description?: string;
+    /** 刷新周期 */
+    cronCycle?: string;
+    /** 定期配额 */
+    regularQuota?: Decimal;
+    /** 是否启用该配额池 */
+    enabled?: boolean;
+    /** 过滤条件组 */
+    filterGroup?: Json;
+    /** UPN缓存列表 */
+    upnsCache?: Json;
+    /** 优先级，数值越小优先匹配 */
+    priority?: number;
+    /** 该规则上次评估时间 */
+    lastEvaluatedAt?: string;
+    /** 创建时间 */
+    createdAt?: string;
+    /** 更新时间 */
+    updatedAt?: string;
+  };
 
   type BatchQuotaPoolDisabledReq = {
     /** 配额池 */
@@ -151,20 +191,33 @@ declare namespace API {
 
   type Decimal = {};
 
-  type DeleteAutoQuotaPoolConfigReq = {};
+  type DeleteAutoQuotaPoolConfigReq = {
+    /** 规则名称（唯一） */
+    ruleName: string;
+  };
 
   type DeleteAutoQuotaPoolConfigRes = {
     /** 是否成功 */
     ok?: boolean;
   };
 
+  type deleteConfigAutoConfigParams = {
+    /** 规则名称（唯一） */
+    ruleName: string;
+  };
+
   type deleteConfigI18nParams = {
-    /** 翻译键 */
+    /** 键 */
     key: string;
   };
 
+  type deleteConfigModelParams = {
+    /** 模型名称（唯一） */
+    approachName?: string;
+  };
+
   type DeleteI18ConfigReq = {
-    /** 翻译键 */
+    /** 键 */
     key: string;
   };
 
@@ -173,11 +226,14 @@ declare namespace API {
     ok?: boolean;
   };
 
-  type DeleteModelConfigReq = {};
+  type DeleteModelConfigReq = {
+    /** 模型名称（唯一） */
+    approachName?: string;
+  };
 
   type DeleteModelConfigRes = {
-    /** 配置 */
-    config?: string;
+    /** 是否成功 */
+    ok?: boolean;
   };
 
   type DeletePoliciesReq = {
@@ -187,14 +243,35 @@ declare namespace API {
 
   type DeletePoliciesRes = {};
 
-  type DeleteQuotaPoolReq = {};
+  type deleteQuotaPoolParams = {
+    quotaPoolName: string;
+  };
+
+  type DeleteQuotaPoolReq = {
+    quotaPoolName: string;
+  };
 
   type DeleteQuotaPoolRes = {
     /** 是否成功 */
     ok?: boolean;
   };
 
-  type EditAutoQuotaPoolConfigReq = {};
+  type EditAutoQuotaPoolConfigReq = {
+    /** 规则名称（唯一） */
+    ruleName: string;
+    /** 刷新周期，Cron 表达式 */
+    cronCycle: string;
+    /** 定期配额（每周期重置） */
+    regularQuota: Decimal;
+    /** 是否启用该配额池 */
+    enabled?: boolean;
+    /** 过滤条件组，满足条件的用户将应用该规则 */
+    filterGroup?: FilterGroup;
+    /** 规则说明 */
+    description?: string;
+    /** 优先级，数值越小优先匹配 */
+    priority?: number;
+  };
 
   type EditAutoQuotaPoolConfigRes = {
     /** 是否成功 */
@@ -202,14 +279,12 @@ declare namespace API {
   };
 
   type EditI18nItemReq = {
-    /** 翻译键 */
+    /** 语言 */
+    lang: string;
+    /** 键 */
     key: string;
-    /** 中文翻译 */
-    zh_cn?: string;
-    /** 英文翻译 */
-    en_us?: string;
-    /** 描述 */
-    description?: string;
+    /** 值 */
+    value: string;
   };
 
   type EditI18nItemRes = {
@@ -235,8 +310,8 @@ declare namespace API {
   };
 
   type EditModelConfigRes = {
-    /** 配置 */
-    config?: string;
+    /** 是否成功 */
+    ok?: boolean;
   };
 
   type EditPolicyReq = {
@@ -248,7 +323,15 @@ declare namespace API {
 
   type EditPolicyRes = {};
 
-  type EditQuotaPoolReq = {};
+  type EditQuotaPoolReq = {
+    quotaPoolName: string;
+    cronCycle: string;
+    regularQuota: Decimal;
+    personal: boolean;
+    disabled?: boolean;
+    extraQuota?: Decimal;
+    userinfosRules?: Json;
+  };
 
   type EditQuotaPoolRes = {
     /** 是否成功 */
@@ -317,43 +400,23 @@ declare namespace API {
     groups?: string[][];
   };
 
-  type FilterI18nReq = {
-    /** 搜索关键词，对key、zh_cn、en_us、description字段进行模糊匹配 */
-    keyword?: string;
-    /** 排序条件，支持多字段排序 */
-    sort?: I18nSortCondition[];
-    /** 分页参数，支持分页或查询全部 */
-    pagination?: I18nPaginationReq;
-    /** 是否返回详细i18n信息，false时仅返回键列表 */
-    verbose?: boolean;
-  };
-
-  type FilterI18nRes = {
-    /** i18n键列表 */
-    i18n_keys?: string[];
-    /** 详细i18n信息（verbose=true时返回） */
-    i18n_items?: I18nItem[];
-    /** 总记录数 */
-    total?: number;
-    /** 当前页码 */
-    page?: number;
-    /** 每页条数 */
-    page_size?: number;
-    /** 总页数 */
-    total_pages?: number;
-  };
-
   type FilterPoliciesReq = {
-    /** Subjects 列表 */
-    subs?: string[];
-    /** Objects 列表 */
-    objs?: string[];
-    /** Actions 列表 */
-    acts?: string[];
+    /** Subjects */
+    sub?: string;
+    /** Objects */
+    obj?: string;
+    /** Actions */
+    act?: string;
+    /** Effects */
+    eft?: string;
   };
 
   type FilterPoliciesRes = {
-    policies?: string[][];
+    policies: string[][];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
   };
 
   type FilterReq = {
@@ -394,7 +457,7 @@ declare namespace API {
   type GetAllLangsReq = {};
 
   type GetAllLangsRes = {
-    /** 语言代码列表 */
+    /** 语言列表 */
     langs?: string[];
   };
 
@@ -582,18 +645,17 @@ declare namespace API {
   };
 
   type getConfigI18nLangParams = {
-    /** 语言代码 */
-    lang: "zh-CN" | "en-US";
+    /** 语言 */
+    lang: string;
   };
 
   type GetI18nConfigReq = {
-    /** 语言代码 */
-    lang: "zh-CN" | "en-US";
+    /** 语言 */
+    lang: string;
   };
 
   type GetI18nConfigRes = {
-    /** 语言包键值对，支持嵌套结构 */
-    langpack?: Json;
+    Config?: Json;
   };
 
   type GetModelConfigReq = {};
@@ -678,11 +740,19 @@ declare namespace API {
     updatedAt?: string;
   };
 
-  type GetQuotaPoolReq = {};
+  type getQuotaPoolParams = {
+    /** 指定配额池名称（可选） */
+    quotaPoolName?: string;
+  };
+
+  type GetQuotaPoolReq = {
+    /** 指定配额池名称（可选） */
+    quotaPoolName?: string;
+  };
 
   type GetQuotaPoolRes = {
-    /** 配额池 */
-    quotaPool?: string;
+    /** 配额池列表或单个配置 */
+    items?: QuotaPoolItem[];
   };
 
   type getUserinfosParams = {
@@ -694,36 +764,28 @@ declare namespace API {
 
   type HelloRes = {};
 
-  type I18nItem = {
-    /** 翻译键 */
-    key?: string;
-    /** 中文翻译 */
-    zh_cn?: string;
-    /** 英文翻译 */
-    en_us?: string;
-    /** 描述 */
-    description?: string;
-    /** 创建时间 */
-    created_at?: string;
-    /** 更新时间 */
-    updated_at?: string;
-  };
-
-  type I18nPaginationReq = {
-    /** 页码，从1开始 */
-    page?: number;
-    /** 每页条数，最大1000 */
-    pageSize?: number;
-  };
-
-  type I18nSortCondition = {
-    /** 排序字段 */
-    field: string;
-    /** 排序方向: asc(升序), desc(降序) */
-    order?: "asc" | "desc";
-  };
-
   type Json = {};
+
+  type ModelConfigItem = {
+    /** 模型名称 */
+    approachName?: string;
+    /** 定价配置（JSON） */
+    pricing?: Json;
+    /** 折扣 */
+    discount?: Decimal;
+    /** 客户端类型 */
+    clientType?: string;
+    /** 客户端参数（JSON） */
+    clientArgs?: Json;
+    /** 请求参数（JSON） */
+    requestArgs?: Json;
+    /** 服务项标识 */
+    servicewares?: string[];
+    /** 创建时间 */
+    createdAt?: string;
+    /** 更新时间 */
+    updatedAt?: string;
+  };
 
   type NDaysProductUsageChartReq = {
     /** N Days */
@@ -743,7 +805,15 @@ declare namespace API {
     groupData?: Json;
   };
 
-  type NewQuotaPoolReq = {};
+  type NewQuotaPoolReq = {
+    quotaPoolName: string;
+    cronCycle: string;
+    regularQuota: Decimal;
+    personal: boolean;
+    disabled?: boolean;
+    extraQuota?: Decimal;
+    userinfosRules?: Json;
+  };
 
   type NewQuotaPoolRes = {
     /** 是否成功 */
@@ -757,6 +827,33 @@ declare namespace API {
     pageSize?: number;
     /** 是否返回全部数据，true时忽略分页参数，但仍有最大限制保护 */
     all?: boolean;
+  };
+
+  type QuotaPoolItem = {
+    /** 自增主键 */
+    id?: number;
+    /** 配额池名称 */
+    quotaPoolName?: string;
+    /** 刷新周期 */
+    cronCycle?: string;
+    /** 定期配额 */
+    regularQuota?: Decimal;
+    /** 剩余配额 */
+    remainingQuota?: Decimal;
+    /** 上次刷新时间 */
+    lastResetAt?: string;
+    /** 加油包 */
+    extraQuota?: Decimal;
+    /** 是否个人配额池 */
+    personal?: boolean;
+    /** 是否禁用 */
+    disabled?: boolean;
+    /** ITTools规则 */
+    userinfosRules?: Json;
+    /** 创建时间 */
+    createdAt?: string;
+    /** 修改时间 */
+    updatedAt?: string;
   };
 
   type ResetBalanceReq = {

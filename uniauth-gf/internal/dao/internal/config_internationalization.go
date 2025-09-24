@@ -21,9 +21,9 @@ type ConfigInternationalizationDao struct {
 
 // ConfigInternationalizationColumns defines and stores column names for the table config_internationalization.
 type ConfigInternationalizationColumns struct {
+	LangCode    string //
 	Key         string //
-	ZhCn        string //
-	EnUs        string //
+	Value       string //
 	Description string //
 	CreatedAt   string //
 	UpdatedAt   string //
@@ -31,9 +31,9 @@ type ConfigInternationalizationColumns struct {
 
 // configInternationalizationColumns holds the columns for the table config_internationalization.
 var configInternationalizationColumns = ConfigInternationalizationColumns{
+	LangCode:    "lang_code",
 	Key:         "key",
-	ZhCn:        "zh_cn",
-	EnUs:        "en_us",
+	Value:       "value",
 	Description: "description",
 	CreatedAt:   "created_at",
 	UpdatedAt:   "updated_at",

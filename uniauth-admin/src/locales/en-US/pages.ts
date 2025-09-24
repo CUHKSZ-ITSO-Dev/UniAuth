@@ -300,4 +300,58 @@ export default {
   "pages.configI18n.batchDelete.clear": "Clear Selection",
   "pages.configI18n.batchDelete.delete": "Batch Delete",
   "pages.configI18n.updatedAt": "Updated Time",
+
+  // PolicyListPage
+  "pages.policyList.subject": "Subject",
+  "pages.policyList.object": "Object",
+  "pages.policyList.action": "Action",
+  "pages.policyList.effect": "Effect",
+  "pages.policyList.raw": "Raw Policy",
+  "pages.policyList.delete": "Delete",
+  "pages.policyList.deleteConfirmTitle":
+    "Are you sure you want to delete this policy?",
+  "pages.policyList.deleteConfirmDescription": "This action cannot be undone.",
+  "pages.policyList.deleteConfirmOk": "Yes",
+  "pages.policyList.deleteConfirmCancel": "No",
+  "pages.policyList.description":
+    "Manage system access control policies, configuring rules for users, resources, and actions",
+  "pages.policyList.search.query": "Query",
+  "pages.policyList.search.reset": "Reset",
+  "pages.policyList.tableAlert.selected": "Selected {count} items",
+  "pages.policyList.tableAlert.cancel": "Cancel Selection",
+  "pages.policyList.deleteConfirmTitle2":
+    "Are you sure you want to delete the selected {count} policies?",
+  "pages.policyList.batchDelete": "Batch Delete",
+  "pages.policyList.searchTable.new": "New",
+  "pages.policyList.searchTable.newPolicy": "New Policy",
+  "pages.policyList.searchTable.addPolicySuccess": "Policy added successfully",
+  "pages.policyList.searchTable.subject": "Subject",
+  "pages.policyList.searchTable.subject.label": "Subject",
+  "pages.policyList.searchTable.subject.placeholder":
+    "Enter subject, e.g., alice, user_group",
+  "pages.policyList.searchTable.subject.required": "Please enter a subject",
+  "pages.policyList.searchTable.object": "Object",
+  "pages.policyList.searchTable.object.required": "Please enter an object",
+  "pages.policyList.searchTable.object.placeholder":
+    "Enter object, e.g., chat_production, database",
+  "pages.policyList.searchTable.action": "Action",
+  "pages.policyList.searchTable.action.placeholder":
+    "Enter action, e.g., read, write, manage",
+  "pages.policyList.searchTable.action.required": "Please enter an action",
+  "pages.policyList.searchTable.effect": "Effect",
+  "pages.policyList.searchTable.effect.placeholder":
+    "Enter effect, e.g., allow, deny",
+  "pages.policyList.searchTable.effect.allow": "Allow",
+  "pages.policyList.searchTable.effect.deny": "Deny",
+  "pages.policyList.searchTable.effect.required": "Please select an effect",
+  "pages.policyList.editRule": "Edit Rule",
+  "pages.policyList.editRule.success": "Edit successful",
+  "pages.policyList.title": "Policy List",
+  "pages.policyList.search.subject.placeholder":
+    "Please enter subject to search",
+  "pages.policyList.search.object.placeholder": "Please enter object to search",
+  "pages.policyList.search.action.placeholder": "Please enter action to search",
+  "pages.policyList.search.effect.placeholder":
+    "Please select effect to search",
+  "pages.policyList.edit": "Edit",
 };
