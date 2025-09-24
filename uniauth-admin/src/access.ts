@@ -29,13 +29,8 @@ interface User {
 // 权限检查函数
 const checkPermission = (currentUser: User | undefined, permission: string): boolean => {
   if (!currentUser) return false;
-  // 如果是admin角色，拥有所有权限
-  if (currentUser.access === 'admin') return true;
-  // 检查用户是否有指定权限
-  if (currentUser.permissions && currentUser.permissions.includes(permission)) {
-    return true;
-  }
-  return false;
+  // 如果是admin角色，拥有所有权限，或者用户权限列表包含指定权限
+  return currentUser.access === 'admin' || (currentUser.permissions?.includes(permission) ?? false);
 };
 
 // 导出access函数，符合Umi.js要求

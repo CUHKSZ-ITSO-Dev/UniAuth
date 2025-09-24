@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, ButtonProps, Tooltip } from 'antd';
-import { useAccess, Access } from 'umi';
+import { useAccess } from 'umi';
 
 /**
  * 权限按钮组件属性接口
@@ -12,8 +12,8 @@ interface AccessButtonProps extends ButtonProps {
   noPermissionText?: string;
   /** 无权限时是否隐藏按钮 */
   hideWhenDisabled?: boolean;
-  /** 无权限时是否禁用按钮而非隐藏 */
-  disableWhenNoPermission?: boolean;
+  /** 无权限时是否显示提示信息 */
+  showNoPermissionTooltip?: boolean;
 }
 
 /**
@@ -24,7 +24,7 @@ const AccessButton: React.FC<AccessButtonProps> = ({
   permission,
   noPermissionText = '无操作权限',
   hideWhenDisabled = true,
-  disableWhenNoPermission = false,
+  showNoPermissionTooltip = true,
   children,
   ...buttonProps
 }) => {
@@ -44,10 +44,10 @@ const AccessButton: React.FC<AccessButtonProps> = ({
     const disabledButton = (
       <Button 
         {...buttonProps} 
-        disabled={disableWhenNoPermission} 
+        disabled // 按钮应始终被禁用
         style={{
           ...buttonProps.style,
-          opacity: disableWhenNoPermission ? 0.6 : 1
+          opacity: 0.6
         }}
       >
         {children}
@@ -55,12 +55,12 @@ const AccessButton: React.FC<AccessButtonProps> = ({
     );
     
     // 根据配置返回禁用按钮或带提示的按钮
-    return disableWhenNoPermission ? (
-      disabledButton
-    ) : (
+    return showNoPermissionTooltip ? (
       <Tooltip title={noPermissionText}>
         {disabledButton}
       </Tooltip>
+    ) : (
+      disabledButton
     );
   }
   
