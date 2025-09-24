@@ -72,16 +72,10 @@ const filterPolicies = async (params: any) => {
       raw: policy,
     }));
 
-    // 处理分页参数
-    const { current = 1, pageSize = 10 } = params;
-    const startIndex = (current - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedData = formattedData.slice(startIndex, endIndex);
-
     return {
-      data: paginatedData,
+      data: formattedData,
       success: true,
-      total: formattedData.length,
+      total: res.total,
     };
   } catch (error) {
     return {
