@@ -47,13 +47,16 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const handleEdit = (record: API.AutoQuotaPoolItem) => {
     setEditingRecord(record);
 
-    // 安全地处理JSON字段的序列化
+    // 安全地处理字段的序列化
     const formatJsonField = (field: any): string => {
       if (!field) return "";
+      // 对于 upnsCache，直接返回字符串值
+      if (typeof field === "string") {
+        return field;
+      }
+      // 对于 filterGroup，保持原有的 JSON 处理逻辑
       try {
-        return typeof field === "string"
-          ? field
-          : JSON.stringify(field, null, 2);
+        return JSON.stringify(field, null, 2);
       } catch (e) {
         return typeof field === "object"
           ? JSON.stringify(field)
@@ -145,21 +148,13 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         processedValues.filterGroup = null;
       }
 
-      // 处理upnsCache JSON字段
+      // 处理upnsCache字段 - 现在作为字符串处理
       if (values.upnsCache) {
-        try {
-          processedValues.upnsCache = JSON.parse(values.upnsCache);
-        } catch (_e) {
-          message.error(
-            intl.formatMessage({
-              id: "pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache",
-            }),
-          );
-          return;
-        }
+        // 直接使用字符串值，不再解析为JSON
+        processedValues.upnsCache = values.upnsCache;
       } else {
-        // 如果没有提供upnsCache，确保传递null而不是undefined
-        processedValues.upnsCache = null;
+        // 如果没有提供upnsCache，确保传递空字符串而不是null
+        processedValues.upnsCache = "";
       }
 
       // 根据是否为编辑状态调用不同的API
@@ -637,31 +632,14 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             label={intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.upnsCache",
             })}
-            rules={[
-              {
-                validator: (_, value) => {
-                  if (!value) return Promise.resolve();
-                  try {
-                    JSON.parse(value);
-                    return Promise.resolve();
-                  } catch (_e) {
-                    return Promise.reject(
-                      new Error(
-                        intl.formatMessage({
-                          id: "pages.autoQuotaPoolConfig.jsonInvalid",
-                        }),
-                      ),
-                    );
-                  }
-                },
-              },
-            ]}
           >
             <Input.TextArea
               rows={4}
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.upnsCachePlaceholder",
               })}
+              readOnly
+              style={{ backgroundColor: "#f5f5f5", color: "#000" }}
             />
           </Form.Item>
         </Form>
