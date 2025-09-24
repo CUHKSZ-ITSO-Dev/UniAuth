@@ -184,7 +184,6 @@ const UserListPage: React.FC = () => {
 
   return (
     <PageContainer>
-      {contextHolder}
       <ProCard>
         <Title level={4}>
           {intl.formatMessage({
@@ -298,7 +297,7 @@ const UserListPage: React.FC = () => {
               // 增强错误边界检查
               if (!response || typeof response !== "object") {
                 console.error("API返回格式错误", response);
-                messageApi.error("搜索失败，返回数据格式不正确");
+                message.error("搜索失败，返回数据格式不正确");
                 return {
                   data: [],
                   success: false,
@@ -330,7 +329,7 @@ const UserListPage: React.FC = () => {
 
               // 搜索结果提示
               if (keyword && tableData.length === 0) {
-                messageApi.info(`未找到包含 "${keyword}" 的用户信息`);
+                message.info(`未找到包含 "${keyword}" 的用户信息`);
               }
 
               return {
