@@ -55,7 +55,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           ? field
           : JSON.stringify(field, null, 2);
       } catch (e) {
-        console.error("JSON序列化失败:", e);
         return typeof field === "object"
           ? JSON.stringify(field)
           : String(field);
@@ -87,11 +86,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       message.error(
         intl.formatMessage({ id: "pages.autoQuotaPoolConfig.deleteFailed" }),
       );
-      console.error("删除自动配额池配置失败:", error);
-      // 输出详细的错误信息到控制台
-      if (error.data) {
-        console.error("错误详情:", JSON.stringify(error.data, null, 2));
-      }
     }
   };
 
@@ -186,8 +180,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       setModalVisible(false);
       actionRef.current?.reload();
     } catch (error: any) {
-      console.error("保存自动配额池配置失败:", error);
-
       // 提供更详细的错误信息
       let errorMessage = intl.formatMessage({
         id: "pages.autoQuotaPoolConfig.saveFailed",
@@ -232,10 +224,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       }
 
       message.error(errorMessage);
-      // 输出详细的错误信息到控制台
-      if (error.data) {
-        console.error("错误详情:", JSON.stringify(error.data, null, 2));
-      }
     }
   };
 
@@ -293,14 +281,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         };
       }
     } catch (error: any) {
-      console.error("获取自动配额池配置列表失败:", error);
       message.error(
         intl.formatMessage({ id: "pages.autoQuotaPoolConfig.fetchFailed" }),
       );
-      // 输出详细的错误信息到控制台
-      if (error.data) {
-        console.error("错误详情:", JSON.stringify(error.data, null, 2));
-      }
       return {
         data: [],
         success: false,

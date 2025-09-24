@@ -55,7 +55,6 @@ const ModelConfigPage: React.FC = () => {
           ? field
           : JSON.stringify(field, null, 2);
       } catch (e) {
-        console.error("JSON序列化失败:", e);
         return typeof field === "object"
           ? JSON.stringify(field)
           : String(field);
@@ -95,11 +94,6 @@ const ModelConfigPage: React.FC = () => {
       message.error(
         intl.formatMessage({ id: "pages.modelConfig.deleteFailed" }),
       );
-      console.error("删除模型配置失败:", error);
-      // 输出详细的错误信息到控制台
-      if (error.data) {
-        console.error("错误详情:", JSON.stringify(error.data, null, 2));
-      }
     }
   };
 
@@ -129,7 +123,6 @@ const ModelConfigPage: React.FC = () => {
             ? parsed
             : {};
         } catch (_e) {
-          console.error("JSON解析失败:", _e);
           message.error(
             intl.formatMessage({ id: "pages.modelConfig.jsonInvalid" }),
           );
@@ -196,8 +189,6 @@ const ModelConfigPage: React.FC = () => {
       setModalVisible(false);
       actionRef.current?.reload();
     } catch (error: any) {
-      console.error("保存模型配置失败:", error);
-
       // 提供更详细的错误信息
       let errorMessage = intl.formatMessage({
         id: "pages.modelConfig.saveFailed",
@@ -243,10 +234,6 @@ const ModelConfigPage: React.FC = () => {
       }
 
       message.error(errorMessage);
-      // 输出详细的错误信息到控制台
-      if (error.data) {
-        console.error("错误详情:", JSON.stringify(error.data, null, 2));
-      }
     }
   };
 
@@ -310,14 +297,9 @@ const ModelConfigPage: React.FC = () => {
         };
       }
     } catch (error: any) {
-      console.error("获取模型配置列表失败:", error);
       message.error(
         intl.formatMessage({ id: "pages.modelConfig.fetchFailed" }),
       );
-      // 输出详细的错误信息到控制台
-      if (error.data) {
-        console.error("错误详情:", JSON.stringify(error.data, null, 2));
-      }
       return {
         data: [],
         success: false,
