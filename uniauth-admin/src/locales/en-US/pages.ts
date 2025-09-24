@@ -1,5 +1,3 @@
-import { count } from "console";
-
 export default {
   "pages.layouts.userLayout.title":
     "Ant Design is the most influential web design specification in Xihu district",
