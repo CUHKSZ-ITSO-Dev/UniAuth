@@ -1,24 +1,18 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { LoginForm, ProConfigProvider, ProFormText } from '@ant-design/pro-components';
-import { message } from 'antd';
-import { theme } from 'antd';
-import { history } from '@umijs/max';
+import { Form, Input, Button, message, Card } from 'antd';
+import type { FormProps } from 'antd';
 
 /**
  * 登录页面组件
  * 提供用户登录功能
  */
 export default () => {
-  const { token } = theme.useToken();
+  const [form] = Form.useForm();
   // 使用message实例代替静态方法，避免主题上下文警告
   const [messageApi, contextHolder] = message.useMessage();
 
   // 登录处理函数
-  const handleSubmit = async (values: {
-    username: string;
-    password: string;
-    autoLogin?: boolean;
-  }) => {
+  const handleSubmit: FormProps['onFinish'] = async (values) => {
     try {
       console.log('Login attempt with:', values);
       // 模拟登录验证
@@ -63,11 +57,11 @@ export default () => {
   };
 
   return (
-    <ProConfigProvider hashed={false}>
+    <>
       {contextHolder}
       <div 
         style={{
-          backgroundColor: token.colorBgContainer,
+          backgroundColor: '#f0f2f5',
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
@@ -75,46 +69,76 @@ export default () => {
           padding: '24px'
         }}
       >
-        <div style={{ width: '100%', maxWidth: '368px', overflow: 'hidden' }}>
-          <LoginForm
-            title="登录"
-            subTitle="Sign In"
-            onFinish={handleSubmit}
-            style={{
-              overflow: 'hidden', // 隐藏滚动条
-            }}
-          >
-            <ProFormText
-              name="username"
-              fieldProps={{
-                size: 'large',
-                prefix: <UserOutlined className={'prefixIcon'} />,
-              }}
-              placeholder={'账户 | Account'}
-              rules={[
-                {
-                  required: true,
-                  message: '请输入账户 | Please input account',
-                },
-              ]}
-            />
-            <ProFormText.Password
-              name="password"
-              fieldProps={{
-                size: 'large',
-                prefix: <LockOutlined className={'prefixIcon'} />,
-              }}
-              placeholder={'密码 | Password'}
-              rules={[
-                {
-                  required: true,
-                  message: '请输入密码 | Please input password',
-                },
-              ]}
-            />
-          </LoginForm>
+        <div style={{ width: '100%', maxWidth: '368px' }}>
+          <Card style={{ overflow: 'hidden', border: 'none', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <h2 style={{ margin: '0 0 8px 0', fontSize: '24px', fontWeight: 600 }}>登录</h2>
+              <p style={{ margin: 0, color: 'rgba(0, 0, 0, 0.45)' }}>Sign In</p>
+            </div>
+            
+            <Form
+              form={form}
+              name="login"
+              layout="vertical"
+              onFinish={handleSubmit}
+              style={{ width: '100%' }}
+            >
+              <Form.Item
+                name="username"
+                rules={[
+                  { required: true, message: '请输入账户 | Please input account' },
+                ]}
+              >
+                <Input
+                  size="large"
+                  prefix={<UserOutlined className="prefixIcon" />}
+                  placeholder="账户 | Account"
+                  style={{
+                    height: '40px',
+                    borderRadius: '6px',
+                    marginBottom: '16px'
+                  }}
+                />
+              </Form.Item>
+              
+              <Form.Item
+                name="password"
+                rules={[
+                  { required: true, message: '请输入密码 | Please input password' },
+                ]}
+              >
+                <Input.Password
+                  size="large"
+                  prefix={<LockOutlined className="prefixIcon" />}
+                  placeholder="密码 | Password"
+                  style={{
+                    height: '40px',
+                    borderRadius: '6px',
+                    marginBottom: '24px'
+                  }}
+                />
+              </Form.Item>
+              
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  block
+                  style={{
+                    height: '40px',
+                    borderRadius: '6px',
+                    backgroundColor: '#1890ff',
+                    borderColor: '#1890ff'
+                  }}
+                >
+                  登录
+                </Button>
+              </Form.Item>
+            </Form>
+          </Card>
         </div>
       </div>
-    </ProConfigProvider>
+    </>
   );
 };
