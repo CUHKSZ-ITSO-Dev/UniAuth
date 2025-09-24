@@ -608,6 +608,12 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             })}
             rules={[
               {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.autoQuotaPoolConfig.filterGroupRequired",
+                }),
+              },
+              {
                 validator: (_, value) => {
                   if (!value) return Promise.resolve();
                   try {

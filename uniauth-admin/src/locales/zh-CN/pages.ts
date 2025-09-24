@@ -145,6 +145,7 @@ export default {
   "pages.autoQuotaPoolConfig.filterGroup": "过滤条件组 (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
     "请输入过滤条件组的JSON格式数据，满足条件的用户将应用该规则",
+  "pages.autoQuotaPoolConfig.filterGroupRequired": "请输入过滤条件组",
   "pages.autoQuotaPoolConfig.upnsCache": "UPN缓存",
   "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "请输入UPN缓存",
   "pages.autoQuotaPoolConfig.enabledStatus": "启用",

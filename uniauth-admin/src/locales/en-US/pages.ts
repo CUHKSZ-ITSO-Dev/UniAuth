@@ -158,6 +158,7 @@ export default {
   "pages.autoQuotaPoolConfig.filterGroup": "Filter Group (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
     "Please enter filter group data in JSON format, users meeting the conditions will apply this rule",
+  "pages.autoQuotaPoolConfig.filterGroupRequired": "Please enter filter group",
   "pages.autoQuotaPoolConfig.upnsCache": "UPN Cache",
   "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "Please enter UPN cache",
   "pages.autoQuotaPoolConfig.enabledStatus": "Enabled",
