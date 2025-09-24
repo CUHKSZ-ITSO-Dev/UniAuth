@@ -317,6 +317,7 @@ const ConfigDetailTab: FC = () => {
 
   const handleUserDetail = (record: any) => {
     // TODO: 跳转展示用户详情页
+    console.log(record);
   };
 
   return (
