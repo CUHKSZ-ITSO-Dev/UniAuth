@@ -169,4 +169,54 @@ export default {
   "pages.policyList.search.effect.placeholder":
     "Please select effect to search",
   "pages.policyList.edit": "Edit",
+
+  // ConfigI18nPage
+  "pages.configI18n.search": "Search",
+  "pages.configI18n.search.placeholder":
+    "Enter key, translation content or description",
+  "pages.configI18n.key": "Key",
+  "pages.configI18n.translations": "Translations",
+  "pages.configI18n.desc": "Description",
+  "pages.configI18n.actions": "Actions",
+  "pages.configI18n.edit": "Edit",
+  "pages.configI18n.delete.confirm.title": "Confirm Deletion",
+  "pages.configI18n.delete.confirm.description":
+    "This operation will delete all language translations corresponding to this key value and cannot be undone.",
+  "pages.configI18n.delete": "Delete",
+  "pages.configI18n.delete.success": "Delete successful",
+  "pages.configI18n.delete.error": "Delete failed",
+  "pages.configI18n.batchDelete.noSelection":
+    "Please select at least one item to delete",
+  "pages.configI18n.batchDelete.confirm.title": "Confirm Batch Delete",
+  "pages.configI18n.batchDelete.confirm.content":
+    "Are you sure you want to delete all language configurations for the selected {count} keys? This operation cannot be undone.",
+  "pages.configI18n.batchDelete.success": "Batch delete successful",
+  "pages.configI18n.batchDelete.error": "Batch delete failed",
+  "pages.configI18n.edit.success": "Edit successful",
+  "pages.configI18n.add.success": "Add successful",
+  "pages.configI18n.operation.error": "Operation failed",
+  "pages.configI18n.title": "I18N Configuration Management",
+  "pages.configI18n.description":
+    "Manage multi-language translation configurations in the system",
+  "pages.configI18n.add": "Add Configuration",
+  "pages.configI18n.modal.edit.title": "Edit Configuration",
+  "pages.configI18n.modal.add.title": "Add Configuration",
+  "pages.configI18n.form.key": "Key",
+  "pages.configI18n.form.key.required": "Please enter key",
+  "pages.configI18n.form.key.pattern":
+    "Incorrect key format, should be dot-separated English string, e.g.: test.temp, nav.title, etc.",
+  "pages.configI18n.form.key.placeholder": "e.g.: navBar.title",
+  "pages.configI18n.form.description": "Description",
+  "pages.configI18n.form.description.placeholder":
+    "Please enter description for this configuration (optional)",
+  "pages.configI18n.form.translation.required":
+    "Please enter translation content for {lang}",
+  "pages.configI18n.form.translation.placeholder":
+    "Please enter translation content for {lang}",
+  "pages.configI18n.form.translations": "Translations",
+  "pages.configI18n.pagination.total": "Total {total} items",
+  "pages.configI18n.batchDelete.info": "Selected {count} items",
+  "pages.configI18n.batchDelete.clear": "Clear Selection",
+  "pages.configI18n.batchDelete.delete": "Batch Delete",
+  "pages.configI18n.updatedAt": "Updated Time",
 };

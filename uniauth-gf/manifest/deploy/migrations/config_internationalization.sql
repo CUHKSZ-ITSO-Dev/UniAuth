@@ -1,13 +1,14 @@
 CREATE TABLE config_internationalization (
-    lang_code VARCHAR(5),
-    key TEXT,
-    value TEXT,
+    key TEXT PRIMARY KEY,
+    zh_cn TEXT NOT NULL,
+    en_us TEXT NOT NULL,
     description TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    PRIMARY KEY (lang_code, key)
-)
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
-CREATE INDEX idx_config_internationalization_key ON config_internationalization (key);
+CREATE INDEX idx_config_internationalization_zh_cn ON config_internationalization (zh_cn);
 
-CREATE INDEX idx_config_internationalization_lang_code ON config_internationalization (lang_code);
+CREATE INDEX idx_config_internationalization_en_us ON config_internationalization (en_us);
+
+CREATE INDEX idx_config_internationalization_description ON config_internationalization (description);

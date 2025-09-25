@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error
 /* eslint-disable */
 import { request } from "@/utils/request";
 
@@ -6,11 +6,15 @@ import { request } from "@/utils/request";
 export async function getQuotaPool(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getQuotaPoolParams,
-  options?: { [key: string]: any }
+  options?: { [key: string]: any },
 ) {
   return request<API.GetQuotaPoolRes>("/quotaPool", {
     method: "GET",
     params: {
+      // page has a default value: 1
+      page: "1",
+      // pageSize has a default value: 20
+      pageSize: "20",
       ...params,
     },
     ...(options || {}),
@@ -20,7 +24,7 @@ export async function getQuotaPool(
 /** 编辑配额池 PUT /quotaPool */
 export async function putQuotaPool(
   body: API.EditQuotaPoolReq,
-  options?: { [key: string]: any }
+  options?: { [key: string]: any },
 ) {
   return request<API.EditQuotaPoolRes>("/quotaPool", {
     method: "PUT",
@@ -35,7 +39,7 @@ export async function putQuotaPool(
 /** 新建配额池 POST /quotaPool */
 export async function postQuotaPool(
   body: API.NewQuotaPoolReq,
-  options?: { [key: string]: any }
+  options?: { [key: string]: any },
 ) {
   return request<API.NewQuotaPoolRes>("/quotaPool", {
     method: "POST",
@@ -51,7 +55,7 @@ export async function postQuotaPool(
 export async function deleteQuotaPool(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteQuotaPoolParams,
-  options?: { [key: string]: any }
+  options?: { [key: string]: any },
 ) {
   return request<API.DeleteQuotaPoolRes>("/quotaPool", {
     method: "DELETE",
