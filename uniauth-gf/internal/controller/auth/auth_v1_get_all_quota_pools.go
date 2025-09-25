@@ -12,12 +12,15 @@ import (
 )
 
 func (c *ControllerV1) GetAllQuotaPools(ctx context.Context, req *v1.GetAllQuotaPoolsReq) (res *v1.GetAllQuotaPoolsRes, err error) {
-	res = &v1.GetAllQuotaPoolsRes{}
-	res.PersonalMap = g.MapStrBool{}
-	if res.QuotaPools, err = e.GetRolesForUser(req.Upn); err != nil {
+	res = &v1.GetAllQuotaPoolsRes{
+		QuotaPools:  []string{},
+		PersonalMap: g.MapStrBool{},
+	}
+	quotaPools, err := e.GetRolesForUser(req.Upn)
+	if err != nil {
 		return nil, gerror.Wrap(err, "获取用户所有角色时发生内部错误")
 	}
-	for _, quotaPool := range res.QuotaPools {
+	for _, quotaPool := range quotaPools {
 		quotaPoolResp, err := quotaPoolCtrl.NewV1().GetQuotaPool(ctx, &quotaPoolApi.GetQuotaPoolReq{
 			QuotaPoolName: quotaPool,
 		})
@@ -27,7 +30,10 @@ func (c *ControllerV1) GetAllQuotaPools(ctx context.Context, req *v1.GetAllQuota
 		if len(quotaPoolResp.Items) == 0 {
 			return nil, gerror.Newf("没有找到这个配额池：%v", quotaPool)
 		}
-		res.PersonalMap[quotaPool] = quotaPoolResp.Items[0].Personal
+		if !quotaPoolResp.Items[0].Disabled {
+			res.QuotaPools = append(res.QuotaPools, quotaPool)
+			res.PersonalMap[quotaPool] = quotaPoolResp.Items[0].Personal
+		}
 	}
 	return
 }
