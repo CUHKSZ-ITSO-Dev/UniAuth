@@ -60,6 +60,12 @@ export default [
     component: "@/pages/QuotaPoolDetailsPage",
   },
   {
+    path: "/policy-list",
+    name: "policy-list",
+    icon: "bars",
+    component: "@/pages/PolicyListPage",
+  },
+  {
     path: "/config-i18n",
     name: "config-i18n",
     icon: "Global",
