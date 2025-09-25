@@ -244,7 +244,7 @@ const ConfigDetailTab: FC = () => {
         return {
           data: formattedData,
           success: true,
-          total: res.total,
+          total: res.total || 0,
         };
       }
 

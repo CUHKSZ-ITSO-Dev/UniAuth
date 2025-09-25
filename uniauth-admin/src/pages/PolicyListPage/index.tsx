@@ -75,7 +75,7 @@ const filterPolicies = async (params: any) => {
     return {
       data: formattedData,
       success: true,
-      total: res.total,
+      total: res.total || 0,
     };
   } catch (_error) {
     return {
