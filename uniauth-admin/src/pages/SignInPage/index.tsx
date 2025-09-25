@@ -2,8 +2,7 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Form, Input, Button, message, Card } from 'antd';
 import type { FormProps } from 'antd';
-import { history } from 'umi';
-import { useModel } from '@umijs/max';
+import { history, useModel } from '@umijs/max';
 import { flushSync } from 'react-dom';
 
 /**

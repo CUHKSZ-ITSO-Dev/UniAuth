@@ -1,9 +1,6 @@
-import React from 'react';
-import { Card, Space, Typography, Divider, Tag, Avatar } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
-import { useAccess, Access, useModel } from 'umi';
+import { Card, Typography, Divider, Tag, Avatar } from 'antd';
+import { useAccess, Access, useModel } from '@umijs/max';
 import { AccessButton } from '@/components';
-import { history } from '@umijs/max';
 
 const { Title, Paragraph } = Typography;
 

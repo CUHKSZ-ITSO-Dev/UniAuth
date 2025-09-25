@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, ButtonProps, Tooltip } from 'antd';
-import { useAccess } from 'umi';
+import { useAccess } from '@umijs/max';
 
 /**
  * 权限按钮组件属性接口

@@ -1,4 +1,3 @@
-import { Button } from 'antd';
 import defaultSettings from '../config/defaultSettings';
 
 const { pwa } = defaultSettings;
