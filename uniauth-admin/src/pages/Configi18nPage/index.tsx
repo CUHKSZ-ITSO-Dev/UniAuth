@@ -160,13 +160,7 @@ const ConfigI18nPage: React.FC = () => {
             })}
             onConfirm={() => handleDelete(record)}
           >
-            <Button
-              type="link"
-              size="small"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => {}}
-            >
+            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
               {intl.formatMessage({
                 id: "pages.configI18n.delete",
               })}
