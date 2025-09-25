@@ -14,30 +14,28 @@ import (
 )
 
 func (c *ControllerV1) AddI18nItem(ctx context.Context, req *v1.AddI18nItemReq) (res *v1.AddI18nItemRes, err error) {
-	// 检查输入参数，确保key不为空且必须是用至少一个点分割的字符串格式，且单个字符串不能全是数字，只能是字母和数字的组合
+	// 检查输入参数，确保key不为空且必须是用至少一个点分割的字符串格式，且每个部分只能是字母和下划线的组合
 	if req.Key == "" {
 		return nil, gerror.New("key不能为空")
 	}
 
-	// 验证key格式：至少包含一个点，且每个部分只能是字母数字组合，不能全是数字
+	// 验证key格式：至少包含一个点，且每个部分只能是字母和下划线组合
 	parts := strings.Split(req.Key, ".")
 	if len(parts) < 2 {
 		return nil, gerror.New("key格式错误，必须包含至少一个点")
 	}
+
+	// 预编译正则表达式，避免在循环中重复编译
+	validPartRegex := regexp.MustCompile(`^[a-zA-Z_]+$`)
 
 	for _, part := range parts {
 		if part == "" {
 			return nil, gerror.New("key格式错误，不能包含空的部分")
 		}
 
-		// 检查是否只包含字母和数字
-		if !regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString(part) {
-			return nil, gerror.New("key格式错误，只能包含字母和数字")
-		}
-
-		// 检查是否全是数字
-		if regexp.MustCompile(`^[0-9]+$`).MatchString(part) {
-			return nil, gerror.New("key格式错误，每个部分不能全是数字")
+		// 检查是否只包含字母和下划线
+		if !validPartRegex.MatchString(part) {
+			return nil, gerror.New("key格式错误，只能包含字母和下划线")
 		}
 	}
 
