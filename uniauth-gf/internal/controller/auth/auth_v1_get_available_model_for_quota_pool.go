@@ -18,8 +18,8 @@ func (c *ControllerV1) GetAvailableModelForQuotaPool(ctx context.Context, req *v
 		AvailableModels: []string{},
 	}
 	for _, policy := range policies {
-		if strings.HasPrefix(policy[1], "chat/approach/") && policy[2] == "access" && policy[3] != "deny" {
-			res.AvailableModels = append(res.AvailableModels, strings.Split(policy[1], "/")[2])
+		if strings.HasPrefix(policy[2], "chat/") && policy[3] == "access" && policy[4] != "deny" {
+			res.AvailableModels = append(res.AvailableModels, strings.Split(policy[2], "/")[1])
 		}
 	}
 	return

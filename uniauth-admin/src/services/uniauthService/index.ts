@@ -12,6 +12,7 @@ import * as stats from "./stats";
 import * as autoQuotaPoolConfig from "./autoQuotaPoolConfig";
 import * as i18N from "./i18N";
 import * as model from "./model";
+import * as hello from "./hello";
 import * as quotaPool from "./quotaPool";
 import * as userInfo from "./userInfo";
 export default {
@@ -25,6 +26,7 @@ export default {
   autoQuotaPoolConfig,
   i18N,
   model,
+  hello,
   quotaPool,
   userInfo,
 };
