@@ -11,17 +11,15 @@
  * @doc https://umijs.org/docs/guides/routes
  */
 export default [
+  {    
+    path: "/auth/uniauth",
+    layout: false,    
+    routes: [      
   {
-    path: "/user",
-    layout: false,
-    routes: [
-      {
-        name: "login",
-        path: "/user/login",
-        component: "@/pages/SignInPage",
-      },
-    ],
-  },
+    name: "login",
+    path: "/auth/uniauth/login",
+    component: "@/pages/SignInPage",
+      },    ],  },
   {
     path: "/permission-demo",
     name: "permission-demo",
@@ -65,10 +63,7 @@ export default [
     icon: "Container",
     component: "@/pages/QuotaPoolDetailsPage",
   },
-  {
-    path: "/",
-    redirect: "/user/login",
-  },
+  {    path: "/",    redirect: "/auth/uniauth/login",  },
   {
     path: "*",
     layout: false,

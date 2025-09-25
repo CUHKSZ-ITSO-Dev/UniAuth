@@ -16,7 +16,7 @@ import "@ant-design/v5-patch-for-react-19";
 
 const isDev = process.env.NODE_ENV === "development";
 // 登录路径定义
-const loginPath = "/user/login";
+const loginPath = "/auth/uniauth/login";
 
 // 定义用户类型
 interface User {

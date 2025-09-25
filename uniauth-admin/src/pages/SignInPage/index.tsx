@@ -1,7 +1,10 @@
-import React from 'react';
+// React is implicitly used for JSX
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Form, Input, Button, message, Card } from 'antd';
 import type { FormProps } from 'antd';
+import { history } from 'umi';
+import { useModel } from '@umijs/max';
+import { flushSync } from 'react-dom';
 
 /**
  * 登录页面组件
@@ -11,6 +14,8 @@ export default () => {
   const [form] = Form.useForm();
   // 使用message实例代替静态方法，避免主题上下文警告
   const [messageApi, contextHolder] = message.useMessage();
+  // 获取initialState和setInitialState
+  const { setInitialState } = useModel('@@initialState');
 
   // 登录处理函数
   const handleSubmit: FormProps['onFinish'] = async (values) => {
@@ -30,7 +35,6 @@ export default () => {
           title: '系统管理员',
           group: '管理组',
           access: 'admin',
-          permissions: ['data:view', 'data:edit', 'data:create', 'data:delete', 'user:manage', 'system:config']
         };
       }
 
@@ -40,12 +44,17 @@ export default () => {
         // 保存用户信息到localStorage
         localStorage.setItem('userInfo', JSON.stringify(userInfo));
         console.log('User info saved to localStorage:', localStorage.getItem('userInfo'));
+        
+       // 使用flushSync确保状态更新立即生效
+        flushSync(() => {
+          setInitialState({ currentUser: userInfo });
+        });
 
         messageApi.success('登录成功，即将跳转页面');
         // 登录成功后跳转到欢迎页面
         setTimeout(() => {
           console.log('Navigating to /welcome');
-          window.location.href = '/welcome';
+          history.push('/welcome');
         }, 500);
       } else {
         console.log('Login failed: invalid username or password');
