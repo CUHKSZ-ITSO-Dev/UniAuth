@@ -21,6 +21,12 @@ type GetAvailableModelForQuotaPoolReq struct {
     QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPool" example:"student_pool"`
 }
 type GetAvailableModelForQuotaPoolRes struct {
-	g.Meta          `resEg:"resource/interface/auth/get_available_model_for_quota_pool_res.json"`
-	AvailableModels []string `json:"availableModels" dc:"AvailableModel 列表"`
+    g.Meta          `resEg:"resource/interface/auth/get_available_model_for_quota_pool_res.json"`
+    AvailableModels []string `json:"availableModels" dc:"AvailableModel 列表"`
+}
+
+// Admin alias for GetAvailableModelForQuotaPool
+type AdminGetAvailableModelForQuotaPoolReq struct {
+    g.Meta    `path:"/admin/chat/quotaPools/models" tags:"Auth/Admin" method:"get" summary:"获取所属配额池的可用模型（别名）" dc:"与 /internal/chat/quotaPools/models 行为一致。"`
+    QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPool" example:"student_pool"`
 }

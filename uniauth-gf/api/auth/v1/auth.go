@@ -12,7 +12,7 @@ type CheckReq struct {
 }
 
 type CheckRes struct {
-	Allow bool `json:"allow"`
+    Allow bool `json:"allow"`
 }
 
 type CheckAndExplainReq struct {
@@ -22,8 +22,23 @@ type CheckAndExplainReq struct {
 	Act    string `json:"act" v:"required" dc:"动作" example:"entry"`
 }
 type CheckAndExplainRes struct {
-	Allow  bool     `json:"allow"`
-	Reason []string `json:"reason" dc:"注意只有 allow = true 的时候才会返回 [3]string, 按顺序依次是 sub, obj, act。" example:"[\"alice\",\"platform\",\"entry\"]"`
+    Allow  bool     `json:"allow"`
+    Reason []string `json:"reason" dc:"注意只有 allow = true 的时候才会返回 [3]string, 按顺序依次是 sub, obj, act。" example:"[\"alice\",\"platform\",\"entry\"]"`
+}
+
+// ==================== Admin aliases ====================
+type AdminCheckReq struct {
+    g.Meta `path:"/admin/check" tags:"Auth/Admin" method:"post" summary:"基础权限检查（别名）" dc:"与 /internal/check 行为一致。"`
+    Sub    string `json:"sub" v:"required" dc:"对象" example:"sadt@cuhk.edu.cn"`
+    Obj    string `json:"obj" v:"required" dc:"资源" example:"platform"`
+    Act    string `json:"act" v:"required" dc:"动作" example:"entry"`
+}
+
+type AdminCheckAndExplainReq struct {
+    g.Meta `path:"/admin/checkEx" tags:"Auth/Admin" method:"post" summary:"解释权限来源（别名）" dc:"与 /internal/checkEx 行为一致。"`
+    Sub    string `json:"sub" v:"required" dc:"对象" example:"sadt@cuhk.edu.cn"`
+    Obj    string `json:"obj" v:"required" dc:"资源" example:"platform"`
+    Act    string `json:"act" v:"required" dc:"动作" example:"entry"`
 }
 
 type GetAllSubjectsReq struct {
@@ -61,6 +76,11 @@ type GetAllQuotaPoolsReq struct {
 type GetAllQuotaPoolsRes struct {
 	QuotaPools  []string     `json:"quotaPools" dc:"QuotaPools 列表。"`
 	PersonalMap g.MapStrBool `json:"personalMap" dc:"PersonalMap。键为配额池名称，值为true时代表是自动配额池。"`
+}
+
+type AdminGetAllQuotaPoolsReq struct {
+    g.Meta `path:"/admin/quotaPools/all" tags:"Auth/Admin" method:"get" summary:"获取所属配额池（别名）" dc:"与 /internal/quotaPools/all 行为一致。"`
+    Upn    string `json:"upn" v:"required" dc:"Upn" example:"sadt@cuhk.edu.cn"`
 }
 
 type GetAllUsersForQuotaPoolReq struct {
