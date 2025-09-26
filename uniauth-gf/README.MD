@@ -92,3 +92,64 @@ p, production, 122@link.cuhk.edu.cn, platform, entry, deny 这个必须要手动
 - uniauth 前端页面：
   <!-- - 能够让配额池管理员等查看特定配额池的消费记录。可以自己增减团队成员。不可以出账。 -->
   - 目前不需要额外页面，相关页面内容请查看配额池管理部分
+
+
+### 内部调用（不走用户鉴权，对外不暴露）
+- Auth
+    - POST /auth/check api/auth/v1/auth.go:8
+    - POST /auth/checkEx api/auth/v1/auth.go:19
+    - POST /auth/chat/oneStop api/auth/v1/chatDedicated.go:8
+    - GET /auth/chat/quotaPools/models api/auth/v1/chatDedicated.go:20
+    - GET /auth/quotaPools/all api/auth/v1/auth.go:58
+- Billing
+    - POST /billing/record api/billing/v1/billing.go:13
+    - POST /billing/check api/billing/v1/billing.go:31
+    - POST /billing/checkTokensUsage api/billing/v1/billing.go:41
+- UserInfos
+    - GET /userinfos/ api/userinfos/v1/userinfos.go:11
+
+### 管理端前端（需鉴权，对外暴露）
+- Auth/Admin
+    - GET /auth/admin/subjects/all api/auth/v1/auth.go:30
+    - GET /auth/admin/objects/all api/auth/v1/auth.go:37
+    - GET /auth/admin/actions/all api/auth/v1/auth.go:44
+    - GET /auth/admin/roles/all api/auth/v1/auth.go:51
+    - POST /auth/admin/policies/add api/auth/v1/admin.go:6
+    - POST /auth/admin/policies/edit api/auth/v1/admin.go:14
+    - POST /auth/admin/policies/delete api/auth/v1/admin.go:22
+    - POST /auth/admin/policies/filter api/auth/v1/admin.go:29
+    - POST /auth/admin/groupings/filter api/auth/v1/admin.go:40
+    - GET /auth/quotaPools/users api/auth/v1/auth.go:67
+- QuotaPool（管理）
+    - GET /quotaPool/ api/quotaPool/v1/quotaPool.go:12
+    - POST /quotaPool/ api/quotaPool/v1/quotaPool.go:32
+    - PUT /quotaPool/ api/quotaPool/v1/quotaPool.go:54
+    - DELETE /quotaPool/ api/quotaPool/v1/quotaPool.go:69
+    - POST /quotaPool/admin/resetBalance api/quotaPool/v1/admin.go:6
+    - POST /quotaPool/admin/batchModify api/quotaPool/v1/admin.go:15
+- Billing/Admin + 统计
+    - POST /billing/admin/export api/billing/v1/admin.go:11
+    - POST /billing/admin/get api/billing/v1/admin.go:23
+    - GET /billing/stats/chat/usage/chart api/billing/v1/statsForChat.go:9
+    - GET /billing/stats/chat/usage/group api/billing/v1/statsForChat.go:18
+- Config（管理）
+    - GET /config/model/all api/config/v1/config.go:16
+    - POST /config/model api/config/v1/config.go:23
+    - PUT /config/model api/config/v1/config.go:37
+    - DELETE /config/model api/config/v1/config.go:51
+    - GET /config/autoConfig api/config/v1/auto_quota_pool.go:16
+    - POST /config/autoConfig api/config/v1/auto_quota_pool.go:53
+    - PUT /config/autoConfig api/config/v1/auto_quota_pool.go:23
+    - DELETE /config/autoConfig api/config/v1/auto_quota_pool.go:44
+    - POST /config/i18n api/config/v1/i18n.go:19
+    - PUT /config/i18n api/config/v1/i18n.go:31
+    - DELETE /config/i18n api/config/v1/i18n.go:43
+    - POST /config/i18n/filter api/config/v1/i18n.go:83
+- UserInfos（管理）
+    - POST /userinfos/filter api/userinfos/v1/userinfos.go:47
+
+### 公共接口（无需鉴权，对外暴露）
+
+- POST /auth/uniauth/login api/auth/v1/uniauthDedicated.go:8（登录入口）
+- GET /config/i18n/lang api/config/v1/i18n.go:9（获取语言包）
+- GET /config/i18n/langs api/config/v1/i18n.go:52（语言清单）
