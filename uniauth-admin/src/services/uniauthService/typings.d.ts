@@ -324,6 +324,10 @@ declare namespace API {
 
   type FilterPoliciesRes = {
     policies?: string[][];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
   };
 
   type FilterReq = {
