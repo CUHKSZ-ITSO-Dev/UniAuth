@@ -176,6 +176,6 @@ export const layout: RunTimeLayoutConfig = ({
  */
 export const request: RequestConfig = {
   baseURL:
-    process.env.REACT_APP_ENV === "dev" ? "/api" : "http://localhost:8000",
+    process.env.REACT_APP_ENV === "dev" ? "/api" : "http://uniauth-gf-svc:8000",
   ...errorConfig,
 };

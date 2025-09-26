@@ -63,16 +63,25 @@ export default [
     icon: "Container",
     component: "@/pages/QuotaPoolDetailsPage",
   },
-  {    path: "/",    redirect: "/auth/uniauth/login",  },
-  {
-    path: "*",
-    layout: false,
-    component: "@/pages/404Page",
-  },
   {
     path: "/policy-list",
     name: "policy-list",
     icon: "bars",
     component: "@/pages/PolicyListPage",
+  },
+  {
+    path: "/config-i18n",
+    name: "config-i18n",
+    icon: "Global",
+    component: "@/pages/ConfigI18nPage",
+  },
+  {
+    path: "/",
+    redirect: "/auth/uniauth/login",
+  },
+  {
+    path: "*",
+    layout: false,
+    component: "@/pages/404Page",
   },
 ];
