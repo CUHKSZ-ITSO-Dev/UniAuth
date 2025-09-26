@@ -98,6 +98,29 @@ export const layout: RunTimeLayoutConfig = ({
     // waterMarkProps: {
     //   content: initialState?.currentUser?.name,
     // },
+    // 自定义logo渲染，阻止点击跳转到登录页面
+    logoRender: () => {
+      return (
+        <div
+          style={{
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            cursor: 'default', // 显示默认鼠标指针
+          }}
+        >
+          <img
+            src={defaultSettings.logo}
+            alt="logo"
+            style={{
+              height: '32px',
+            }}
+          />
+          <span style={{ marginLeft: 8 }}>{defaultSettings.title}</span>
+        </div>
+      );
+    },
+    
     footerRender: () => <Footer />,
     onPageChange: () => {
       // 添加登录检查
