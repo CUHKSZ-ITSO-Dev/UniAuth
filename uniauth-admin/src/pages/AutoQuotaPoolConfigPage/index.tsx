@@ -57,7 +57,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       // 对于 filterGroup，保持原有的 JSON 处理逻辑
       try {
         return JSON.stringify(field, null, 2);
-      } catch (e) {
+      } catch (_e) {
         return typeof field === "object"
           ? JSON.stringify(field)
           : String(field);
@@ -85,7 +85,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       );
       // 刷新表格数据
       actionRef.current?.reload();
-    } catch (error: any) {
+    } catch (_error: any) {
       message.error(
         intl.formatMessage({ id: "pages.autoQuotaPoolConfig.deleteFailed" }),
       );
@@ -179,36 +179,36 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
 
       setModalVisible(false);
       actionRef.current?.reload();
-    } catch (error: any) {
+    } catch (_error: any) {
       // 提供更详细的错误信息
       let errorMessage = intl.formatMessage({
         id: "pages.autoQuotaPoolConfig.saveFailed",
       });
 
       // 检查是否是字段验证错误
-      if (error.errorFields) {
+      if (_error.errorFields) {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.formInvalid",
         });
-      } else if (error.message?.includes("ruleName")) {
+      } else if (_error.message?.includes("ruleName")) {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired",
         });
-      } else if (error.message?.includes("cronCycle")) {
+      } else if (_error.message?.includes("cronCycle")) {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired",
         });
-      } else if (error.message?.includes("regularQuota")) {
+      } else if (_error.message?.includes("regularQuota")) {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.saveFailedRegularQuotaInvalid",
         });
       }
       // 检查是否是网络或服务器错误
       else if (
-        error.message?.includes(
+        _error.message?.includes(
           intl.formatMessage({ id: "pages.autoQuotaPoolConfig.requestFailed" }),
         ) ||
-        error.message?.includes("network")
+        _error.message?.includes("network")
       ) {
         errorMessage = intl.formatMessage({
           id: "pages.autoQuotaPoolConfig.saveFailedNetworkError",
@@ -216,8 +216,8 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       }
       // 其他错误
       else {
-        errorMessage = error.message
-          ? error.message
+        errorMessage = _error.message
+          ? _error.message
           : intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.saveFailedCheckInput",
             });
@@ -280,7 +280,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           total: 0,
         };
       }
-    } catch (error: any) {
+    } catch (_error: any) {
       message.error(
         intl.formatMessage({ id: "pages.autoQuotaPoolConfig.fetchFailed" }),
       );

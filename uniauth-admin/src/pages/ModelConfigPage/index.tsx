@@ -54,7 +54,7 @@ const ModelConfigPage: React.FC = () => {
         return typeof field === "string"
           ? field
           : JSON.stringify(field, null, 2);
-      } catch (e) {
+      } catch (_e) {
         return typeof field === "object"
           ? JSON.stringify(field)
           : String(field);
@@ -90,7 +90,7 @@ const ModelConfigPage: React.FC = () => {
       );
       // 刷新表格数据
       actionRef.current?.reload();
-    } catch (error: any) {
+    } catch (_error: any) {
       message.error(
         intl.formatMessage({ id: "pages.modelConfig.deleteFailed" }),
       );
@@ -296,7 +296,7 @@ const ModelConfigPage: React.FC = () => {
           total: 0,
         };
       }
-    } catch (error: any) {
+    } catch (_error: any) {
       message.error(
         intl.formatMessage({ id: "pages.modelConfig.fetchFailed" }),
       );
