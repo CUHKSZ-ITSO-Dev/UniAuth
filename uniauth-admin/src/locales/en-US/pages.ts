@@ -165,10 +165,11 @@ export default {
   "pages.configI18n.batchDelete.clear": "Clear Selection",
   "pages.configI18n.batchDelete.delete": "Batch Delete",
   "pages.configI18n.updatedAt": "Updated Time",
-  
+
   // PolicyListPage
   "pages.policyList.title": "Policy List",
-  "pages.policyList.description": "Manage access control rules: users, resources and actions",
+  "pages.policyList.description":
+    "Manage access control rules: users, resources and actions",
   "pages.policyList.subject": "Subject",
   "pages.policyList.search.subject.placeholder": "Enter subject to search",
   "pages.policyList.object": "Object",
@@ -178,8 +179,9 @@ export default {
   "pages.policyList.effect": "Effect",
   "pages.policyList.effect.allow": "Allow",
   "pages.policyList.effect.deny": "Deny",
-  "pages.policyList.search.effect.placeholder": "Select effect",
+  "pages.policyList.search.effect.placeholder": "Select effect to search",
   "pages.policyList.raw": "Raw Policy",
+  "pages.policyList.search.raw.placeholder": "Enter raw policy to search",
   "pages.policyList.edit": "Edit",
   "pages.policyList.delete": "Delete",
   "pages.policyList.deleteConfirmTitle": "Are you sure to delete this policy?",
@@ -188,7 +190,8 @@ export default {
   "pages.policyList.deleteConfirmCancel": "Cancel",
   "pages.policyList.tableAlert.selected": "Selected {count} item(s)",
   "pages.policyList.tableAlert.cancel": "Clear Selection",
-  "pages.policyList.deleteConfirmTitle2": "Delete the selected {count} policies?",
+  "pages.policyList.deleteConfirmTitle2":
+    "Delete the selected {count} policies?",
   "pages.policyList.batchDelete": "Batch Delete",
   "pages.policyList.searchTable.new": "New",
   "pages.policyList.searchTable.newPolicy": "Add Policy",
