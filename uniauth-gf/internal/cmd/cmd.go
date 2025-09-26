@@ -15,8 +15,8 @@ import (
 	"uniauth-gf/internal/controller/config"
 	"uniauth-gf/internal/controller/quotaPool"
 	"uniauth-gf/internal/controller/userinfos"
-	
-    "uniauth-gf/internal/middlewares"
+
+	"uniauth-gf/internal/middlewares"
 )
 
 var (
@@ -30,40 +30,41 @@ var (
 				panic(err)
 			}
 
-        s := g.Server()
-        s.Use(middlewares.UniResMiddleware)
-        s.Group("/api/v1", func(api *ghttp.RouterGroup) {
-            api.Group("/userinfos", func(group *ghttp.RouterGroup) {
-                group.Bind(
-                    userinfos.NewV1(),
-                )
-            })
-            api.Group("/auth", func(group *ghttp.RouterGroup) {
-                group.Bind(
-                    auth.NewV1(),
-                )
-            })
-            api.Group("/billing", func(group *ghttp.RouterGroup) {
-                group.Bind(
-                    billing.NewV1(),
-                )
-            })
-            api.Group("/config", func(group *ghttp.RouterGroup) {
-                group.Bind(
-                    config.NewV1(),
-                )
-            })
-            api.Group("/quotaPool", func(group *ghttp.RouterGroup) {
-                group.Bind(
-                    quotaPool.NewV1(),
-                )
-            })
-        })
-        s.SetOpenApiPath(g.Cfg().MustGetWithEnv(ctx, "server.openapiPath").String())
-        s.SetSwaggerPath(g.Cfg().MustGetWithEnv(ctx, "server.swaggerPath").String())
-        s.SetPort(g.Cfg().MustGetWithEnv(ctx, "server.port").Int())
-        s.Run()
-        return nil
+			s := g.Server()
+			s.Use(middlewares.UniResMiddleware)
+			s.Use(middlewares.AdminAuthMiddleware)
+			s.Group("/api/v1", func(api *ghttp.RouterGroup) {
+				api.Group("/userinfos", func(group *ghttp.RouterGroup) {
+					group.Bind(
+						userinfos.NewV1(),
+					)
+				})
+				api.Group("/auth", func(group *ghttp.RouterGroup) {
+					group.Bind(
+						auth.NewV1(),
+					)
+				})
+				api.Group("/billing", func(group *ghttp.RouterGroup) {
+					group.Bind(
+						billing.NewV1(),
+					)
+				})
+				api.Group("/config", func(group *ghttp.RouterGroup) {
+					group.Bind(
+						config.NewV1(),
+					)
+				})
+				api.Group("/quotaPool", func(group *ghttp.RouterGroup) {
+					group.Bind(
+						quotaPool.NewV1(),
+					)
+				})
+			})
+			s.SetOpenApiPath(g.Cfg().MustGetWithEnv(ctx, "server.openapiPath").String())
+			s.SetSwaggerPath(g.Cfg().MustGetWithEnv(ctx, "server.swaggerPath").String())
+			s.SetPort(g.Cfg().MustGetWithEnv(ctx, "server.port").Int())
+			s.Run()
+			return nil
 		},
 	}
 )

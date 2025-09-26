@@ -1,19 +1,31 @@
 package auth
 
 import (
-	"context"
+    "context"
 
-	"uniauth-gf/api/auth/v1"
+    "uniauth-gf/api/auth/v1"
 
-	"github.com/gogf/gf/v2/frame/g"
+    "github.com/gogf/gf/v2/frame/g"
 )
 
 func (c *ControllerV1) UniauthLogin(ctx context.Context, req *v1.UniauthLoginReq) (res *v1.UniauthLoginRes, err error) {
-	res = &v1.UniauthLoginRes{}
-	if req.Account == g.Cfg().MustGetWithEnv(ctx, "uniauth.account").String() && req.Password == g.Cfg().MustGetWithEnv(ctx, "uniauth.password").String() {
-		res.Ok = true
-	} else {
-		res.Ok = false
-	}
-	return
+    res = &v1.UniauthLoginRes{}
+    if req.Account == g.Cfg().MustGetWithEnv(ctx, "uniauth.account").String() && req.Password == g.Cfg().MustGetWithEnv(ctx, "uniauth.password").String() {
+        res.Ok = true
+        // Mark session as logged in
+        r := g.RequestFromCtx(ctx)
+        if r != nil {
+            r.Session.Set("auth.loggedIn", true)
+            r.Session.Set("auth.account", req.Account)
+        }
+    } else {
+        res.Ok = false
+        // Clear login session if present
+        r := g.RequestFromCtx(ctx)
+        if r != nil {
+            r.Session.Remove("auth.loggedIn")
+            r.Session.Remove("auth.account")
+        }
+    }
+    return
 }
