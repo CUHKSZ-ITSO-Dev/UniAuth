@@ -15,16 +15,24 @@ func (c *ControllerV1) UniauthLogin(ctx context.Context, req *v1.UniauthLoginReq
         // Mark session as logged in
         r := g.RequestFromCtx(ctx)
         if r != nil {
-            r.Session.Set("auth.loggedIn", true)
-            r.Session.Set("auth.account", req.Account)
+            if err2 := r.Session.Set("auth.loggedIn", true); err2 != nil {
+                return res, err2
+            }
+            if err2 := r.Session.Set("auth.account", req.Account); err2 != nil {
+                return res, err2
+            }
         }
     } else {
         res.Ok = false
         // Clear login session if present
         r := g.RequestFromCtx(ctx)
         if r != nil {
-            r.Session.Remove("auth.loggedIn")
-            r.Session.Remove("auth.account")
+            if err2 := r.Session.Remove("auth.loggedIn"); err2 != nil {
+                return res, err2
+            }
+            if err2 := r.Session.Remove("auth.account"); err2 != nil {
+                return res, err2
+            }
         }
     }
     return

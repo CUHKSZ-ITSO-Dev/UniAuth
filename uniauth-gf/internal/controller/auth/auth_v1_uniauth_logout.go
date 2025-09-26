@@ -12,9 +12,12 @@ func (c *ControllerV1) UniauthLogout(ctx context.Context, req *v1.UniauthLogoutR
     res = &v1.UniauthLogoutRes{Ok: true}
     r := g.RequestFromCtx(ctx)
     if r != nil {
-        r.Session.Remove("auth.loggedIn")
-        r.Session.Remove("auth.account")
+        if err = r.Session.Remove("auth.loggedIn"); err != nil {
+            return res, err
+        }
+        if err = r.Session.Remove("auth.account"); err != nil {
+            return res, err
+        }
     }
     return
 }
-
