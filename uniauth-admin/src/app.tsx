@@ -51,13 +51,10 @@ export async function getInitialState(): Promise<{
 }> {
   const fetchUserInfo = async () => {
     try {
-      console.log("Fetching user info from localStorage");
       // 从localStorage获取用户信息
       const userInfo = localStorage.getItem("userInfo");
-      console.log("User info from localStorage:", userInfo);
       if (userInfo) {
         const parsedUserInfo = JSON.parse(userInfo);
-        console.log("Parsed user info:", parsedUserInfo);
         return parsedUserInfo;
       }
     } catch (error) {
@@ -68,7 +65,6 @@ export async function getInitialState(): Promise<{
 
   // 初始化时检查是否有用户信息
   const currentUser = await fetchUserInfo();
-  console.log("Initial state currentUser:", currentUser);
 
   return {
     fetchUserInfo,
@@ -98,40 +94,11 @@ export const layout: RunTimeLayoutConfig = ({
     // waterMarkProps: {
     //   content: initialState?.currentUser?.name,
     // },
-    // 自定义logo渲染，阻止点击跳转到登录页面
-    logoRender: () => {
-      return (
-        <div
-          style={{
-            height: '40px',
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'default', // 显示默认鼠标指针
-          }}
-        >
-          <img
-            src={defaultSettings.logo}
-            alt="logo"
-            style={{
-              height: '32px',
-            }}
-          />
-          <span style={{ marginLeft: 8 }}>{defaultSettings.title}</span>
-        </div>
-      );
-    },
-    
     footerRender: () => <Footer />,
     onPageChange: () => {
       // 添加登录检查
       const { location } = history;
-      console.log("onPageChange:", location.pathname);
-      console.log(
-        "Current user status:",
-        initialState?.currentUser ? "LoggedIn" : "NotLoggedIn",
-      );
       if (!initialState?.currentUser && location.pathname !== loginPath) {
-        console.log("Redirecting to login page:", loginPath);
         history.push(loginPath);
       }
     },
