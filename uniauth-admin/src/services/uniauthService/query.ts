@@ -1,4 +1,3 @@
-// @ts-ignore
 /* eslint-disable */
 import { request } from "@/utils/request";
 
@@ -13,7 +12,7 @@ export async function getAuthAdminActionsAll(options?: { [key: string]: any }) {
 /** 筛选 Grouping Policies 根据给定的条件，返回 Grouping Policies 角色继承关系。留空的字段（传空 Array）将被忽略。 POST /auth/admin/groupings/filter */
 export async function postAuthAdminGroupingsFilter(
   body: API.FilterGroupingsReq,
-  options?: { [key: string]: any }
+  options?: { [key: string]: any },
 ) {
   return request<API.FilterGroupingsRes>("/auth/admin/groupings/filter", {
     method: "POST",
@@ -33,10 +32,10 @@ export async function getAuthAdminObjectsAll(options?: { [key: string]: any }) {
   });
 }
 
-/** 筛选 Policies 模糊匹配。根据给定的条件，返回Policy。留空的字段（传空 Array）将被忽略。 POST /auth/admin/policies/filter */
+/** 筛选 Policies 根据给定的条件，返回Policy。留空的字段（传空 Array）将被忽略。 POST /auth/admin/policies/filter */
 export async function postAuthAdminPoliciesFilter(
   body: API.FilterPoliciesReq,
-  options?: { [key: string]: any }
+  options?: { [key: string]: any },
 ) {
   return request<API.FilterPoliciesRes>("/auth/admin/policies/filter", {
     method: "POST",

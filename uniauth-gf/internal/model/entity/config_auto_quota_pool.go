@@ -5,6 +5,7 @@
 package entity
 
 import (
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/shopspring/decimal"
 )
@@ -17,7 +18,7 @@ type ConfigAutoQuotaPool struct {
 	CronCycle       string          `json:"cronCycle"       orm:"cron_cycle"        description:"刷新周期"`         // 刷新周期
 	RegularQuota    decimal.Decimal `json:"regularQuota"    orm:"regular_quota"     description:"定期配额"`         // 定期配额
 	Enabled         bool            `json:"enabled"         orm:"enabled"           description:"是否启用该配额池"`     // 是否启用该配额池
-	FilterGroup     []string        `json:"filterGroup"     orm:"filter_group"      description:"过滤条件组"`        // 过滤条件组
+	FilterGroup     *gjson.Json     `json:"filterGroup"     orm:"filter_group"      description:"过滤条件组"`        // 过滤条件组
 	UpnsCache       []string        `json:"upnsCache"       orm:"upns_cache"        description:"UPN缓存列表"`      // UPN缓存列表
 	Priority        int             `json:"priority"        orm:"priority"          description:"优先级，数值越小优先匹配"` // 优先级，数值越小优先匹配
 	LastEvaluatedAt *gtime.Time     `json:"lastEvaluatedAt" orm:"last_evaluated_at" description:"该规则上次评估时间"`    // 该规则上次评估时间

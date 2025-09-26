@@ -32,16 +32,9 @@ export async function postConfigModel(
 }
 
 /** 删除模型配置 DELETE /config/model */
-export async function deleteConfigModel(
-  body: API.DeleteModelConfigReq,
-  options?: { [key: string]: any },
-) {
+export async function deleteConfigModel(options?: { [key: string]: any }) {
   return request<API.DeleteModelConfigRes>("/config/model", {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    data: body,
     ...(options || {}),
   });
 }
