@@ -5,7 +5,7 @@ import (
 )
 
 type CheckReq struct {
-	g.Meta `path:"/check" tags:"Auth" method:"post" summary:"基础权限检查" dc:"给定sub obj act，查询是否有权限。"`
+    g.Meta `path:"/internal/check" tags:"Auth" method:"post" summary:"基础权限检查" dc:"给定sub obj act，查询是否有权限。"`
 	Sub    string `json:"sub" v:"required" dc:"对象" example:"sadt@cuhk.edu.cn"`
 	Obj    string `json:"obj" v:"required" dc:"资源" example:"platform"`
 	Act    string `json:"act" v:"required" dc:"动作" example:"entry"`
@@ -16,7 +16,7 @@ type CheckRes struct {
 }
 
 type CheckAndExplainReq struct {
-	g.Meta `path:"/checkEx" tags:"Auth" method:"post" summary:"解释权限来源" dc:"给定sub obj act，如果允许，返回使其允许的规则。"`
+    g.Meta `path:"/internal/checkEx" tags:"Auth" method:"post" summary:"解释权限来源" dc:"给定sub obj act，如果允许，返回使其允许的规则。"`
 	Sub    string `json:"sub" v:"required" dc:"对象" example:"sadt@cuhk.edu.cn"`
 	Obj    string `json:"obj" v:"required" dc:"资源" example:"platform"`
 	Act    string `json:"act" v:"required" dc:"动作" example:"entry"`
@@ -55,8 +55,8 @@ type GetAllRolesRes struct {
 }
 
 type GetAllQuotaPoolsReq struct {
-	g.Meta `path:"/quotaPools/all" tags:"Auth" method:"get" summary:"获取所属配额池" dc:"动态获取用户属于哪些配额池。"`
-	Upn    string `json:"upn" v:"required" dc:"Upn" example:"sadt@cuhk.edu.cn"`
+    g.Meta `path:"/internal/quotaPools/all" tags:"Auth" method:"get" summary:"获取所属配额池" dc:"动态获取用户属于哪些配额池。"`
+    Upn    string `json:"upn" v:"required" dc:"Upn" example:"sadt@cuhk.edu.cn"`
 }
 type GetAllQuotaPoolsRes struct {
 	QuotaPools  []string     `json:"quotaPools" dc:"QuotaPools 列表。"`
@@ -64,8 +64,8 @@ type GetAllQuotaPoolsRes struct {
 }
 
 type GetAllUsersForQuotaPoolReq struct {
-	g.Meta    `path:"/quotaPools/users" tags:"Auth" method:"get" summary:"获取所属配额池的用户" dc:"动态获取指定配额池的用户。"`
-	QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPool" example:"student_pool"`
+    g.Meta    `path:"/admin/quotaPools/users" tags:"Auth" method:"get" summary:"获取所属配额池的用户" dc:"动态获取指定配额池的用户。"`
+    QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPool" example:"student_pool"`
 }
 type GetAllUsersForQuotaPoolRes struct {
 	g.Meta `resEg:"resource/interface/auth/get_all_users_for_quota_pool_res.json"`

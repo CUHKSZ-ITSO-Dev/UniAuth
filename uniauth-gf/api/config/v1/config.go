@@ -13,14 +13,14 @@ type ModelConfigItem struct {
 }
 
 type GetModelConfigReq struct {
-	g.Meta `path:"/model/all" tags:"Config/Model" method:"get" summary:"获取配置"`
+    g.Meta `path:"/admin/model/all" tags:"Config/Model" method:"get" summary:"获取配置"`
 }
 type GetModelConfigRes struct {
 	Items []ModelConfigItem `json:"items" dc:"模型配置列表"`
 }
 
 type AddModelConfigReq struct {
-	g.Meta       `path:"/model" tags:"Config/Model" method:"post" summary:"添加模型配置"`
+    g.Meta       `path:"/admin/model" tags:"Config/Model" method:"post" summary:"添加模型配置"`
 	ApproachName string          `json:"approachName" v:"required" dc:"模型名称" example:"gpt-4o"`
 	Pricing      *gjson.Json     `json:"pricing" v:"required" dc:"定价配置"`
 	Discount     decimal.Decimal `json:"discount" d:"1" dc:"折扣" example:"1.0"`
@@ -34,7 +34,7 @@ type AddModelConfigRes struct {
 }
 
 type EditModelConfigReq struct {
-	g.Meta       `path:"/model" tags:"Config/Model" method:"put" summary:"编辑模型配置" dc:"编辑模型配置。"`
+    g.Meta       `path:"/admin/model" tags:"Config/Model" method:"put" summary:"编辑模型配置" dc:"编辑模型配置。"`
 	ApproachName string          `json:"approachName" v:"required" dc:"模型名称" example:"gpt-4o"`
 	Pricing      *gjson.Json     `json:"pricing" v:"required" dc:"定价配置"`
 	Discount     decimal.Decimal `json:"discount" d:"1" dc:"折扣" example:"1.0"`
@@ -48,8 +48,8 @@ type EditModelConfigRes struct {
 }
 
 type DeleteModelConfigReq struct {
-	g.Meta       `path:"/model" tags:"Config/Model" method:"delete" summary:"删除模型配置"`
-	ApproachName string `json:"approachName" dc:"模型名称（唯一）"`
+    g.Meta       `path:"/admin/model" tags:"Config/Model" method:"delete" summary:"删除模型配置"`
+    ApproachName string `json:"approachName" dc:"模型名称（唯一）"`
 }
 type DeleteModelConfigRes struct {
 	OK bool `json:"ok" dc:"是否成功"`

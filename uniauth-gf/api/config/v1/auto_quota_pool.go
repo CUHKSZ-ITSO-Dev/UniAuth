@@ -13,14 +13,14 @@ type AutoQuotaPoolItem struct {
 }
 
 type GetAutoQuotaPoolConfigReq struct {
-	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"获取自动配额池规则"`
+    g.Meta `path:"/admin/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"获取自动配额池规则"`
 }
 type GetAutoQuotaPoolConfigRes struct {
 	Items []AutoQuotaPoolItem `json:"items" dc:"自动配额池规则列表"`
 }
 
 type EditAutoQuotaPoolConfigReq struct {
-	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"put" summary:"编辑自动配额池规则"`
+    g.Meta `path:"/admin/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"put" summary:"编辑自动配额池规则"`
 	// 规则名称（唯一，作为定位要编辑的规则）
 	RuleName string `json:"ruleName" v:"required" dc:"规则名称（唯一）" example:"assign-student-daily"`
 	// 刷新周期（标准 Cron 表达式，支持 6 字段）
@@ -41,7 +41,7 @@ type EditAutoQuotaPoolConfigRes struct {
 }
 
 type DeleteAutoQuotaPoolConfigReq struct {
-	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"delete" summary:"删除自动配额池规则"`
+    g.Meta `path:"/admin/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"delete" summary:"删除自动配额池规则"`
 	// 规则名称（唯一）
 	RuleName string `json:"ruleName" v:"required" dc:"规则名称（唯一）" example:"assign-student-daily"`
 }
@@ -50,7 +50,7 @@ type DeleteAutoQuotaPoolConfigRes struct {
 }
 
 type AddAutoQuotaPoolConfigReq struct {
-	g.Meta `path:"/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"新增自动配额池规则"`
+    g.Meta `path:"/admin/autoConfig" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"新增自动配额池规则"`
 	// 规则名称（唯一）
 	RuleName string `json:"ruleName" v:"required" dc:"规则名称（唯一）" example:"assign-student-daily"`
 	// 刷新周期（标准 Cron 表达式，支持 6 字段）

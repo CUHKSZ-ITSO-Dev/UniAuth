@@ -6,8 +6,8 @@ import (
 )
 
 type GetI18nConfigReq struct {
-	g.Meta `path:"/i18n/lang" tags:"Config/I18n" method:"get" summary:"获取i18n语言包" dc:"获取指定语言的所有翻译配置"`
-	Lang   string `json:"lang" v:"required|in:zh-CN,en-US" dc:"语言代码" example:"zh-CN"`
+    g.Meta `path:"/public/i18n/lang" tags:"Config/I18n" method:"get" summary:"获取i18n语言包" dc:"获取指定语言的所有翻译配置"`
+    Lang   string `json:"lang" v:"required|in:zh-CN,en-US" dc:"语言代码" example:"zh-CN"`
 }
 
 type GetI18nConfigRes struct {
@@ -16,11 +16,11 @@ type GetI18nConfigRes struct {
 }
 
 type AddI18nItemReq struct {
-	g.Meta      `path:"/i18n" tags:"Config/I18n" method:"post" summary:"添加i18n项目" dc:"添加一项i18n配置，包含多个语言的翻译"`
-	Key         string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
-	ZhCn        string `json:"zh_cn" dc:"中文翻译" example:"统一鉴权"`
-	EnUs        string `json:"en_us" dc:"英文翻译" example:"Unified Auth"`
-	Description string `json:"description" dc:"描述" example:"导航栏标题"`
+    g.Meta      `path:"/admin/i18n" tags:"Config/I18n" method:"post" summary:"添加i18n项目" dc:"添加一项i18n配置，包含多个语言的翻译"`
+    Key         string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
+    ZhCn        string `json:"zh_cn" dc:"中文翻译" example:"统一鉴权"`
+    EnUs        string `json:"en_us" dc:"英文翻译" example:"Unified Auth"`
+    Description string `json:"description" dc:"描述" example:"导航栏标题"`
 }
 
 type AddI18nItemRes struct {
@@ -28,11 +28,11 @@ type AddI18nItemRes struct {
 }
 
 type EditI18nItemReq struct {
-	g.Meta      `path:"/i18n" tags:"Config/I18n" method:"put" summary:"编辑i18n项目" dc:"编辑一项i18n配置的翻译"`
-	Key         string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
-	ZhCn        string `json:"zh_cn" dc:"中文翻译" example:"统一鉴权"`
-	EnUs        string `json:"en_us" dc:"英文翻译" example:"Unified Auth"`
-	Description string `json:"description" dc:"描述" example:"导航栏标题"`
+    g.Meta      `path:"/admin/i18n" tags:"Config/I18n" method:"put" summary:"编辑i18n项目" dc:"编辑一项i18n配置的翻译"`
+    Key         string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
+    ZhCn        string `json:"zh_cn" dc:"中文翻译" example:"统一鉴权"`
+    EnUs        string `json:"en_us" dc:"英文翻译" example:"Unified Auth"`
+    Description string `json:"description" dc:"描述" example:"导航栏标题"`
 }
 
 type EditI18nItemRes struct {
@@ -40,8 +40,8 @@ type EditI18nItemRes struct {
 }
 
 type DeleteI18ConfigReq struct {
-	g.Meta `path:"/i18n" tags:"Config/I18n" method:"delete" summary:"删除i18n配置" dc:"删除指定Key的i18n配置项"`
-	Key    string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
+    g.Meta `path:"/admin/i18n" tags:"Config/I18n" method:"delete" summary:"删除i18n配置" dc:"删除指定Key的i18n配置项"`
+    Key    string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
 }
 
 type DeleteI18ConfigRes struct {
@@ -49,7 +49,7 @@ type DeleteI18ConfigRes struct {
 }
 
 type GetAllLangsReq struct {
-	g.Meta `path:"/i18n/langs" tags:"Config/I18n" method:"get" summary:"获取所有支持的语言列表" dc:"获取系统支持的所有语言代码"`
+    g.Meta `path:"/public/i18n/langs" tags:"Config/I18n" method:"get" summary:"获取所有支持的语言列表" dc:"获取系统支持的所有语言代码"`
 }
 
 type GetAllLangsRes struct {
@@ -80,11 +80,11 @@ type I18nItem struct {
 }
 
 type FilterI18nReq struct {
-	g.Meta     `path:"/i18n/filter" tags:"Config/I18n" method:"post" summary:"筛选i18n配置" dc:"根据关键词筛选i18n配置，支持排序和分页"`
-	Keyword    string               `json:"keyword" dc:"搜索关键词，对key、zh_cn、en_us、description字段进行模糊匹配"`
-	Sort       []*I18nSortCondition `json:"sort" dc:"排序条件，支持多字段排序"`
-	Pagination *I18nPaginationReq   `json:"pagination" dc:"分页参数，支持分页或查询全部"`
-	Verbose    bool                 `json:"verbose" dc:"是否返回详细i18n信息，false时仅返回键列表"`
+    g.Meta     `path:"/admin/i18n/filter" tags:"Config/I18n" method:"post" summary:"筛选i18n配置" dc:"根据关键词筛选i18n配置，支持排序和分页"`
+    Keyword    string               `json:"keyword" dc:"搜索关键词，对key、zh_cn、en_us、description字段进行模糊匹配"`
+    Sort       []*I18nSortCondition `json:"sort" dc:"排序条件，支持多字段排序"`
+    Pagination *I18nPaginationReq   `json:"pagination" dc:"分页参数，支持分页或查询全部"`
+    Verbose    bool                 `json:"verbose" dc:"是否返回详细i18n信息，false时仅返回键列表"`
 }
 
 type FilterI18nRes struct {

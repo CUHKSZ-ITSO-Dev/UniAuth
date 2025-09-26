@@ -9,10 +9,10 @@ import (
 )
 
 type GetQuotaPoolReq struct {
-	g.Meta        `path:"/" tags:"QuotaPool" method:"get" summary:"获取配额池的详细配置"`
-	QuotaPoolName string `json:"quotaPoolName" d:"" dc:"指定配额池名称（可选）"`
-	Page          int    `json:"page" v:"min:1" dc:"页码，从1开始" d:"1"`
-	PageSize      int    `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" d:"20"`
+    g.Meta        `path:"/admin/" tags:"QuotaPool" method:"get" summary:"获取配额池的详细配置"`
+    QuotaPoolName string `json:"quotaPoolName" d:"" dc:"指定配额池名称（可选）"`
+    Page          int    `json:"page" v:"min:1" dc:"页码，从1开始" d:"1"`
+    PageSize      int    `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" d:"20"`
 }
 
 type QuotaPoolItem struct {
@@ -29,7 +29,7 @@ type GetQuotaPoolRes struct {
 }
 
 type NewQuotaPoolReq struct {
-	g.Meta `path:"/" tags:"QuotaPool" method:"post" summary:"新建配额池"`
+    g.Meta `path:"/admin/" tags:"QuotaPool" method:"post" summary:"新建配额池"`
 	// 配额池名称（唯一）
 	QuotaPoolName string `json:"quotaPoolName" v:"required" example:"itso-deep-research-vip"`
 	// 刷新周期（标准 Cron 表达式，支持 6 字段）
@@ -51,7 +51,7 @@ type NewQuotaPoolRes struct {
 }
 
 type EditQuotaPoolReq struct {
-	g.Meta         `path:"/" tags:"QuotaPool" method:"put" summary:"编辑配额池"`
+    g.Meta         `path:"/admin/" tags:"QuotaPool" method:"put" summary:"编辑配额池"`
 	QuotaPoolName  string          `json:"quotaPoolName" v:"required"`
 	CronCycle      string          `json:"cronCycle" v:"required"`
 	RegularQuota   decimal.Decimal `json:"regularQuota" v:"required"`
@@ -66,8 +66,8 @@ type EditQuotaPoolRes struct {
 }
 
 type DeleteQuotaPoolReq struct {
-	g.Meta        `path:"/" tags:"QuotaPool" method:"delete" summary:"删除配额池"`
-	QuotaPoolName string `json:"quotaPoolName" v:"required"`
+    g.Meta        `path:"/admin/" tags:"QuotaPool" method:"delete" summary:"删除配额池"`
+    QuotaPoolName string `json:"quotaPoolName" v:"required"`
 }
 
 type DeleteQuotaPoolRes struct {

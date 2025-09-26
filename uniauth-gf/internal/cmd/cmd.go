@@ -30,38 +30,40 @@ var (
 				panic(err)
 			}
 
-			s := g.Server()
-			s.Use(middlewares.UniResMiddleware)
-			s.Group("/userinfos", func(group *ghttp.RouterGroup) {
-				group.Bind(
-					userinfos.NewV1(),
-				)
-			})
-			s.Group("/auth", func(group *ghttp.RouterGroup) {
-				group.Bind(
-					auth.NewV1(),
-				)
-			})
-			s.Group("/billing", func(group *ghttp.RouterGroup) {
-				group.Bind(
-					billing.NewV1(),
-				)
-			})
-			s.Group("/config", func(group *ghttp.RouterGroup) {
-				group.Bind(
-					config.NewV1(),
-				)
-			})
-			s.Group("/quotaPool", func(group *ghttp.RouterGroup) {
-				group.Bind(
-					quotaPool.NewV1(),
-				)
-			})
-			s.SetOpenApiPath(g.Cfg().MustGetWithEnv(ctx, "server.openapiPath").String())
-			s.SetSwaggerPath(g.Cfg().MustGetWithEnv(ctx, "server.swaggerPath").String())
-			s.SetPort(g.Cfg().MustGetWithEnv(ctx, "server.port").Int())
-			s.Run()
-			return nil
+        s := g.Server()
+        s.Use(middlewares.UniResMiddleware)
+        s.Group("/api/v1", func(api *ghttp.RouterGroup) {
+            api.Group("/userinfos", func(group *ghttp.RouterGroup) {
+                group.Bind(
+                    userinfos.NewV1(),
+                )
+            })
+            api.Group("/auth", func(group *ghttp.RouterGroup) {
+                group.Bind(
+                    auth.NewV1(),
+                )
+            })
+            api.Group("/billing", func(group *ghttp.RouterGroup) {
+                group.Bind(
+                    billing.NewV1(),
+                )
+            })
+            api.Group("/config", func(group *ghttp.RouterGroup) {
+                group.Bind(
+                    config.NewV1(),
+                )
+            })
+            api.Group("/quotaPool", func(group *ghttp.RouterGroup) {
+                group.Bind(
+                    quotaPool.NewV1(),
+                )
+            })
+        })
+        s.SetOpenApiPath(g.Cfg().MustGetWithEnv(ctx, "server.openapiPath").String())
+        s.SetSwaggerPath(g.Cfg().MustGetWithEnv(ctx, "server.swaggerPath").String())
+        s.SetPort(g.Cfg().MustGetWithEnv(ctx, "server.port").Int())
+        s.Run()
+        return nil
 		},
 	}
 )
