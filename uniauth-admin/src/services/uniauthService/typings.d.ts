@@ -320,6 +320,11 @@ declare namespace API {
     objs?: string[];
     /** Actions 列表 */
     acts?: string[];
+    // 原始规则
+    rule?: string;
+    // 分页参数
+    page?: number;
+    pageSize?: number;
   };
 
   type FilterPoliciesRes = {
