@@ -4,6 +4,7 @@ import { Form, Input, Button, message, Card } from 'antd';
 import type { FormProps } from 'antd';
 import { history, useModel } from '@umijs/max';
 import { flushSync } from 'react-dom';
+import { postAuthUniauthLogin } from '@/services/uniauthService/auth';
 
 /**
  * 登录页面组件
@@ -20,31 +21,34 @@ export default () => {
   const handleSubmit: FormProps['onFinish'] = async (values) => {
     try {
       console.log('Login attempt with:', values);
-      // 模拟登录验证
-      let userInfo = null;
+      // 调用实际的登录API
+      const response = await postAuthUniauthLogin({
+        account: values.account,
+        password: values.password
+      });
 
-      if (values.username === 'admin' && values.password === '123456') {
-        // 管理员用户 - 拥有所有权限
-        userInfo = {
-          name: '系统管理员',
+      console.log('Login API response:', response);
+      
+      // 检查登录是否成功
+      if (response.ok) {
+        // 登录成功，创建用户信息对象
+        const userInfo = {
+          name: values.account === 'admin' ? '系统管理员' : values.account,
           avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
-          userid: '00000001',
-          email: `${values.username}@example.com`,
+          userid: values.account,
+          email: `${values.account}@example.com`,
           signature: '海纳百川，有容乃大',
-          title: '系统管理员',
-          group: '管理组',
-          access: 'admin',
+          title: values.account === 'admin' ? '系统管理员' : '普通用户',
+          group: values.account === 'admin' ? '管理组' : '用户组',
+          access: values.account === 'admin' ? 'admin' : 'user',
         };
-      }
 
-      // 检查用户信息是否匹配
-      if (userInfo) {
         console.log('Login successful, userInfo:', userInfo);
         // 保存用户信息到localStorage
         localStorage.setItem('userInfo', JSON.stringify(userInfo));
         console.log('User info saved to localStorage:', localStorage.getItem('userInfo'));
         
-       // 使用flushSync确保状态更新立即生效
+        // 使用flushSync确保状态更新立即生效
         flushSync(() => {
           setInitialState({ currentUser: userInfo });
         });
@@ -56,7 +60,7 @@ export default () => {
           history.push('/welcome');
         }, 500);
       } else {
-        console.log('Login failed: invalid username or password');
+        console.log('Login failed: invalid account or password');
         messageApi.error('用户名或密码错误');
       }
     } catch (error) {
@@ -93,7 +97,7 @@ export default () => {
               style={{ width: '100%' }}
             >
               <Form.Item
-                name="username"
+                name="account"
                 rules={[
                   { required: true, message: '请输入账户 | Please input account' },
                 ]}
