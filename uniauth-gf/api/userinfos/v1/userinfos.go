@@ -15,6 +15,12 @@ type GetOneRes struct {
 	*entity.UserinfosUserInfos
 }
 
+// ==================== AdminGet (alias of GetOne) ====================
+type AdminGetReq struct {
+    g.Meta `path:"/admin/get" tags:"UserInfo" method:"get" summary:"查询用户信息（对外别名）" dc:"与 /internal/get 行为一致。"`
+    Upn    string `json:"upn" v:"required" dc:"UPN" example:"sadt@cuhk.edu.cn"`
+}
+
 // ==================== Filter ====================
 // FilterCondition 表示单个过滤条件
 type FilterCondition struct {

@@ -2,20 +2,20 @@
 /* eslint-disable */
 import { request } from "@/utils/request";
 
-/** 获取配额池的详细配置 GET /quotaPool */
+/** 获取配额池的详细配置 GET /quotaPool/admin/ */
 export async function getQuotaPool(options?: { [key: string]: any }) {
-  return request<API.GetQuotaPoolRes>("/quotaPool", {
+  return request<API.GetQuotaPoolRes>("/quotaPool/admin/", {
     method: "GET",
     ...(options || {}),
   });
 }
 
-/** 编辑配额池 PUT /quotaPool */
+/** 编辑配额池 PUT /quotaPool/admin/ */
 export async function putQuotaPool(
   body: API.EditQuotaPoolReq,
   options?: { [key: string]: any }
 ) {
-  return request<API.EditQuotaPoolRes>("/quotaPool", {
+  return request<API.EditQuotaPoolRes>("/quotaPool/admin/", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -25,12 +25,12 @@ export async function putQuotaPool(
   });
 }
 
-/** 新建配额池 POST /quotaPool */
+/** 新建配额池 POST /quotaPool/admin/ */
 export async function postQuotaPool(
   body: API.NewQuotaPoolReq,
   options?: { [key: string]: any }
 ) {
-  return request<API.NewQuotaPoolRes>("/quotaPool", {
+  return request<API.NewQuotaPoolRes>("/quotaPool/admin/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -40,9 +40,9 @@ export async function postQuotaPool(
   });
 }
 
-/** 删除配额池 DELETE /quotaPool */
+/** 删除配额池 DELETE /quotaPool/admin/ */
 export async function deleteQuotaPool(options?: { [key: string]: any }) {
-  return request<API.DeleteQuotaPoolRes>("/quotaPool", {
+  return request<API.DeleteQuotaPoolRes>("/quotaPool/admin/", {
     method: "DELETE",
     ...(options || {}),
   });
