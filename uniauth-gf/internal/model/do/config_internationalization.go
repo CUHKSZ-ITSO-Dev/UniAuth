@@ -12,9 +12,9 @@ import (
 // ConfigInternationalization is the golang structure of table config_internationalization for DAO operations like Where/Data.
 type ConfigInternationalization struct {
 	g.Meta      `orm:"table:config_internationalization, do:true"`
-	LangCode    any         //
 	Key         any         //
-	Value       any         //
+	ZhCn        any         //
+	EnUs        any         //
 	Description any         //
 	CreatedAt   *gtime.Time //
 	UpdatedAt   *gtime.Time //

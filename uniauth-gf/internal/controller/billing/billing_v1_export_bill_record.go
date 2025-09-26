@@ -198,8 +198,8 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		} else {
 			// 调用 Auth filter policies 接口
 			policies, err := authC.NewV1().FilterPolicies(ctx, &authV1.FilterPoliciesReq{
-				Obj: "quotaPool/" + sheet,
-				Act: "owner",
+				Objs: []string{"quotaPool/" + sheet},
+				Acts: []string{"owner"},
 			})
 			if err != nil {
 				return nil, gerror.Wrap(err, "调用 Auth 模块 filter policies 接口失败")
