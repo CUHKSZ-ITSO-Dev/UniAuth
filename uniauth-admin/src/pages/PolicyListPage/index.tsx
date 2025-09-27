@@ -533,7 +533,7 @@ const PolicyListPage: React.FC = () => {
         <ProFormText
           name="object"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.object",
+            id: "pages.policyList.searchTable.object.label",
             defaultMessage: "对象",
           })}
           placeholder={intl.formatMessage({
@@ -553,7 +553,7 @@ const PolicyListPage: React.FC = () => {
         <ProFormText
           name="action"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.action",
+            id: "pages.policyList.searchTable.action.label",
             defaultMessage: "操作",
           })}
           placeholder={intl.formatMessage({
@@ -573,7 +573,7 @@ const PolicyListPage: React.FC = () => {
         <ProFormSelect
           name="effect"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.effect",
+            id: "pages.policyList.searchTable.effect.label",
             defaultMessage: "效果",
           })}
           placeholder={intl.formatMessage({
@@ -650,7 +650,7 @@ const PolicyListPage: React.FC = () => {
             defaultMessage: "主体",
           })}
           placeholder={intl.formatMessage({
-            id: "pages.policyList.searchTable.subject.required",
+            id: "pages.policyList.subject",
             defaultMessage: "请输入主体",
           })}
           rules={[
@@ -666,7 +666,7 @@ const PolicyListPage: React.FC = () => {
         <ProFormText
           name="object"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.object.label",
+            id: "pages.policyList.object",
             defaultMessage: "对象",
           })}
           placeholder={intl.formatMessage({
@@ -686,7 +686,7 @@ const PolicyListPage: React.FC = () => {
         <ProFormText
           name="action"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.action.label",
+            id: "pages.policyList.action",
             defaultMessage: "操作",
           })}
           placeholder={intl.formatMessage({
@@ -706,7 +706,7 @@ const PolicyListPage: React.FC = () => {
         <ProFormSelect
           name="effect"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.effect.label",
+            id: "pages.policyList.effect",
             defaultMessage: "效果",
           })}
           placeholder={intl.formatMessage({

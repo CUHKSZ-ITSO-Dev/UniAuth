@@ -350,6 +350,7 @@ export default {
   "pages.policyList.searchTable.effect.required": "Please select effect",
   "pages.policyList.searchTable.effect.allow": "Allow",
   "pages.policyList.searchTable.effect.deny": "Deny",
+  "pages.policyList.editRule": "Edit Rule",
 
   // QuotaPoolConfigDetailTab
   "pages.quotaPoolConfigDetail.displayname": "Display Name",
