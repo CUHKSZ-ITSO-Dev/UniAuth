@@ -28,6 +28,7 @@ import { postAuthAdminPoliciesFilter as filterPoliciesAPI } from "@/services/uni
 
 const { Title, Text } = Typography;
 
+// 规则类型
 interface PolicyItem {
   id?: string;
   subject: string;
@@ -37,71 +38,92 @@ interface PolicyItem {
   raw?: string[];
 }
 
-// 查询策略（按当前后端接口：subs/objs/acts 三个数组，不带分页/total）
+// API 请求函数
 const filterPolicies = async (params: any) => {
-  const req: API.FilterPoliciesReq = {
-    subs: params.sub ? [params.sub] : [],
-    objs: params.obj ? [params.obj] : [],
-    acts: params.act ? [params.act] : [],
+  // 构建筛选参数，使用字符串格式（符合API类型定义）
+  const filterRequestParams = {
+    sub: params.sub || undefined,
+    obj: params.obj || undefined,
+    act: params.act || undefined,
+    eft: params.eft || undefined,
+    rule: params.raw || undefined,
+    page: params.current || 1,
+    pageSize: params.pageSize || 10,
   };
 
   try {
-    const res = await filterPoliciesAPI(req);
-    const list = res?.policies ?? [];
+    const res = await filterPoliciesAPI(filterRequestParams);
 
-    let formatted: PolicyItem[] = list.map((policy: any) => ({
-      id: Array.isArray(policy) ? policy.join(",") : String(policy),
-      subject: policy?.[0] || "",
-      object: policy?.[1] || "",
-      action: policy?.[2] || "",
-      effect: policy?.[3] || "",
+    if (!res || !res.policies) {
+      return {
+        data: [],
+        success: false,
+        total: 0,
+      };
+    }
+
+    // 将 API 返回的二维数组转换为表格需要的格式
+    const formattedData = res.policies.map((policy: string[]) => ({
+      id: policy.join(","),
+      subject: policy[0] || "",
+      object: policy[1] || "",
+      action: policy[2] || "",
+      effect: policy[3] || "",
       raw: policy,
     }));
 
-    // 本地过滤效果（后端暂不支持按 effect 过滤）
-    if (params.eft) {
-      formatted = formatted.filter((it) => it.effect === params.eft);
-    }
-
     return {
-      data: formatted,
+      data: formattedData,
       success: true,
-      total: formatted.length,
+      total: res.total,
     };
-  } catch (_e) {
-    return { data: [], success: false, total: 0 };
+  } catch (error) {
+    console.error("Filter policies error:", error);
+    return {
+      data: [],
+      success: false,
+      total: 0,
+    };
   }
 };
 
 const addPolicies = async (policies: string[][]) => {
   try {
-    await addPoliciesAPI({ policies, skip: false });
+    await addPoliciesAPI({
+      policies: policies,
+      skip: false,
+    });
     return true;
   } catch (error) {
     console.error("Add policies error:", error);
-    message.error("添加规则失败");
+    message.error("Add policies failedx");
     return false;
   }
 };
 
 const deletePolicies = async (policies: string[][]) => {
   try {
-    await deletePoliciesAPI({ policies });
+    await deletePoliciesAPI({
+      policies: policies,
+    });
     return true;
   } catch (error) {
     console.error("Delete policies error:", error);
-    message.error("删除规则失败");
+    message.error("Delete policies failed");
     return false;
   }
 };
 
 const editPolicy = async (oldPolicy: string[], newPolicy: string[]) => {
   try {
-    await editPolicyAPI({ oldPolicy, newPolicy });
+    await editPolicyAPI({
+      oldPolicy,
+      newPolicy,
+    });
     return true;
   } catch (error) {
     console.error("Edit policy error:", error);
-    message.error("编辑规则失败");
+    message.error("Edit policy failed");
     return false;
   }
 };
@@ -115,6 +137,7 @@ const PolicyListPage: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<PolicyItem[]>([]);
 
+  // 处理函数
   const handleEdit = (record: PolicyItem) => {
     setEditingPolicy(record);
     setEditModalVisible(true);
@@ -124,24 +147,26 @@ const PolicyListPage: React.FC = () => {
     if (record.raw) {
       const success = await deletePolicies([record.raw]);
       if (success) {
-        message.success("删除成功");
+        message.success("Delete policy successfully");
         actionRef.current?.reload();
       }
     }
   };
 
-  const handleBatchDelete = async (rows: PolicyItem[]) => {
-    const policies = rows.map((r) => r.raw).filter(Boolean) as string[][];
-    if (!policies.length) return;
+  const handleBatchDelete = async (selectedRows: PolicyItem[]) => {
+    const policies = selectedRows
+      .map((row) => row.raw)
+      .filter(Boolean) as string[][];
     const success = await deletePolicies(policies);
     if (success) {
-      message.success(`批量删除 ${policies.length} 条规则成功`);
+      message.success(`Batch delete ${policies.length} policies successfully`);
       actionRef.current?.reload();
       setSelectedRowKeys([]);
       setSelectedRows([]);
     }
   };
 
+  // 表格列配置
   const columns: ProColumns<PolicyItem>[] = [
     {
       title: intl.formatMessage({
@@ -234,7 +259,7 @@ const PolicyListPage: React.FC = () => {
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.policyList.search.effect.placeholder",
-          defaultMessage: "请选择效果",
+          defaultMessage: "请选择效果进行搜索",
         }),
       },
     },
@@ -252,6 +277,12 @@ const PolicyListPage: React.FC = () => {
           p, {record.raw?.map((item) => `${item}`).join(", ")}
         </Text>
       ),
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.policyList.search.raw.placeholder",
+          defaultMessage: "请输入完整规则进行搜索",
+        }),
+      },
     },
     {
       title: intl.formatMessage({
@@ -328,7 +359,7 @@ const PolicyListPage: React.FC = () => {
             pageSize: 10,
             showSizeChanger: false,
             showQuickJumper: false,
-            showTotal: (t) => `共 ${t} 条记录`,
+            showTotal: (total) => `共 ${total} 条记录`,
           }}
           search={{
             labelWidth: "auto",
@@ -347,7 +378,9 @@ const PolicyListPage: React.FC = () => {
               <Button
                 key="search"
                 type="primary"
-                onClick={() => form?.submit()}
+                onClick={() => {
+                  form?.submit();
+                }}
               >
                 {searchText}
               </Button>,
@@ -362,7 +395,9 @@ const PolicyListPage: React.FC = () => {
               </Button>,
             ],
           }}
-          form={{ syncToUrl: false }}
+          form={{
+            syncToUrl: false,
+          }}
           rowSelection={{
             selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
             selectedRowKeys,
@@ -371,54 +406,62 @@ const PolicyListPage: React.FC = () => {
               setSelectedRows(rows);
             },
           }}
-          tableAlertRender={({ selectedRowKeys, onCleanSelected }) => (
-            <Space size={24}>
-              <span>
-                {intl.formatMessage(
-                  {
-                    id: "pages.policyList.tableAlert.selected",
-                    defaultMessage: "已选 {count} 项",
-                  },
-                  { count: selectedRowKeys.length },
-                )}
-                <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
-                  {intl.formatMessage({
-                    id: "pages.policyList.tableAlert.cancel",
-                    defaultMessage: "取消选择",
+          tableAlertRender={({ selectedRowKeys, onCleanSelected }) => {
+            return (
+              <Space size={24}>
+                <span>
+                  {intl.formatMessage(
+                    {
+                      id: "pages.policyList.tableAlert.selected",
+                      defaultMessage: "已选 {count} 项",
+                    },
+                    {
+                      count: selectedRowKeys.length,
+                    },
+                  )}
+                  <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
+                    {intl.formatMessage({
+                      id: "pages.policyList.tableAlert.cancel",
+                      defaultMessage: "取消选择",
+                    })}
+                  </a>
+                </span>
+              </Space>
+            );
+          }}
+          tableAlertOptionRender={() => {
+            return (
+              <Space size={16}>
+                <Popconfirm
+                  title={intl.formatMessage(
+                    {
+                      id: "pages.policyList.deleteConfirmTitle2",
+                      defaultMessage: "确定要删除选中的 {count} 条规则吗？",
+                    },
+                    {
+                      count: selectedRowKeys.length,
+                    },
+                  )}
+                  onConfirm={() => handleBatchDelete(selectedRows)}
+                  okText={intl.formatMessage({
+                    id: "pages.policyList.deleteConfirmOk",
+                    defaultMessage: "确定",
                   })}
-                </a>
-              </span>
-            </Space>
-          )}
-          tableAlertOptionRender={() => (
-            <Space size={16}>
-              <Popconfirm
-                title={intl.formatMessage(
-                  {
-                    id: "pages.policyList.deleteConfirmTitle2",
-                    defaultMessage: "确定要删除选中的 {count} 条规则吗？",
-                  },
-                  { count: selectedRowKeys.length },
-                )}
-                onConfirm={() => handleBatchDelete(selectedRows)}
-                okText={intl.formatMessage({
-                  id: "pages.policyList.deleteConfirmOk",
-                  defaultMessage: "确定",
-                })}
-                cancelText={intl.formatMessage({
-                  id: "pages.policyList.deleteConfirmCancel",
-                  defaultMessage: "取消",
-                })}
-              >
-                <a style={{ color: "#ff4d4f" }}>
-                  {intl.formatMessage({
-                    id: "pages.policyList.batchDelete",
-                    defaultMessage: "批量删除",
+                  cancelText={intl.formatMessage({
+                    id: "pages.policyList.deleteConfirmCancel",
+                    defaultMessage: "取消",
                   })}
-                </a>
-              </Popconfirm>
-            </Space>
-          )}
+                >
+                  <a style={{ color: "#ff4d4f" }}>
+                    {intl.formatMessage({
+                      id: "pages.policyList.batchDelete",
+                      defaultMessage: "批量删除",
+                    })}
+                  </a>
+                </Popconfirm>
+              </Space>
+            );
+          }}
           toolBarRender={() => [
             <Button
               type="primary"
@@ -446,15 +489,15 @@ const PolicyListPage: React.FC = () => {
         width={500}
         open={createModalVisible}
         onOpenChange={setCreateModalVisible}
-        onFinish={async (values: any) => {
+        onFinish={async (values) => {
           const policy = [
             values.subject,
             values.object,
             values.action,
             values.effect || "allow",
           ];
-          const ok = await addPolicies([policy]);
-          if (ok) {
+          const success = await addPolicies([policy]);
+          if (success) {
             message.success(
               intl.formatMessage({
                 id: "pages.policyList.searchTable.addPolicySuccess",
@@ -494,8 +537,8 @@ const PolicyListPage: React.FC = () => {
             defaultMessage: "对象",
           })}
           placeholder={intl.formatMessage({
-            id: "pages.policyList.searchTable.object.required",
-            defaultMessage: "请输入对象",
+            id: "pages.policyList.searchTable.object.placeholder",
+            defaultMessage: "请输入对象，如: chat_production, database",
           })}
           rules={[
             {
@@ -514,8 +557,8 @@ const PolicyListPage: React.FC = () => {
             defaultMessage: "操作",
           })}
           placeholder={intl.formatMessage({
-            id: "pages.policyList.searchTable.action.required",
-            defaultMessage: "请输入操作",
+            id: "pages.policyList.searchTable.action.placeholder",
+            defaultMessage: "请输入操作，如: read, write, manage",
           })}
           rules={[
             {
@@ -531,24 +574,24 @@ const PolicyListPage: React.FC = () => {
           name="effect"
           label={intl.formatMessage({
             id: "pages.policyList.searchTable.effect.label",
-            defaultMessage: "效果 (Effect)",
+            defaultMessage: "效果",
           })}
           placeholder={intl.formatMessage({
-            id: "pages.policyList.searchTable.effect.required",
-            defaultMessage: "请选择效果",
+            id: "pages.policyList.searchTable.effect.placeholder",
+            defaultMessage: "请选择效果, 如: allow、deny",
           })}
           options={[
             {
               label: intl.formatMessage({
                 id: "pages.policyList.searchTable.effect.allow",
-                defaultMessage: "Allow",
+                defaultMessage: "允许",
               }),
               value: "allow",
             },
             {
               label: intl.formatMessage({
                 id: "pages.policyList.searchTable.effect.deny",
-                defaultMessage: "Deny",
+                defaultMessage: "拒绝",
               }),
               value: "deny",
             },
@@ -568,14 +611,14 @@ const PolicyListPage: React.FC = () => {
       {/* 编辑规则弹窗 */}
       <ModalForm
         title={intl.formatMessage({
-          id: "pages.policyList.edit",
-          defaultMessage: "编辑",
+          id: "pages.policyList.editRule",
+          defaultMessage: "编辑规则",
         })}
         width={500}
         open={editModalVisible}
         onOpenChange={setEditModalVisible}
         initialValues={editingPolicy || {}}
-        onFinish={async (values: any) => {
+        onFinish={async (values) => {
           if (editingPolicy?.raw) {
             const oldPolicyStr = [
               editingPolicy.raw[0],
@@ -589,9 +632,9 @@ const PolicyListPage: React.FC = () => {
               values.action,
               values.effect || "allow",
             ];
-            const ok = await editPolicy(oldPolicyStr, newPolicy);
-            if (ok) {
-              message.success("编辑成功");
+            const success = await editPolicy(oldPolicyStr, newPolicy);
+            if (success) {
+              message.success("Edit successfully");
               actionRef.current?.reload();
               setEditingPolicy(null);
               return true;
@@ -607,7 +650,7 @@ const PolicyListPage: React.FC = () => {
             defaultMessage: "主体",
           })}
           placeholder={intl.formatMessage({
-            id: "pages.policyList.searchTable.subject.required",
+            id: "pages.policyList.subject",
             defaultMessage: "请输入主体",
           })}
           rules={[
@@ -623,7 +666,7 @@ const PolicyListPage: React.FC = () => {
         <ProFormText
           name="object"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.object.label",
+            id: "pages.policyList.object",
             defaultMessage: "对象",
           })}
           placeholder={intl.formatMessage({
@@ -643,7 +686,7 @@ const PolicyListPage: React.FC = () => {
         <ProFormText
           name="action"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.action.label",
+            id: "pages.policyList.action",
             defaultMessage: "操作",
           })}
           placeholder={intl.formatMessage({
@@ -663,8 +706,8 @@ const PolicyListPage: React.FC = () => {
         <ProFormSelect
           name="effect"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.effect.label",
-            defaultMessage: "效果 (Effect)",
+            id: "pages.policyList.effect",
+            defaultMessage: "效果",
           })}
           placeholder={intl.formatMessage({
             id: "pages.policyList.searchTable.effect.required",

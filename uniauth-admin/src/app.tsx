@@ -208,7 +208,6 @@ export const layout: RunTimeLayoutConfig = ({
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request: RequestConfig = {
-  baseURL:
-    "/api",
+  baseURL: "/api",
   ...errorConfig,
 };

@@ -315,8 +315,9 @@ export default {
   "pages.policyList.effect": "Effect",
   "pages.policyList.effect.allow": "Allow",
   "pages.policyList.effect.deny": "Deny",
-  "pages.policyList.search.effect.placeholder": "Select effect",
+  "pages.policyList.search.effect.placeholder": "Select effect to search",
   "pages.policyList.raw": "Raw Policy",
+  "pages.policyList.search.raw.placeholder": "Enter raw policy to search",
   "pages.policyList.edit": "Edit",
   "pages.policyList.delete": "Delete",
   "pages.policyList.deleteConfirmTitle": "Are you sure to delete this policy?",
@@ -332,8 +333,15 @@ export default {
   "pages.policyList.searchTable.newPolicy": "Add Policy",
   "pages.policyList.searchTable.addPolicySuccess": "Added successfully",
   "pages.policyList.searchTable.subject.label": "Subject",
-  "pages.policyList.searchTable.subject.placeholder": "e.g. alice, user_group",
+  "pages.policyList.searchTable.subject.placeholder":
+    "Please enter subject, e.g. alice, user_group",
   "pages.policyList.searchTable.subject.required": "Please enter subject",
+  "pages.policyList.searchTable.object.placeholder":
+    "Please enter object, e.g. data1, data_group",
+  "pages.policyList.searchTable.action.placeholder":
+    "Please enter action, e.g. read, write",
+  "pages.policyList.searchTable.effect.placeholder":
+    "Please select effect, e.g. allow, deny",
   "pages.policyList.searchTable.object.label": "Object",
   "pages.policyList.searchTable.object.required": "Please enter object",
   "pages.policyList.searchTable.action.label": "Action",
@@ -342,4 +350,36 @@ export default {
   "pages.policyList.searchTable.effect.required": "Please select effect",
   "pages.policyList.searchTable.effect.allow": "Allow",
   "pages.policyList.searchTable.effect.deny": "Deny",
+  "pages.policyList.editRule": "Edit Rule",
+
+  // QuotaPoolConfigDetailTab
+  "pages.quotaPoolConfigDetail.displayname": "Display Name",
+  "pages.quotaPoolConfigDetail.identity": "Identity",
+  "pages.quotaPoolConfigDetail.tag": "Tag",
+  "pages.quotaPoolConfigDetail.department": "Department Info",
+  "pages.quotaPoolConfigDetail.operation": "Operation",
+  "pages.quotaPoolConfigDetail.operation.viewDetail": "View Details",
+  "pages.quotaPoolConfigDetail.roleGroup": "Role Group",
+  "pages.quotaPoolConfigDetail.detailInfo": "Detail Information",
+  "pages.quotaPoolConfigDetail.quotaPoolName": "Quota Pool Name",
+
+  // BillingDetailTab
+  "pages.billingDetail.user": "User",
+  "pages.billingDetail.svc": "Service",
+  "pages.billingDetail.product": "Product",
+  "pages.billingDetail.cost": "Cost",
+  "pages.billingDetail.billingScheme": "Billing Scheme",
+  "pages.billingDetail.source": "Source",
+  "pages.billingDetail.remark": "Remark",
+  "pages.billingDetail.remarkDetail": "Remark Detail",
+  "pages.billingDetail.remarkHover":
+    "Hover to view details, click to see full content",
+  "pages.billingDetail.remarkClick": "View full remark",
+  "pages.billingDetail.createdAt": "Created At",
+  "pages.billingDetail.billingOverview": "Billing Overview",
+  "pages.billingDetail.billingRecords": "Billing Records",
+  "pages.billingDetail.exportBill": "Export Bill",
+  "pages.billingDetail.cancel": "Cancel",
+  "pages.billingDetail.confirmExport": "Confirm Export",
+  "pages.billingDetail.close": "Close",
 };

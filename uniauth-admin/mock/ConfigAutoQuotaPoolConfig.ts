@@ -1,5 +1,5 @@
-// @ts-ignore
-import { Request, Response } from "express";
+// @ts-expect-error
+import type { Request, Response } from "express";
 
 export default {
   "DELETE /config/autoConfig": (req: Request, res: Response) => {
@@ -69,21 +69,24 @@ export default {
           ruleName,
           expectedMatchedUsers: Math.floor(Math.random() * 1000) + 100, // 随机生成预计匹配用户数
           testTime: new Date().toISOString(),
-        }
+        },
       });
     } else {
       // 模拟实际执行结果
       res.status(200).send({
         success: true,
-        message: `规则 "${ruleName}" 执行成功`
+        message: `规则 "${ruleName}" 执行成功`,
       });
     }
   },
-  "POST /autoQuotaPool/autoQuotaPool/reevaluate": (req: Request, res: Response) => {
+  "POST /autoQuotaPool/autoQuotaPool/reevaluate": (
+    req: Request,
+    res: Response,
+  ) => {
     // 模拟重新评估规则接口
     res.status(200).send({
       success: true,
-      message: "所有规则重新评估完成"
+      message: "所有规则重新评估完成",
     });
-  }
+  },
 };

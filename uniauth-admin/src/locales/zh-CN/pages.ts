@@ -311,7 +311,7 @@ export default {
   "pages.policyList.searchTable.object.required": "请输入对象",
   "pages.policyList.searchTable.action.label": "操作",
   "pages.policyList.searchTable.action.required": "请输入操作",
-  "pages.policyList.searchTable.effect.label": "效果 (Effect)",
+  "pages.policyList.searchTable.effect.label": "效果",
   "pages.policyList.searchTable.effect.required": "请选择效果",
   "pages.policyList.searchTable.effect.allow": "允许",
   "pages.policyList.searchTable.effect.deny": "拒绝",
