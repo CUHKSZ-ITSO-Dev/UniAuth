@@ -359,7 +359,10 @@ const ConfigDetailTab: FC = () => {
   return (
     <GridContent>
       <Card
-        title="详细信息"
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.detailInfo",
+          defaultMessage: "详细信息",
+        })}
         style={{
           marginBottom: 24,
         }}

@@ -215,7 +215,7 @@ export default {
   "pages.policyList.searchTable.effect.allow": "Allow",
   "pages.policyList.searchTable.effect.deny": "Deny",
 
-  // QuotaPoolDetailsPage
+  // QuotaPoolConfigDetailTab
   "pages.quotaPoolConfigDetail.displayname": "Display Name",
   "pages.quotaPoolConfigDetail.identity": "Identity",
   "pages.quotaPoolConfigDetail.tag": "Tag",
@@ -223,4 +223,26 @@ export default {
   "pages.quotaPoolConfigDetail.operation": "Operation",
   "pages.quotaPoolConfigDetail.operation.viewDetail": "View Details",
   "pages.quotaPoolConfigDetail.roleGroup": "Role Group",
+  "pages.quotaPoolConfigDetail.detailInfo": "Detail Information",
+  "pages.quotaPoolConfigDetail.quotaPoolName": "Quota Pool Name",
+
+  // BillingDetailTab
+  "pages.billingDetail.user": "User",
+  "pages.billingDetail.svc": "Service",
+  "pages.billingDetail.product": "Product",
+  "pages.billingDetail.cost": "Cost",
+  "pages.billingDetail.billingScheme": "Billing Scheme",
+  "pages.billingDetail.source": "Source",
+  "pages.billingDetail.remark": "Remark",
+  "pages.billingDetail.remarkDetail": "Remark Detail",
+  "pages.billingDetail.remarkHover":
+    "Hover to view details, click to see full content",
+  "pages.billingDetail.remarkClick": "View full remark",
+  "pages.billingDetail.createdAt": "Created At",
+  "pages.billingDetail.billingOverview": "Billing Overview",
+  "pages.billingDetail.billingRecords": "Billing Records",
+  "pages.billingDetail.exportBill": "Export Bill",
+  "pages.billingDetail.cancel": "Cancel",
+  "pages.billingDetail.confirmExport": "Confirm Export",
+  "pages.billingDetail.close": "Close",
 };

@@ -1,3 +1,4 @@
+import { useIntl } from "@@/plugin-locale/localeExports";
 import { EyeOutlined } from "@ant-design/icons";
 import {
   GridContent,
@@ -56,6 +57,8 @@ interface BillingDetailTabProps {
 const BillingDetailTab: FC<BillingDetailTabProps> = ({
   quotaPoolName = "itso-deep-research-vip",
 }) => {
+  const intl = useIntl();
+
   const [statistics, setStatistics] = useState({
     currentMonthCost: 0,
     lastMonthCost: 0,
@@ -279,14 +282,20 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   });
   const billingRecordsColumns: ProColumns<BillingRecord>[] = [
     {
-      title: "用户",
+      title: intl.formatMessage({
+        id: "pages.billingDetail.user",
+        defaultMessage: "用户",
+      }),
       dataIndex: "upn",
       valueType: "text",
       search: true,
       ellipsis: true,
     },
     {
-      title: "服务",
+      title: intl.formatMessage({
+        id: "pages.billingDetail.svc",
+        defaultMessage: "服务",
+      }),
       dataIndex: "svc",
       valueType: "select",
       search: true,
@@ -295,7 +304,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       valueEnum: svcValueEnum,
     },
     {
-      title: "产品",
+      title: intl.formatMessage({
+        id: "pages.billingDetail.product",
+        defaultMessage: "产品",
+      }),
       dataIndex: "product",
       valueType: "select",
       search: true,
@@ -304,7 +316,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       valueEnum: productValueEnum,
     },
     {
-      title: "费用",
+      title: intl.formatMessage({
+        id: "pages.billingDetail.cost",
+        defaultMessage: "费用",
+      }),
       dataIndex: "cost",
       valueType: "money",
       search: false,
@@ -314,14 +329,20 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       ),
     },
     {
-      title: "计费方案",
+      title: intl.formatMessage({
+        id: "pages.billingDetail.billingScheme",
+        defaultMessage: "计费方案",
+      }),
       dataIndex: "plan",
       valueType: "text",
       search: false,
       ellipsis: true,
     },
     {
-      title: "来源",
+      title: intl.formatMessage({
+        id: "pages.billingDetail.source",
+        defaultMessage: "来源",
+      }),
       dataIndex: "source",
       valueType: "text",
       search: false,
@@ -330,7 +351,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       render: (_, record) => <Tag color="blue">{record.source}</Tag>,
     },
     {
-      title: "备注",
+      title: intl.formatMessage({
+        id: "pages.billingDetail.remark",
+        defaultMessage: "备注",
+      }),
       dataIndex: "remark",
       valueType: "text",
       search: false,
@@ -345,7 +369,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         return (
           <Space size="small">
             <Popover
-              title="备注详情"
+              title={intl.formatMessage({
+                id: "pages.billingDetail.remarkDetail",
+                defaultMessage: "备注详情",
+              })}
               content={
                 <pre
                   style={{
@@ -370,7 +397,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               <Text
                 ellipsis
                 style={{ cursor: "pointer" }}
-                title="悬停查看详情，点击查看完整内容"
+                title={intl.formatMessage({
+                  id: "pages.billingDetail.remarkHover",
+                  defaultMessage: "悬停查看详情，点击查看完整内容",
+                })}
               >
                 {summary}
               </Text>
@@ -381,14 +411,20 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               icon={<EyeOutlined />}
               onClick={() => handleRemarkClick(record.remark)}
               style={{ padding: "0 4px", fontSize: "12px" }}
-              title="查看完整备注"
+              title={intl.formatMessage({
+                id: "pages.billingDetail.remarkClick",
+                defaultMessage: "查看完整备注",
+              })}
             />
           </Space>
         );
       },
     },
     {
-      title: "时间",
+      title: intl.formatMessage({
+        id: "pages.billingDetail.createdAt",
+        defaultMessage: "创建时间",
+      }),
       dataIndex: "created_at",
       valueType: "dateTime",
       search: {
@@ -528,7 +564,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   return (
     <GridContent>
       <Card
-        title="账单概览"
+        title={intl.formatMessage({
+          id: "pages.billingDetail.billingOverview",
+          defaultMessage: "账单概览",
+        })}
         style={{
           marginBottom: 24,
         }}
@@ -584,7 +623,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           }}
           request={billingRecordsDataRequest}
           dateFormatter="string"
-          headerTitle="消费记录"
+          headerTitle={intl.formatMessage({
+            id: "pages.billingDetail.billingRecords",
+            defaultMessage: "消费记录",
+          })}
           scroll={{ x: 1200 }}
           options={{
             reload: true,
@@ -593,7 +635,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           }}
           toolBarRender={() => [
             <Button key="export" type="primary" onClick={handleOpenExportModal}>
-              导出账单
+              {intl.formatMessage({
+                id: "pages.billingDetail.exportBill",
+                defaultMessage: "导出账单",
+              })}
             </Button>,
           ]}
         />
@@ -601,7 +646,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
       {/* 导出账单模态框 */}
       <Modal
-        title="导出账单"
+        title={intl.formatMessage({
+          id: "pages.billingDetail.exportBill",
+          defaultMessage: "导出账单",
+        })}
         open={exportModalVisible}
         onCancel={() => {
           setExportModalVisible(false);
@@ -615,7 +663,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               exportForm.resetFields();
             }}
           >
-            取消
+            {intl.formatMessage({
+              id: "pages.billingDetail.cancel",
+              defaultMessage: "取消",
+            })}
           </Button>,
           <Button
             key="export"
@@ -625,7 +676,23 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               exportForm.submit();
             }}
           >
-            确定导出
+            {intl.formatMessage({
+              id: "pages.billingDetail.cancel",
+              defaultMessage: "取消",
+            })}
+          </Button>,
+          <Button
+            key="export"
+            type="primary"
+            loading={exportLoading}
+            onClick={() => {
+              exportForm.submit();
+            }}
+          >
+            {intl.formatMessage({
+              id: "pages.billingDetail.confirmExport",
+              defaultMessage: "确定导出",
+            })}
           </Button>,
         ]}
         width={600}
@@ -681,12 +748,18 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
       {/* 备注详情模态框 */}
       <Modal
-        title="备注详情"
+        title={intl.formatMessage({
+          id: "pages.billingDetail.remarkDetail",
+          defaultMessage: "备注详情",
+        })}
         open={remarkModalVisible}
         onCancel={() => setRemarkModalVisible(false)}
         footer={[
           <Button key="close" onClick={() => setRemarkModalVisible(false)}>
-            关闭
+            {intl.formatMessage({
+              id: "pages.billingDetail.close",
+              defaultMessage: "关闭",
+            })}
           </Button>,
         ]}
         width={700}
