@@ -585,7 +585,7 @@ const PolicyListPage: React.FC = () => {
           })}
           placeholder={intl.formatMessage({
             id: "pages.policyList.searchTable.effect.placeholder",
-            defaultMessage: "请选择效果, 如: allow, deny",
+            defaultMessage: "请选择效果, 如: 允许、拒绝",
           })}
           options={[
             {
