@@ -1,5 +1,22 @@
 declare namespace API {
-  type AddAutoQuotaPoolConfigReq = {};
+  type AddAutoQuotaPoolConfigReq = {
+    /** 规则名称 */
+    ruleName?: string;
+    /** 规则描述 */
+    description?: string;
+    /** Cron表达式 */
+    cronCycle?: string;
+    /** 定期配额 */
+    regularQuota?: number;
+    /** 优先级 */
+    priority?: number;
+    /** 是否启用 */
+    enabled?: boolean;
+    /** 过滤条件组 */
+    filterGroup?: FilterGroup;
+    /** UPN缓存 */
+    upnsCache?: string;
+  };
 
   type AddAutoQuotaPoolConfigRes = {
     /** 是否成功 */
@@ -22,7 +39,22 @@ declare namespace API {
     ok?: boolean;
   };
 
-  type AddModelConfigReq = {};
+  type AddModelConfigReq = {
+    /** 模型名称 */
+    approachName?: string;
+    /** 客户端类型 */
+    clientType?: string;
+    /** 折扣 */
+    discount?: number;
+    /** 服务项标识列表 */
+    servicewares?: string[];
+    /** 定价配置 */
+    pricing?: Json;
+    /** 客户端参数 */
+    clientArgs?: Json;
+    /** 请求参数 */
+    requestArgs?: Json;
+  };
 
   type AddModelConfigRes = {
     /** 配置 */
@@ -136,7 +168,10 @@ declare namespace API {
 
   type Decimal = {};
 
-  type DeleteAutoQuotaPoolConfigReq = {};
+  type DeleteAutoQuotaPoolConfigReq = {
+    /** 规则名称 */
+    ruleName?: string;
+  };
 
   type DeleteAutoQuotaPoolConfigRes = {
     /** 是否成功 */
@@ -158,7 +193,10 @@ declare namespace API {
     ok?: boolean;
   };
 
-  type DeleteModelConfigReq = {};
+  type DeleteModelConfigReq = {
+    /** 模型名称 */
+    approachName?: string;
+  };
 
   type DeleteModelConfigRes = {
     /** 配置 */
@@ -179,7 +217,24 @@ declare namespace API {
     ok?: boolean;
   };
 
-  type EditAutoQuotaPoolConfigReq = {};
+  type EditAutoQuotaPoolConfigReq = {
+    /** 规则名称 */
+    ruleName?: string;
+    /** 规则描述 */
+    description?: string;
+    /** Cron表达式 */
+    cronCycle?: string;
+    /** 定期配额 */
+    regularQuota?: number;
+    /** 优先级 */
+    priority?: number;
+    /** 是否启用 */
+    enabled?: boolean;
+    /** 过滤条件组 */
+    filterGroup?: FilterGroup;
+    /** UPN缓存 */
+    upnsCache?: string;
+  };
 
   type EditAutoQuotaPoolConfigRes = {
     /** 是否成功 */
@@ -202,7 +257,22 @@ declare namespace API {
     ok?: boolean;
   };
 
-  type EditModelConfigReq = {};
+  type EditModelConfigReq = {
+    /** 模型名称 */
+    approachName?: string;
+    /** 客户端类型 */
+    clientType?: string;
+    /** 折扣 */
+    discount?: number;
+    /** 服务项标识列表 */
+    servicewares?: string[];
+    /** 定价配置 */
+    pricing?: Json;
+    /** 客户端参数 */
+    clientArgs?: Json;
+    /** 请求参数 */
+    requestArgs?: Json;
+  };
 
   type EditModelConfigRes = {
     /** 配置 */
@@ -438,6 +508,31 @@ declare namespace API {
   type GetAutoQuotaPoolConfigRes = {
     /** 自动配额池规则 */
     autoQuotaPoolConfigs?: string[];
+    /** 自动配额池规则列表 */
+    items?: AutoQuotaPoolItem[];
+  };
+
+  type AutoQuotaPoolItem = {
+    /** 规则名称 */
+    ruleName?: string;
+    /** 规则描述 */
+    description?: string;
+    /** Cron表达式 */
+    cronCycle?: string;
+    /** 定期配额 */
+    regularQuota?: number;
+    /** 优先级 */
+    priority?: number;
+    /** 是否启用 */
+    enabled?: boolean;
+    /** 过滤条件组 */
+    filterGroup?: FilterGroup;
+    /** UPN缓存 */
+    upnsCache?: string;
+    /** 创建时间 */
+    createdAt?: string;
+    /** 更新时间 */
+    updatedAt?: string;
   };
 
   type GetAvailableModelForQuotaPoolReq = {
@@ -499,6 +594,29 @@ declare namespace API {
   type GetModelConfigRes = {
     /** 配置 */
     config?: string;
+    /** 模型配置列表 */
+    items?: ModelConfigItem[];
+  };
+
+  type ModelConfigItem = {
+    /** 模型名称 */
+    approachName?: string;
+    /** 客户端类型 */
+    clientType?: string;
+    /** 折扣 */
+    discount?: number;
+    /** 服务项标识列表 */
+    servicewares?: string[];
+    /** 定价配置 */
+    pricing?: Json;
+    /** 客户端参数 */
+    clientArgs?: Json;
+    /** 请求参数 */
+    requestArgs?: Json;
+    /** 创建时间 */
+    createdAt?: string;
+    /** 更新时间 */
+    updatedAt?: string;
   };
 
   type GetOneReq = {

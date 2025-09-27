@@ -34,6 +34,7 @@ export default [
   //   icon: 'Dashboard',
   //   component: '@/pages/DashboardPage',
   // },
+
   {
     path: "/user-list",
     name: "user-list",
@@ -48,6 +49,12 @@ export default [
     hideInMenu: true,
   },
   {
+    path: "/config/model-config",
+    name: "model-config",
+    icon: "Database",
+    component: "@/pages/ModelConfigPage",
+  },
+  {
     path: "/quota-pool-list",
     name: "quota-pool-list",
     icon: "Container",
@@ -58,6 +65,12 @@ export default [
     name: "quota-pool-details",
     icon: "Container",
     component: "@/pages/QuotaPoolDetailsPage",
+  },
+  {
+    path: "/config/auto-quota-pool-config",
+    name: "auto-quota-pool-config",
+    icon: "Container",
+    component: "@/pages/AutoQuotaPoolConfigPage",
   },
   {
     path: "/policy-list",

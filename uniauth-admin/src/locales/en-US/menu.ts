@@ -51,6 +51,8 @@ export default {
   "menu.editor.flow": "Flow Editor",
   "menu.editor.mind": "Mind Editor",
   "menu.editor.koni": "Koni Editor",
+  "menu.model-config": "Model List",
+  "menu.auto-quota-pool-config": "Auto Quota Pool List",
   "menu.user-list": "User List",
   "menu.policy-list": "Policy Management",
   "menu.config-i18n": "I18N Configuration",

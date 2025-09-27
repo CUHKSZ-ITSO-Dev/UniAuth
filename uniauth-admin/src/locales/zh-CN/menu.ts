@@ -51,6 +51,8 @@ export default {
   "menu.editor.flow": "流程编辑器",
   "menu.editor.mind": "脑图编辑器",
   "menu.editor.koni": "拓扑编辑器",
+  "menu.model-config": "模型列表",
+  "menu.auto-quota-pool-config": "自动配额池列表",
   "menu.user-list": "用户列表",
   "menu.policy-list": "规则管理",
   "menu.config-i18n": "国际化配置",

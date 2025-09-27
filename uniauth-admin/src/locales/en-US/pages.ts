@@ -116,6 +116,142 @@ export default {
   "pages.userDetail.createdAt": "Created At",
   "pages.userDetail.updatedAt": "Updated At",
 
+  // Auto Quota Pool Configuration Page Translations
+  "pages.autoQuotaPoolConfig.title": "Auto Quota Pool Configuration List",
+  "pages.autoQuotaPoolConfig.description":
+    "Manage auto quota pool configuration rules in the system",
+  "pages.autoQuotaPoolConfig.ruleName": "Rule Name",
+  "pages.autoQuotaPoolConfig.descriptionLabel": "Description",
+  "pages.autoQuotaPoolConfig.cronCycle": "Cron Cycle",
+  "pages.autoQuotaPoolConfig.regularQuota": "Regular Quota",
+  "pages.autoQuotaPoolConfig.enabled": "Enabled",
+  "pages.autoQuotaPoolConfig.priority": "Priority",
+  "pages.autoQuotaPoolConfig.createdAt": "Created At",
+  "pages.autoQuotaPoolConfig.updatedAt": "Updated At",
+  "pages.autoQuotaPoolConfig.actions": "Actions",
+  "pages.autoQuotaPoolConfig.edit": "Edit",
+  "pages.autoQuotaPoolConfig.delete": "Delete",
+  "pages.autoQuotaPoolConfig.deleteConfirm":
+    "Are you sure you want to delete this auto quota pool configuration?",
+  "pages.autoQuotaPoolConfig.batchEnable": "Batch Enable",
+  "pages.autoQuotaPoolConfig.batchDisable": "Batch Disable",
+  "pages.autoQuotaPoolConfig.addNew": "Add New Auto Quota Pool Configuration",
+  "pages.autoQuotaPoolConfig.editModalTitle":
+    "Edit Auto Quota Pool Configuration",
+  "pages.autoQuotaPoolConfig.addModalTitle":
+    "Add Auto Quota Pool Configuration",
+  "pages.autoQuotaPoolConfig.ruleNamePlaceholder":
+    "Please enter a unique rule name (unique)",
+  "pages.autoQuotaPoolConfig.ruleNameRequired": "Please enter the rule name",
+  "pages.autoQuotaPoolConfig.descriptionPlaceholder":
+    "Please enter rule description",
+  "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
+    "Please enter refresh cycle Cron expression, e.g.: 0 0 3 * * *",
+  "pages.autoQuotaPoolConfig.cronCycleRequired":
+    "Please enter the refresh cycle Cron expression",
+  "pages.autoQuotaPoolConfig.regularQuotaPlaceholder":
+    "Please enter regular quota (reset per cycle)",
+  "pages.autoQuotaPoolConfig.regularQuotaRequired":
+    "Please enter regular quota",
+  "pages.autoQuotaPoolConfig.priorityPlaceholder":
+    "Please enter priority, smaller values match first",
+  "pages.autoQuotaPoolConfig.filterGroup": "Filter Group (JSON)",
+  "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
+    "Please enter filter group data in JSON format, users meeting the conditions will apply this rule",
+  "pages.autoQuotaPoolConfig.filterGroupRequired": "Please enter filter group",
+  "pages.autoQuotaPoolConfig.upnsCache": "UPN Cache",
+  "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "Please enter UPN cache",
+  "pages.autoQuotaPoolConfig.enabledStatus": "Enabled",
+  "pages.autoQuotaPoolConfig.disabledStatus": "Disabled",
+  "pages.autoQuotaPoolConfig.notSet": "Not Set",
+  "pages.autoQuotaPoolConfig.deleteSuccess": "Delete Successful",
+  "pages.autoQuotaPoolConfig.deleteFailed": "Delete Failed",
+  "pages.autoQuotaPoolConfig.updateSuccess": "Update Successful",
+  "pages.autoQuotaPoolConfig.createSuccess": "Create Successful",
+  "pages.autoQuotaPoolConfig.saveFailed": "Save Failed",
+  "pages.autoQuotaPoolConfig.jsonInvalid": "Invalid JSON format",
+  "pages.autoQuotaPoolConfig.formInvalid":
+    "Form validation failed, please check input",
+  "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup":
+    "Save Failed: Invalid filter group format",
+  "pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache":
+    "Save Failed: Invalid UPN cache list format",
+  "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired":
+    "Save Failed: Rule name is required",
+  "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired":
+    "Save Failed: Refresh cycle is required",
+  "pages.autoQuotaPoolConfig.saveFailedRegularQuotaInvalid":
+    "Save Failed: Invalid regular quota",
+  "pages.autoQuotaPoolConfig.requestFailed": "Request Failed",
+  "pages.autoQuotaPoolConfig.saveFailedNetworkError":
+    "Save Failed: Network error, please try again later",
+  "pages.autoQuotaPoolConfig.saveFailedCheckInput":
+    "Save Failed: Please check your input",
+
+  // Model Configuration Page Translations
+  "pages.modelConfig.title": "Model Configuration List",
+  "pages.modelConfig.description":
+    "Manage all AI model configurations in the system, including model parameters, access permissions, etc.",
+  "pages.modelConfig.approachName": "Approach Name",
+  "pages.modelConfig.clientType": "Client Type",
+  "pages.modelConfig.discount": "Discount",
+  "pages.modelConfig.servicewares": "Servicewares",
+  "pages.modelConfig.pricing": "Pricing",
+  "pages.modelConfig.clientArgs": "Client Arguments",
+  "pages.modelConfig.requestArgs": "Request Arguments",
+  "pages.modelConfig.createdAt": "Created At",
+  "pages.modelConfig.updatedAt": "Updated At",
+  "pages.modelConfig.actions": "Actions",
+  "pages.modelConfig.edit": "Edit",
+  "pages.modelConfig.delete": "Delete",
+  "pages.modelConfig.deleteConfirm":
+    "Are you sure you want to delete this model configuration?",
+  "pages.modelConfig.batchEnable": "Batch Enable",
+  "pages.modelConfig.batchDisable": "Batch Disable",
+  "pages.modelConfig.addNew": "Add New Model Configuration",
+  "pages.modelConfig.editModalTitle": "Edit Model Configuration",
+  "pages.modelConfig.addModalTitle": "Add Model Configuration",
+  "pages.modelConfig.approachNamePlaceholder":
+    "Please enter a unique model name (locator key)",
+  "pages.modelConfig.approachNameRequired": "Please enter the model name",
+  "pages.modelConfig.approachNameDisabled":
+    "Model name cannot be modified when editing",
+  "pages.modelConfig.clientTypePlaceholder": "Please select client type",
+  "pages.modelConfig.discountPlaceholder":
+    "Please enter discount value between 0-1, e.g. 0.9 for 90% off",
+  "pages.modelConfig.servicewaresPlaceholder":
+    "Please enter service item identifiers, separated by commas",
+  "pages.modelConfig.pricingPlaceholder":
+    'Please enter pricing configuration in JSON format, e.g.: \'{"type": "per_token", "input_price": 0.01, "output_price": 0.03}\'',
+  "pages.modelConfig.clientArgsPlaceholder":
+    'Please enter client arguments in JSON format, e.g.: \'{"temperature": 0.7, "max_tokens": 1024}\'',
+  "pages.modelConfig.requestArgsPlaceholder":
+    'Please enter request arguments in JSON format, e.g.: \'{"model": "gpt-4", "stream": true}\'',
+  "pages.modelConfig.formInvalid": "Form validation failed, please check input",
+  "pages.modelConfig.editFailed": "Edit Failed",
+  "pages.modelConfig.addFailed": "Add Failed",
+  "pages.modelConfig.notSet": "Not Set",
+  "pages.modelConfig.deleteSuccess": "Delete Successful",
+  "pages.modelConfig.deleteFailed": "Delete Failed",
+  "pages.modelConfig.updateSuccess": "Update Successful",
+  "pages.modelConfig.jsonInvalid": "Invalid JSON format, please check input",
+  "pages.modelConfig.createSuccess": "Create Successful",
+  "pages.modelConfig.fetchFailed": "Failed to fetch model configurations",
+  "pages.modelConfig.saveFailed": "Failed to save model configuration",
+  "pages.modelConfig.saveFailedApproachNameRequired": "Model name is required",
+  "pages.modelConfig.saveFailedClientTypeInvalid": "Invalid client type",
+  "pages.modelConfig.saveFailedDiscountInvalid": "Invalid discount value",
+  "pages.modelConfig.saveFailedNetworkError":
+    "Network error, please check your connection",
+  "pages.modelConfig.saveFailedCheckInput":
+    "Save failed, please check your input",
+  "pages.modelConfig.requestFailed": "Request failed",
+  "pages.modelConfig.clientTypeRequired": "Please select the client type",
+  "pages.modelConfig.discountRequired": "Please enter the discount value",
+  "pages.modelConfig.discountNumber": "Discount value must be a number",
+  "pages.modelConfig.discountRange": "Discount value must be between 0 and 1",
+  "pages.modelConfig.pricingRequired": "Please enter the pricing configuration",
+
   // ConfigI18nPage
   "pages.configI18n.search": "Search",
   "pages.configI18n.search.placeholder":

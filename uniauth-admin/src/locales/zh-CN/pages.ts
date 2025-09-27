@@ -109,6 +109,128 @@ export default {
   "pages.userDetail.createdAt": "创建时间",
   "pages.userDetail.updatedAt": "更新时间",
 
+  // 自动配额池配置页面翻译
+  "pages.autoQuotaPoolConfig.title": "自动配额池配置列表",
+  "pages.autoQuotaPoolConfig.description": "管理系统中的自动配额池配置规则",
+  "pages.autoQuotaPoolConfig.ruleName": "规则名称",
+  "pages.autoQuotaPoolConfig.descriptionLabel": "规则说明",
+  "pages.autoQuotaPoolConfig.cronCycle": "刷新周期",
+  "pages.autoQuotaPoolConfig.regularQuota": "定期配额",
+  "pages.autoQuotaPoolConfig.enabled": "是否启用",
+  "pages.autoQuotaPoolConfig.priority": "优先级",
+  "pages.autoQuotaPoolConfig.createdAt": "创建时间",
+  "pages.autoQuotaPoolConfig.updatedAt": "更新时间",
+  "pages.autoQuotaPoolConfig.actions": "操作",
+  "pages.autoQuotaPoolConfig.edit": "编辑",
+  "pages.autoQuotaPoolConfig.delete": "删除",
+  "pages.autoQuotaPoolConfig.deleteConfirm": "确定要删除该自动配额池配置吗？",
+  "pages.autoQuotaPoolConfig.batchEnable": "批量启用",
+  "pages.autoQuotaPoolConfig.batchDisable": "批量禁用",
+  "pages.autoQuotaPoolConfig.addNew": "添加新的自动配额池配置",
+  "pages.autoQuotaPoolConfig.editModalTitle": "编辑自动配额池配置",
+  "pages.autoQuotaPoolConfig.addModalTitle": "添加自动配额池配置",
+  "pages.autoQuotaPoolConfig.ruleNamePlaceholder":
+    "请输入唯一的规则名称（唯一）",
+  "pages.autoQuotaPoolConfig.ruleNameRequired": "请输入规则名称",
+  "pages.autoQuotaPoolConfig.descriptionPlaceholder": "请输入规则说明",
+  "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
+    "请输入刷新周期的Cron表达式，例如：0 0 3 * * *",
+  "pages.autoQuotaPoolConfig.cronCycleRequired": "请输入刷新周期的Cron表达式",
+  "pages.autoQuotaPoolConfig.regularQuotaPlaceholder":
+    "请输入定期配额（每周期重置）",
+  "pages.autoQuotaPoolConfig.regularQuotaRequired": "请输入定期配额",
+  "pages.autoQuotaPoolConfig.priorityPlaceholder":
+    "请输入优先级，数值越小优先匹配",
+  "pages.autoQuotaPoolConfig.filterGroup": "过滤条件组 (JSON)",
+  "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
+    "请输入过滤条件组的JSON格式数据，满足条件的用户将应用该规则",
+  "pages.autoQuotaPoolConfig.filterGroupRequired": "请输入过滤条件组",
+  "pages.autoQuotaPoolConfig.upnsCache": "UPN缓存",
+  "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "请输入UPN缓存",
+  "pages.autoQuotaPoolConfig.enabledStatus": "启用",
+  "pages.autoQuotaPoolConfig.disabledStatus": "禁用",
+  "pages.autoQuotaPoolConfig.notSet": "未设置",
+  "pages.autoQuotaPoolConfig.deleteSuccess": "删除成功",
+  "pages.autoQuotaPoolConfig.deleteFailed": "删除失败",
+  "pages.autoQuotaPoolConfig.updateSuccess": "更新成功",
+  "pages.autoQuotaPoolConfig.createSuccess": "创建成功",
+  "pages.autoQuotaPoolConfig.saveFailed": "保存失败",
+  "pages.autoQuotaPoolConfig.jsonInvalid": "JSON格式错误",
+  "pages.autoQuotaPoolConfig.formInvalid": "表单验证失败，请检查输入",
+  "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup":
+    "保存失败：过滤条件组格式不正确",
+  "pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache":
+    "保存失败：UPN缓存列表格式不正确",
+  "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired":
+    "保存失败：规则名称为必填项",
+  "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired":
+    "保存失败：刷新周期为必填项",
+  "pages.autoQuotaPoolConfig.saveFailedRegularQuotaInvalid":
+    "保存失败：定期配额无效",
+  "pages.autoQuotaPoolConfig.requestFailed": "请求失败",
+  "pages.autoQuotaPoolConfig.saveFailedNetworkError":
+    "保存失败：网络错误，请稍后重试",
+  "pages.autoQuotaPoolConfig.saveFailedCheckInput": "保存失败：请检查您的输入",
+
+  // 模型配置页面翻译
+  "pages.modelConfig.title": "模型配置列表",
+  "pages.modelConfig.description":
+    "管理系统中所有AI模型的配置，包括模型参数、访问权限等",
+  "pages.modelConfig.approachName": "模型名称",
+  "pages.modelConfig.clientType": "客户端类型",
+  "pages.modelConfig.discount": "折扣",
+  "pages.modelConfig.servicewares": "服务",
+  "pages.modelConfig.pricing": "定价配置",
+  "pages.modelConfig.clientArgs": "客户端参数",
+  "pages.modelConfig.requestArgs": "请求参数",
+  "pages.modelConfig.createdAt": "创建时间",
+  "pages.modelConfig.updatedAt": "更新时间",
+  "pages.modelConfig.actions": "操作",
+  "pages.modelConfig.edit": "编辑",
+  "pages.modelConfig.delete": "删除",
+  "pages.modelConfig.deleteConfirm": "确定要删除此模型配置吗？",
+  "pages.modelConfig.batchEnable": "批量启用",
+  "pages.modelConfig.batchDisable": "批量禁用",
+  "pages.modelConfig.addNew": "新增模型配置",
+  "pages.modelConfig.editModalTitle": "编辑模型配置",
+  "pages.modelConfig.addModalTitle": "新增模型配置",
+  "pages.modelConfig.approachNamePlaceholder": "请输入唯一的模型名称（定位键）",
+  "pages.modelConfig.approachNameRequired": "请输入模型名称",
+  "pages.modelConfig.approachNameDisabled": "编辑时模型名称不可修改",
+  "pages.modelConfig.clientTypePlaceholder": "请选择客户端类型",
+  "pages.modelConfig.discountPlaceholder":
+    "请输入0-1之间的小数折扣值，例如0.9表示9折",
+  "pages.modelConfig.servicewaresPlaceholder":
+    "请输入服务项目标识，多个以逗号分隔",
+  "pages.modelConfig.pricingPlaceholder":
+    '请输入JSON格式的定价配置，例如：\'{"type": "per_token", "input_price": 0.01, "output_price": 0.03}\'',
+  "pages.modelConfig.clientArgsPlaceholder":
+    '请输入JSON格式的客户端参数，例如：\'{"temperature": 0.7, "max_tokens": 1024}\'',
+  "pages.modelConfig.requestArgsPlaceholder":
+    '请输入JSON格式的请求参数，例如：\'{"model": "gpt-4", "stream": true}\'',
+  "pages.modelConfig.formInvalid": "表单验证失败，请检查输入",
+  "pages.modelConfig.editFailed": "编辑失败",
+  "pages.modelConfig.addFailed": "新增失败",
+  "pages.modelConfig.notSet": "未设置",
+  "pages.modelConfig.deleteSuccess": "删除成功",
+  "pages.modelConfig.deleteFailed": "删除失败",
+  "pages.modelConfig.updateSuccess": "更新成功",
+  "pages.modelConfig.jsonInvalid": "JSON格式无效，请检查输入",
+  "pages.modelConfig.createSuccess": "创建成功",
+  "pages.modelConfig.fetchFailed": "获取模型配置失败",
+  "pages.modelConfig.saveFailed": "保存模型配置失败",
+  "pages.modelConfig.saveFailedApproachNameRequired": "模型名称为必填项",
+  "pages.modelConfig.saveFailedClientTypeInvalid": "客户端类型无效",
+  "pages.modelConfig.saveFailedDiscountInvalid": "折扣值无效",
+  "pages.modelConfig.saveFailedNetworkError": "网络错误，请检查网络连接",
+  "pages.modelConfig.saveFailedCheckInput": "保存失败，请检查输入",
+  "pages.modelConfig.requestFailed": "请求失败",
+  "pages.modelConfig.clientTypeRequired": "请选择客户端类型",
+  "pages.modelConfig.discountRequired": "请输入折扣值",
+  "pages.modelConfig.discountNumber": "折扣值必须为数字",
+  "pages.modelConfig.discountRange": "折扣值必须在0-1之间",
+  "pages.modelConfig.pricingRequired": "请输入定价配置",
+
   // ConfigI18nPage
   "pages.configI18n.search": "搜索配置",
   "pages.configI18n.search.placeholder": "请输入键值、翻译内容或描述",
@@ -152,10 +274,11 @@ export default {
   "pages.configI18n.batchDelete.clear": "取消选择",
   "pages.configI18n.batchDelete.delete": "批量删除",
   "pages.configI18n.updatedAt": "更新时间",
-  
+
   // PolicyListPage
   "pages.policyList.title": "规则列表",
-  "pages.policyList.description": "管理系统访问控制规则，配置用户、资源和操作的权限规则",
+  "pages.policyList.description":
+    "管理系统访问控制规则，配置用户、资源和操作的权限规则",
   "pages.policyList.subject": "主体",
   "pages.policyList.search.subject.placeholder": "请输入主体进行搜索",
   "pages.policyList.object": "对象",
@@ -181,7 +304,8 @@ export default {
   "pages.policyList.searchTable.newPolicy": "添加规则",
   "pages.policyList.searchTable.addPolicySuccess": "添加成功",
   "pages.policyList.searchTable.subject.label": "主体",
-  "pages.policyList.searchTable.subject.placeholder": "请输入主体，如: alice, user_group",
+  "pages.policyList.searchTable.subject.placeholder":
+    "请输入主体，如: alice, user_group",
   "pages.policyList.searchTable.subject.required": "请输入主体",
   "pages.policyList.searchTable.object.label": "对象",
   "pages.policyList.searchTable.object.required": "请输入对象",
