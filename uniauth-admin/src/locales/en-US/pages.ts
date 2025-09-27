@@ -214,4 +214,13 @@ export default {
   "pages.policyList.searchTable.effect.required": "Please select effect",
   "pages.policyList.searchTable.effect.allow": "Allow",
   "pages.policyList.searchTable.effect.deny": "Deny",
+
+  // QuotaPoolDetailsPage
+  "pages.quotaPoolConfigDetail.displayname": "Display Name",
+  "pages.quotaPoolConfigDetail.identity": "Identity",
+  "pages.quotaPoolConfigDetail.tag": "Tag",
+  "pages.quotaPoolConfigDetail.department": "Department Info",
+  "pages.quotaPoolConfigDetail.operation": "Operation",
+  "pages.quotaPoolConfigDetail.operation.viewDetail": "View Details",
+  "pages.quotaPoolConfigDetail.roleGroup": "Role Group",
 };

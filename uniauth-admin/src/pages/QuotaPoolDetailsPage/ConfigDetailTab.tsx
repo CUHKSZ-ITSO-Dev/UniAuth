@@ -1,3 +1,4 @@
+import { useIntl } from "@@/plugin-locale/localeExports";
 import {
   GridContent,
   type ProColumns,
@@ -10,6 +11,8 @@ import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthSe
 import { getQuotaPool as getConfigAPI } from "@/services/uniauthService/quotaPool";
 
 const ConfigDetailTab: FC = () => {
+  const intl = useIntl();
+
   const associatedUsersColumns: ProColumns<any>[] = [
     {
       title: "UPN",
@@ -19,21 +22,30 @@ const ConfigDetailTab: FC = () => {
       ellipsis: true,
     },
     {
-      title: "显示名",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.displayname",
+        defaultMessage: "显示名",
+      }),
       valueType: "text",
       dataIndex: "displayName",
       search: true,
       ellipsis: true,
     },
     {
-      title: "身份",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.identity",
+        defaultMessage: "身份",
+      }),
       valueType: "text",
       dataIndex: "identity",
       search: true,
       ellipsis: true,
     },
     {
-      title: "标签",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.tag",
+        defaultMessage: "标签",
+      }),
       valueType: "text",
       dataIndex: "tags",
       search: false,
@@ -43,14 +55,20 @@ const ConfigDetailTab: FC = () => {
         )),
     },
     {
-      title: "部门信息",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.department",
+        defaultMessage: "部门信息",
+      }),
       valueType: "text",
       dataIndex: "department",
       search: true,
       ellipsis: true,
     },
     {
-      title: "操作",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.operation",
+        defaultMessage: "操作",
+      }),
       valueType: "option",
       width: 100,
       render: (_: any, record: any) => [
@@ -59,7 +77,10 @@ const ConfigDetailTab: FC = () => {
           key="detail"
           onClick={() => handleUserDetail(record)}
         >
-          查看详情
+          {intl.formatMessage({
+            id: "pages.quotaPoolConfigDetail.operation.viewDetail",
+            defaultMessage: "查看详情",
+          })}
         </Button>,
       ],
     },
@@ -67,37 +88,55 @@ const ConfigDetailTab: FC = () => {
 
   const quotaPoolRulesColumns: ProColumns<any>[] = [
     {
-      title: "主体",
+      title: intl.formatMessage({
+        id: "pages.policyList.subject",
+        defaultMessage: "主体",
+      }),
       dataIndex: "sub",
       valueType: "text",
       ellipsis: true,
       search: true,
     },
     {
-      title: "对象",
+      title: intl.formatMessage({
+        id: "pages.policyList.object",
+        defaultMessage: "对象",
+      }),
       dataIndex: "obj",
       valueType: "text",
       ellipsis: true,
       search: true,
     },
     {
-      title: "操作",
+      title: intl.formatMessage({
+        id: "pages.policyList.action",
+        defaultMessage: "操作",
+      }),
       dataIndex: "act",
       valueType: "text",
       ellipsis: true,
       search: true,
     },
     {
-      title: "效果",
+      title: intl.formatMessage({
+        id: "pages.policyList.effect",
+        defaultMessage: "效果",
+      }),
       dataIndex: "eft",
       valueType: "select",
       valueEnum: {
         allow: {
-          text: "允许",
+          text: intl.formatMessage({
+            id: "pages.policyList.effect.allow",
+            defaultMessage: "允许",
+          }),
           status: "Success",
         },
         deny: {
-          text: "拒绝",
+          text: intl.formatMessage({
+            id: "pages.policyList.effect.deny",
+            defaultMessage: "拒绝",
+          }),
           status: "Error",
         },
       },
@@ -105,7 +144,10 @@ const ConfigDetailTab: FC = () => {
       search: true,
     },
     {
-      title: "角色分组",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.roleGroup",
+        defaultMessage: "角色分组",
+      }),
       dataIndex: "g",
       valueType: "text",
       ellipsis: true,
@@ -115,7 +157,10 @@ const ConfigDetailTab: FC = () => {
 
   const itToolsRulesColumns: ProColumns<any>[] = [
     {
-      title: "完整规则",
+      title: intl.formatMessage({
+        id: "pages.policyList.raw",
+        defaultMessage: "完整规则",
+      }),
       dataIndex: "userinfosRules",
       valueType: "text",
       ellipsis: true,
@@ -246,14 +291,14 @@ const ConfigDetailTab: FC = () => {
           success: true,
           total: res.total,
         };
+      } else {
+        // 没有数据直接返回空数据
+        return {
+          data: [],
+          success: false,
+          total: 0,
+        };
       }
-
-      // 没有数据直接返回空数据
-      return {
-        data: [],
-        success: false,
-        total: 0,
-      };
     } catch (error) {
       console.error("获取权限规则失败:", error);
       return {
@@ -289,14 +334,14 @@ const ConfigDetailTab: FC = () => {
           success: true,
           total: formattedData.length,
         };
+      } else {
+        // 没有数据直接返回空数据
+        return {
+          data: [],
+          success: false,
+          total: 0,
+        };
       }
-
-      // 没有数据直接返回空数据
-      return {
-        data: [],
-        success: false,
-        total: 0,
-      };
     } catch (_error) {
       return {
         data: [],

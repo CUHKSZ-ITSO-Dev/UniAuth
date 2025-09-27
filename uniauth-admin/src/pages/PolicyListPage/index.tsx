@@ -96,7 +96,7 @@ const addPolicies = async (policies: string[][]) => {
     return true;
   } catch (error) {
     console.error("Add policies error:", error);
-    message.error("添加规则失败");
+    message.error("Add policies failedx");
     return false;
   }
 };
@@ -109,7 +109,7 @@ const deletePolicies = async (policies: string[][]) => {
     return true;
   } catch (error) {
     console.error("Delete policies error:", error);
-    message.error("删除规则失败");
+    message.error("Delete policies failed");
     return false;
   }
 };
@@ -123,7 +123,7 @@ const editPolicy = async (oldPolicy: string[], newPolicy: string[]) => {
     return true;
   } catch (error) {
     console.error("Edit policy error:", error);
-    message.error("编辑规则失败");
+    message.error("Edit policy failed");
     return false;
   }
 };
@@ -147,7 +147,7 @@ const PolicyListPage: React.FC = () => {
     if (record.raw) {
       const success = await deletePolicies([record.raw]);
       if (success) {
-        message.success("删除成功");
+        message.success("Delete policy successfully");
         actionRef.current?.reload();
       }
     }
@@ -159,7 +159,7 @@ const PolicyListPage: React.FC = () => {
       .filter(Boolean) as string[][];
     const success = await deletePolicies(policies);
     if (success) {
-      message.success(`批量删除 ${policies.length} 条规则成功`);
+      message.success(`Batch delete ${policies.length} policies successfully`);
       actionRef.current?.reload();
       setSelectedRowKeys([]);
       setSelectedRows([]);
@@ -642,7 +642,7 @@ const PolicyListPage: React.FC = () => {
             ];
             const success = await editPolicy(oldPolicyStr, newPolicy);
             if (success) {
-              message.success("编辑成功");
+              message.success("Edit successfully");
               actionRef.current?.reload();
               setEditingPolicy(null);
               return true;
