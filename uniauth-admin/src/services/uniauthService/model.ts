@@ -1,11 +1,10 @@
-// @ts-ignore
 /* eslint-disable */
 import { request } from "@/utils/request";
 
 /** 编辑模型配置 编辑模型配置。 PUT /config/model */
 export async function putConfigModel(
   body: API.EditModelConfigReq,
-  options?: { [key: string]: any }
+  options?: { [key: string]: any },
 ) {
   return request<API.EditModelConfigRes>("/config/model", {
     method: "PUT",
@@ -20,7 +19,7 @@ export async function putConfigModel(
 /** 添加模型配置 POST /config/model */
 export async function postConfigModel(
   body: API.AddModelConfigReq,
-  options?: { [key: string]: any }
+  options?: { [key: string]: any },
 ) {
   return request<API.AddModelConfigRes>("/config/model", {
     method: "POST",

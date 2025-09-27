@@ -1,4 +1,3 @@
-// @ts-ignore
 /* eslint-disable */
 import { request } from "@/utils/request";
 
@@ -13,7 +12,7 @@ export async function getQuotaPool(options?: { [key: string]: any }) {
 /** 编辑配额池 PUT /quotaPool */
 export async function putQuotaPool(
   body: API.EditQuotaPoolReq,
-  options?: { [key: string]: any }
+  options?: { [key: string]: any },
 ) {
   return request<API.EditQuotaPoolRes>("/quotaPool", {
     method: "PUT",
@@ -28,7 +27,7 @@ export async function putQuotaPool(
 /** 新建配额池 POST /quotaPool */
 export async function postQuotaPool(
   body: API.NewQuotaPoolReq,
-  options?: { [key: string]: any }
+  options?: { [key: string]: any },
 ) {
   return request<API.NewQuotaPoolRes>("/quotaPool", {
     method: "POST",
