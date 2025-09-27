@@ -208,7 +208,6 @@ export const layout: RunTimeLayoutConfig = ({
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request: RequestConfig = {
-  baseURL:
-    process.env.REACT_APP_ENV === "dev" ? "/api" : "http://uniauth-gf-svc:8000",
+  baseURL: "/api/v1",
   ...errorConfig,
 };

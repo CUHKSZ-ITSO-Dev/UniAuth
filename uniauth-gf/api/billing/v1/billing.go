@@ -9,8 +9,8 @@ import (
 )
 
 type BillingRecordReq struct {
-	// g.Meta `path:"/record" tags:"Billing" method:"post" summary:"计费接口" dc:"上传计费请求，完成配额池的扣费。"`
-	g.Meta `path:"/record" tags:"Billing" method:"post" summary:"计费接口" dc:"上传计费请求，完成配额池的扣费。" resEg:"resource/interface/billing/billing_record_req.json"`
+    // g.Meta `path:"/record" tags:"Billing" method:"post" summary:"计费接口" dc:"上传计费请求，完成配额池的扣费。"`
+    g.Meta `path:"/internal/record" tags:"Billing" method:"post" summary:"计费接口" dc:"上传计费请求，完成配额池的扣费。" resEg:"resource/interface/billing/billing_record_req.json"`
 
 	Upn     string `json:"upn" v:"required"`
 	Service string `json:"service" v:"required"`
@@ -28,7 +28,7 @@ type BillingRecordRes struct {
 }
 
 type CheckBalanceReq struct {
-	g.Meta    `path:"/check" tags:"Billing" method:"post" summary:"检查余额" dc:"刷新、检查配额池的余额。"`
+    g.Meta    `path:"/internal/check" tags:"Billing" method:"post" summary:"检查余额" dc:"刷新、检查配额池的余额。"`
 	QuotaPool string `json:"quotaPool" v:"required" example:"itso-deep-research-vip"`
 }
 type CheckBalanceRes struct {
@@ -38,7 +38,7 @@ type CheckBalanceRes struct {
 }
 
 type CheckTokensUsageReq struct {
-	g.Meta    `path:"/checkTokensUsage" tags:"Billing" method:"post" summary:"检查Tokens使用情况" dc:"检查Tokens使用情况"`
+    g.Meta    `path:"/internal/checkTokensUsage" tags:"Billing" method:"post" summary:"检查Tokens使用情况" dc:"检查Tokens使用情况"`
 	Upn       string `json:"upn" v:"required" example:"122020255@link.cuhk.edu.cn"`
 	QuotaPool string `json:"quotaPool" v:"required" example:"itso-deep-research-vip"`
 	NDays     int    `json:"nDays" v:"required|integer" d:"7"`
