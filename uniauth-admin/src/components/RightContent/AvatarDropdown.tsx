@@ -53,8 +53,11 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
     // 移除API调用，直接清除用户状态
     // await outLogin();
 
-    // 简化退出登录逻辑，直接跳转到欢迎页面
-    history.replace("/welcome");
+    // 清除localStorage中的用户信息
+    localStorage.removeItem('userInfo');
+    
+    // 退出登录后跳转到登录页面
+    history.replace("/auth/uniauth/login");
   };
   const { styles } = useStyles();
 

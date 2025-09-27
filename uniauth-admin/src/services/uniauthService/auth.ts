@@ -2,6 +2,21 @@
 /* eslint-disable */
 import { request } from "@/utils/request";
 
+/** UniAuth账号密码校验 验证用户账号密码是否正确。 POST /auth/uniauth/login */
+export async function postAuthUniauthLogin(
+  body: { account: string; password: string },
+  options?: { [key: string]: any }
+) {
+  return request<{ ok: boolean }>("/auth/uniauth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 获取所属配额池的可用模型 动态获取指定配额池的可用模型。 GET /auth/chat/quotaPools/models */
 export async function getAuthChatQuotaPoolsModels(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

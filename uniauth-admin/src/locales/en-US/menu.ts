@@ -55,4 +55,5 @@ export default {
   "menu.policy-list": "Policy Management",
   "menu.config-i18n": "I18N Configuration",
   "menu.user-detail": "User Details",
+  "menu.permission-demo": "Permission Demo",
 };

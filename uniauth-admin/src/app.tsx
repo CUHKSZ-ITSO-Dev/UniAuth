@@ -2,7 +2,7 @@ import { LinkOutlined } from "@ant-design/icons";
 import type { Settings as LayoutSettings } from "@ant-design/pro-components";
 import { SettingDrawer } from "@ant-design/pro-components";
 import type { RequestConfig, RunTimeLayoutConfig } from "@umijs/max";
-import { Link } from "@umijs/max";
+import { history, Link } from "@umijs/max";
 import {
   AvatarDropdown,
   AvatarName,
@@ -15,11 +15,11 @@ import { errorConfig } from "./requestErrorConfig";
 import "@ant-design/v5-patch-for-react-19";
 
 const isDev = process.env.NODE_ENV === "development";
-// 移除不再使用的登录路径定义
-// const loginPath = '/user/login';
+// 登录路径定义
+const loginPath = "/auth/uniauth/login";
 
-// 定义模拟的用户类型
-interface MockUser {
+// 定义用户类型
+interface User {
   name: string;
   avatar?: string;
   userid?: string;
@@ -45,73 +45,30 @@ interface MockUser {
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: MockUser;
+  currentUser?: User;
   loading?: boolean;
-  fetchUserInfo?: () => Promise<MockUser | undefined>;
+  fetchUserInfo?: () => Promise<User | undefined>;
 }> {
-  // 创建模拟的admin用户
-  const mockAdminUser: MockUser = {
-    name: "Admin User",
-    avatar:
-      "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png",
-    userid: "00000001",
-    email: "admin@example.com",
-    signature: "海纳百川，有容乃大",
-    title: "系统管理员",
-    group: "前端组",
-    tags: [
-      {
-        key: "0",
-        label: "很有想法的",
-      },
-      {
-        key: "1",
-        label: "专注设计",
-      },
-      {
-        key: "2",
-        label: "辣~",
-      },
-      {
-        key: "3",
-        label: "大长腿",
-      },
-      {
-        key: "4",
-        label: "川妹子",
-      },
-      {
-        key: "5",
-        label: "海纳百川",
-      },
-    ],
-    notifyCount: 12,
-    unreadCount: 11,
-    country: "China",
-    access: "admin",
-    geographic: {
-      province: {
-        label: "浙江省",
-        key: "330000",
-      },
-      city: {
-        label: "杭州市",
-        key: "330100",
-      },
-    },
-    address: "西湖区工专路 77 号",
-    phone: "0752-268888888",
-  };
-
   const fetchUserInfo = async () => {
-    // 直接返回模拟用户，不需要API调用
-    return mockAdminUser;
+    try {
+      // 从localStorage获取用户信息
+      const userInfo = localStorage.getItem("userInfo");
+      if (userInfo) {
+        const parsedUserInfo = JSON.parse(userInfo);
+        return parsedUserInfo;
+      }
+    } catch (error) {
+      console.error("Failed to fetch user info:", error);
+    }
+    return undefined;
   };
 
-  // 总是返回模拟的admin用户
+  // 初始化时检查是否有用户信息
+  const currentUser = await fetchUserInfo();
+
   return {
     fetchUserInfo,
-    currentUser: mockAdminUser,
+    currentUser,
     settings: defaultSettings as Partial<LayoutSettings>,
   };
 }
@@ -139,11 +96,11 @@ export const layout: RunTimeLayoutConfig = ({
     // },
     footerRender: () => <Footer />,
     onPageChange: () => {
-      // 移除登录检查
-      // const { location } = history;
-      // if (!initialState?.currentUser && location.pathname !== loginPath) {
-      //   history.push(loginPath);
-      // }
+      // 添加登录检查
+      const { location } = history;
+      if (!initialState?.currentUser && location.pathname !== loginPath) {
+        history.push(loginPath);
+      }
     },
     bgLayoutImgList: [
       {
