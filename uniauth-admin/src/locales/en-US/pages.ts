@@ -197,8 +197,15 @@ export default {
   "pages.policyList.searchTable.newPolicy": "Add Policy",
   "pages.policyList.searchTable.addPolicySuccess": "Added successfully",
   "pages.policyList.searchTable.subject.label": "Subject",
-  "pages.policyList.searchTable.subject.placeholder": "e.g. alice, user_group",
+  "pages.policyList.searchTable.subject.placeholder":
+    "Please enter subject, e.g. alice, user_group",
   "pages.policyList.searchTable.subject.required": "Please enter subject",
+  "pages.policyList.searchTable.object.placeholder":
+    "Please enter object, e.g. data1, data_group",
+  "pages.policyList.searchTable.action.placeholder":
+    "Please enter action, e.g. read, write",
+  "pages.policyList.searchTable.effect.placeholder":
+    "Please select effect, e.g. allow, deny",
   "pages.policyList.searchTable.object.label": "Object",
   "pages.policyList.searchTable.object.required": "Please enter object",
   "pages.policyList.searchTable.action.label": "Action",
