@@ -63,7 +63,7 @@ const filterPolicies = async (params: any) => {
     }
 
     // 将 API 返回的二维数组转换为表格需要的格式
-    const formattedData = res.policies.map((policy: any) => ({
+    const formattedData = res.policies.map((policy: string[]) => ({
       id: policy.join(","),
       subject: policy[0] || "",
       object: policy[1] || "",
@@ -475,15 +475,7 @@ const PolicyListPage: React.FC = () => {
               })}
             </Button>,
           ]}
-          request={async (params) => {
-            const searchParams = {
-              subject: params.sub,
-              object: params.obj,
-              action: params.act,
-              ...params,
-            };
-            return await filterPolicies(searchParams);
-          }}
+          request={async (params) => filterPolicies(params)}
           scroll={{ x: 1200 }}
         />
       </ProCard>
