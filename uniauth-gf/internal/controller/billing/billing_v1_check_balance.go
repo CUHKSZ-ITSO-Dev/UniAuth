@@ -7,8 +7,6 @@ import (
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
 
-	svc "uniauth-gf/internal/service/quotaPool"
-
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -52,7 +50,10 @@ func (c *ControllerV1) CheckBalance(ctx context.Context, req *v1.CheckBalanceReq
 		}
 		res.NextResetAt = sched.Next(quotaPool.LastResetAt.Local().Time)
 		if gtime.Now().Time.After(res.NextResetAt) {
-			err = svc.ResetBalance(ctx, req.QuotaPool)
+			quotaPool.RemainingQuota = quotaPool.RegularQuota
+			quotaPool.LastResetAt = gtime.Now()
+			// 更新并释放锁
+			_, err = dao.QuotapoolQuotaPool.Ctx(ctx).WherePri(quotaPool.Id).Data(quotaPool).Update()
 			if err != nil {
 				return gerror.Wrap(err, "更新配额池信息失败")
 			}
