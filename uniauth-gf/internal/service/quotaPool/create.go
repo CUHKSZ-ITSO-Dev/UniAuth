@@ -45,10 +45,14 @@ func Create(ctx context.Context, newQuotaPoolInfo *entity.QuotapoolQuotaPool) (e
 		for _, upn := range filterRes.UserUpns {
 			groupings = append(groupings, []string{upn, newQuotaPoolInfo.QuotaPoolName})
 		}
-		if duplicate, err := casbin.GetEnforcer().AddGroupingPoliciesEx(groupings); err != nil {
+		e := casbin.GetEnforcer()
+		if duplicate, err := e.AddGroupingPoliciesEx(groupings); err != nil {
 			return gerror.Wrap(err, "Casbin 批量新增配额池角色失败")
 		} else if duplicate {
 			g.Log().Warningf(ctx, "新增配额池 %v 的角色时，发现重复角色。", newQuotaPoolInfo.QuotaPoolName)
+		}
+		if err = e.SavePolicy(); err != nil {
+			return gerror.Wrap(err, "Casbin 保存配额池角色失败")
 		}
 		return nil
 	})
