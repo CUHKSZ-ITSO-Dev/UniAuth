@@ -1,9 +1,8 @@
 FROM alpine:latest
 
-WORKDIR /root/
+WORKDIR /app
 
 RUN apk add --no-cache ca-certificates tzdata
 
-COPY bin/linux_amd64/uniauth .
-
+COPY --chmod=0755 bin/linux_amd64/uniauth .
 CMD ["./uniauth"]
