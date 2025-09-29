@@ -1,14 +1,12 @@
-package cronjobs
+package quotaPool
 
 import (
 	"context"
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
-	"uniauth-gf/internal/service/quotaPool"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/frame/g"
 )
 
 func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) error {
@@ -28,8 +26,8 @@ func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) er
 			}
 		}
 		for _, qp := range *qps {
-			if err := quotaPool.Edit(ctx, &qp); err != nil {
-				g.Log().Error(ctx, gerror.Wrapf(err, "更新配额池 %v 失败", qp.QuotaPoolName))
+			if err := Edit(ctx, &qp); err != nil {
+				return gerror.Wrapf(err, "更新配额池 %v 失败", qp.QuotaPoolName)
 			}
 		}
 		return nil

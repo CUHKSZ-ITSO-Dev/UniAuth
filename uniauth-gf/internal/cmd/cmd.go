@@ -17,7 +17,7 @@ import (
 	"uniauth-gf/internal/controller/config"
 	"uniauth-gf/internal/controller/quotaPool"
 	"uniauth-gf/internal/controller/userinfos"
-	cronjobs "uniauth-gf/internal/cronJobs"
+	quotaPoolSvc "uniauth-gf/internal/service/quotaPool"
 
 	"uniauth-gf/internal/middlewares"
 )
@@ -77,7 +77,7 @@ var (
 
 			// 注册定时任务
 			if _, err = gcron.Add(ctx, "@daily", func(ctx context.Context) {
-				if err := cronjobs.UpdateQuotaPoolsUsersInCasbin(ctx, nil); err != nil {
+				if err := quotaPoolSvc.UpdateQuotaPoolsUsersInCasbin(ctx, nil); err != nil {
 					g.Log().Error(ctx, "定时任务执行失败:", err)
 				}
 			}, "Update QuotaPools Users in Casbin"); err != nil {

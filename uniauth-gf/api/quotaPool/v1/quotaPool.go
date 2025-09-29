@@ -73,3 +73,11 @@ type EnsurePersonalQuotaPoolRes struct {
 	OK    bool `json:"ok" v:"required" dc:"是否成功"`
 	IsNew bool `json:"isNew" v:"required" dc:"是否新建"`
 }
+
+type RefreshUsersOfQuotaPoolReq struct {
+	g.Meta     `path:"/refreshUsers" tags:"QuotaPool" method:"post" summary:"刷新配额池的用户" dc:"给定配额池名称列表，根据配额池配置中的 UserInfos Rules，在 Casbin 中刷新组权限继承关系。不传参数则刷新所有配额池。"`
+	QPNameList *[]string `json:"qpNameList" example:"['itso-deep-research-vip', 'itso-deep-research-vip-2']"`
+}
+type RefreshUsersOfQuotaPoolRes struct {
+	OK bool `json:"ok" v:"required" dc:"是否成功"`
+}
