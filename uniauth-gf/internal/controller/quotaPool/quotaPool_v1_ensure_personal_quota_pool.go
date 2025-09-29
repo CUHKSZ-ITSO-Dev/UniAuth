@@ -52,7 +52,7 @@ func (c *ControllerV1) EnsurePersonalQuotaPool(ctx context.Context, req *v1.Ensu
 		return nil
 	})
 	if err != nil {
-		return nil, gerror.Wrapf(err, "用户 [%v] Ensure 配额池事务发生错误", req.Upn)
+		return nil, gerror.Wrap(err, "Ensure 配额池事务发生错误")
 	}
 	res.OK = true
 	res.IsNew = true
