@@ -19,16 +19,16 @@ import (
 func (c *ControllerV1) EnsurePersonalQuotaPool(ctx context.Context, req *v1.EnsurePersonalQuotaPoolReq) (res *v1.EnsurePersonalQuotaPoolRes, err error) {
 	res = &v1.EnsurePersonalQuotaPoolRes{}
 
-	_, _, havePersonal, err := quotaPool.GetAllEnabledQuotaPoolsForUser(ctx, req.Upn)
-	if err != nil {
-		return nil, gerror.Wrap(err, "获取用户所有配额池时发生内部错误")
-	}
-	if havePersonal {
-		res.OK = true
-		return
-	}
-
 	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		_, _, havePersonal, err := quotaPool.GetAllEnabledQuotaPoolsForUser(ctx, req.Upn)
+		if err != nil {
+			return gerror.Wrap(err, "获取用户所有配额池时发生内部错误")
+		}
+		if havePersonal {
+			res.OK = true
+			return nil
+		}
+
 		// 从 AutoQuotaPoolConfig 里面找到合适的配置，并进行新建一个个人配额池
 		var autoQPConfig *entity.ConfigAutoQuotaPool
 		if err = dao.ConfigAutoQuotaPool.Ctx(ctx).OrderAsc("priority").Where("? = ANY(upns_cache)", req.Upn).Limit(1).LockUpdate().Scan(&autoQPConfig); err != nil {
