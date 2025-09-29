@@ -35,7 +35,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		}
 	}()
 
-	// 校验配额池 Plan 和 Source 的数据
+	// 根据 Source 的配额池属性（是否个人）自动判断计费方案
 	value, err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields("personal").Where("quota_pool_name = ?", req.Source).Value()
 	if err != nil {
 		err = gerror.Wrap(err, "获取配额池当前的剩余余额失败")
@@ -45,13 +45,10 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		err = errors.New("没有找到这个配额池。请重新检查")
 		return
 	}
-	if req.Plan == "Included" && !(value.Bool()) {
-		err = errors.New("计费请求中 Plan 声明计划为 Included，但声明的 Source 非个人配额池")
-		return
-	}
-	if value.Bool() && req.Plan == "Quota Pool" {
-		err = errors.New("计费请求中 Plan 声明计划为 Quota Pool，但声明的 Source 为个人配额池")
-		return
+
+	plan := "Quota Pool"
+	if value.Bool() {
+		plan = "Included"
 	}
 
 	// 记录
@@ -89,7 +86,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		"svc":     req.Service,
 		"product": req.Product,
 		"cost":    cost,
-		"plan":    req.Plan,
+		"plan":    plan,
 		"source":  req.Source,
 		"remark":  req.Remark.MustToJsonString(),
 	}).Insert()
