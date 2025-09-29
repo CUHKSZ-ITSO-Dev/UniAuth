@@ -27,22 +27,32 @@ func GetAllEnabledQuotaPoolsForUser(ctx context.Context, upn string) (quotaPools
 	if err != nil {
 		return nil, nil, false, gerror.Wrap(err, "获取用户所有角色时发生内部错误")
 	}
+	if len(roles) == 0 {
+		return nil, nil, false, gerror.New("用户没有角色")
+	}
 
-	personalMap = make(map[string]bool)
+	// 直接获取所有的配额池并建立索引
+	var allQuotaPools []*entity.QuotapoolQuotaPool
+	if err = dao.QuotapoolQuotaPool.Ctx(ctx).WhereIn(dao.QuotapoolQuotaPool.Columns().QuotaPoolName, roles).Scan(&allQuotaPools); err != nil {
+		err = gerror.Wrap(err, "批量获取配额池时发生内部错误")
+		return
+	}
+	foundPools := make(map[string]*entity.QuotapoolQuotaPool, len(allQuotaPools))
+	for _, qp := range allQuotaPools {
+		foundPools[qp.QuotaPoolName] = qp
+	}
+
+	personalMap = make(map[string]bool, len(roles))
 	for _, role := range roles {
-		var quotaPool *entity.QuotapoolQuotaPool
-		err := dao.QuotapoolQuotaPool.Ctx(ctx).Where(dao.QuotapoolQuotaPool.Columns().QuotaPoolName, role).Scan(&quotaPool)
-		if err != nil {
-			return nil, nil, false, gerror.Wrapf(err, "获取配额池 %s 时发生内部错误", role)
-		}
-		if quotaPool == nil {
-			g.Log().Warningf(ctx, "没有找到这个配额池：%v", role)
+		qp, ok := foundPools[role]
+		if !ok {
+			g.Log().Warningf(ctx, "%v 拥有这个配额池，但是没有找到这个配额池的记录：%v", upn, role)
 			continue
 		}
-		if !quotaPool.Disabled {
+		if !qp.Disabled {
 			quotaPools = append(quotaPools, role)
-			personalMap[role] = quotaPool.Personal
-			if quotaPool.Personal {
+			personalMap[role] = qp.Personal
+			if qp.Personal {
 				havePersonal = true
 			}
 		}
