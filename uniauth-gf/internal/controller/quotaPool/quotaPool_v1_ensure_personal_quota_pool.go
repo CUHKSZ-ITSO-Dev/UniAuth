@@ -3,6 +3,7 @@ package quotaPool
 import (
 	"context"
 
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -25,29 +26,33 @@ func (c *ControllerV1) EnsurePersonalQuotaPool(ctx context.Context, req *v1.Ensu
 		return
 	}
 
-	// 从 AutoQuotaPoolConfig 里面找到合适的配置，并进行新建一个个人配额池
-	var autoQPConfig *entity.ConfigAutoQuotaPool
-	if err = dao.ConfigAutoQuotaPool.Ctx(ctx).OrderAsc("priority").Where("? = ANY(upns_cache)", req.Upn).Limit(1).Scan(&autoQPConfig); err != nil {
-		err = gerror.Wrap(err, "获取自动配额池配置时发生内部错误")
-		return
-	}
-	if autoQPConfig == nil {
-		err = gerror.New("没有找到合适的自动配额池配置")
-		return
-	}
-	if _, err = c.NewQuotaPool(ctx, &v1.NewQuotaPoolReq{
-		QuotaPoolName: "personal-" + req.Upn,
-		CronCycle:     autoQPConfig.CronCycle,
-		RegularQuota:  autoQPConfig.RegularQuota,
-		Personal:      true,
-		Disabled:      !autoQPConfig.Enabled,
-		UserinfosRules: gjson.New(g.Map{
-			"field": "upn",
-			"op":    "eq",
-			"value": req.Upn,
-		}),
-	}); err != nil {
-		err = gerror.Wrap(err, "新建个人配额池时发生内部错误")
+	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		// 从 AutoQuotaPoolConfig 里面找到合适的配置，并进行新建一个个人配额池
+		var autoQPConfig *entity.ConfigAutoQuotaPool
+		if err = dao.ConfigAutoQuotaPool.Ctx(ctx).OrderAsc("priority").Where("? = ANY(upns_cache)", req.Upn).Limit(1).LockUpdate().Scan(&autoQPConfig); err != nil {
+			return gerror.Wrap(err, "获取自动配额池配置时发生内部错误")
+		}
+		if autoQPConfig == nil {
+			return gerror.New("没有找到合适的自动配额池配置")
+		}
+		if _, err = c.NewQuotaPool(ctx, &v1.NewQuotaPoolReq{
+			QuotaPoolName: "personal-" + req.Upn,
+			CronCycle:     autoQPConfig.CronCycle,
+			RegularQuota:  autoQPConfig.RegularQuota,
+			Personal:      true,
+			Disabled:      !autoQPConfig.Enabled,
+			UserinfosRules: gjson.New(g.Map{
+				"field": "upn",
+				"op":    "eq",
+				"value": req.Upn,
+			}),
+		}); err != nil {
+			return gerror.Wrap(err, "新建个人配额池时发生内部错误")
+		}
+		return nil
+	})
+	if err != nil {
+		err = gerror.Wrap(err, "Ensure配额池事务发生错误")
 		return
 	}
 	res.OK = true
