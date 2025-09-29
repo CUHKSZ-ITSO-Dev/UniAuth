@@ -75,7 +75,7 @@ type EnsurePersonalQuotaPoolRes struct {
 }
 
 type RefreshUsersOfQuotaPoolReq struct {
-	g.Meta     `path:"/refreshUsers" tags:"QuotaPool" method:"post" summary:"刷新配额池的用户" dc:"给定配额池名称列表，根据配额池配置中的 UserInfos Rules，在 Casbin 中刷新组权限继承关系。不传参数则刷新所有配额池。"`
+	g.Meta     `path:"/refreshUsers" tags:"QuotaPool" method:"post" summary:"刷新配额池的用户" dc:"给定配额池名称列表，根据配额池配置中的 UserInfos Rules，在 Casbin 中刷新组权限继承关系。'不传参数'则刷新所有配额池。如果传空数组，则没有任何操作！"`
 	QPNameList *[]string `json:"qpNameList" example:"['itso-deep-research-vip', 'itso-deep-research-vip-2']"`
 }
 type RefreshUsersOfQuotaPoolRes struct {

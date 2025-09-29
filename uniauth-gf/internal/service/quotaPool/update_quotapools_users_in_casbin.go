@@ -11,21 +11,24 @@ import (
 
 func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) error {
 	if err := dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		var qps *[]entity.QuotapoolQuotaPool
+		var qps []entity.QuotapoolQuotaPool
+		db := dao.QuotapoolQuotaPool.Ctx(ctx).LockUpdate()
 		if qpNameList == nil {
-			if err := dao.QuotapoolQuotaPool.Ctx(ctx).LockUpdate().Scan(&qps); err != nil {
+			if err := db.Scan(&qps); err != nil {
 				return gerror.Wrap(err, "查询所有配额池失败")
-			} else if qps == nil {
-				return gerror.New("找不到要求的配额池")
 			}
 		} else {
-			if err := dao.QuotapoolQuotaPool.Ctx(ctx).LockUpdate().Where("quota_pool_name IN (?)", *qpNameList).Scan(&qps); err != nil {
+			if len(*qpNameList) == 0 {
+				return nil // 列表为空，无需操作
+			}
+			if err := db.WhereIn(dao.QuotapoolQuotaPool.Columns().QuotaPoolName, *qpNameList).Scan(&qps); err != nil {
 				return gerror.Wrap(err, "查询指定配额池失败")
-			} else if qps == nil {
-				return gerror.New("找不到要求的配额池")
+			}
+			if len(qps) == 0 {
+				return gerror.New("找不到任何指定的配额池")
 			}
 		}
-		for _, qp := range *qps {
+		for _, qp := range qps {
 			if err := Edit(ctx, &qp); err != nil {
 				return gerror.Wrapf(err, "更新配额池 %v 失败", qp.QuotaPoolName)
 			}
