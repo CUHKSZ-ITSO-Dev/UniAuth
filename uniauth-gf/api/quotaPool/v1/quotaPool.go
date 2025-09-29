@@ -67,7 +67,7 @@ type DeleteQuotaPoolRes struct {
 
 type EnsurePersonalQuotaPoolReq struct {
 	g.Meta `path:"/ensure" tags:"QuotaPool" method:"post" summary:"确保个人配额池存在"`
-	Upn    string `json:"upn" v:"required"`
+	Upn    string `json:"upn" v:"required" example:"122020255@link.cuhk.edu.cn"`
 }
 type EnsurePersonalQuotaPoolRes struct {
 	OK    bool `json:"ok" v:"required" dc:"是否成功"`

@@ -33,7 +33,7 @@ func (c *ControllerV1) EnsurePersonalQuotaPool(ctx context.Context, req *v1.Ensu
 			return gerror.Wrap(err, "获取自动配额池配置时发生内部错误")
 		}
 		if autoQPConfig == nil {
-			return gerror.New("没有找到合适的自动配额池配置")
+			return gerror.New("该用户没有个人配额池，但没有找到合适的自动配额池配置")
 		}
 		if _, err = c.NewQuotaPool(ctx, &v1.NewQuotaPoolReq{
 			QuotaPoolName: "personal-" + req.Upn,
@@ -52,7 +52,7 @@ func (c *ControllerV1) EnsurePersonalQuotaPool(ctx context.Context, req *v1.Ensu
 		return nil
 	})
 	if err != nil {
-		return nil, gerror.Wrap(err, "Ensure配额池事务发生错误")
+		return nil, gerror.Wrapf(err, "用户 [%v] Ensure 配额池事务发生错误", req.Upn)
 	}
 	res.OK = true
 	res.IsNew = true
