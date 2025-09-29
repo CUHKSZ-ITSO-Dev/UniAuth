@@ -42,6 +42,15 @@ var (
 			if err := gtime.SetTimeZone("Asia/Shanghai"); err != nil {
 				panic(err)
 			}
+			// 注册定时任务
+			if _, err = gcron.Add(ctx, "@daily", func(ctx context.Context) {
+				if err := quotaPoolSvc.UpdateQuotaPoolsUsersInCasbin(ctx, nil); err != nil {
+					g.Log().Error(ctx, "定时任务执行失败:", err)
+				}
+			}, "Update QuotaPools Users in Casbin"); err != nil {
+				// 注册失败
+				panic(err)
+			}
 
 			s := g.Server()
 			s.Use(middlewares.UniResMiddleware)
@@ -75,15 +84,6 @@ var (
 			s.SetPort(g.Cfg().MustGetWithEnv(ctx, "server.port").Int())
 			s.Run()
 
-			// 注册定时任务
-			if _, err = gcron.Add(ctx, "@daily", func(ctx context.Context) {
-				if err := quotaPoolSvc.UpdateQuotaPoolsUsersInCasbin(ctx, nil); err != nil {
-					g.Log().Error(ctx, "定时任务执行失败:", err)
-				}
-			}, "Update QuotaPools Users in Casbin"); err != nil {
-				// 注册失败
-				panic(err)
-			}
 			return nil
 		},
 	}

@@ -15,13 +15,19 @@ import (
 func (c *ControllerV1) EditQuotaPool(ctx context.Context, req *v1.EditQuotaPoolReq) (res *v1.EditQuotaPoolRes, err error) {
 	res = &v1.EditQuotaPoolRes{}
 	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {		
-		var qp *entity.QuotapoolQuotaPool
-		err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPoolName).LockUpdate().Scan(&qp)
-		if err != nil {
+		if validQP, err := dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPoolName).LockUpdate().One(); err != nil {
 			return gerror.Wrap(err, "查询配额池信息失败")
-		}
-		if qp == nil {
+		} else if validQP == nil {
 			return gerror.Newf("该配额池不存在，请重新检查：%v", req.QuotaPoolName)
+		}
+		qp := &entity.QuotapoolQuotaPool{
+			QuotaPoolName: req.QuotaPoolName,
+			CronCycle: req.CronCycle,
+			RegularQuota: req.RegularQuota,
+			ExtraQuota: req.ExtraQuota,
+			Personal: req.Personal,
+			Disabled: req.Disabled,
+			UserinfosRules: req.UserinfosRules,
 		}
 		if err = quotaPool.Edit(ctx, qp); err != nil {
 			return gerror.Wrap(err, "更新配额池失败")

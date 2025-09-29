@@ -41,7 +41,7 @@ func Create(ctx context.Context, newQuotaPoolInfo *entity.QuotapoolQuotaPool) (e
 		}
 
 		// 建立 casbin 角色继承
-		groupings := make([][]string, len(filterRes.UserUpns))
+		groupings := make([][]string, 0, len(filterRes.UserUpns))
 		for _, upn := range filterRes.UserUpns {
 			groupings = append(groupings, []string{upn, newQuotaPoolInfo.QuotaPoolName})
 		}

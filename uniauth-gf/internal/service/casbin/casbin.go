@@ -44,8 +44,6 @@ func init() {
 	if err := e.LoadPolicy(); err != nil {
 		panic("加载Casbin策略失败: " + err.Error())
 	}
-
-	e.EnableAutoSave(true)
 }
 
 func GetEnforcer() *casbin.Enforcer {
