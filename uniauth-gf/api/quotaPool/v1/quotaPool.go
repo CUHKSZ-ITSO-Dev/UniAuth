@@ -70,6 +70,6 @@ type EnsurePersonalQuotaPoolReq struct {
 	Upn    string `json:"upn" v:"required"`
 }
 type EnsurePersonalQuotaPoolRes struct {
-	OK    bool `json:"ok" dc:"是否成功"`
-	IsNew bool `json:"isNew" dc:"是否新建"`
+	OK    bool `json:"ok" v:"required" dc:"是否成功"`
+	IsNew bool `json:"isNew" v:"required" dc:"是否新建"`
 }

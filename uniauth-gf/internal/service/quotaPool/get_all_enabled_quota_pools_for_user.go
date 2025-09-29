@@ -21,14 +21,14 @@ import (
 //   personalMap: 配额池名称到是否为个人配额池的映射（true 表示个人配额池）。
 //   havePersonal: 用户是否拥有至少一个个人配额池（true/false）。
 //   err: 错误信息，若无错误则为 nil。
-func GetAllEnabledQuotaPoolsForUser(ctx context.Context, upn string) (quotaPools []string, personalMap map[string]bool, havePersonal bool, err error) {
+func GetAllEnabledQuotaPoolsForUser(ctx context.Context, upn string) (quotaPools []string, personalMap g.MapStrBool, havePersonal bool, err error) {
 	e := casbin.GetEnforcer()
 	roles, err := e.GetRolesForUser(upn)
 	if err != nil {
 		return nil, nil, false, gerror.Wrap(err, "获取用户所有角色时发生内部错误")
 	}
 	if len(roles) == 0 {
-		return nil, nil, false, gerror.New("用户没有角色")
+		return []string{}, g.MapStrBool{}, false, nil
 	}
 
 	// 直接获取所有的配额池并建立索引
