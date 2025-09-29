@@ -48,7 +48,7 @@ type FilterReq struct {
 	Filter     *FilterGroup     `json:"filter" v:"required#需要filter" dc:"过滤条件，支持复杂的逻辑组合查询"`
 	Sort       []*SortCondition `json:"sort" dc:"排序条件，支持多字段排序"`
 	Pagination *PaginationReq   `json:"pagination" dc:"分页参数，支持分页或查询全部"`
-	Verbose    bool             `json:"verbose" dc:"是否返回详细用户信息，false时仅返回UPN列表"`
+	Verbose    bool             `json:"verbose" d:"true" dc:"是否返回详细用户信息，false时仅返回UPN列表"`
 }
 
 type FilterRes struct {

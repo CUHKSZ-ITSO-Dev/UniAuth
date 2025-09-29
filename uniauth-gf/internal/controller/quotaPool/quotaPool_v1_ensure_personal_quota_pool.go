@@ -7,6 +7,8 @@ import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/shopspring/decimal"
 
 	"uniauth-gf/api/quotaPool/v1"
 	"uniauth-gf/internal/dao"
@@ -35,18 +37,22 @@ func (c *ControllerV1) EnsurePersonalQuotaPool(ctx context.Context, req *v1.Ensu
 		if autoQPConfig == nil {
 			return gerror.New("该用户没有个人配额池，但没有找到合适的自动配额池配置")
 		}
-		if _, err = c.NewQuotaPool(ctx, &v1.NewQuotaPoolReq{
-			QuotaPoolName: "personal-" + req.Upn,
-			CronCycle:     autoQPConfig.CronCycle,
-			RegularQuota:  autoQPConfig.RegularQuota,
-			Personal:      true,
-			Disabled:      !autoQPConfig.Enabled,
+		data := &entity.QuotapoolQuotaPool{
+			QuotaPoolName:  "personal-" + req.Upn,
+			CronCycle:      autoQPConfig.CronCycle,
+			RegularQuota:   autoQPConfig.RegularQuota,
+			RemainingQuota: autoQPConfig.RegularQuota,
+			LastResetAt:    gtime.Now(),
+			ExtraQuota:     decimal.Zero,
+			Personal:       true,
+			Disabled:       !autoQPConfig.Enabled,
 			UserinfosRules: gjson.New(g.Map{
 				"field": "upn",
 				"op":    "eq",
 				"value": req.Upn,
 			}),
-		}); err != nil {
+		}
+		if err = quotaPool.Create(ctx, data); err != nil {
 			return gerror.Wrap(err, "新建个人配额池时发生内部错误")
 		}
 		return nil
