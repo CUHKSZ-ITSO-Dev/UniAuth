@@ -14,19 +14,23 @@ import (
 
 func (c *ControllerV1) EditQuotaPool(ctx context.Context, req *v1.EditQuotaPoolReq) (res *v1.EditQuotaPoolRes, err error) {
 	res = &v1.EditQuotaPoolRes{}
-	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {		
-		if validQP, err := dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPoolName).LockUpdate().One(); err != nil {
+	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		validQP := &entity.QuotapoolQuotaPool{}
+		if err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", req.QuotaPoolName).LockUpdate().Scan(validQP); err != nil {
 			return gerror.Wrap(err, "查询配额池信息失败")
-		} else if validQP == nil {
+		} else if validQP.QuotaPoolName == "" {
 			return gerror.Newf("该配额池不存在，请重新检查：%v", req.QuotaPoolName)
 		}
 		qp := &entity.QuotapoolQuotaPool{
-			QuotaPoolName: req.QuotaPoolName,
-			CronCycle: req.CronCycle,
-			RegularQuota: req.RegularQuota,
-			ExtraQuota: req.ExtraQuota,
-			Personal: req.Personal,
-			Disabled: req.Disabled,
+			Id:             validQP.Id,
+			QuotaPoolName:  req.QuotaPoolName,
+			CronCycle:      req.CronCycle,
+			RegularQuota:   req.RegularQuota,
+			RemainingQuota: validQP.RemainingQuota,
+			LastResetAt:    validQP.LastResetAt,
+			ExtraQuota:     req.ExtraQuota,
+			Personal:       req.Personal,
+			Disabled:       req.Disabled,
 			UserinfosRules: req.UserinfosRules,
 		}
 		if err = quotaPool.Edit(ctx, qp); err != nil {
