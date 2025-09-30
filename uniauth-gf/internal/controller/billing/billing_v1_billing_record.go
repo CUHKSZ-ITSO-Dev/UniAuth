@@ -34,18 +34,18 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		}
 	}()
 
-	// 根据 Source 的配额池属性（是否个人）自动判断计费方案
-	value, err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields("personal").Where("quota_pool_name = ?", req.Source).Value()
+	// 根据配额池属性是否为个人自动判断计费方案
+	personal, err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields("personal").Where("quota_pool_name = ?", req.Source).Value()
 	if err != nil {
 		err = gerror.Wrap(err, "获取配额池当前的剩余余额失败")
 		return
 	}
-	if value == nil {
+	if personal == nil {
 		err = gerror.New("没有找到这个配额池。请重新检查")
 		return
 	}
 	var plan string 
-	if value.Bool() {
+	if personal.Bool() {
 		plan = "Included"
 	} else {
 		plan = "Quota Pool"
