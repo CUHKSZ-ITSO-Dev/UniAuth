@@ -196,7 +196,7 @@ $ git-crypt add-gpg-user --trusted "Zitong Wu"
 
 2. 运行 Docker 命令创建 PostgresSQL 容器
 ```
-docker run --env=POSTGRES_USER=uniauth --env=POSTGRES_PASSWORD=It@73333! --env=POSTGRES_DB=uniauth --env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/postgresql/17/bin --env=GOSU_VERSION=1.17 --env=LANG=en_US.utf8 --env=PG_MAJOR=17 --env=PG_VERSION=17.6-1.pgdg13+1 --env=PGDATA=/var/lib/postgresql/data --volume=/var/lib/postgresql/data --network=bridge -p 5432:5432 --restart=no --runtime=runc -d postgres:latest
+docker run --env=POSTGRES_USER=uniauth --env=POSTGRES_PASSWORD=It@73333! --env=POSTGRES_DB=uniauth --env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/postgresql/17/bin --env=GOSU_VERSION=1.17 --env=LANG=en_US.utf8 --env=PG_MAJOR=17 --env=PG_VERSION=17.6-1.pgdg13+1 --env=PGDATA=/var/lib/postgresql/data --volume=/var/lib/postgresql/data --network=bridge -p 5432:5432 --restart=no --runtime=runc -d postgres:17
 ```
 如果遇到拉不了镜像，自己想办法挂代理或者怎么办。
 
