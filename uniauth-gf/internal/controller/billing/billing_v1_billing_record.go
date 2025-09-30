@@ -2,7 +2,6 @@ package billing
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	"github.com/gogf/gf/v2/database/gdb"
@@ -42,13 +41,14 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		return
 	}
 	if value == nil {
-		err = errors.New("没有找到这个配额池。请重新检查")
+		err = gerror.New("没有找到这个配额池。请重新检查")
 		return
 	}
-
-	plan := "Quota Pool"
+	var plan string 
 	if value.Bool() {
 		plan = "Included"
+	} else {
+		plan = "Quota Pool"
 	}
 
 	// 记录
