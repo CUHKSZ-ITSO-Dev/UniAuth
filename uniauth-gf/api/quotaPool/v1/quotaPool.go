@@ -14,18 +14,12 @@ type GetQuotaPoolReq struct {
 	Page          int    `json:"page" v:"min:1" dc:"页码，从1开始" d:"1"`
 	PageSize      int    `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" d:"20"`
 }
-
-type QuotaPoolItem struct {
-	entity.QuotapoolQuotaPool
-}
-
 type GetQuotaPoolRes struct {
-	Total      int             `json:"total" dc:"总记录数"`
-	Page       int             `json:"page" dc:"当前页码"`
-	PageSize   int             `json:"pageSize" dc:"每页条数"`
-	TotalPages int             `json:"totalPages" dc:"总页数"`
-	IsAll      bool            `json:"isAll" dc:"是否为全部数据查询"`
-	Items      []QuotaPoolItem `json:"items" dc:"配额池列表或单个配置"`
+	Total      int                         `json:"total" dc:"总记录数"`
+	Page       int                         `json:"page" dc:"当前页码"`
+	PageSize   int                         `json:"pageSize" dc:"每页条数"`
+	TotalPages int                         `json:"totalPages" dc:"总页数"`
+	Items      []entity.QuotapoolQuotaPool `json:"items" dc:"配额池列表或单个配置"`
 }
 
 type NewQuotaPoolReq struct {
@@ -45,7 +39,6 @@ type NewQuotaPoolReq struct {
 	// ITTools 规则（可选）
 	UserinfosRules *gjson.Json `json:"userinfosRules"`
 }
-
 type NewQuotaPoolRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
 }
@@ -60,7 +53,6 @@ type EditQuotaPoolReq struct {
 	ExtraQuota     decimal.Decimal `json:"extraQuota"`
 	UserinfosRules *gjson.Json     `json:"userinfosRules"`
 }
-
 type EditQuotaPoolRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
 }
@@ -69,7 +61,23 @@ type DeleteQuotaPoolReq struct {
 	g.Meta        `path:"/" tags:"QuotaPool" method:"delete" summary:"删除配额池"`
 	QuotaPoolName string `json:"quotaPoolName" v:"required"`
 }
-
 type DeleteQuotaPoolRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
+}
+
+type EnsurePersonalQuotaPoolReq struct {
+	g.Meta `path:"/ensure" tags:"QuotaPool" method:"post" summary:"确保个人配额池存在"`
+	Upn    string `json:"upn" v:"required" example:"122020255@link.cuhk.edu.cn"`
+}
+type EnsurePersonalQuotaPoolRes struct {
+	OK    bool `json:"ok" v:"required" dc:"是否成功"`
+	IsNew bool `json:"isNew" v:"required" dc:"是否新建"`
+}
+
+type RefreshUsersOfQuotaPoolReq struct {
+	g.Meta     `path:"/refreshUsers" tags:"QuotaPool" method:"post" summary:"刷新配额池的用户" dc:"给定配额池名称列表，根据配额池配置中的 UserInfos Rules，在 Casbin 中刷新组权限继承关系。'不传参数'则刷新所有配额池。如果传空数组，则没有任何操作！"`
+	QPNameList *[]string `json:"qpNameList" example:"['itso-deep-research-vip', 'itso-deep-research-vip-2']"`
+}
+type RefreshUsersOfQuotaPoolRes struct {
+	OK bool `json:"ok" v:"required" dc:"是否成功"`
 }
