@@ -446,9 +446,9 @@ const UserDetail: React.FC = () => {
                     dataIndex: 'name',
                     key: 'name',
                     render: (_, record) => (
-                      <a href={`/quota-pool-details/?id=${record.name}`} onClick={(e) => {
+                      <a href={`/quota-pool-list/${record.name}`} onClick={(e) => {
                         e.preventDefault();
-                        navigate(`/quota-pool-details/?id=${record.name}`);
+                        navigate(`/quota-pool-list/${record.name}`);
                       }}>
                         {record.name}
                       </a>
