@@ -1,12 +1,26 @@
 import { PageContainer, RouteContext } from "@ant-design/pro-components";
 import { useParams } from "@umijs/max";
-import { Button, Descriptions, Space, Statistic } from "antd";
+import { Button, Descriptions, message, Space, Statistic } from "antd";
 
 import type { FC } from "react";
 import { useEffect, useState } from "react";
+import { getQuotaPool } from "@/services/uniauthService/quotaPool";
 import BillingDetailTab from "./BillingDetailTab";
 import ConfigDetailTab from "./ConfigDetailTab";
 import useStyles from "./style.style";
+
+// 配额池详细信息接口
+interface QuotaPoolDetail {
+  quotaPoolName: string;
+  cronCycle: string;
+  regularQuota: number;
+  remainingQuota: number;
+  extraQuota: number;
+  lastResetAt: string;
+  personal: boolean;
+  disabled: boolean;
+  createdAt: string;
+}
 
 const QuotaPoolDetailsPage: FC = () => {
   const { styles } = useStyles();
@@ -17,6 +31,11 @@ const QuotaPoolDetailsPage: FC = () => {
   // quotaPoolName 状态管理
   const [quotaPoolName, setQuotaPoolName] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // 配额池详细信息状态管理
+  const [quotaPoolDetail, setQuotaPoolDetail] =
+    useState<QuotaPoolDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   // Tab 状态管理
   const [activeTabKey, setActiveTabKey] = useState("config_detail");
@@ -36,6 +55,42 @@ const QuotaPoolDetailsPage: FC = () => {
     }
     setLoading(false);
   }, [urlQuotaPoolName]);
+
+  // 获取配额池详细信息
+  useEffect(() => {
+    const fetchQuotaPoolDetail = async () => {
+      if (!quotaPoolName) return;
+
+      setDetailLoading(true);
+      try {
+        const response = await getQuotaPool({
+          quotaPoolName: quotaPoolName,
+        });
+
+        if (response?.items && response.items.length > 0) {
+          const item = response.items[0];
+          setQuotaPoolDetail({
+            quotaPoolName: item.quotaPoolName || "",
+            cronCycle: item.cronCycle || "",
+            regularQuota: Number(item.regularQuota) || 0,
+            remainingQuota: Number(item.remainingQuota) || 0,
+            extraQuota: Number(item.extraQuota) || 0,
+            lastResetAt: item.lastResetAt || "",
+            personal: item.personal || false,
+            disabled: item.disabled || false,
+            createdAt: item.createdAt || "",
+          });
+        }
+      } catch (error) {
+        console.error("获取配额池详情失败:", error);
+        message.error("获取配额池详情失败");
+      } finally {
+        setDetailLoading(false);
+      }
+    };
+
+    fetchQuotaPoolDetail();
+  }, [quotaPoolName]);
 
   // Tab 切换处理函数
   const handleTabChange = (key: string) => {
@@ -60,7 +115,18 @@ const QuotaPoolDetailsPage: FC = () => {
   const extra = (
     <div className={styles.moreInfo}>
       <Statistic title="状态" value="使用中" valueStyle={{ color: "green" }} />
-      <Statistic title="配额池余额" value={496} prefix="$" />
+      <Statistic
+        title="配额池余额"
+        value={
+          quotaPoolDetail
+            ? (
+                quotaPoolDetail.remainingQuota + quotaPoolDetail.extraQuota
+              ).toFixed(2)
+            : 0
+        }
+        prefix="$"
+        loading={detailLoading}
+      />
     </div>
   );
 
@@ -77,9 +143,15 @@ const QuotaPoolDetailsPage: FC = () => {
               ? "加载中..."
               : quotaPoolName || urlQuotaPoolName || "未知配额池"}
           </Descriptions.Item>
-          <Descriptions.Item label="创建人">IT管理员</Descriptions.Item>
-          <Descriptions.Item label="配额池类型">自建配额池</Descriptions.Item>
-          <Descriptions.Item label="创建时间">2025-9-8</Descriptions.Item>
+          <Descriptions.Item label="配额池类型">
+            {quotaPoolDetail?.personal ? "个人配额池" : "共享配额池"}
+          </Descriptions.Item>
+          <Descriptions.Item label="创建时间">
+            {quotaPoolDetail?.createdAt || "未知时间"}
+          </Descriptions.Item>
+          <Descriptions.Item label="重置时间">
+            {quotaPoolDetail?.lastResetAt || "未知时间"}
+          </Descriptions.Item>
         </Descriptions>
       )}
     </RouteContext.Consumer>
@@ -89,11 +161,21 @@ const QuotaPoolDetailsPage: FC = () => {
   const renderTabContent = () => {
     switch (activeTabKey) {
       case "config_detail":
-        return <ConfigDetailTab quotaPoolName={quotaPoolName} />;
+        return (
+          <ConfigDetailTab
+            quotaPoolName={quotaPoolName}
+            quotaPoolDetail={quotaPoolDetail}
+          />
+        );
       case "bill_detail":
         return <BillingDetailTab quotaPoolName={quotaPoolName} />;
       default:
-        return <ConfigDetailTab quotaPoolName={quotaPoolName} />;
+        return (
+          <ConfigDetailTab
+            quotaPoolName={quotaPoolName}
+            quotaPoolDetail={quotaPoolDetail}
+          />
+        );
     }
   };
 

@@ -49,9 +49,20 @@ interface ExportFormData {
   dateRange: [dayjs.Dayjs, dayjs.Dayjs];
 }
 
-// 从 props 接收配额池名称
+// 配额池详细信息接口
+interface QuotaPoolDetail {
+  quotaPoolName: string;
+  cronCycle: string;
+  regularQuota: number;
+  remainingQuota: number;
+  extraQuota: number;
+  lastResetAt: string;
+}
+
+// 从 props 接收配额池名称和详细信息
 interface BillingDetailTabProps {
-  quotaPoolName?: string;
+  quotaPoolName: string;
+  quotaPoolDetail?: QuotaPoolDetail | null;
 }
 
 const BillingDetailTab: FC<BillingDetailTabProps> = ({

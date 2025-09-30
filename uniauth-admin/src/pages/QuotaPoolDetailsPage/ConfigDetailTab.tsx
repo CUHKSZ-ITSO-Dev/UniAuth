@@ -7,16 +7,9 @@ import {
 import { Badge, Button, Card, Descriptions, message, Progress } from "antd";
 import cronstrue from "cronstrue/i18n";
 import type { FC } from "react";
-import { useEffect, useState } from "react";
 import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService/auth";
 import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthService/query";
-import { getQuotaPool } from "@/services/uniauthService/quotaPool";
 import { postUserinfosFilter } from "@/services/uniauthService/userInfo";
-
-// 从props接收配额池名称
-interface ConfigDetailTabProps {
-  quotaPoolName?: string;
-}
 
 // 配额池详细信息接口
 interface QuotaPoolDetail {
@@ -26,6 +19,12 @@ interface QuotaPoolDetail {
   remainingQuota: number;
   extraQuota: number;
   lastResetAt: string;
+}
+
+// 从props接收配额池名称和详细信息
+interface ConfigDetailTabProps {
+  quotaPoolName: string;
+  quotaPoolDetail: QuotaPoolDetail | null;
 }
 
 // 用户信息接口
@@ -38,10 +37,11 @@ interface UserInfo {
   department: string;
 }
 
-const ConfigDetailTab: FC<ConfigDetailTabProps> = ({ quotaPoolName }) => {
+const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
+  quotaPoolName,
+  quotaPoolDetail,
+}) => {
   const intl = useIntl();
-  const [quotaPoolDetail, setQuotaPoolDetail] =
-    useState<QuotaPoolDetail | null>(null);
 
   // 解析 cron 表达式为中文描述
   const parseCronExpression = (cronExpression: string): string => {
@@ -61,36 +61,6 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({ quotaPoolName }) => {
       return cronExpression;
     }
   };
-
-  // 获取配额池详细信息
-  useEffect(() => {
-    const fetchQuotaPoolDetail = async () => {
-      if (!quotaPoolName) return;
-
-      try {
-        const response = await getQuotaPool({
-          quotaPoolName: quotaPoolName,
-        });
-
-        if (response?.items && response.items.length > 0) {
-          const item = response.items[0];
-          setQuotaPoolDetail({
-            quotaPoolName: item.quotaPoolName || "",
-            cronCycle: item.cronCycle || "",
-            regularQuota: Number(item.regularQuota) || 0,
-            remainingQuota: Number(item.remainingQuota) || 0,
-            extraQuota: Number(item.extraQuota) || 0,
-            lastResetAt: item.lastResetAt || "",
-          });
-        }
-      } catch (error) {
-        console.error("获取配额池详情失败:", error);
-        message.error("获取配额池详情失败");
-      }
-    };
-
-    fetchQuotaPoolDetail();
-  }, [quotaPoolName]);
 
   const associatedUsersColumns: ProColumns<UserInfo>[] = [
     {
@@ -307,12 +277,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({ quotaPoolName }) => {
           pageSize: params.pageSize || 10,
           all: false,
         },
-        sort: [
-          {
-            field: "displayName",
-            order: "asc",
-          },
-        ],
+        sort: [],
         verbose: true,
       });
 
@@ -333,7 +298,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({ quotaPoolName }) => {
           key: user.upn || `user-${Math.random()}`,
           upn: user.upn || "",
           displayName: user.displayName || user.name || "",
-          identity: user.employeeType || user.staffRole || "未知",
+          identity: user.employeeType || user.staffRole || "-",
           tags: user.tags || [],
           department: user.department || "",
         }),
@@ -430,24 +395,13 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({ quotaPoolName }) => {
             marginBottom: 24,
           }}
         >
-          <Descriptions.Item label="配额池名称">
-            {quotaPoolDetail?.quotaPoolName || quotaPoolName || "-"}
-          </Descriptions.Item>
           <Descriptions.Item label="刷新周期">
             {quotaPoolDetail?.cronCycle
               ? parseCronExpression(quotaPoolDetail.cronCycle)
               : "-"}
           </Descriptions.Item>
-          <Descriptions.Item label="上次刷新时间">
-            {quotaPoolDetail?.lastResetAt
-              ? new Date(quotaPoolDetail.lastResetAt).toLocaleString("zh-CN")
-              : "-"}
-          </Descriptions.Item>
           <Descriptions.Item label="定期配额">
             ${quotaPoolDetail?.regularQuota?.toFixed(2) || "0.00"}
-          </Descriptions.Item>
-          <Descriptions.Item label="剩余配额">
-            ${quotaPoolDetail?.remainingQuota?.toFixed(2) || "0.00"}
           </Descriptions.Item>
           <Descriptions.Item label="加油包">
             ${quotaPoolDetail?.extraQuota?.toFixed(2) || "0.00"}
