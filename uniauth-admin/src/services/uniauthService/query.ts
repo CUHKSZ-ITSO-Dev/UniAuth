@@ -32,7 +32,7 @@ export async function getAuthAdminObjectsAll(options?: { [key: string]: any }) {
   });
 }
 
-/** 筛选 Policies 根据给定的条件，返回Policy。留空的字段（传空 Array）将被忽略。 POST /auth/admin/policies/filter */
+/** 筛选 Policies 模糊匹配。根据给定的条件，返回Policy。留空的字段（传空 Array）将被忽略。 POST /auth/admin/policies/filter */
 export async function postAuthAdminPoliciesFilter(
   body: API.FilterPoliciesReq,
   options?: { [key: string]: any },
