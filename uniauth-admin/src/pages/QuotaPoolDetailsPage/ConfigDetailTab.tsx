@@ -4,16 +4,95 @@ import {
   type ProColumns,
   ProTable,
 } from "@ant-design/pro-components";
-import { Badge, Button, Card, Descriptions, Progress } from "antd";
+import { Badge, Button, Card, Descriptions, message, Progress } from "antd";
+import cronstrue from "cronstrue/i18n";
 import type { FC } from "react";
+import { useEffect, useState } from "react";
 import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService/auth";
 import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthService/query";
-import { getQuotaPool as getConfigAPI } from "@/services/uniauthService/quotaPool";
+import { getQuotaPool } from "@/services/uniauthService/quotaPool";
+import { postUserinfosFilter } from "@/services/uniauthService/userInfo";
 
-const ConfigDetailTab: FC = () => {
+// 从props接收配额池名称
+interface ConfigDetailTabProps {
+  quotaPoolName?: string;
+}
+
+// 配额池详细信息接口
+interface QuotaPoolDetail {
+  quotaPoolName: string;
+  cronCycle: string;
+  regularQuota: number;
+  remainingQuota: number;
+  extraQuota: number;
+  lastResetAt: string;
+}
+
+// 用户信息接口
+interface UserInfo {
+  key: string;
+  upn: string;
+  displayName: string;
+  identity: string;
+  tags: string[];
+  department: string;
+}
+
+const ConfigDetailTab: FC<ConfigDetailTabProps> = ({ quotaPoolName }) => {
   const intl = useIntl();
+  const [quotaPoolDetail, setQuotaPoolDetail] =
+    useState<QuotaPoolDetail | null>(null);
 
-  const associatedUsersColumns: ProColumns<any>[] = [
+  // 解析 cron 表达式为中文描述
+  const parseCronExpression = (cronExpression: string): string => {
+    if (!cronExpression || typeof cronExpression !== "string") {
+      return cronExpression || "-";
+    }
+
+    try {
+      return cronstrue.toString(cronExpression, {
+        locale: "zh_CN",
+        use24HourTimeFormat: true,
+        verbose: true,
+      });
+    } catch (error) {
+      console.error("解析 cron 表达式失败:", error);
+      // 如果解析失败，返回原始表达式
+      return cronExpression;
+    }
+  };
+
+  // 获取配额池详细信息
+  useEffect(() => {
+    const fetchQuotaPoolDetail = async () => {
+      if (!quotaPoolName) return;
+
+      try {
+        const response = await getQuotaPool({
+          quotaPoolName: quotaPoolName,
+        });
+
+        if (response?.items && response.items.length > 0) {
+          const item = response.items[0];
+          setQuotaPoolDetail({
+            quotaPoolName: item.quotaPoolName || "",
+            cronCycle: item.cronCycle || "",
+            regularQuota: Number(item.regularQuota) || 0,
+            remainingQuota: Number(item.remainingQuota) || 0,
+            extraQuota: Number(item.extraQuota) || 0,
+            lastResetAt: item.lastResetAt || "",
+          });
+        }
+      } catch (error) {
+        console.error("获取配额池详情失败:", error);
+        message.error("获取配额池详情失败");
+      }
+    };
+
+    fetchQuotaPoolDetail();
+  }, [quotaPoolName]);
+
+  const associatedUsersColumns: ProColumns<UserInfo>[] = [
     {
       title: "UPN",
       valueType: "text",
@@ -155,100 +234,119 @@ const ConfigDetailTab: FC = () => {
     },
   ];
 
-  const itToolsRulesColumns: ProColumns<any>[] = [
-    {
-      title: intl.formatMessage({
-        id: "pages.policyList.raw",
-        defaultMessage: "完整规则",
-      }),
-      dataIndex: "userinfosRules",
-      valueType: "text",
-      ellipsis: true,
-      search: true,
-    },
-  ];
-
   const associatedUsersDataRequest = async (params: any) => {
     try {
-      // 构建API请求参数
-      const requestParams = {
-        quotaPool: "student_pool", // 可以从props或URL参数获取
-      };
-
-      // 调用真实API获取配额池关联用户
-      const response = await getUsersAPI(requestParams);
-
-      if (response?.users) {
-        // Mock API返回的是随机字符串数组，转换为表格需要的格式
-        const userData = response.users.map((userId: string, index: number) => {
-          // 为Mock数据生成合理的显示信息
-          const mockUserInfo = {
-            key: index,
-            upn: `${userId}@link.cuhk.edu.cn`, // 将Mock ID转换为UPN格式
-            displayName: `用户${index + 1}`, // 生成显示名
-            identity:
-              index % 3 === 0 ? "管理员" : index % 3 === 1 ? "教师" : "学生",
-            tags: index % 2 === 0 ? ["VIP"] : ["普通用户"],
-            department: [
-              "计算机科学系",
-              "数学系",
-              "物理系",
-              "化学系",
-              "生物系",
-            ][index % 5],
-          };
-          return mockUserInfo;
-        });
-
-        // 根据前端搜索参数进行客户端过滤
-        let filteredData = userData;
-
-        if (params.upn) {
-          filteredData = filteredData.filter((item) =>
-            item.upn.toLowerCase().includes(params.upn.toLowerCase()),
-          );
-        }
-        if (params.displayName) {
-          filteredData = filteredData.filter((item) =>
-            item.displayName
-              .toLowerCase()
-              .includes(params.displayName.toLowerCase()),
-          );
-        }
-        if (params.identity) {
-          filteredData = filteredData.filter((item) =>
-            item.identity.toLowerCase().includes(params.identity.toLowerCase()),
-          );
-        }
-        if (params.department) {
-          filteredData = filteredData.filter((item) =>
-            item.department
-              .toLowerCase()
-              .includes(params.department.toLowerCase()),
-          );
-        }
-
-        // 处理分页参数
-        const { current = 1, pageSize = 5 } = params;
-        const startIndex = (current - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedData = filteredData.slice(startIndex, endIndex);
-
+      if (!quotaPoolName) {
         return {
-          data: paginatedData,
-          success: true,
-          total: filteredData.length,
+          data: [],
+          success: false,
+          total: 0,
         };
       }
 
-      // 如果没有数据，直接返回空数据
+      // 先获取配额池关联的用户UPN列表
+      const usersResponse = await getUsersAPI({
+        quotaPool: quotaPoolName,
+      });
+
+      if (!usersResponse?.users || !Array.isArray(usersResponse.users)) {
+        return {
+          data: [],
+          success: true,
+          total: 0,
+        };
+      }
+
+      // 构建搜索条件，基于获取到的用户UPN列表
+      const filter: API.FilterGroup = {
+        logic: "and",
+        conditions: [
+          {
+            field: "upn",
+            op: "in",
+            value: usersResponse.users,
+          },
+        ],
+      };
+
+      // 添加搜索条件过滤
+      if (params.upn) {
+        filter.conditions?.push({
+          field: "upn",
+          op: "like",
+          value: `%${params.upn}%`,
+        });
+      }
+      if (params.displayName) {
+        filter.conditions?.push({
+          field: "displayName",
+          op: "like",
+          value: `%${params.displayName}%`,
+        });
+      }
+      if (params.identity) {
+        filter.conditions?.push({
+          field: "employeeType",
+          op: "like",
+          value: `%${params.identity}%`,
+        });
+      }
+      if (params.department) {
+        filter.conditions?.push({
+          field: "department",
+          op: "like",
+          value: `%${params.department}%`,
+        });
+      }
+
+      // 调用用户信息查询API获取详细信息
+      const userInfoResponse = await postUserinfosFilter({
+        filter,
+        pagination: {
+          page: params.current || 1,
+          pageSize: params.pageSize || 10,
+          all: false,
+        },
+        sort: [
+          {
+            field: "displayName",
+            order: "asc",
+          },
+        ],
+        verbose: true,
+      });
+
+      if (
+        !userInfoResponse.userInfos ||
+        !Array.isArray(userInfoResponse.userInfos)
+      ) {
+        return {
+          data: [],
+          success: true,
+          total: 0,
+        };
+      }
+
+      // 转换数据格式
+      const userData: UserInfo[] = userInfoResponse.userInfos.map(
+        (user: any) => ({
+          key: user.upn || `user-${Math.random()}`,
+          upn: user.upn || "",
+          displayName: user.displayName || user.name || "",
+          identity: user.employeeType || user.staffRole || "未知",
+          tags: user.tags || [],
+          department: user.department || "",
+        }),
+      );
+
       return {
-        data: [],
-        success: false,
-        total: 0,
+        data: userData,
+        success: true,
+        total: userInfoResponse.total || userData.length,
       };
     } catch (error) {
       console.error("获取配额池关联用户失败:", error);
+      message.error("获取配额池关联用户失败");
       return {
         data: [],
         success: false,
@@ -289,60 +387,19 @@ const ConfigDetailTab: FC = () => {
         return {
           data: formattedData,
           success: true,
-          total: res.total,
+          total: res.total || 0,
         };
       } else {
         // 没有数据直接返回空数据
         return {
           data: [],
-          success: false,
+          success: true,
           total: 0,
         };
       }
     } catch (error) {
       console.error("获取权限规则失败:", error);
-      return {
-        data: [],
-        success: false,
-        total: 0,
-      };
-    }
-  };
-
-  const itToolsRulesDataRequest = async () => {
-    try {
-      // 请求参数
-      const getRequestParams = {
-        quotaPoolName: "student_pool",
-      };
-
-      const res = await getConfigAPI({ ...getRequestParams });
-
-      if (res && (res as any).quotaPool) {
-        // 格式化数据
-        const mockQuotaPool = (res as any).quotaPool;
-        const formattedData = [
-          {
-            id: 1,
-            quotaPoolName: "student_pool",
-            userinfosRules: `Rules for ${mockQuotaPool}: department='CS' OR tags contains 'student'`,
-          },
-        ];
-
-        return {
-          data: formattedData,
-          success: true,
-          total: formattedData.length,
-        };
-      } else {
-        // 没有数据直接返回空数据
-        return {
-          data: [],
-          success: false,
-          total: 0,
-        };
-      }
-    } catch (_error) {
+      message.error("获取权限规则失败");
       return {
         data: [],
         success: false,
@@ -374,22 +431,53 @@ const ConfigDetailTab: FC = () => {
           }}
         >
           <Descriptions.Item label="配额池名称">
-            example@cuhk.edu.cn
+            {quotaPoolDetail?.quotaPoolName || quotaPoolName || "-"}
           </Descriptions.Item>
-          <Descriptions.Item label="刷新周期">每周</Descriptions.Item>
+          <Descriptions.Item label="刷新周期">
+            {quotaPoolDetail?.cronCycle
+              ? parseCronExpression(quotaPoolDetail.cronCycle)
+              : "-"}
+          </Descriptions.Item>
           <Descriptions.Item label="上次刷新时间">
-            2025-8-29 19:30:00
+            {quotaPoolDetail?.lastResetAt
+              ? new Date(quotaPoolDetail.lastResetAt).toLocaleString("zh-CN")
+              : "-"}
           </Descriptions.Item>
-          <Descriptions.Item label="定期配额">$648.00</Descriptions.Item>
-          <Descriptions.Item label="剩余配额">$328.00</Descriptions.Item>
-          <Descriptions.Item label="加油包">$168.00</Descriptions.Item>
+          <Descriptions.Item label="定期配额">
+            ${quotaPoolDetail?.regularQuota?.toFixed(2) || "0.00"}
+          </Descriptions.Item>
+          <Descriptions.Item label="剩余配额">
+            ${quotaPoolDetail?.remainingQuota?.toFixed(2) || "0.00"}
+          </Descriptions.Item>
+          <Descriptions.Item label="加油包">
+            ${quotaPoolDetail?.extraQuota?.toFixed(2) || "0.00"}
+          </Descriptions.Item>
           <Descriptions.Item label="余额百分比">
-            <Progress
-              percent={Number((((328 + 168) / (648 + 168)) * 100).toFixed(1))}
-              success={{
-                percent: Number(((328 / (648 + 168)) * 100).toFixed(1)),
-              }}
-            />
+            {quotaPoolDetail ? (
+              <Progress
+                percent={Number(
+                  (
+                    ((quotaPoolDetail.remainingQuota +
+                      quotaPoolDetail.extraQuota) /
+                      (quotaPoolDetail.regularQuota +
+                        quotaPoolDetail.extraQuota)) *
+                    100
+                  ).toFixed(1),
+                )}
+                success={{
+                  percent: Number(
+                    (
+                      (quotaPoolDetail.remainingQuota /
+                        (quotaPoolDetail.regularQuota +
+                          quotaPoolDetail.extraQuota)) *
+                      100
+                    ).toFixed(1),
+                  ),
+                }}
+              />
+            ) : (
+              <Progress percent={0} />
+            )}
           </Descriptions.Item>
         </Descriptions>
       </Card>
@@ -401,11 +489,19 @@ const ConfigDetailTab: FC = () => {
         }}
         variant="borderless"
       >
-        <ProTable
+        <ProTable<UserInfo>
           columns={associatedUsersColumns}
           rowKey="upn"
-          search={{ labelWidth: "auto" }}
-          pagination={{ pageSize: 5 }}
+          search={{
+            labelWidth: "auto",
+            defaultCollapsed: false,
+            filterType: "query",
+          }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `共 ${total} 条数据`,
+          }}
           request={associatedUsersDataRequest}
         />
       </Card>
@@ -428,22 +524,6 @@ const ConfigDetailTab: FC = () => {
             showTotal: (total) => `共 ${total} 条`,
           }}
           request={quotaPoolRulesDataRequest}
-        />
-      </Card>
-
-      <Card
-        title="配额池ITTools规则"
-        style={{
-          marginBottom: 24,
-        }}
-        variant="borderless"
-      >
-        <ProTable
-          columns={itToolsRulesColumns}
-          rowKey="id"
-          search={false}
-          pagination={{ pageSize: 5 }}
-          request={itToolsRulesDataRequest}
         />
       </Card>
     </GridContent>

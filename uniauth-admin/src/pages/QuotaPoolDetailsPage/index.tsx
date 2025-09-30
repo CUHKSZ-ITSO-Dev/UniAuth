@@ -1,17 +1,41 @@
 import { PageContainer, RouteContext } from "@ant-design/pro-components";
+import { useParams } from "@umijs/max";
 import { Button, Descriptions, Space, Statistic } from "antd";
 
 import type { FC } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BillingDetailTab from "./BillingDetailTab";
 import ConfigDetailTab from "./ConfigDetailTab";
 import useStyles from "./style.style";
 
 const QuotaPoolDetailsPage: FC = () => {
   const { styles } = useStyles();
+  const { quotaPoolName: urlQuotaPoolName } = useParams<{
+    quotaPoolName: string;
+  }>();
+
+  // quotaPoolName 状态管理
+  const [quotaPoolName, setQuotaPoolName] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Tab 状态管理
   const [activeTabKey, setActiveTabKey] = useState("config_detail");
+
+  // 从URL参数获取配额池名称
+  useEffect(() => {
+    if (urlQuotaPoolName) {
+      try {
+        // URL解码配额池名称（处理特殊字符如@符号）
+        const decodedQuotaPoolName = decodeURIComponent(urlQuotaPoolName);
+        setQuotaPoolName(decodedQuotaPoolName);
+      } catch (error) {
+        console.error("Failed to decode quota pool name:", error);
+        // 如果解码失败，直接使用原始值
+        setQuotaPoolName(urlQuotaPoolName);
+      }
+    }
+    setLoading(false);
+  }, [urlQuotaPoolName]);
 
   // Tab 切换处理函数
   const handleTabChange = (key: string) => {
@@ -48,7 +72,11 @@ const QuotaPoolDetailsPage: FC = () => {
           size="small"
           column={isMobile ? 1 : 2}
         >
-          <Descriptions.Item label="配额池名称">sutdent_pool</Descriptions.Item>
+          <Descriptions.Item label="配额池名称">
+            {loading
+              ? "加载中..."
+              : quotaPoolName || urlQuotaPoolName || "未知配额池"}
+          </Descriptions.Item>
           <Descriptions.Item label="创建人">IT管理员</Descriptions.Item>
           <Descriptions.Item label="配额池类型">自建配额池</Descriptions.Item>
           <Descriptions.Item label="创建时间">2025-9-8</Descriptions.Item>
@@ -61,11 +89,11 @@ const QuotaPoolDetailsPage: FC = () => {
   const renderTabContent = () => {
     switch (activeTabKey) {
       case "config_detail":
-        return <ConfigDetailTab />;
+        return <ConfigDetailTab quotaPoolName={quotaPoolName} />;
       case "bill_detail":
-        return <BillingDetailTab quotaPoolName="itso-deep-research-vip" />;
+        return <BillingDetailTab quotaPoolName={quotaPoolName} />;
       default:
-        return <ConfigDetailTab />;
+        return <ConfigDetailTab quotaPoolName={quotaPoolName} />;
     }
   };
 
