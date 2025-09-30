@@ -2,85 +2,66 @@ import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import { Button, Popconfirm, Space, Table, Typography } from "antd";
 import { useRef } from "react";
+import { getQuotaPool } from "@/services/uniauthService/quotaPool";
 
 const { Title, Text } = Typography;
-
-// 示例数据
-const quotaPoolsExampleData = [
-  {
-    id: 1,
-    name: "研发配额池",
-    manager: "张三",
-    autoCreated: false,
-    createdAt: "2024-09-01 10:23:45",
-  },
-  {
-    id: 2,
-    name: "测试配额池",
-    manager: "",
-    autoCreated: true,
-    createdAt: "2024-09-02 09:15:30",
-  },
-  {
-    id: 3,
-    name: "生产配额池",
-    manager: "李四",
-    autoCreated: false,
-    createdAt: "2024-08-28 14:05:12",
-  },
-  {
-    id: 4,
-    name: "大数据配额池",
-    manager: "王五",
-    autoCreated: true,
-    createdAt: "2024-09-03 16:40:00",
-  },
-  {
-    id: 5,
-    name: "AI配额池",
-    manager: "",
-    autoCreated: false,
-    createdAt: "2024-09-05 08:00:00",
-  },
-  {
-    id: 6,
-    name: "运维配额池",
-    manager: "赵六",
-    autoCreated: true,
-    createdAt: "2024-09-06 11:20:00",
-  },
-];
 
 const columns: ProColumns<any>[] = [
   {
     title: "配额池名称",
-    dataIndex: "name",
+    dataIndex: "quotaPoolName",
     valueType: "text",
-    search: true,
+    search: false,
   },
   {
-    title: "管理者",
-    dataIndex: "manager",
-    valueType: "text",
-    search: true,
-    render: (_, record) => record.manager || <Text type="secondary">无</Text>,
-  },
-  {
-    title: "自动创建",
-    dataIndex: "autoCreated",
-    valueType: "select",
-    valueEnum: {
-      true: { text: "是" },
-      false: { text: "否" },
+    title: "配额",
+    dataIndex: "regularQuota",
+    valueType: "digit",
+    search: false,
+    render: (_, record) => {
+      return record.regularQuota ? record.regularQuota.toString() : "-";
     },
+  },
+  {
+    title: "余额",
+    dataIndex: "remainingQuota",
+    valueType: "digit",
+    search: false,
+    render: (_, record) => {
+      return record.remainingQuota ? record.remainingQuota.toString() : "-";
+    },
+  },
+  {
+    title: "配额池类型",
+    dataIndex: "personal",
+    valueType: "select",
     search: true,
-    render: (_, record) => (record.autoCreated ? "是" : "否"),
+    valueEnum: {
+      true: { text: "个人配额池" },
+      false: { text: "共享配额池" },
+    },
+    render: (_, record) => {
+      return record.personal ? "个人配额池" : "共享配额池";
+    },
+  },
+  {
+    title: "启用状态",
+    dataIndex: "disabled",
+    valueType: "select",
+    search: true,
+    valueEnum: {
+      false: { text: "启用" },
+      true: { text: "禁用" },
+    },
+    render: (_, record) => {
+      return record.disabled ? "禁用" : "启用";
+    },
   },
   {
     title: "创建时间",
     dataIndex: "createdAt",
     valueType: "dateTime",
-    search: true,
+    search: false,
     fieldProps: {
       format: "YYYY-MM-DD HH:mm:ss",
       showTime: true,
@@ -142,38 +123,55 @@ function handleBatchDisableClick() {
 }
 
 const quotaPoolListRequest = async (params: any) => {
-  // TODO:替换为实际请求
-  let data = quotaPoolsExampleData;
-  if (params.name) {
-    data = data.filter((item) => item.name.includes(params.name));
-  }
-  if (params.manager) {
-    data = data.filter((item) => item.manager.includes(params.manager));
-  }
-  if (params.autoCreated !== undefined) {
-    data = data.filter(
-      (item) => String(item.autoCreated) === String(params.autoCreated),
-    );
-  }
-  if (
-    params.createdAt &&
-    Array.isArray(params.createdAt) &&
-    params.createdAt.length === 2
-  ) {
-    const [start, end] = params.createdAt;
-    data = data.filter((item) => {
-      const time = new Date(item.createdAt).getTime();
-      return (
-        (!start || time >= new Date(start).getTime()) &&
-        (!end || time <= new Date(end).getTime())
-      );
+  try {
+    const res = await getQuotaPool({
+      quotaPoolName: params.quotaPoolName,
+      page: params.current || 1,
+      pageSize: params.pageSize || 20,
     });
+
+    if (!res || !res.items) {
+      return {
+        data: [],
+        success: false,
+        total: 0,
+      };
+    }
+
+    // 根据搜索条件过滤数据
+    let data = res.items;
+
+    // 按配额池类型过滤
+    if (params.personal !== undefined) {
+      data = data.filter(
+        (item) =>
+          item.personal ===
+          (params.personal === "true" || params.personal === true),
+      );
+    }
+
+    // 按启用状态过滤
+    if (params.disabled !== undefined) {
+      data = data.filter(
+        (item) =>
+          item.disabled ===
+          (params.disabled === "true" || params.disabled === true),
+      );
+    }
+
+    return {
+      data,
+      success: true,
+      total: res.total || data.length,
+    };
+  } catch (error) {
+    console.error("获取配额池列表失败:", error);
+    return {
+      data: [],
+      success: false,
+      total: 0,
+    };
   }
-  return {
-    data,
-    success: true,
-    total: data.length,
-  };
 };
 
 const QuotaPoolListPage: React.FC = () => {
@@ -189,7 +187,7 @@ const QuotaPoolListPage: React.FC = () => {
         <ProTable
           columns={columns}
           actionRef={actionRef}
-          rowKey="id"
+          rowKey="quotaPoolName"
           search={{ labelWidth: "auto" }}
           rowSelection={{
             selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
