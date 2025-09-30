@@ -37,7 +37,7 @@ func Edit(ctx context.Context, quotaPoolInfo *entity.QuotapoolQuotaPool) (err er
 			return gerror.Wrap(err, "查询配额池用户组规则失败")
 		}
 		oldUpnsMap := g.MapStrBool{}
-		for _, upn := range userUpns {  // 建索引
+		for _, upn := range userUpns { // 建索引
 			oldUpnsMap[upn] = true
 		}
 		// 获取更新后的配额池对应哪些用户
@@ -53,7 +53,7 @@ func Edit(ctx context.Context, quotaPoolInfo *entity.QuotapoolQuotaPool) (err er
 			return gerror.Wrap(err, "根据 UserinfosRules 筛选用户失败")
 		}
 		newUpnsMap := g.MapStrBool{}
-		for _, upn := range filterRes.UserUpns {  // 建索引
+		for _, upn := range filterRes.UserUpns { // 建索引
 			newUpnsMap[upn] = true
 		}
 		// 老的有，新的有，不处理
@@ -66,8 +66,10 @@ func Edit(ctx context.Context, quotaPoolInfo *entity.QuotapoolQuotaPool) (err er
 				policiesToAdd = append(policiesToAdd, []string{upn, quotaPoolInfo.QuotaPoolName})
 			}
 		}
-		if _, addErr := e.AddGroupingPolicies(policiesToAdd); addErr != nil {
-			return gerror.Wrapf(addErr, "添加配额池用户组继承关系失败: %v", policiesToAdd)
+		if len(policiesToAdd) != 0 {
+			if _, addErr := e.AddGroupingPolicies(policiesToAdd); addErr != nil {
+				return gerror.Wrapf(addErr, "添加配额池用户组继承关系失败: %v", policiesToAdd)
+			}
 		}
 		var policiesToDelete [][]string
 		for _, upn := range userUpns {
@@ -76,8 +78,10 @@ func Edit(ctx context.Context, quotaPoolInfo *entity.QuotapoolQuotaPool) (err er
 				policiesToDelete = append(policiesToDelete, []string{upn, quotaPoolInfo.QuotaPoolName})
 			}
 		}
-		if _, delErr := e.RemoveGroupingPolicies(policiesToDelete); delErr != nil {
-			return gerror.Wrapf(delErr, "删除配额池用户组继承关系失败: %v", policiesToDelete)
+		if len(policiesToDelete) != 0 {
+			if _, delErr := e.RemoveGroupingPolicies(policiesToDelete); delErr != nil {
+				return gerror.Wrapf(delErr, "删除配额池用户组继承关系失败: %v", policiesToDelete)
+			}
 		}
 		if err = e.SavePolicy(); err != nil {
 			return gerror.Wrap(err, "Casbin 保存配额池用户组继承关系失败")

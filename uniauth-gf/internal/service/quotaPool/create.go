@@ -46,9 +46,9 @@ func Create(ctx context.Context, newQuotaPoolInfo *entity.QuotapoolQuotaPool) (e
 			groupings = append(groupings, []string{upn, newQuotaPoolInfo.QuotaPoolName})
 		}
 		e := casbin.GetEnforcer()
-		if duplicate, err := e.AddGroupingPoliciesEx(groupings); err != nil {
+		if noDuplicate, err := e.AddGroupingPoliciesEx(groupings); err != nil {
 			return gerror.Wrap(err, "Casbin 批量新增配额池角色失败")
-		} else if duplicate {
+		} else if !noDuplicate {
 			g.Log().Warningf(ctx, "新增配额池 %v 的角色时，发现重复角色。", newQuotaPoolInfo.QuotaPoolName)
 		}
 		if err = e.SavePolicy(); err != nil {

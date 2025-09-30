@@ -35,7 +35,7 @@ func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) er
 		}
 		return nil
 	}); err != nil {
-		return gerror.Wrap(err, "定时任务：更新配额池用户组继承关系事务失败")
+		return gerror.Wrap(err, "更新配额池用户组继承关系事务失败")
 	}
 	return nil
 }
