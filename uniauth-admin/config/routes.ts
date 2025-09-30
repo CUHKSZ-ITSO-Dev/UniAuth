@@ -61,10 +61,11 @@ export default [
     component: "@/pages/QuotaPoolListPage",
   },
   {
-    path: "/quota-pool-details/",
+    path: "/quota-pool-list/:quotaPoolName",
     name: "quota-pool-details",
     icon: "Container",
     component: "@/pages/QuotaPoolDetailsPage",
+    hideInMenu: true,
   },
   {
     path: "/config/auto-quota-pool-config",

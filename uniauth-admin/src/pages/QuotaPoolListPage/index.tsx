@@ -1,5 +1,6 @@
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
+import { Link, useSearchParams } from "@umijs/max";
 import {
   Button,
   Form,
@@ -13,7 +14,7 @@ import {
   Table,
   Typography,
 } from "antd";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   postQuotaPoolAdminBatchModify,
   postQuotaPoolAdminResetBalance,
@@ -31,6 +32,22 @@ const QuotaPoolListPage: React.FC = () => {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  // 获取当前的搜索参数
+  const currentSearchParams = useMemo(() => {
+    const personal = searchParams.get("personal") || "";
+    const disabled = searchParams.get("disabled") || "";
+    const current = parseInt(searchParams.get("current") || "1", 10);
+    const pageSize = parseInt(searchParams.get("pageSize") || "20", 10);
+
+    return {
+      personal,
+      disabled,
+      current,
+      pageSize,
+    };
+  }, [searchParams]);
 
   const columns: ProColumns<any>[] = [
     {
@@ -99,28 +116,47 @@ const QuotaPoolListPage: React.FC = () => {
       valueType: "option",
       width: 200,
       ellipsis: true,
-      render: (_, record) => (
-        <div style={{ textAlign: "center" }}>
-          <a key="detail" onClick={() => handleViewDetail(record)}>
-            详情
-          </a>
-          <span style={{ margin: "0 8px" }} />
-          <Popconfirm
-            key="delete"
-            title="确定要删除该配额池吗？"
-            onConfirm={() => handleDelete(record)}
-          >
-            <a style={{ color: "red" }}>删除</a>
-          </Popconfirm>
-        </div>
-      ),
+      render: (_, record) => {
+        // 获取当前的搜索参数并添加到详情页链接中
+        const linkParams = new URLSearchParams();
+        if (currentSearchParams.personal)
+          linkParams.set("from_personal", currentSearchParams.personal);
+        if (currentSearchParams.disabled)
+          linkParams.set("from_disabled", currentSearchParams.disabled);
+        if (currentSearchParams.current > 1)
+          linkParams.set(
+            "from_current",
+            currentSearchParams.current.toString(),
+          );
+        if (currentSearchParams.pageSize !== 20)
+          linkParams.set(
+            "from_pageSize",
+            currentSearchParams.pageSize.toString(),
+          );
+
+        const queryString = linkParams.toString();
+        const detailUrl = `/quota-pool-list/${record.quotaPoolName}${
+          queryString ? `?${queryString}` : ""
+        }`;
+
+        return (
+          <div style={{ textAlign: "center" }}>
+            <Link to={detailUrl} key="detail">
+              详情
+            </Link>
+            <span style={{ margin: "0 8px" }} />
+            <Popconfirm
+              key="delete"
+              title="确定要删除该配额池吗？"
+              onConfirm={() => handleDelete(record)}
+            >
+              <a style={{ color: "red" }}>删除</a>
+            </Popconfirm>
+          </div>
+        );
+      },
     },
   ];
-
-  function handleViewDetail(record: any) {
-    // TODO:跳转详情页逻辑
-    console.log("查看详情", record);
-  }
 
   async function handleDelete(record: any) {
     try {
