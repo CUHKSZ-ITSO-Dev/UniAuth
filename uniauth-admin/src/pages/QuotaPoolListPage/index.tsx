@@ -9,11 +9,13 @@ import {
   Modal,
   message,
   Popconfirm,
+  Radio,
   Space,
   Switch,
   Table,
   Typography,
 } from "antd";
+import cronstrue from "cronstrue/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   postQuotaPoolAdminBatchModify,
@@ -34,6 +36,8 @@ const QuotaPoolListPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tableRef = useRef<ActionType | null>(null);
   const formRef = useRef<any>(null);
+  const [cronDescription, setCronDescription] = useState<string>("");
+  const [cronError, setCronError] = useState<string>("");
 
   // 使用 useMemo 确保初始参数响应 URL 变化
   const initialSearchParams = useMemo(() => {
@@ -212,6 +216,30 @@ const QuotaPoolListPage: React.FC = () => {
     },
   ];
 
+  // 处理 cron 表达式校验和解析
+  const handleCronChange = (value: string) => {
+    if (!value || value.trim() === "") {
+      setCronDescription("");
+      setCronError("");
+      return;
+    }
+
+    try {
+      // 尝试解析 cron 表达式
+      const description = cronstrue.toString(value, {
+        throwExceptionOnParseError: true,
+        locale: "zh_CN", // 使用中文
+        use24HourTimeFormat: true,
+        verbose: true,
+      });
+      setCronDescription(description);
+      setCronError("");
+    } catch (error) {
+      setCronError("Cron 表达式格式不正确，请检查语法");
+      setCronDescription("");
+    }
+  };
+
   // 删除配额池
   async function handleDelete(record: any) {
     try {
@@ -236,6 +264,8 @@ const QuotaPoolListPage: React.FC = () => {
   // 新建配额池
   function handleNewQuotaPoolClick() {
     form.resetFields();
+    setCronDescription("");
+    setCronError("");
     setIsModalOpen(true);
   }
 
@@ -307,13 +337,15 @@ const QuotaPoolListPage: React.FC = () => {
         regularQuota: values.regularQuota,
         extraQuota: values.extraQuota || 0,
         personal: values.personal,
-        disabled: values.disabled,
+        disabled: !values.enabled,
       });
 
       if (res?.ok) {
         message.success("新建配额池成功");
         setIsModalOpen(false);
         form.resetFields();
+        setCronDescription("");
+        setCronError("");
         tableRef.current?.reload();
       } else {
         message.error("新建配额池失败");
@@ -334,6 +366,8 @@ const QuotaPoolListPage: React.FC = () => {
   const handleCancel = () => {
     setIsModalOpen(false);
     form.resetFields();
+    setCronDescription("");
+    setCronError("");
   };
 
   // 表格数据请求
@@ -513,9 +547,9 @@ const QuotaPoolListPage: React.FC = () => {
           form={form}
           layout="vertical"
           initialValues={{
-            disabled: false,
+            enabled: true, // 改为 enabled，默认启用
             personal: false,
-            regularQuota: 1000,
+            regularQuota: 10,
             extraQuota: 0,
           }}
         >
@@ -530,9 +564,39 @@ const QuotaPoolListPage: React.FC = () => {
           <Form.Item
             label="刷新周期（Cron表达式）"
             name="cronCycle"
-            rules={[{ required: true, message: "请输入刷新周期" }]}
+            rules={[
+              { required: true, message: "请输入刷新周期" },
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  try {
+                    cronstrue.toString(value, {
+                      throwExceptionOnParseError: true,
+                    });
+                    return Promise.resolve();
+                  } catch {
+                    return Promise.reject(new Error("Cron 表达式格式不正确"));
+                  }
+                },
+              },
+            ]}
+            validateStatus={
+              cronError ? "error" : cronDescription ? "success" : ""
+            }
+            help={
+              cronError ? (
+                <span style={{ color: "#ff4d4f" }}>{cronError}</span>
+              ) : cronDescription ? (
+                <span style={{ color: "#52c41a" }}>
+                  执行时间：{cronDescription}
+                </span>
+              ) : null
+            }
           >
-            <Input placeholder="请输入标准 Cron 表达式，例如：0 0 3 * *" />
+            <Input
+              placeholder="请输入标准 Cron 表达式，例如：0 0 3 * *"
+              onChange={(e) => handleCronChange(e.target.value)}
+            />
           </Form.Item>
 
           <Form.Item
@@ -543,7 +607,7 @@ const QuotaPoolListPage: React.FC = () => {
             <InputNumber
               min={0}
               style={{ width: "100%" }}
-              placeholder="请输入定期配额，例如：1000"
+              placeholder="请输入定期配额，例如：10"
             />
           </Form.Item>
 
@@ -555,15 +619,15 @@ const QuotaPoolListPage: React.FC = () => {
             />
           </Form.Item>
 
-          <Form.Item label="配额池类型" name="personal" valuePropName="checked">
-            <Switch
-              checkedChildren="个人配额池"
-              unCheckedChildren="共享配额池"
-            />
+          <Form.Item label="配额池类型" name="personal">
+            <Radio.Group buttonStyle="solid">
+              <Radio.Button value={false}>共享配额池</Radio.Button>
+              <Radio.Button value={true}>个人配额池</Radio.Button>
+            </Radio.Group>
           </Form.Item>
 
-          <Form.Item label="启用状态" name="disabled" valuePropName="checked">
-            <Switch checkedChildren="禁用" unCheckedChildren="启用" />
+          <Form.Item label="启用状态" name="enabled" valuePropName="checked">
+            <Switch checkedChildren="启用" unCheckedChildren="禁用" />
           </Form.Item>
         </Form>
       </Modal>
