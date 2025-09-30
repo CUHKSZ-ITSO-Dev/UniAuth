@@ -594,7 +594,7 @@ const QuotaPoolListPage: React.FC = () => {
             }
           >
             <Input
-              placeholder="请输入标准 Cron 表达式，例如：0 0 3 * *"
+              placeholder="请输入标准 Cron 表达式，例如：0 3 * * *"
               onChange={(e) => handleCronChange(e.target.value)}
             />
           </Form.Item>
