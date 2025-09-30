@@ -26,6 +26,7 @@ interface QuotaPoolDetail {
 interface ConfigDetailTabProps {
   quotaPoolName: string;
   quotaPoolDetail: QuotaPoolDetail | null;
+  onRefresh?: () => Promise<void>;
 }
 
 // 用户信息接口

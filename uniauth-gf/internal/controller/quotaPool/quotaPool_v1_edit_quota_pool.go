@@ -32,6 +32,7 @@ func (c *ControllerV1) EditQuotaPool(ctx context.Context, req *v1.EditQuotaPoolR
 			Personal:       req.Personal,
 			Disabled:       req.Disabled,
 			UserinfosRules: req.UserinfosRules,
+			CreatedAt:      validQP.CreatedAt,
 		}
 		if err = quotaPool.Edit(ctx, qp); err != nil {
 			return gerror.Wrap(err, "更新配额池失败")

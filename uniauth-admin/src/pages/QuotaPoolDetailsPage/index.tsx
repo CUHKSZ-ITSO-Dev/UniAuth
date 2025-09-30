@@ -4,7 +4,11 @@ import { Button, Descriptions, message, Space, Statistic } from "antd";
 
 import type { FC } from "react";
 import { useEffect, useState } from "react";
-import { getQuotaPool } from "@/services/uniauthService/quotaPool";
+import { postQuotaPoolAdminResetBalance } from "@/services/uniauthService/admin";
+import {
+  getQuotaPool,
+  putQuotaPool,
+} from "@/services/uniauthService/quotaPool";
 import BillingDetailTab from "./BillingDetailTab";
 import ConfigDetailTab from "./ConfigDetailTab";
 import useStyles from "./style.style";
@@ -56,39 +60,45 @@ const QuotaPoolDetailsPage: FC = () => {
     setLoading(false);
   }, [urlQuotaPoolName]);
 
+  // 获取配额池详细信息的函数
+  const fetchQuotaPoolDetail = async () => {
+    if (!quotaPoolName) return;
+
+    setDetailLoading(true);
+    try {
+      const response = await getQuotaPool({
+        quotaPoolName: quotaPoolName,
+      });
+
+      if (response?.items && response.items.length > 0) {
+        const item = response.items[0];
+        setQuotaPoolDetail({
+          quotaPoolName: item.quotaPoolName || "",
+          cronCycle: item.cronCycle || "",
+          regularQuota: Number(item.regularQuota) || 0,
+          remainingQuota: Number(item.remainingQuota) || 0,
+          extraQuota: Number(item.extraQuota) || 0,
+          lastResetAt: item.lastResetAt || "",
+          personal: item.personal || false,
+          disabled: item.disabled || false,
+          createdAt: item.createdAt || "",
+        });
+      }
+    } catch (error) {
+      console.error("获取配额池详情失败:", error);
+      message.error("获取配额池详情失败");
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  // 刷新配额池详细信息
+  const refreshQuotaPoolDetail = async () => {
+    await fetchQuotaPoolDetail();
+  };
+
   // 获取配额池详细信息
   useEffect(() => {
-    const fetchQuotaPoolDetail = async () => {
-      if (!quotaPoolName) return;
-
-      setDetailLoading(true);
-      try {
-        const response = await getQuotaPool({
-          quotaPoolName: quotaPoolName,
-        });
-
-        if (response?.items && response.items.length > 0) {
-          const item = response.items[0];
-          setQuotaPoolDetail({
-            quotaPoolName: item.quotaPoolName || "",
-            cronCycle: item.cronCycle || "",
-            regularQuota: Number(item.regularQuota) || 0,
-            remainingQuota: Number(item.remainingQuota) || 0,
-            extraQuota: Number(item.extraQuota) || 0,
-            lastResetAt: item.lastResetAt || "",
-            personal: item.personal || false,
-            disabled: item.disabled || false,
-            createdAt: item.createdAt || "",
-          });
-        }
-      } catch (error) {
-        console.error("获取配额池详情失败:", error);
-        message.error("获取配额池详情失败");
-      } finally {
-        setDetailLoading(false);
-      }
-    };
-
     fetchQuotaPoolDetail();
   }, [quotaPoolName]);
 
@@ -97,15 +107,81 @@ const QuotaPoolDetailsPage: FC = () => {
     setActiveTabKey(key);
   };
 
+  // 重置配额池
+  const handleResetQuotaPool = async () => {
+    const res = await postQuotaPoolAdminResetBalance({
+      quotaPool: quotaPoolName,
+    });
+    if (res.ok) {
+      message.success("重置配额池成功");
+      // 重置成功后刷新配额池详情
+      await refreshQuotaPoolDetail();
+    } else {
+      message.error("重置配额池失败");
+    }
+  };
+
+  // 启用配额池
+  const handleEnableQuotaPool = async () => {
+    const res = await putQuotaPool({
+      quotaPoolName: quotaPoolName,
+      cronCycle: quotaPoolDetail?.cronCycle || "",
+      regularQuota: quotaPoolDetail?.regularQuota || 0,
+      personal: quotaPoolDetail?.personal || false,
+      disabled: false,
+    });
+    if (res.ok) {
+      message.success("启用配额池成功");
+      // 启用成功后刷新配额池详情
+      await refreshQuotaPoolDetail();
+    } else {
+      message.error("启用配额池失败");
+    }
+  };
+
+  // 禁用配额池
+  const handleDisableQuotaPool = async () => {
+    const res = await putQuotaPool({
+      quotaPoolName: quotaPoolName,
+      cronCycle: quotaPoolDetail?.cronCycle || "",
+      regularQuota: quotaPoolDetail?.regularQuota || 0,
+      personal: quotaPoolDetail?.personal || false,
+      disabled: true,
+    });
+    if (res.ok) {
+      message.success("禁用配额池成功");
+      // 禁用成功后刷新配额池详情
+      await refreshQuotaPoolDetail();
+    } else {
+      message.error("禁用配额池失败");
+    }
+  };
+
   const action = (
     <RouteContext.Consumer>
       {() => {
         return (
           <Space>
-            <Button type="primary">重置配额池</Button>
-            <Button color="danger" variant="solid">
-              禁用配额池
+            <Button type="primary" onClick={handleResetQuotaPool}>
+              重置配额池
             </Button>
+            {quotaPoolDetail?.disabled ? (
+              <Button
+                color="cyan"
+                variant="solid"
+                onClick={handleEnableQuotaPool}
+              >
+                启用配额池
+              </Button>
+            ) : (
+              <Button
+                color="danger"
+                variant="solid"
+                onClick={handleDisableQuotaPool}
+              >
+                禁用配额池
+              </Button>
+            )}
           </Space>
         );
       }}
@@ -114,7 +190,15 @@ const QuotaPoolDetailsPage: FC = () => {
 
   const extra = (
     <div className={styles.moreInfo}>
-      <Statistic title="状态" value="使用中" valueStyle={{ color: "green" }} />
+      {quotaPoolDetail?.disabled ? (
+        <Statistic title="状态" value="已禁用" valueStyle={{ color: "red" }} />
+      ) : (
+        <Statistic
+          title="状态"
+          value="使用中"
+          valueStyle={{ color: "green" }}
+        />
+      )}
       <Statistic
         title="配额池余额"
         value={
@@ -165,6 +249,7 @@ const QuotaPoolDetailsPage: FC = () => {
           <ConfigDetailTab
             quotaPoolName={quotaPoolName}
             quotaPoolDetail={quotaPoolDetail}
+            onRefresh={refreshQuotaPoolDetail}
           />
         );
       case "bill_detail":
@@ -174,6 +259,7 @@ const QuotaPoolDetailsPage: FC = () => {
           <ConfigDetailTab
             quotaPoolName={quotaPoolName}
             quotaPoolDetail={quotaPoolDetail}
+            onRefresh={refreshQuotaPoolDetail}
           />
         );
     }
