@@ -4,7 +4,8 @@ import {
   type ProColumns,
   ProTable,
 } from "@ant-design/pro-components";
-import { Badge, Button, Card, Descriptions, message, Progress } from "antd";
+import { Link } from "@umijs/max";
+import { Card, Descriptions, message, Progress, Space } from "antd";
 import cronstrue from "cronstrue/i18n";
 import type { FC } from "react";
 import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService/auth";
@@ -31,8 +32,8 @@ interface ConfigDetailTabProps {
 interface UserInfo {
   key: string;
   upn: string;
-  displayName: string;
-  identity: string;
+  name: string;
+  employeeId: string;
   tags: string[];
   department: string;
 }
@@ -64,6 +65,16 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
 
   const associatedUsersColumns: ProColumns<UserInfo>[] = [
     {
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.name",
+        defaultMessage: "姓名",
+      }),
+      valueType: "text",
+      dataIndex: "name",
+      search: true,
+      ellipsis: true,
+    },
+    {
       title: "UPN",
       valueType: "text",
       dataIndex: "upn",
@@ -72,41 +83,18 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     },
     {
       title: intl.formatMessage({
-        id: "pages.quotaPoolConfigDetail.displayname",
-        defaultMessage: "显示名",
+        id: "pages.quotaPoolConfigDetail.employeeId",
+        defaultMessage: "员工/学号",
       }),
       valueType: "text",
-      dataIndex: "displayName",
+      dataIndex: "employeeId",
       search: true,
       ellipsis: true,
-    },
-    {
-      title: intl.formatMessage({
-        id: "pages.quotaPoolConfigDetail.identity",
-        defaultMessage: "身份",
-      }),
-      valueType: "text",
-      dataIndex: "identity",
-      search: true,
-      ellipsis: true,
-    },
-    {
-      title: intl.formatMessage({
-        id: "pages.quotaPoolConfigDetail.tag",
-        defaultMessage: "标签",
-      }),
-      valueType: "text",
-      dataIndex: "tags",
-      search: false,
-      render: (_: any, record: any) =>
-        record.tags?.map((tag: string) => (
-          <Badge key={tag} color="blue" text={tag} />
-        )),
     },
     {
       title: intl.formatMessage({
         id: "pages.quotaPoolConfigDetail.department",
-        defaultMessage: "部门信息",
+        defaultMessage: "部门",
       }),
       valueType: "text",
       dataIndex: "department",
@@ -119,18 +107,10 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         defaultMessage: "操作",
       }),
       valueType: "option",
-      width: 100,
       render: (_: any, record: any) => [
-        <Button
-          type="link"
-          key="detail"
-          onClick={() => handleUserDetail(record)}
-        >
-          {intl.formatMessage({
-            id: "pages.quotaPoolConfigDetail.operation.viewDetail",
-            defaultMessage: "查看详情",
-          })}
-        </Button>,
+        <Space size="middle" key={record.upn}>
+          <Link to={`/user-list/userDetail/${record.upn}`}>详情</Link>
+        </Space>,
       ],
     },
   ];
@@ -297,8 +277,8 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         (user: any) => ({
           key: user.upn || `user-${Math.random()}`,
           upn: user.upn || "",
-          displayName: user.displayName || user.name || "",
-          identity: user.employeeType || user.staffRole || "-",
+          name: user.name || "",
+          employeeId: user.employeeId || "-",
           tags: user.tags || [],
           department: user.department || "",
         }),
@@ -371,11 +351,6 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         total: 0,
       };
     }
-  };
-
-  const handleUserDetail = (record: any) => {
-    // TODO: 跳转展示用户详情页
-    console.log(record);
   };
 
   return (
