@@ -25,10 +25,11 @@ func (c *ControllerV1) EnsurePersonalQuotaPool(ctx context.Context, req *v1.Ensu
 			return gerror.Wrap(err, "获取用户所有配额池时发生内部错误")
 		}
 		if havePersonal {
-			res.OK = true
+			res.IsNew = false
 			return nil
 		}
 
+		res.IsNew = true
 		// 从 AutoQuotaPoolConfig 里面找到合适的配置，并进行新建一个个人配额池
 		var autoQPConfig *entity.ConfigAutoQuotaPool
 		if err = dao.ConfigAutoQuotaPool.Ctx(ctx).OrderAsc("priority").Where("? = ANY(upns_cache)", req.Upn).Limit(1).LockUpdate().Scan(&autoQPConfig); err != nil {
@@ -61,6 +62,5 @@ func (c *ControllerV1) EnsurePersonalQuotaPool(ctx context.Context, req *v1.Ensu
 		return nil, gerror.Wrap(err, "Ensure 配额池事务发生错误")
 	}
 	res.OK = true
-	res.IsNew = true
 	return
 }
