@@ -12,6 +12,7 @@ import (
 
 	v1 "uniauth-gf/api/userinfos/v1"
 	"uniauth-gf/internal/dao"
+	"uniauth-gf/internal/model/entity"
 )
 
 // 字段白名单，防止用户查询任意字段
@@ -130,29 +131,21 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 		IsAll:      req.Pagination.All,
 	}
 
+	// 返回详细用户信息
+	var userInfos []entity.UserinfosUserInfos
+	err = model.Scan(&userInfos)
+	if err != nil {
+		return nil, gerror.Wrap(err, "查询用户详细信息失败")
+	}
+	// 提取UPN列表
+	upns := make([]string, len(userInfos))
+	for i, info := range userInfos {
+		upns[i] = info.Upn
+	}
+	res.UserUpns = upns
+	
 	if req.Verbose {
-		// 返回详细用户信息
-		var userInfos []v1.GetOneRes
-		err = model.Scan(&userInfos)
-		if err != nil {
-			return nil, gerror.Wrap(err, "查询用户详细信息失败")
-		}
 		res.UserInfos = userInfos
-
-		// 提取UPN列表
-		upns := make([]string, len(userInfos))
-		for i, info := range userInfos {
-			upns[i] = info.Upn
-		}
-		res.UserUpns = upns
-	} else {
-		// 仅返回UPN列表
-		var upns []string
-		err = model.Fields(dao.UserinfosUserInfos.Columns().Upn).Scan(&upns)
-		if err != nil {
-			return nil, gerror.Wrap(err, "查询用户UPN列表失败")
-		}
-		res.UserUpns = upns
 	}
 
 	return res, nil
