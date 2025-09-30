@@ -14,7 +14,7 @@ import {
   Table,
   Typography,
 } from "antd";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   postQuotaPoolAdminBatchModify,
   postQuotaPoolAdminResetBalance,
@@ -28,18 +28,19 @@ import {
 const { Title, Text } = Typography;
 
 const QuotaPoolListPage: React.FC = () => {
-  const actionRef = useRef<ActionType | null>(null);
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tableRef = useRef<ActionType | null>(null);
+  const formRef = useRef<any>(null);
 
-  // 获取当前的搜索参数
-  const currentSearchParams = useMemo(() => {
-    const personal = searchParams.get("personal") || "";
-    const disabled = searchParams.get("disabled") || "";
+  // 使用 useMemo 确保初始参数响应 URL 变化
+  const initialSearchParams = useMemo(() => {
+    const personal = searchParams.get("personal") || undefined;
+    const disabled = searchParams.get("disabled") || undefined;
     const current = parseInt(searchParams.get("current") || "1", 10);
-    const pageSize = parseInt(searchParams.get("pageSize") || "20", 10);
+    const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
 
     return {
       personal,
@@ -48,6 +49,59 @@ const QuotaPoolListPage: React.FC = () => {
       pageSize,
     };
   }, [searchParams]);
+
+  // 更新URL参数
+  const updateURLParams = (params: {
+    personal?: string;
+    disabled?: string;
+    current?: number;
+    pageSize?: number;
+  }) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+
+    if (params.personal !== undefined) {
+      if (params.personal) {
+        newSearchParams.set("personal", params.personal);
+      } else {
+        newSearchParams.delete("personal");
+      }
+    }
+
+    if (params.disabled !== undefined) {
+      if (params.disabled) {
+        newSearchParams.set("disabled", params.disabled);
+      } else {
+        newSearchParams.delete("disabled");
+      }
+    }
+
+    if (params.current !== undefined && params.current > 1) {
+      newSearchParams.set("current", params.current.toString());
+    } else {
+      newSearchParams.delete("current");
+    }
+
+    if (params.pageSize !== undefined && params.pageSize !== 10) {
+      newSearchParams.set("pageSize", params.pageSize.toString());
+    } else {
+      newSearchParams.delete("pageSize");
+    }
+
+    setSearchParams(newSearchParams);
+  };
+
+  // 监听URL参数变化，同步更新表单和表格
+  useEffect(() => {
+    if (formRef.current) {
+      // 当URL参数变化时，重置表单到新的初始值
+      formRef.current.setFieldsValue(initialSearchParams);
+    }
+
+    if (tableRef.current) {
+      // 重新加载表格以反映新的搜索条件
+      tableRef.current.reload();
+    }
+  }, [initialSearchParams]);
 
   const columns: ProColumns<any>[] = [
     {
@@ -119,19 +173,19 @@ const QuotaPoolListPage: React.FC = () => {
       render: (_, record) => {
         // 获取当前的搜索参数并添加到详情页链接中
         const linkParams = new URLSearchParams();
-        if (currentSearchParams.personal)
-          linkParams.set("from_personal", currentSearchParams.personal);
-        if (currentSearchParams.disabled)
-          linkParams.set("from_disabled", currentSearchParams.disabled);
-        if (currentSearchParams.current > 1)
+        if (initialSearchParams.personal)
+          linkParams.set("from_personal", initialSearchParams.personal);
+        if (initialSearchParams.disabled)
+          linkParams.set("from_disabled", initialSearchParams.disabled);
+        if (initialSearchParams.current > 1)
           linkParams.set(
             "from_current",
-            currentSearchParams.current.toString(),
+            initialSearchParams.current.toString(),
           );
-        if (currentSearchParams.pageSize !== 20)
+        if (initialSearchParams.pageSize !== 10)
           linkParams.set(
             "from_pageSize",
-            currentSearchParams.pageSize.toString(),
+            initialSearchParams.pageSize.toString(),
           );
 
         const queryString = linkParams.toString();
@@ -158,6 +212,7 @@ const QuotaPoolListPage: React.FC = () => {
     },
   ];
 
+  // 删除配额池
   async function handleDelete(record: any) {
     try {
       setLoading(true);
@@ -166,7 +221,7 @@ const QuotaPoolListPage: React.FC = () => {
       });
       if (res?.ok) {
         message.success("删除配额池成功");
-        actionRef.current?.reload();
+        tableRef.current?.reload();
       } else {
         message.error("删除配额池失败");
       }
@@ -178,11 +233,13 @@ const QuotaPoolListPage: React.FC = () => {
     }
   }
 
+  // 新建配额池
   function handleNewQuotaPoolClick() {
     form.resetFields();
     setIsModalOpen(true);
   }
 
+  // 批量重置配额池
   async function handleBatchResetClick(selectedRows: any[]) {
     if (!selectedRows || selectedRows.length === 0) {
       message.warning("请先选择要重置的配额池");
@@ -199,7 +256,7 @@ const QuotaPoolListPage: React.FC = () => {
 
       await Promise.all(promises);
       message.success("批量重置配额池成功");
-      actionRef.current?.reload();
+      tableRef.current?.reload();
     } catch (error) {
       console.error("批量重置配额池失败:", error);
       message.error("批量重置配额池失败");
@@ -208,6 +265,7 @@ const QuotaPoolListPage: React.FC = () => {
     }
   }
 
+  // 批量禁用配额池
   async function handleBatchDisableClick(selectedRows: any[]) {
     if (!selectedRows || selectedRows.length === 0) {
       message.warning("请先选择要禁用的配额池");
@@ -225,7 +283,7 @@ const QuotaPoolListPage: React.FC = () => {
 
       if (res?.ok) {
         message.success("批量禁用配额池成功");
-        actionRef.current?.reload();
+        tableRef.current?.reload();
       } else {
         message.error("批量禁用配额池失败");
       }
@@ -237,6 +295,7 @@ const QuotaPoolListPage: React.FC = () => {
     }
   }
 
+  // 确认新建配额池
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
@@ -255,7 +314,7 @@ const QuotaPoolListPage: React.FC = () => {
         message.success("新建配额池成功");
         setIsModalOpen(false);
         form.resetFields();
-        actionRef.current?.reload();
+        tableRef.current?.reload();
       } else {
         message.error("新建配额池失败");
       }
@@ -271,17 +330,29 @@ const QuotaPoolListPage: React.FC = () => {
     }
   };
 
+  // 取消新建配额池
   const handleCancel = () => {
     setIsModalOpen(false);
     form.resetFields();
   };
 
+  // 表格数据请求
   const quotaPoolListRequest = async (params: any) => {
+    const { current, pageSize, personal, disabled } = params;
+
+    // 更新URL参数
+    updateURLParams({
+      personal: personal || "",
+      disabled: disabled || "",
+      current: current || 1,
+      pageSize: pageSize || 10,
+    });
+
     try {
       const res = await getQuotaPool({
         quotaPoolName: params.quotaPoolName,
         page: params.current || 1,
-        pageSize: params.pageSize || 20,
+        pageSize: params.pageSize || 10,
       });
 
       if (!res || !res.items) {
@@ -295,22 +366,26 @@ const QuotaPoolListPage: React.FC = () => {
       // 根据搜索条件过滤数据
       let data = res.items;
 
-      // 按配额池类型过滤
-      if (params.personal !== undefined) {
-        data = data.filter(
-          (item) =>
-            item.personal ===
-            (params.personal === "true" || params.personal === true),
-        );
+      // 按配额池类型过滤 - 只有当 personal 有值且不为空字符串时才进行过滤
+      if (
+        params.personal !== undefined &&
+        params.personal !== "" &&
+        params.personal !== null
+      ) {
+        const isPersonal =
+          params.personal === "true" || params.personal === true;
+        data = data.filter((item) => item.personal === isPersonal);
       }
 
-      // 按启用状态过滤
-      if (params.disabled !== undefined) {
-        data = data.filter(
-          (item) =>
-            item.disabled ===
-            (params.disabled === "true" || params.disabled === true),
-        );
+      // 按启用状态过滤 - 只有当 disabled 有值且不为空字符串时才进行过滤
+      if (
+        params.disabled !== undefined &&
+        params.disabled !== "" &&
+        params.disabled !== null
+      ) {
+        const isDisabled =
+          params.disabled === "true" || params.disabled === true;
+        data = data.filter((item) => item.disabled === isDisabled);
       }
 
       return {
@@ -336,10 +411,55 @@ const QuotaPoolListPage: React.FC = () => {
           管理系统中的所有配额池及其配置，查看使用情况、获取账单等
         </Text>
         <ProTable
+          onReset={() => {
+            // 清空URL参数
+            updateURLParams({
+              personal: "",
+              disabled: "",
+              current: 1,
+              pageSize: 10,
+            });
+            // 手动重置表单到空值
+            if (formRef.current) {
+              formRef.current.setFieldsValue({
+                personal: undefined,
+                disabled: undefined,
+              });
+            }
+            // 调用表格重置
+            if (tableRef.current) {
+              tableRef.current.reset?.();
+            }
+          }}
           columns={columns}
-          actionRef={actionRef}
+          actionRef={tableRef}
           rowKey="quotaPoolName"
-          search={{ labelWidth: "auto" }}
+          search={{
+            labelWidth: "auto",
+            defaultCollapsed: false,
+            collapseRender: false,
+            filterType: "query",
+            span: 6,
+            searchText: "查询",
+            resetText: "重置",
+          }}
+          // 从URL参数设置初始表单值 - 过滤掉 undefined 值
+          form={{
+            initialValues: Object.fromEntries(
+              Object.entries(initialSearchParams).filter(
+                ([_, value]) => value !== undefined,
+              ),
+            ),
+          }}
+          formRef={formRef}
+          // 设置初始分页参数
+          pagination={{
+            current: initialSearchParams.current,
+            pageSize: initialSearchParams.pageSize,
+            defaultPageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `共 ${total} 条数据`,
+          }}
           rowSelection={{
             selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
           }}
