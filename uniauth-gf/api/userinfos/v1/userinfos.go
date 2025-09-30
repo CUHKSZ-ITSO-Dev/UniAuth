@@ -11,9 +11,7 @@ type GetOneReq struct {
 	g.Meta `path:"/" tags:"UserInfo" method:"get" summary:"查询用户信息" dc:"根据UPN，返回用户的所有信息。"`
 	Upn    string `json:"upn" v:"required" dc:"UPN" example:"sadt@cuhk.edu.cn"`
 }
-type GetOneRes struct {
-	*entity.UserinfosUserInfos
-}
+type GetOneRes = entity.UserinfosUserInfos
 
 // ==================== Filter ====================
 // FilterCondition 表示单个过滤条件
@@ -52,11 +50,11 @@ type FilterReq struct {
 }
 
 type FilterRes struct {
-	UserUpns   []string    `json:"userUpns" dc:"用户UPN列表" example:"['122020255@link.cuhk.edu.cn']"`
-	UserInfos  []GetOneRes `json:"userInfos,omitempty" dc:"详细用户信息（verbose=true时返回）"`
-	Total      int         `json:"total" dc:"总记录数"`
-	Page       int         `json:"page" dc:"当前页码"`
-	PageSize   int         `json:"pageSize" dc:"每页条数"`
-	TotalPages int         `json:"totalPages" dc:"总页数"`
-	IsAll      bool        `json:"isAll" dc:"是否为全部数据查询"`
+	UserUpns   []string                    `json:"userUpns" dc:"用户UPN列表" example:"['122020255@link.cuhk.edu.cn']"`
+	UserInfos  []entity.UserinfosUserInfos `json:"userInfos,omitempty" dc:"详细用户信息（verbose=true时返回）"`
+	Total      int                         `json:"total" dc:"总记录数"`
+	Page       int                         `json:"page" dc:"当前页码"`
+	PageSize   int                         `json:"pageSize" dc:"每页条数"`
+	TotalPages int                         `json:"totalPages" dc:"总页数"`
+	IsAll      bool                        `json:"isAll" dc:"是否为全部数据查询"`
 }
