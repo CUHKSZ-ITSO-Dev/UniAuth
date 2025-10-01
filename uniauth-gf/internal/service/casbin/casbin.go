@@ -32,8 +32,11 @@ func init() {
 
 	// Watcher 配置
 	conn := g.Cfg().MustGetWithEnv(ctx, "casbin.default.watcher").String()
-	w, _ := psqlwatcher.NewWatcherWithConnString(context.Background(), conn,
-		psqlwatcher.Option{Verbose: true})
+    w, err := psqlwatcher.NewWatcherWithConnString(ctx, conn,
+		psqlwatcher.Option{Verbose: g.Cfg().MustGet(ctx, "casbin.default.watcher.verbose", false).Bool()})
+	if err != nil {
+		panic("创建Casbin Watcher失败: " + err.Error())
+	}
 
 	// 数据库连接配置
 	dsn := g.Cfg().MustGetWithEnv(ctx, "casbin.default.link")
