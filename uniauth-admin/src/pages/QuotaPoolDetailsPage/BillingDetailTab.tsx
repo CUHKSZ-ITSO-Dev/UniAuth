@@ -274,12 +274,12 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
   // 打开导出模态框
   const handleOpenExportModal = () => {
-    // 设置默认时间范围为本月
+    // 设置默认时间范围为往前30天
     const now = dayjs();
-    const startOfMonth = now.startOf("month");
+    const thirtyDaysAgo = now.subtract(30, "day");
 
     exportForm.setFieldsValue({
-      dateRange: [startOfMonth, now],
+      dateRange: [thirtyDaysAgo, now],
       svc: [],
       product: [],
     });
@@ -468,10 +468,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
   const billingRecordsDataRequest = async (params: any) => {
     try {
-      // 获取默认时间范围：本月初到当前时间
+      // 获取默认时间范围：往前30天到当前时间
       const now = dayjs();
-      const startOfMonth = now.startOf("month");
-      const defaultStartTime = startOfMonth.format("YYYY-MM-DD");
+      const thirtyDaysAgo = now.subtract(30, "day");
+      const defaultStartTime = thirtyDaysAgo.format("YYYY-MM-DD");
       const defaultEndTime = now.format("YYYY-MM-DD");
 
       // 构建API请求参数
@@ -615,7 +615,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           // 设置表单默认值
           form={{
             initialValues: {
-              dateRange: [dayjs().startOf("month"), dayjs()],
+              dateRange: [dayjs().subtract(30, "day"), dayjs()],
             },
           }}
           pagination={{
@@ -664,19 +664,6 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             onClick={() => {
               setExportModalVisible(false);
               exportForm.resetFields();
-            }}
-          >
-            {intl.formatMessage({
-              id: "pages.billingDetail.cancel",
-              defaultMessage: "取消",
-            })}
-          </Button>,
-          <Button
-            key="export"
-            type="primary"
-            loading={exportLoading}
-            onClick={() => {
-              exportForm.submit();
             }}
           >
             {intl.formatMessage({
