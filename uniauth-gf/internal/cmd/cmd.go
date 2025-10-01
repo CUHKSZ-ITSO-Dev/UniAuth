@@ -5,12 +5,12 @@ import (
 	"fmt"
 	_ "time/tzdata"
 
-	"github.com/gogf/gf/v2/os/gcron"
-	"github.com/gogf/gf/v2/os/gtime"
-
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/os/gcfg"
 	"github.com/gogf/gf/v2/os/gcmd"
+	"github.com/gogf/gf/v2/os/gcron"
+	"github.com/gogf/gf/v2/os/gtime"
 
 	"uniauth-gf/internal/controller/auth"
 	"uniauth-gf/internal/controller/billing"
@@ -28,6 +28,9 @@ var (
 		Usage: "main",
 		Brief: "start http server",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			g.Cfg().GetAdapter().(*gcfg.AdapterFile).SetFileName("/app/config/config.yaml")
+			g.Cfg().GetAdapter().(*gcfg.AdapterFile).SetPath("/app/config")
+
 			fmt.Println(`
    __  __      _ ___         __  __  
   ╱ ╱ ╱ ╱___  (_)   │ __  __╱ ╱_╱ ╱_ 
