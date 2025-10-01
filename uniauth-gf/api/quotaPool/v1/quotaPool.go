@@ -8,18 +8,54 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type GetQuotaPoolReq struct {
-	g.Meta        `path:"/" tags:"QuotaPool" method:"get" summary:"获取配额池的详细配置"`
-	QuotaPoolName string `json:"quotaPoolName" d:"" dc:"指定配额池名称（可选）"`
-	Page          int    `json:"page" v:"min:1" dc:"页码，从1开始" d:"1"`
-	PageSize      int    `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" d:"20"`
+// ==================== Filter ====================
+// FilterCondition 表示单个过滤条件
+type FilterCondition struct {
+	Field string `json:"field" v:"required|length:1,50" dc:"字段名"`
+	Op    string `json:"op" v:"required|in:eq,neq,gt,gte,lt,lte,like,ilike,in,notin,contains,notcontains,startswith,endswith,isnull,isnotnull" dc:"操作符"`
+	Value *g.Var `json:"value" dc:"条件值"`
 }
-type GetQuotaPoolRes struct {
+
+// FilterGroup 表示一组过滤条件，支持嵌套
+type FilterGroup struct {
+	Logic      string             `json:"logic" v:"in:and,or" dc:"逻辑关系: and(且), or(或)"`
+	Conditions []*FilterCondition `json:"conditions" dc:"过滤条件列表"`
+	Groups     []*FilterGroup     `json:"groups" dc:"嵌套的条件组"`
+}
+
+// SortCondition 表示排序条件
+type SortCondition struct {
+	Field string `json:"field" v:"required|length:1,50" dc:"排序字段"`
+	Order string `json:"order" v:"in:asc,desc" dc:"排序方向"`
+}
+
+// PaginationReq 分页请求参数
+type PaginationReq struct {
+	Page     int  `json:"page" v:"min:1" dc:"页码，从1开始" default:"1"`
+	PageSize int  `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" default:"20"`
+	All      bool `json:"all" dc:"是否返回全部数据"`
+}
+
+type GetQuotaPoolReq struct {
+	g.Meta        `path:"/" tags:"QuotaPool" method:"get" summary:"获取单个配额池详细配置"`
+	QuotaPoolName string `json:"quotaPoolName" v:"required" dc:"配额池名称"`
+}
+type GetQuotaPoolRes = entity.QuotapoolQuotaPool
+
+type FilterQuotaPoolReq struct {
+	g.Meta     `path:"/filter" tags:"QuotaPool" method:"post" summary:"筛选配额池" dc:"根据过滤条件筛选配额池，支持复杂条件查询、排序和分页"`
+	Filter     *FilterGroup     `json:"filter" dc:"过滤条件，支持复杂的逻辑组合查询"`
+	Sort       []*SortCondition `json:"sort" dc:"排序条件，支持多字段排序"`
+	Pagination *PaginationReq   `json:"pagination" dc:"分页参数"`
+}
+
+type FilterQuotaPoolRes struct {
+	Items      []entity.QuotapoolQuotaPool `json:"items" dc:"配额池列表"`
 	Total      int                         `json:"total" dc:"总记录数"`
 	Page       int                         `json:"page" dc:"当前页码"`
 	PageSize   int                         `json:"pageSize" dc:"每页条数"`
 	TotalPages int                         `json:"totalPages" dc:"总页数"`
-	Items      []entity.QuotapoolQuotaPool `json:"items" dc:"配额池列表或单个配置"`
+	IsAll      bool                        `json:"isAll" dc:"是否为全部数据查询"`
 }
 
 type NewQuotaPoolReq struct {
