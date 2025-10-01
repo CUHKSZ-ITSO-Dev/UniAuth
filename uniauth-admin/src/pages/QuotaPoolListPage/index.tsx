@@ -257,7 +257,7 @@ const QuotaPoolListPage: React.FC = () => {
           );
 
         const queryString = linkParams.toString();
-        const detailUrl = `/quota-pool-list/${record.quotaPoolName}${
+        const detailUrl = `/resource/quota-pool-list/${record.quotaPoolName}${
           queryString ? `?${queryString}` : ""
         }`;
 

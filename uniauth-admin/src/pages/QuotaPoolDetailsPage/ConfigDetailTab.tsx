@@ -110,7 +110,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       valueType: "option",
       render: (_: any, record: any) => [
         <Space size="middle" key={record.upn}>
-          <Link to={`/user-list/userDetail/${record.upn}`}>详情</Link>
+          <Link to={`/resource/user-list/${record.upn}`}>详情</Link>
         </Space>,
       ],
     },

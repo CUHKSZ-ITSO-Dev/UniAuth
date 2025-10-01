@@ -32,6 +32,13 @@ const config: Config = {
   hash: true,
 
   /**
+   * @name 禁用 source map
+   * @description 在生产环境中禁用 source map 生成，减少包大小和构建时间
+   * @doc https://umijs.org/docs/api/config#devtool
+   */
+  devtool: REACT_APP_ENV === "dev" ? "eval" : false,
+
+  /**
    * @name 使用公共路径
    * @description 部署时的路径，如果部署在非根目录下，需要配置这个变量，使用上一步配置的变量
    * @doc https://umijs.org/docs/api/config#publicpath
@@ -103,7 +110,7 @@ const config: Config = {
    * @name layout 插件
    * @doc https://umijs.org/docs/max/layout-menu
    */
-  title: "Ant Design Pro",
+  title: "UniAuth Admin Panel",
   layout: {
     locale: true,
     ...defaultSettings,
