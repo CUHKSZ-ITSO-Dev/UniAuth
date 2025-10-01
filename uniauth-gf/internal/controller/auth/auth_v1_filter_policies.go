@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"math"
 	"fmt"
+	"math"
 	"strings"
 
 	v1 "uniauth-gf/api/auth/v1"

@@ -27,8 +27,8 @@ func init() {
 
 	// 数据库连接配置
 	ctx := gctx.New()
-	dsn := g.Cfg().MustGetWithEnv(ctx, "casbin.default.link")
-	dbn := g.Cfg().MustGetWithEnv(ctx, "casbin.default.database")
+	dsn := g.Cfg().MustGet(ctx, "casbin.default.link")
+	dbn := g.Cfg().MustGet(ctx, "casbin.default.database")
 	a, err := pgadapter.NewAdapter(dsn.String(), dbn.String())
 	if err != nil {
 		panic("创建Casbin适配器失败: " + err.Error())

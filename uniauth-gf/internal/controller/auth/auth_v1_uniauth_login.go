@@ -10,7 +10,7 @@ import (
 
 func (c *ControllerV1) UniauthLogin(ctx context.Context, req *v1.UniauthLoginReq) (res *v1.UniauthLoginRes, err error) {
 	res = &v1.UniauthLoginRes{}
-	if req.Account == g.Cfg().MustGetWithEnv(ctx, "uniauth.account").String() && req.Password == g.Cfg().MustGetWithEnv(ctx, "uniauth.password").String() {
+	if req.Account == g.Cfg().MustGet(ctx, "uniauth.account").String() && req.Password == g.Cfg().MustGet(ctx, "uniauth.password").String() {
 		res.Ok = true
 	} else {
 		res.Ok = false

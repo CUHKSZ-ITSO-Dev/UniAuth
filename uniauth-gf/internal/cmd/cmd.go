@@ -79,9 +79,9 @@ var (
 					quotaPool.NewV1(),
 				)
 			})
-			s.SetOpenApiPath(g.Cfg().MustGetWithEnv(ctx, "server.openapiPath").String())
-			s.SetSwaggerPath(g.Cfg().MustGetWithEnv(ctx, "server.swaggerPath").String())
-			s.SetPort(g.Cfg().MustGetWithEnv(ctx, "server.port").Int())
+			s.SetOpenApiPath(g.Cfg().MustGet(ctx, "server.openapiPath").String())
+			s.SetSwaggerPath(g.Cfg().MustGet(ctx, "server.swaggerPath").String())
+			s.SetPort(g.Cfg().MustGet(ctx, "server.port").Int())
 			s.Run()
 
 			return nil
