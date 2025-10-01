@@ -438,31 +438,30 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       }),
       dataIndex: "created_at",
       valueType: "dateTime",
+      hideInTable: false,
+      ellipsis: true,
+      search: false, // 在表格列中禁用搜索
+    },
+    // 添加一个专门用于时间范围搜索的虚拟列
+    {
+      title: "时间范围",
+      dataIndex: "dateRange",
+      valueType: "dateRange",
+      hideInTable: true, // 在表格中隐藏此列
       search: {
         transform: (value: any) => {
-          return {
-            startTime: value[0],
-            endTime: value[1],
-          };
+          if (value && Array.isArray(value) && value.length === 2) {
+            return {
+              startTime: dayjs(value[0]).format("YYYY-MM-DD"),
+              endTime: dayjs(value[1]).format("YYYY-MM-DD"),
+            };
+          }
+          return {};
         },
       },
       fieldProps: {
         format: "YYYY-MM-DD",
-      },
-      hideInTable: false,
-      ellipsis: true,
-      // 设置搜索表单的valueType为dateRange
-      renderFormItem: () => {
-        const now = dayjs();
-        const startOfMonth = now.startOf("month");
-
-        return (
-          <RangePicker
-            format="YYYY-MM-DD"
-            placeholder={["开始日期", "结束日期"]}
-            defaultValue={[startOfMonth, now]}
-          />
-        );
+        placeholder: ["开始日期", "结束日期"],
       },
     },
   ];
@@ -480,9 +479,12 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         quotaPools: [quotaPoolName],
         svc: params.svc ? [params.svc] : [],
         product: params.product ? [params.product] : [],
+        // 优先使用用户选择的时间范围，如果没有则使用默认值
         startTime: params.startTime || defaultStartTime,
         endTime: params.endTime || defaultEndTime,
       };
+
+      console.log("请求参数:", requestParams); // 添加日志用于调试
 
       const response = await postBillingAdminGet(requestParams);
 
@@ -621,10 +623,11 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             collapsed: false,
             collapseRender: false,
           }}
-          params={{
-            // 设置初始搜索参数，确保默认显示本月到现在的数据
-            startTime: dayjs().startOf("month").format("YYYY-MM-DD"),
-            endTime: dayjs().format("YYYY-MM-DD"),
+          // 设置表单默认值
+          form={{
+            initialValues: {
+              dateRange: [dayjs().startOf("month"), dayjs()],
+            },
           }}
           pagination={{
             pageSize: 20,
