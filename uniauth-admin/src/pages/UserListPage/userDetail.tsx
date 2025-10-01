@@ -2,11 +2,20 @@ import { ArrowLeftOutlined, UserOutlined } from "@ant-design/icons";
 import { PageContainer } from "@ant-design/pro-components";
 // 扩展Form.ItemProps类型以包含render属性
 import { useIntl, useNavigate, useParams, useSearchParams } from "@umijs/max";
-import { Button, Card, Empty, Form, Input, message, Spin, Tag, Table } from "antd";
-import React, { useEffect, useState } from "react";
-import { getUserinfos } from "@/services/uniauthService/userInfo";
+import {
+  Button,
+  Card,
+  Empty,
+  Form,
+  Input,
+  message,
+  Spin,
+  Table,
+  Tag,
+} from "antd";
+import React, { useCallback, useEffect, useState } from "react";
 import { getAuthQuotaPoolsAll } from "@/services/uniauthService/auth";
-import { getQuotaPool } from "@/services/uniauthService/quotaPool";
+import { getUserinfos } from "@/services/uniauthService/userInfo";
 
 interface QuotaPoolData {
   id: string;
@@ -57,10 +66,46 @@ const UserDetail: React.FC = () => {
   const [form] = Form.useForm();
   // 使用message实例代替静态方法，避免主题上下文警告
   const [messageApi, contextHolder] = message.useMessage();
-    // 配额池相关状态
+  // 配额池相关状态
   const [quotaPools, setQuotaPools] = useState<string[]>([]);
   const [quotaPoolsLoading, setQuotaPoolsLoading] = useState<boolean>(false);
-  const [quotaPoolDetails, setQuotaPoolDetails] = useState<Record<string, QuotaPoolData>>({});
+  const [quotaPoolDetails, setQuotaPoolDetails] = useState<
+    Record<string, QuotaPoolData>
+  >({});
+
+  // 获取用户所属的配额池
+  const fetchUserQuotaPools = useCallback(
+    async (upn: string) => {
+      if (!upn) return;
+
+      try {
+        setQuotaPoolsLoading(true);
+        // 调用API获取用户所属的配额池
+        const response = await getAuthQuotaPoolsAll({ upn });
+
+        if (response?.quotaPools && Array.isArray(response.quotaPools)) {
+          setQuotaPools(response.quotaPools);
+
+          // 如果有personalMap，保存配额池详情
+          if (response && (response as any).personalMap) {
+            setQuotaPoolDetails((response as any).personalMap || {});
+          }
+        } else {
+          setQuotaPools([]);
+          setQuotaPoolDetails({});
+          messageApi.info("未找到配额池信息");
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "未知错误";
+        messageApi.error(`获取配额池信息失败: ${errorMsg}`);
+        setQuotaPools([]);
+        setQuotaPoolDetails({});
+      } finally {
+        setQuotaPoolsLoading(false);
+      }
+    },
+    [messageApi],
+  );
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -75,8 +120,6 @@ const UserDetail: React.FC = () => {
       setError("");
 
       try {
-        console.log("开始获取用户详情，ID:", id);
-
         // 构建请求参数
         const requestParams = {
           upn: id,
@@ -86,11 +129,8 @@ const UserDetail: React.FC = () => {
         // 调用API获取用户详情
         const response = await getUserinfos(requestParams);
 
-        console.log("用户详情API响应:", response);
-
         // 增强错误边界检查
         if (!response || typeof response !== "object") {
-          console.error("API返回格式错误", response);
           messageApi.error("获取用户信息失败：返回数据格式错误");
           setUserData(null);
           setError("获取用户信息失败：返回数据格式错误");
@@ -142,7 +182,6 @@ const UserDetail: React.FC = () => {
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "未知错误";
-        console.error("获取用户信息失败:", error);
         messageApi.error(`获取用户信息失败: ${errorMsg}`);
         setUserData(null);
         setError(`获取用户信息失败: ${errorMsg}`);
@@ -152,40 +191,7 @@ const UserDetail: React.FC = () => {
     };
 
     fetchUserData();
-    }, [id, form, messageApi]);
-
-  // 获取用户所属的配额池
-  const fetchUserQuotaPools = async (upn: string) => {
-    if (!upn) return;
-
-    try {
-      setQuotaPoolsLoading(true);
-      // 调用API获取用户所属的配额池
-      const response = await getAuthQuotaPoolsAll({ upn });
-      console.log("配额池API响应:", response);
-
-      if (response && response.quotaPools && Array.isArray(response.quotaPools)) {
-        setQuotaPools(response.quotaPools);
-
-        // 如果有personalMap，保存配额池详情
-        if (response && (response as any).personalMap) {
-          setQuotaPoolDetails((response as any).personalMap || {});
-                  }
-      } else {
-        setQuotaPools([]);
-        setQuotaPoolDetails({});
-        messageApi.info("未找到配额池信息");
-      }
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "未知错误";
-      console.error("获取配额池信息失败:", error);
-      messageApi.error(`获取配额池信息失败: ${errorMsg}`);
-      setQuotaPools([]);
-      setQuotaPoolDetails({});
-    } finally {
-      setQuotaPoolsLoading(false);
-    }
-  };
+  }, [id, form, messageApi, fetchUserQuotaPools]);
 
   const handleBack = () => {
     // 从URL参数中读取之前的搜索状态
@@ -200,7 +206,9 @@ const UserDetail: React.FC = () => {
     if (fromPageSize) backParams.set("pageSize", fromPageSize);
 
     // 构建完整的返回URL
-    const backUrl = `/user-list${backParams.toString() ? `?${backParams.toString()}` : ""}`;
+    const backUrl = `/user-list${
+      backParams.toString() ? `?${backParams.toString()}` : ""
+    }`;
 
     // 导航到用户列表页面并恢复搜索状态
     navigate(backUrl);
@@ -423,55 +431,62 @@ const UserDetail: React.FC = () => {
               </div>
 
               {/* 用户详细信息表单 */}
-                        <Form form={form} layout="vertical" size="middle">
-            {renderFormFields()}
-          </Form>
+              <Form form={form} layout="vertical" size="middle">
+                {renderFormFields()}
+              </Form>
 
-          {/* 用户配额池列表 */}
-          <div style={{ marginTop: 32 }}>
-            <h3 style={{ marginBottom: 16 }}>用户配额池</h3>
-            {quotaPoolsLoading ? (
-              <div style={{ textAlign: "center", padding: 40 }}>
-                <Spin size="default" />
-                <p style={{ marginTop: 16 }}>正在加载配额池信息...</p>
+              {/* 用户配额池列表 */}
+              <div style={{ marginTop: 32 }}>
+                <h3 style={{ marginBottom: 16 }}>用户配额池</h3>
+                {quotaPoolsLoading ? (
+                  <div style={{ textAlign: "center", padding: 40 }}>
+                    <Spin size="default" />
+                    <p style={{ marginTop: 16 }}>正在加载配额池信息...</p>
+                  </div>
+                ) : quotaPools.length > 0 ? (
+                  <Table
+                    dataSource={quotaPools.map((pool) => ({
+                      name: pool,
+                      id: pool,
+                    }))}
+                    rowKey="id"
+                    columns={[
+                      {
+                        title: "配额池名称",
+                        dataIndex: "name",
+                        key: "name",
+                        render: (_, record) => (
+                          <a
+                            href={`/quota-pool-list/${record.name}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate(`/quota-pool-list/${record.name}`);
+                            }}
+                          >
+                            {record.name}
+                          </a>
+                        ),
+                      },
+                      {
+                        title: "是否个人配额池",
+                        key: "personal",
+                        render: (_, record) => {
+                          const isPersonal =
+                            quotaPoolDetails[record.name]?.personal || false;
+                          return isPersonal ? "是" : "否";
+                        },
+                      },
+                    ]}
+                    pagination={false}
+                    locale={{
+                      emptyText: <Empty description="暂无配额池数据" />,
+                    }}
+                  />
+                ) : (
+                  <Empty description="该用户暂无配额池" />
+                )}
               </div>
-            ) : quotaPools.length > 0 ? (
-              <Table
-                dataSource={quotaPools.map(pool => ({ name: pool, id: pool }))}
-                rowKey="id"
-                columns={[
-                  {
-                    title: '配额池名称',
-                    dataIndex: 'name',
-                    key: 'name',
-                    render: (_, record) => (
-                      <a href={`/quota-pool-list/${record.name}`} onClick={(e) => {
-                        e.preventDefault();
-                        navigate(`/quota-pool-list/${record.name}`);
-                      }}>
-                        {record.name}
-                      </a>
-                    ),
-                  },
-                  {
-                    title: '是否个人配额池',
-                    key: 'personal',
-                    render: (_, record) => {
-                      const isPersonal = quotaPoolDetails[record.name]?.personal || false;
-                      return isPersonal ? '是' : '否';
-                    },
-                  },
-                ]}
-                pagination={false}
-                locale={{
-                  emptyText: <Empty description="暂无配额池数据" />,
-                }}
-              />
-            ) : (
-              <Empty description="该用户暂无配额池" />
-            )}
-          </div>
-        </>
+            </>
           ) : (
             <div style={{ textAlign: "center", padding: 60 }}>
               <UserOutlined
