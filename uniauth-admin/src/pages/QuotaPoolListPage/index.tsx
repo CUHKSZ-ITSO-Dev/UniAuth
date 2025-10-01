@@ -234,7 +234,7 @@ const QuotaPoolListPage: React.FC = () => {
       });
       setCronDescription(description);
       setCronError("");
-    } catch (error) {
+    } catch (_error) {
       setCronError("Cron 表达式格式不正确，请检查语法");
       setCronDescription("");
     }
