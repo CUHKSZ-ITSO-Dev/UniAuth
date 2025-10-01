@@ -4,8 +4,6 @@ import (
 	psqlwatcher "github.com/IguteChung/casbin-psql-watcher"
 	pgadapter "github.com/casbin/casbin-pg-adapter"
 
-	"context"
-
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 
@@ -32,7 +30,7 @@ func init() {
 
 	// Watcher 配置
 	conn := g.Cfg().MustGetWithEnv(ctx, "casbin.default.watcher").String()
-	w, _ := psqlwatcher.NewWatcherWithConnString(context.Background(), conn,
+	w, _ := psqlwatcher.NewWatcherWithConnString(ctx, conn,
 		psqlwatcher.Option{Verbose: true})
 
 	// 数据库连接配置
