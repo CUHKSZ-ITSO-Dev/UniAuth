@@ -585,20 +585,11 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         variant="borderless"
       >
         <Descriptions column={3}>
-          <Descriptions.Item label="配额池名称">
-            <Tag color="blue">{quotaPoolName}</Tag>
-          </Descriptions.Item>
           <Descriptions.Item label="本月消费">
             <Text type="danger">${statistics.currentMonthCost.toFixed(4)}</Text>
           </Descriptions.Item>
-          <Descriptions.Item label="上月消费">
-            <Text>${statistics.lastMonthCost.toFixed(4)}</Text>
-          </Descriptions.Item>
           <Descriptions.Item label="累计消费">
             <Text strong>${statistics.totalCost.toFixed(4)}</Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="平均日消费">
-            <Text>${statistics.avgDailyCost.toFixed(4)}</Text>
           </Descriptions.Item>
           <Descriptions.Item label="总记录数">
             <Text>{statistics.recordCount} 条</Text>
