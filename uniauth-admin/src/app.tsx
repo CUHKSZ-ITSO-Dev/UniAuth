@@ -1,15 +1,9 @@
-import { LinkOutlined } from "@ant-design/icons";
+import { LinkOutlined, UserOutlined } from "@ant-design/icons";
 import type { Settings as LayoutSettings } from "@ant-design/pro-components";
 import { SettingDrawer } from "@ant-design/pro-components";
 import type { RequestConfig, RunTimeLayoutConfig } from "@umijs/max";
 import { Link } from "@umijs/max";
-import {
-  AvatarDropdown,
-  AvatarName,
-  Footer,
-  Question,
-  SelectLang,
-} from "@/components";
+import { AvatarDropdown, AvatarName, Footer, SelectLang } from "@/components";
 import defaultSettings from "../config/defaultSettings";
 import { errorConfig } from "./requestErrorConfig";
 import "@ant-design/v5-patch-for-react-19";
@@ -52,55 +46,6 @@ export async function getInitialState(): Promise<{
   // 创建模拟的admin用户
   const mockAdminUser: MockUser = {
     name: "Admin User",
-    avatar:
-      "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png",
-    userid: "00000001",
-    email: "admin@example.com",
-    signature: "海纳百川，有容乃大",
-    title: "系统管理员",
-    group: "前端组",
-    tags: [
-      {
-        key: "0",
-        label: "很有想法的",
-      },
-      {
-        key: "1",
-        label: "专注设计",
-      },
-      {
-        key: "2",
-        label: "辣~",
-      },
-      {
-        key: "3",
-        label: "大长腿",
-      },
-      {
-        key: "4",
-        label: "川妹子",
-      },
-      {
-        key: "5",
-        label: "海纳百川",
-      },
-    ],
-    notifyCount: 12,
-    unreadCount: 11,
-    country: "China",
-    access: "admin",
-    geographic: {
-      province: {
-        label: "浙江省",
-        key: "330000",
-      },
-      city: {
-        label: "杭州市",
-        key: "330100",
-      },
-    },
-    address: "西湖区工专路 77 号",
-    phone: "0752-268888888",
   };
 
   const fetchUserInfo = async () => {
@@ -123,13 +68,11 @@ export const layout: RunTimeLayoutConfig = ({
   setInitialState,
 }) => {
   return {
-    actionsRender: () => [
-      <Question key="doc" />,
-      <SelectLang key="SelectLang" />,
-    ],
+    actionsRender: () => [<SelectLang key="SelectLang" />],
     avatarProps: {
       src: initialState?.currentUser?.avatar,
       title: <AvatarName />,
+      icon: <UserOutlined style={{ color: "#262626", fontSize: "16px" }} />,
       render: (_, avatarChildren) => {
         return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
       },
@@ -145,26 +88,6 @@ export const layout: RunTimeLayoutConfig = ({
       //   history.push(loginPath);
       // }
     },
-    bgLayoutImgList: [
-      {
-        src: "https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/D2LWSqNny4sAAAAAAAAAAAAAFl94AQBr",
-        left: 85,
-        bottom: 100,
-        height: "303px",
-      },
-      {
-        src: "https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/C2TWRpJpiC0AAAAAAAAAAAAAFl94AQBr",
-        bottom: -68,
-        right: -45,
-        height: "303px",
-      },
-      {
-        src: "https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/F6vSTbj8KpYAAAAAAAAAAAAAFl94AQBr",
-        bottom: 0,
-        left: 0,
-        width: "331px",
-      },
-    ],
     links: isDev
       ? [
           <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
