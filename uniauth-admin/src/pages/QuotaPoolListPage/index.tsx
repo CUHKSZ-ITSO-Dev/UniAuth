@@ -23,8 +23,8 @@ import {
 } from "@/services/uniauthService/admin";
 import {
   deleteQuotaPool,
-  getQuotaPool,
   postQuotaPool,
+  postQuotaPoolFilter,
 } from "@/services/uniauthService/quotaPool";
 
 const { Title, Text } = Typography;
@@ -41,12 +41,14 @@ const QuotaPoolListPage: React.FC = () => {
 
   // 使用 useMemo 确保初始参数响应 URL 变化
   const initialSearchParams = useMemo(() => {
+    const quotaPoolName = searchParams.get("quotaPoolName") || undefined;
     const personal = searchParams.get("personal") || undefined;
     const disabled = searchParams.get("disabled") || undefined;
     const current = parseInt(searchParams.get("current") || "1", 10);
     const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
 
     return {
+      quotaPoolName,
       personal,
       disabled,
       current,
@@ -56,12 +58,21 @@ const QuotaPoolListPage: React.FC = () => {
 
   // 更新URL参数
   const updateURLParams = (params: {
+    quotaPoolName?: string;
     personal?: string;
     disabled?: string;
     current?: number;
     pageSize?: number;
   }) => {
     const newSearchParams = new URLSearchParams(searchParams);
+
+    if (params.quotaPoolName !== undefined) {
+      if (params.quotaPoolName) {
+        newSearchParams.set("quotaPoolName", params.quotaPoolName);
+      } else {
+        newSearchParams.delete("quotaPoolName");
+      }
+    }
 
     if (params.personal !== undefined) {
       if (params.personal) {
@@ -112,7 +123,10 @@ const QuotaPoolListPage: React.FC = () => {
       title: "配额池名称",
       dataIndex: "quotaPoolName",
       valueType: "text",
-      search: false,
+      search: true,
+      fieldProps: {
+        placeholder: "请输入配额池名称进行搜索",
+      },
     },
     {
       title: "配额",
@@ -304,9 +318,22 @@ const QuotaPoolListPage: React.FC = () => {
 
     try {
       setLoading(true);
-      const quotaPools = selectedRows.map((row) => row.quotaPoolName);
+      const quotaPoolNames = selectedRows.map((row) => row.quotaPoolName);
+
+      // 构建过滤条件，使用in操作符匹配配额池名称
+      const filter: API.FilterGroup = {
+        logic: "and",
+        conditions: [
+          {
+            field: "quotaPoolName",
+            op: "in",
+            value: quotaPoolNames,
+          },
+        ],
+      };
+
       const res = await postQuotaPoolAdminBatchModify({
-        quotaPools,
+        filter,
         field: "disabled",
         value: true,
       });
@@ -372,10 +399,11 @@ const QuotaPoolListPage: React.FC = () => {
 
   // 表格数据请求
   const quotaPoolListRequest = async (params: any) => {
-    const { current, pageSize, personal, disabled } = params;
+    const { current, pageSize, quotaPoolName, personal, disabled } = params;
 
     // 更新URL参数
     updateURLParams({
+      quotaPoolName: quotaPoolName || "",
       personal: personal || "",
       disabled: disabled || "",
       current: current || 1,
@@ -383,24 +411,23 @@ const QuotaPoolListPage: React.FC = () => {
     });
 
     try {
-      const res = await getQuotaPool({
-        quotaPoolName: params.quotaPoolName,
-        page: params.current || 1,
-        pageSize: params.pageSize || 10,
-      });
+      // 构建过滤条件
+      const conditions: API.FilterCondition[] = [];
 
-      if (!res || !res.items) {
-        return {
-          data: [],
-          success: false,
-          total: 0,
-        };
+      // 按配额池名称模糊搜索
+      if (
+        params.quotaPoolName !== undefined &&
+        params.quotaPoolName !== "" &&
+        params.quotaPoolName !== null
+      ) {
+        conditions.push({
+          field: "quotaPoolName",
+          op: "like",
+          value: `%${params.quotaPoolName}%`,
+        });
       }
 
-      // 根据搜索条件过滤数据
-      let data = res.items;
-
-      // 按配额池类型过滤 - 只有当 personal 有值且不为空字符串时才进行过滤
+      // 按配额池类型过滤
       if (
         params.personal !== undefined &&
         params.personal !== "" &&
@@ -408,10 +435,14 @@ const QuotaPoolListPage: React.FC = () => {
       ) {
         const isPersonal =
           params.personal === "true" || params.personal === true;
-        data = data.filter((item) => item.personal === isPersonal);
+        conditions.push({
+          field: "personal",
+          op: "eq",
+          value: isPersonal,
+        });
       }
 
-      // 按启用状态过滤 - 只有当 disabled 有值且不为空字符串时才进行过滤
+      // 按启用状态过滤
       if (
         params.disabled !== undefined &&
         params.disabled !== "" &&
@@ -419,13 +450,61 @@ const QuotaPoolListPage: React.FC = () => {
       ) {
         const isDisabled =
           params.disabled === "true" || params.disabled === true;
-        data = data.filter((item) => item.disabled === isDisabled);
+        conditions.push({
+          field: "disabled",
+          op: "eq",
+          value: isDisabled,
+        });
+      }
+
+      // 构建请求参数
+      const requestParams: API.FilterQuotaPoolReq = {
+        sort: [
+          {
+            field: "createdAt",
+            order: "desc",
+          },
+        ],
+        pagination: {
+          page: current || 1,
+          pageSize: pageSize || 10,
+        },
+      };
+
+      // 只有当有过滤条件时才添加filter
+      if (conditions.length > 0) {
+        requestParams.filter = {
+          logic: "and",
+          conditions: conditions,
+        };
+      }
+
+      // 发送过滤请求
+      const response = await postQuotaPoolFilter(requestParams);
+
+      // 增强错误边界检查
+      if (!response || typeof response !== "object") {
+        console.error("API返回格式错误", response);
+        return {
+          data: [],
+          success: false,
+          total: 0,
+        };
+      }
+
+      if (!response.items || !Array.isArray(response.items)) {
+        console.warn("没有找到配额池数据");
+        return {
+          data: [],
+          success: true,
+          total: 0,
+        };
       }
 
       return {
-        data,
+        data: response.items,
         success: true,
-        total: res.total || data.length,
+        total: response.total || response.items.length,
       };
     } catch (error) {
       console.error("获取配额池列表失败:", error);
@@ -448,6 +527,7 @@ const QuotaPoolListPage: React.FC = () => {
           onReset={() => {
             // 清空URL参数
             updateURLParams({
+              quotaPoolName: "",
               personal: "",
               disabled: "",
               current: 1,
@@ -456,6 +536,7 @@ const QuotaPoolListPage: React.FC = () => {
             // 手动重置表单到空值
             if (formRef.current) {
               formRef.current.setFieldsValue({
+                quotaPoolName: undefined,
                 personal: undefined,
                 disabled: undefined,
               });
@@ -527,6 +608,9 @@ const QuotaPoolListPage: React.FC = () => {
             );
           }}
           toolBarRender={() => [
+            <Button type="primary" key="new" onClick={handleNewQuotaPoolClick}>
+              批量修改
+            </Button>,
             <Button type="primary" key="new" onClick={handleNewQuotaPoolClick}>
               添加新的配额池
             </Button>,

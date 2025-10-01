@@ -1,19 +1,16 @@
+// @ts-expect-error
 /* eslint-disable */
 import { request } from "@/utils/request";
 
-/** 获取配额池的详细配置 GET /quotaPool */
+/** 获取单个配额池详细配置 GET /quotaPool */
 export async function getQuotaPool(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getQuotaPoolParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.GetQuotaPoolRes>("/quotaPool", {
+  return request<API.QuotapoolQuotaPool>("/quotaPool", {
     method: "GET",
     params: {
-      // page has a default value: 1
-      page: "1",
-      // pageSize has a default value: 20
-      pageSize: "20",
       ...params,
     },
     ...(options || {}),
@@ -71,6 +68,21 @@ export async function postQuotaPoolEnsure(
   options?: { [key: string]: any },
 ) {
   return request<API.EnsurePersonalQuotaPoolRes>("/quotaPool/ensure", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 筛选配额池 根据过滤条件筛选配额池，支持复杂条件查询、排序和分页 POST /quotaPool/filter */
+export async function postQuotaPoolFilter(
+  body: API.FilterQuotaPoolReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.FilterQuotaPoolRes>("/quotaPool/filter", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

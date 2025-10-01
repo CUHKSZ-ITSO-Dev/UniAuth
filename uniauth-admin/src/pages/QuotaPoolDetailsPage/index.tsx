@@ -66,22 +66,21 @@ const QuotaPoolDetailsPage: FC = () => {
 
     setDetailLoading(true);
     try {
-      const response = await getQuotaPool({
+      const resData = await getQuotaPool({
         quotaPoolName: quotaPoolName,
       });
 
-      if (response?.items && response.items.length > 0) {
-        const item = response.items[0];
+      if (resData) {
         setQuotaPoolDetail({
-          quotaPoolName: item.quotaPoolName || "",
-          cronCycle: item.cronCycle || "",
-          regularQuota: Number(item.regularQuota) || 0,
-          remainingQuota: Number(item.remainingQuota) || 0,
-          extraQuota: Number(item.extraQuota) || 0,
-          lastResetAt: item.lastResetAt || "",
-          personal: item.personal || false,
-          disabled: item.disabled || false,
-          createdAt: item.createdAt || "",
+          quotaPoolName: resData.quotaPoolName || "",
+          cronCycle: resData.cronCycle || "",
+          regularQuota: Number(resData.regularQuota) || 0,
+          remainingQuota: Number(resData.remainingQuota) || 0,
+          extraQuota: Number(resData.extraQuota) || 0,
+          lastResetAt: resData.lastResetAt || "",
+          personal: resData.personal || false,
+          disabled: resData.disabled || false,
+          createdAt: resData.createdAt || "",
         });
       }
     } catch (error) {
