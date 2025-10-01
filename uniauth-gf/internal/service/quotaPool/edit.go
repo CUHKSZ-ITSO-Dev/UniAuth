@@ -16,7 +16,23 @@ import (
 )
 
 // 编辑配额池，一站式完成配额池的更新，包括配额池信息、Casbin 规则
-func Edit(ctx context.Context, quotaPoolInfo *entity.QuotapoolQuotaPool) (err error) {
+// 仅需传递需要改动的字段的内容
+func Edit(ctx context.Context, editInfo g.Map) (err error) {
+
+	var quotaPoolInfo entity.QuotapoolQuotaPool
+	quotaPoolName, ok := editInfo["QuotaPoolName"]
+	if !ok {
+		return gerror.New("QuotaPoolName 不能为空")
+	}
+	if err = dao.QuotapoolQuotaPool.Ctx(ctx).Where("quota_pool_name = ?", quotaPoolName).Scan(&quotaPoolInfo); err != nil {
+		return gerror.Wrap(err, "查询配额池信息失败")
+	}
+
+	// 将 editInfo 中的字段更新到 quotaPoolInfo
+	if err = g.NewVar(editInfo).Struct(&quotaPoolInfo); err != nil {
+		return gerror.Wrap(err, "更新配额池信息失败")
+	}
+
 	// 校验 Cron 表达式
 	if _, cronErr := cron.ParseStandard(quotaPoolInfo.CronCycle); cronErr != nil {
 		err = gerror.Newf("cronCycle 无效: %v", cronErr)

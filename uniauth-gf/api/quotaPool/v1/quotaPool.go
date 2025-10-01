@@ -46,11 +46,11 @@ type NewQuotaPoolRes struct {
 type EditQuotaPoolReq struct {
 	g.Meta         `path:"/" tags:"QuotaPool" method:"put" summary:"编辑配额池"`
 	QuotaPoolName  string          `json:"quotaPoolName" v:"required"`
-	CronCycle      string          `json:"cronCycle" v:"required"`
-	RegularQuota   decimal.Decimal `json:"regularQuota" v:"required"`
-	Personal       bool            `json:"personal" v:"required"`
-	Disabled       bool            `json:"disabled"`
-	ExtraQuota     decimal.Decimal `json:"extraQuota"`
+	CronCycle      *string          `json:"cronCycle"`
+	RegularQuota   *decimal.Decimal `json:"regularQuota"`
+	Personal       *bool            `json:"personal"`
+	Disabled       *bool            `json:"disabled"`
+	ExtraQuota     *decimal.Decimal `json:"extraQuota"`
 	UserinfosRules *gjson.Json     `json:"userinfosRules"`
 }
 type EditQuotaPoolRes struct {

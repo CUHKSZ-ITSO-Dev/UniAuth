@@ -3,15 +3,15 @@ package quotaPool
 import (
 	"context"
 	"uniauth-gf/internal/dao"
-	"uniauth-gf/internal/model/entity"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) error {
 	if err := dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		var qps []entity.QuotapoolQuotaPool
+		var qps []g.Map
 		db := dao.QuotapoolQuotaPool.Ctx(ctx).LockUpdate()
 		if qpNameList == nil {
 			if err := db.Scan(&qps); err != nil {
@@ -29,8 +29,8 @@ func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) er
 			}
 		}
 		for _, qp := range qps {
-			if err := Edit(ctx, &qp); err != nil {
-				return gerror.Wrapf(err, "更新配额池 %v 失败", qp.QuotaPoolName)
+			if err := Edit(ctx, qp); err != nil {
+				return gerror.Wrapf(err, "更新配额池 %v 失败", qp["QuotaPoolName"])
 			}
 		}
 		return nil
