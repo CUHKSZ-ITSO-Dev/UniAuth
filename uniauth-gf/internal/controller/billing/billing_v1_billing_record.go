@@ -2,7 +2,6 @@ package billing
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	"github.com/gogf/gf/v2/database/gdb"
@@ -35,23 +34,21 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		}
 	}()
 
-	// 校验配额池 Plan 和 Source 的数据
-	value, err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields("personal").Where("quota_pool_name = ?", req.Source).Value()
+	// 根据配额池属性是否为个人自动判断计费方案
+	personal, err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields("personal").Where("quota_pool_name = ?", req.Source).Value()
 	if err != nil {
 		err = gerror.Wrap(err, "获取配额池当前的剩余余额失败")
 		return
 	}
-	if value == nil {
-		err = errors.New("没有找到这个配额池。请重新检查")
+	if personal == nil {
+		err = gerror.New("没有找到这个配额池。请重新检查")
 		return
 	}
-	if req.Plan == "Included" && !(value.Bool()) {
-		err = errors.New("计费请求中 Plan 声明计划为 Included，但声明的 Source 非个人配额池")
-		return
-	}
-	if value.Bool() && req.Plan == "Quota Pool" {
-		err = errors.New("计费请求中 Plan 声明计划为 Quota Pool，但声明的 Source 为个人配额池")
-		return
+	var plan string 
+	if personal.Bool() {
+		plan = "Included"
+	} else {
+		plan = "Quota Pool"
 	}
 
 	// 记录
@@ -89,7 +86,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		"svc":     req.Service,
 		"product": req.Product,
 		"cost":    cost,
-		"plan":    req.Plan,
+		"plan":    plan,
 		"source":  req.Source,
 		"remark":  req.Remark.MustToJsonString(),
 	}).Insert()

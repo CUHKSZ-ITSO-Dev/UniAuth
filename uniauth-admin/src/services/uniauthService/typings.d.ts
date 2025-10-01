@@ -121,7 +121,6 @@ declare namespace API {
     upn: string;
     service: string;
     product: string;
-    plan: "Included" | "Quota Pool";
     source: string;
     cny_cost?: Decimal;
     usd_cost?: Decimal;

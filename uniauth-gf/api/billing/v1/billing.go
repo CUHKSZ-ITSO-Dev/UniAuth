@@ -15,7 +15,6 @@ type BillingRecordReq struct {
 	Upn     string `json:"upn" v:"required"`
 	Service string `json:"service" v:"required"`
 	Product string `json:"product" v:"required"`
-	Plan    string `json:"plan" v:"required|in:Included,Quota Pool"`
 	Source  string `json:"source" v:"required"`
 
 	CNYCost decimal.Decimal `json:"cny_cost"`
