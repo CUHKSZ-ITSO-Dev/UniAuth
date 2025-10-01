@@ -99,7 +99,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       }),
       valueType: "text",
       dataIndex: "department",
-      search: true,
+      search: false,
       ellipsis: true,
     },
     {
@@ -228,25 +228,18 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           value: `%${params.upn}%`,
         });
       }
-      if (params.displayName) {
+      if (params.name) {
         filter.conditions?.push({
-          field: "displayName",
+          field: "name",
           op: "like",
-          value: `%${params.displayName}%`,
+          value: `%${params.name}%`,
         });
       }
-      if (params.identity) {
+      if (params.employeeId) {
         filter.conditions?.push({
-          field: "employeeType",
+          field: "employeeId",
           op: "like",
-          value: `%${params.identity}%`,
-        });
-      }
-      if (params.department) {
-        filter.conditions?.push({
-          field: "department",
-          op: "like",
-          value: `%${params.department}%`,
+          value: `%${params.employeeId}%`,
         });
       }
 
