@@ -268,8 +268,8 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
 
       // 转换数据格式
       const userData: UserInfo[] = userInfoResponse.userInfos.map(
-        (user: any) => ({
-          key: user.upn || `user-${Math.random()}`,
+        (user: any, index: number) => ({
+          key: user.upn || `user-${index}`,
           upn: user.upn || "",
           name: user.name || "",
           employeeId: user.employeeId || "-",

@@ -484,8 +484,6 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         endTime: params.endTime || defaultEndTime,
       };
 
-      console.log("请求参数:", requestParams); // 添加日志用于调试
-
       const response = await postBillingAdminGet(requestParams);
 
       if (response.records) {
