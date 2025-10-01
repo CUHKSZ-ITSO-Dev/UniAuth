@@ -3,16 +3,22 @@ import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import { Link, useSearchParams } from "@umijs/max";
 import {
   Button,
+  Card,
+  Divider,
   Form,
   Input,
   InputNumber,
+  List,
   Modal,
   message,
   Popconfirm,
   Radio,
+  Select,
   Space,
+  Steps,
   Switch,
   Table,
+  Tag,
   Typography,
 } from "antd";
 import cronstrue from "cronstrue/i18n";
@@ -39,6 +45,18 @@ const QuotaPoolListPage: React.FC = () => {
   const [cronDescription, setCronDescription] = useState<string>("");
   const [cronError, setCronError] = useState<string>("");
 
+  // 批量修改相关状态
+  const [batchModifyForm] = Form.useForm();
+  const [isBatchModifyModalOpen, setIsBatchModifyModalOpen] = useState(false);
+  const [batchModifyLoading, setBatchModifyLoading] = useState(false);
+  const [batchModifyCurrentStep, setBatchModifyCurrentStep] = useState(0);
+  const [filterConditions, setFilterConditions] = useState<
+    (API.FilterCondition & { id: string })[]
+  >([]);
+  const [previewResult, setPreviewResult] =
+    useState<API.BatchModifyQuotaPoolRes | null>(null);
+  const [selectedModifyField, setSelectedModifyField] = useState<string>("");
+
   // 使用 useMemo 确保初始参数响应 URL 变化
   const initialSearchParams = useMemo(() => {
     const quotaPoolName = searchParams.get("quotaPoolName") || undefined;
@@ -55,6 +73,38 @@ const QuotaPoolListPage: React.FC = () => {
       pageSize,
     };
   }, [searchParams]);
+
+  // 批量修改相关配置
+  const fieldOptions = [
+    { label: "配额池名称", value: "quotaPoolName" },
+    { label: "刷新周期", value: "cronCycle" },
+    { label: "定期配额", value: "regularQuota" },
+    { label: "剩余配额", value: "remainingQuota" },
+    { label: "最后重置时间", value: "lastResetAt" },
+    { label: "额外配额", value: "extraQuota" },
+    { label: "配额池类型", value: "personal" },
+    { label: "启用状态", value: "disabled" },
+    { label: "创建时间", value: "createdAt" },
+    { label: "更新时间", value: "updatedAt" },
+  ];
+
+  const operatorOptions = [
+    { label: "等于", value: "eq" },
+    { label: "不等于", value: "neq" },
+    { label: "大于", value: "gt" },
+    { label: "大于等于", value: "gte" },
+    { label: "小于", value: "lt" },
+    { label: "小于等于", value: "lte" },
+    { label: "模糊匹配", value: "like" },
+    { label: "包含", value: "contains" },
+    { label: "不包含", value: "notcontains" },
+    { label: "以...开头", value: "startswith" },
+    { label: "以...结尾", value: "endswith" },
+    { label: "包含在列表中", value: "in" },
+    { label: "不包含在列表中", value: "notin" },
+    { label: "为空", value: "isnull" },
+    { label: "不为空", value: "isnotnull" },
+  ];
 
   // 更新URL参数
   const updateURLParams = (params: {
@@ -397,6 +447,254 @@ const QuotaPoolListPage: React.FC = () => {
     setCronError("");
   };
 
+  // 生成唯一ID的函数
+  const generateId = () =>
+    `filter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+  // 为过滤条件添加通配符的函数
+  const addWildcardsToCondition = (
+    condition: API.FilterCondition,
+  ): API.FilterCondition => {
+    const { op, value } = condition;
+
+    if (!value || typeof value !== "string") {
+      return condition;
+    }
+
+    let processedValue = value;
+
+    switch (op) {
+      case "like":
+        // like 操作符需要用户手动添加 %，如果没有添加，我们自动添加
+        if (!value.includes("%")) {
+          processedValue = `%${value}%`;
+        }
+        break;
+      case "contains":
+      case "notcontains":
+        // 后端会自动处理 contains 的通配符，前端不需要额外处理
+        processedValue = value;
+        break;
+      case "startswith":
+        // 后端会自动处理 startswith 的通配符，前端不需要额外处理
+        processedValue = value;
+        break;
+      case "endswith":
+        // 后端会自动处理 endswith 的通配符，前端不需要额外处理
+        processedValue = value;
+        break;
+      default:
+        // 其他操作符不需要处理
+        break;
+    }
+
+    return { ...condition, value: processedValue };
+  };
+
+  // 批量修改相关函数
+  const handleBatchModifyClick = () => {
+    setIsBatchModifyModalOpen(true);
+    setBatchModifyCurrentStep(0);
+    setFilterConditions([{ field: "", op: "eq", value: "", id: generateId() }]);
+    setPreviewResult(null);
+    setSelectedModifyField("");
+    batchModifyForm.resetFields();
+  };
+
+  const handleBatchModifyCancel = () => {
+    setIsBatchModifyModalOpen(false);
+    setBatchModifyCurrentStep(0);
+    setFilterConditions([]);
+    setPreviewResult(null);
+    setSelectedModifyField("");
+    batchModifyForm.resetFields();
+  };
+
+  const addFilterCondition = () => {
+    setFilterConditions([
+      ...filterConditions,
+      { field: "", op: "eq", value: "", id: generateId() },
+    ]);
+  };
+
+  const removeFilterCondition = (index: number) => {
+    const newConditions = filterConditions.filter((_, i) => i !== index);
+    setFilterConditions(newConditions);
+  };
+
+  const updateFilterCondition = (
+    index: number,
+    field: keyof API.FilterCondition,
+    value: any,
+  ) => {
+    const newConditions = [...filterConditions];
+    newConditions[index] = { ...newConditions[index], [field]: value };
+    setFilterConditions(newConditions);
+  };
+
+  const renderValueInput = (
+    condition: API.FilterCondition & { id: string },
+    index: number,
+  ) => {
+    const { op } = condition;
+
+    if (op === "isnull" || op === "isnotnull") {
+      return null; // 这些操作符不需要值
+    }
+
+    if (op === "in" || op === "notin") {
+      return (
+        <Select
+          mode="tags"
+          placeholder="请输入值，按回车分隔多个值"
+          value={condition.value ? String(condition.value).split(",") : []}
+          onChange={(values) =>
+            updateFilterCondition(index, "value", values.join(","))
+          }
+          style={{ width: "100%" }}
+        />
+      );
+    }
+
+    // 对于布尔字段，提供选择框
+    if (condition.field === "personal" || condition.field === "disabled") {
+      return (
+        <Select
+          placeholder="请选择值"
+          value={condition.value}
+          onChange={(value) => updateFilterCondition(index, "value", value)}
+          style={{ width: "100%" }}
+        >
+          <Select.Option value="true">是</Select.Option>
+          <Select.Option value="false">否</Select.Option>
+        </Select>
+      );
+    }
+
+    // 为不同操作符提供不同的占位符提示
+    let placeholder = "请输入值";
+    switch (op) {
+      case "like":
+        placeholder = "请输入值，可使用 % 作为通配符";
+        break;
+      case "contains":
+        placeholder = "请输入要包含的文本";
+        break;
+      case "notcontains":
+        placeholder = "请输入不包含的文本";
+        break;
+      case "startswith":
+        placeholder = "请输入开头文本";
+        break;
+      case "endswith":
+        placeholder = "请输入结尾文本";
+        break;
+      default:
+        placeholder = "请输入值";
+    }
+
+    return (
+      <Input
+        placeholder={placeholder}
+        value={condition.value as string}
+        onChange={(e) => updateFilterCondition(index, "value", e.target.value)}
+      />
+    );
+  };
+
+  const handlePreview = async () => {
+    try {
+      setBatchModifyLoading(true);
+
+      const formValues = await batchModifyForm.validateFields();
+
+      // 构建过滤条件
+      const validConditions = filterConditions
+        .filter(
+          (condition) =>
+            condition.field &&
+            condition.op &&
+            (condition.op === "isnull" ||
+              condition.op === "isnotnull" ||
+              (condition.value !== undefined && condition.value !== "")),
+        )
+        .map(({ id, ...condition }) => addWildcardsToCondition(condition));
+
+      if (validConditions.length === 0) {
+        message.warning("请至少设置一个有效的过滤条件");
+        return;
+      }
+
+      const filter: API.FilterGroup = {
+        logic: "and",
+        conditions: validConditions,
+      };
+
+      const res = await postQuotaPoolAdminBatchModify({
+        filter,
+        field: formValues.field,
+        value: formValues.value,
+        preview: true,
+      });
+
+      if (res?.ok) {
+        setPreviewResult(res);
+        setBatchModifyCurrentStep(1);
+      } else {
+        message.error(res?.err || "预览失败");
+      }
+    } catch (error) {
+      console.error("预览失败:", error);
+      message.error("预览失败");
+    } finally {
+      setBatchModifyLoading(false);
+    }
+  };
+
+  const handleConfirmBatchModify = async () => {
+    try {
+      setBatchModifyLoading(true);
+
+      const formValues = await batchModifyForm.validateFields();
+
+      const validConditions = filterConditions
+        .filter(
+          (condition) =>
+            condition.field &&
+            condition.op &&
+            (condition.op === "isnull" ||
+              condition.op === "isnotnull" ||
+              (condition.value !== undefined && condition.value !== "")),
+        )
+        .map(({ id, ...condition }) => addWildcardsToCondition(condition));
+
+      const filter: API.FilterGroup = {
+        logic: "and",
+        conditions: validConditions,
+      };
+
+      const res = await postQuotaPoolAdminBatchModify({
+        filter,
+        field: formValues.field,
+        value: formValues.value,
+        preview: false,
+      });
+
+      if (res?.ok) {
+        message.success(`批量修改成功，共影响 ${res.affectedCount} 个配额池`);
+        handleBatchModifyCancel();
+        tableRef.current?.reload();
+      } else {
+        message.error(res?.err || "批量修改失败");
+      }
+    } catch (error) {
+      console.error("批量修改失败:", error);
+      message.error("批量修改失败");
+    } finally {
+      setBatchModifyLoading(false);
+    }
+  };
+
   // 表格数据请求
   const quotaPoolListRequest = async (params: any) => {
     const { current, pageSize, quotaPoolName, personal, disabled } = params;
@@ -608,7 +906,11 @@ const QuotaPoolListPage: React.FC = () => {
             );
           }}
           toolBarRender={() => [
-            <Button type="primary" key="new" onClick={handleNewQuotaPoolClick}>
+            <Button
+              type="primary"
+              key="batch-modify"
+              onClick={handleBatchModifyClick}
+            >
               批量修改
             </Button>,
             <Button type="primary" key="new" onClick={handleNewQuotaPoolClick}>
@@ -618,6 +920,230 @@ const QuotaPoolListPage: React.FC = () => {
           request={quotaPoolListRequest}
         />
       </ProCard>
+
+      {/* 批量修改模态框 */}
+      <Modal
+        title="批量修改配额池"
+        open={isBatchModifyModalOpen}
+        onCancel={handleBatchModifyCancel}
+        footer={null}
+        width={800}
+      >
+        <Steps current={batchModifyCurrentStep} style={{ marginBottom: 24 }}>
+          <Steps.Step title="设置过滤条件" />
+          <Steps.Step title="预览影响范围" />
+          <Steps.Step title="确认修改" />
+        </Steps>
+
+        <Form
+          form={batchModifyForm}
+          layout="vertical"
+          style={{ display: batchModifyCurrentStep === 0 ? "block" : "none" }}
+        >
+          <Divider>过滤条件设置</Divider>
+          {filterConditions.map((condition, index) => (
+            <div
+              key={condition.id}
+              style={{
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
+              <Select
+                placeholder="选择字段"
+                value={condition.field}
+                onChange={(value) =>
+                  updateFilterCondition(index, "field", value)
+                }
+                style={{ width: 150 }}
+              >
+                {fieldOptions.map((option) => (
+                  <Select.Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Option>
+                ))}
+              </Select>
+
+              <Select
+                placeholder="选择操作"
+                value={condition.op}
+                onChange={(value) => updateFilterCondition(index, "op", value)}
+                style={{ width: 120 }}
+              >
+                {operatorOptions.map((option) => (
+                  <Select.Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Option>
+                ))}
+              </Select>
+
+              <div style={{ flex: 1 }}>
+                {renderValueInput(condition, index)}
+              </div>
+
+              {filterConditions.length > 1 && (
+                <Button
+                  type="link"
+                  danger
+                  onClick={() => removeFilterCondition(index)}
+                >
+                  删除
+                </Button>
+              )}
+            </div>
+          ))}
+
+          <Button
+            type="dashed"
+            onClick={addFilterCondition}
+            style={{ width: "100%", marginBottom: 16 }}
+          >
+            + 添加过滤条件
+          </Button>
+
+          <Divider>修改设置</Divider>
+          <Form.Item
+            label="要修改的字段"
+            name="field"
+            rules={[{ required: true, message: "请选择要修改的字段" }]}
+          >
+            <Select
+              placeholder="请选择字段"
+              onChange={(value) => {
+                // 当字段改变时，清空值并更新状态
+                batchModifyForm.setFieldValue("value", undefined);
+                setSelectedModifyField(value);
+              }}
+            >
+              <Select.Option value="disabled">启用状态</Select.Option>
+              <Select.Option value="personal">配额池类型</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="新值"
+            name="value"
+            rules={[{ required: true, message: "请选择新值" }]}
+          >
+            <Select placeholder="请选择新值">
+              {selectedModifyField === "disabled" && (
+                <>
+                  <Select.Option value={true}>禁用</Select.Option>
+                  <Select.Option value={false}>启用</Select.Option>
+                </>
+              )}
+              {selectedModifyField === "personal" && (
+                <>
+                  <Select.Option value={true}>个人配额池</Select.Option>
+                  <Select.Option value={false}>共享配额池</Select.Option>
+                </>
+              )}
+            </Select>
+          </Form.Item>
+
+          <div style={{ textAlign: "right" }}>
+            <Space>
+              <Button onClick={handleBatchModifyCancel}>取消</Button>
+              <Button
+                type="primary"
+                onClick={handlePreview}
+                loading={batchModifyLoading}
+              >
+                预览影响范围
+              </Button>
+            </Space>
+          </div>
+        </Form>
+
+        {batchModifyCurrentStep === 1 && previewResult && (
+          <div>
+            <Divider>预览结果</Divider>
+            <Card>
+              <div style={{ marginBottom: 16 }}>
+                <Tag color="blue">
+                  影响的配额池数量: {previewResult.affectedCount || 0}
+                </Tag>
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <Text strong>修改操作：</Text>
+                <div style={{ marginTop: 8 }}>
+                  <Text>字段：</Text>
+                  <Tag color="green">
+                    {(() => {
+                      const fieldValue = batchModifyForm.getFieldValue("field");
+                      switch (fieldValue) {
+                        case "disabled":
+                          return "启用状态";
+                        case "personal":
+                          return "配额池类型";
+                        default:
+                          return fieldValue;
+                      }
+                    })()}
+                  </Tag>
+                  <Text style={{ margin: "0 8px" }}>→</Text>
+                  <Text>新值：</Text>
+                  <Tag color="orange">
+                    {(() => {
+                      const fieldValue = batchModifyForm.getFieldValue("field");
+                      const newValue = batchModifyForm.getFieldValue("value");
+
+                      if (fieldValue === "disabled") {
+                        return newValue === true ? "禁用" : "启用";
+                      } else if (fieldValue === "personal") {
+                        return newValue === true ? "个人配额池" : "共享配额池";
+                      } else {
+                        return String(newValue);
+                      }
+                    })()}
+                  </Tag>
+                </div>
+              </div>
+
+              {(previewResult.affectedCount || 0) > 0 && (
+                <div>
+                  <Text strong>受影响的配额池名称：</Text>
+                  <List
+                    size="small"
+                    dataSource={previewResult.affectedPoolNames || []}
+                    renderItem={(poolName) => (
+                      <List.Item>
+                        <Text code>{poolName}</Text>
+                      </List.Item>
+                    )}
+                    style={{ marginTop: 8, maxHeight: 200, overflow: "auto" }}
+                  />
+                </div>
+              )}
+
+              {(previewResult.affectedCount || 0) === 0 && (
+                <Text type="secondary">没有找到符合条件的配额池</Text>
+              )}
+            </Card>
+
+            <div style={{ textAlign: "right", marginTop: 16 }}>
+              <Space>
+                <Button onClick={() => setBatchModifyCurrentStep(0)}>
+                  返回修改条件
+                </Button>
+                <Button onClick={handleBatchModifyCancel}>取消</Button>
+                <Button
+                  type="primary"
+                  danger
+                  onClick={handleConfirmBatchModify}
+                  loading={batchModifyLoading}
+                  disabled={(previewResult.affectedCount || 0) === 0}
+                >
+                  确认批量修改
+                </Button>
+              </Space>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <Modal
         title="新建配额池"
