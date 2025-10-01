@@ -11,30 +11,6 @@
  * @doc https://umijs.org/docs/guides/routes
  */
 export default [
-  // {
-  //   path: '/user',
-  //   layout: false,
-  //   routes: [
-  //     {
-  //       name: 'login',
-  //       path: '/user/login',
-  //       component: '@/pages/user/login',
-  //     },
-  //   ],
-  // },
-  {
-    path: "/welcome",
-    name: "welcome",
-    icon: "Smile",
-    component: "@/pages/WelcomePage",
-  },
-  // {
-  //   path: '/dashboard',
-  //   name: 'dashboard',
-  //   icon: 'Dashboard',
-  //   component: '@/pages/DashboardPage',
-  // },
-
   {
     path: "/user-list",
     name: "user-list",
@@ -49,12 +25,6 @@ export default [
     hideInMenu: true,
   },
   {
-    path: "/config/model-config",
-    name: "model-config",
-    icon: "Database",
-    component: "@/pages/ModelConfigPage",
-  },
-  {
     path: "/quota-pool-list",
     name: "quota-pool-list",
     icon: "Container",
@@ -67,27 +37,42 @@ export default [
     component: "@/pages/QuotaPoolDetailsPage",
     hideInMenu: true,
   },
+
   {
-    path: "/config/auto-quota-pool-config",
-    name: "auto-quota-pool-config",
-    icon: "Container",
-    component: "@/pages/AutoQuotaPoolConfigPage",
+    path: "/config",
+    name: "config",
+    icon: "Setting",
+    routes: [
+      {
+        path: "/config/auto-quota-pool-config",
+        name: "auto-quota-pool-config",
+        icon: "Container",
+        component: "@/pages/AutoQuotaPoolConfigPage",
+      },
+      {
+        path: "/config/model-config",
+        name: "model-config",
+        icon: "Database",
+        component: "@/pages/ModelConfigPage",
+      },
+      {
+        path: "/config/config-i18n",
+        name: "config-i18n",
+        icon: "Global",
+        component: "@/pages/ConfigI18nPage",
+      },
+      {
+        path: "/config/policy-list",
+        name: "policy-list",
+        icon: "bars",
+        component: "@/pages/PolicyListPage",
+      },
+    ],
   },
-  {
-    path: "/policy-list",
-    name: "policy-list",
-    icon: "bars",
-    component: "@/pages/PolicyListPage",
-  },
-  {
-    path: "/config-i18n",
-    name: "config-i18n",
-    icon: "Global",
-    component: "@/pages/ConfigI18nPage",
-  },
+
   {
     path: "/",
-    redirect: "/welcome",
+    redirect: "/user-list",
   },
   {
     path: "*",
