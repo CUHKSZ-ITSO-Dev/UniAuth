@@ -47,3 +47,12 @@ type CheckTokensUsageRes struct {
 	g.Meta      `resEg:"resource/interface/billing/check_tokens_usage_res.json"`
 	TokensUsage *gjson.Json `json:"tokensUsage"`
 }
+
+type GetBillingOptionsReq struct {
+	g.Meta    `path:"/options" tags:"Billing" method:"post" summary:"获取计费选项" dc:"获取指定配额池的所有服务和产品类型选项"`
+	QuotaPool string `json:"quotaPool" v:"required" example:"itso-deep-research-vip"`
+}
+type GetBillingOptionsRes struct {
+	Services []string `json:"services" example:"[\"openai\", \"claude\", \"gemini\"]" dc:"该配额池存在的所有服务类型"`
+	Products []string `json:"products" example:"[\"gpt-4\", \"gpt-3.5-turbo\", \"claude-3-opus\"]" dc:"该配额池存在的所有产品类型"`
+}

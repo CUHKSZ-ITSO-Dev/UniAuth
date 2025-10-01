@@ -527,6 +527,17 @@ declare namespace API {
     isAll?: boolean;
   };
 
+  type GetBillingOptionsReq = {
+    quotaPool: string;
+  };
+
+  type GetBillingOptionsRes = {
+    /** 该配额池存在的所有服务类型 */
+    services?: string[];
+    /** 该配额池存在的所有产品类型 */
+    products?: string[];
+  };
+
   type GetAllActionsReq = Record<string, never>;
 
   type GetAllActionsRes = {

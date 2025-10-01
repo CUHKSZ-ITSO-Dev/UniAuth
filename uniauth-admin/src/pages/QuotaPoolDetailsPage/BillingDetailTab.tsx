@@ -25,6 +25,7 @@ import {
   postBillingAdminGet,
   postBillingAdminOpenApiExport,
 } from "@/services/uniauthService/admin";
+import { postBillingOptions } from "@/services/uniauthService/billing";
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -151,47 +152,47 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
     setRemarkModalVisible(true);
   };
 
-  // 从记录中提取唯一的服务和产品选项
-  const extractOptionsFromRecords = (records: BillingRecord[]) => {
-    const svcSet = new Set<string>();
-    const productSet = new Set<string>();
+  // 获取完整的服务和产品选项
+  const fetchBillingOptions = async () => {
+    try {
+      const response = await postBillingOptions({
+        quotaPool: quotaPoolName,
+      });
 
-    records.forEach((record) => {
-      if (record.svc) {
-        svcSet.add(record.svc);
+      if (response.services && response.products) {
+        // 转换为选项格式
+        const svcOpts = response.services.map((svc) => ({
+          label: svc,
+          value: svc,
+        }));
+
+        const productOpts = response.products.map((product) => ({
+          label: product,
+          value: product,
+        }));
+
+        // 设置valueEnum格式
+        const svcEnum: Record<string, { text: string; status?: string }> = {};
+        const productEnum: Record<string, { text: string; status?: string }> =
+          {};
+
+        response.services.forEach((svc) => {
+          svcEnum[svc] = { text: svc, status: "Default" };
+        });
+
+        response.products.forEach((product) => {
+          productEnum[product] = { text: product, status: "Default" };
+        });
+
+        setSvcOptions(svcOpts);
+        setProductOptions(productOpts);
+        setSvcValueEnum(svcEnum);
+        setProductValueEnum(productEnum);
       }
-      if (record.product) {
-        productSet.add(record.product);
-      }
-    });
-
-    // 转换为选项格式
-    const svcOpts = Array.from(svcSet).map((svc) => ({
-      label: svc,
-      value: svc,
-    }));
-
-    const productOpts = Array.from(productSet).map((product) => ({
-      label: product,
-      value: product,
-    }));
-
-    // 设置valueEnum格式
-    const svcEnum: Record<string, { text: string; status?: string }> = {};
-    const productEnum: Record<string, { text: string; status?: string }> = {};
-
-    svcSet.forEach((svc) => {
-      svcEnum[svc] = { text: svc, status: "Default" };
-    });
-
-    productSet.forEach((product) => {
-      productEnum[product] = { text: product, status: "Default" };
-    });
-
-    setSvcOptions(svcOpts);
-    setProductOptions(productOpts);
-    setSvcValueEnum(svcEnum);
-    setProductValueEnum(productEnum);
+    } catch (error) {
+      console.error("获取计费选项失败:", error);
+      message.error("获取服务和产品选项失败，请刷新页面重试");
+    }
   };
 
   // 获取统计数据
@@ -216,9 +217,6 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           const poolRecords = (recordsData as any)[poolName] || [];
           allRecords = allRecords.concat(poolRecords);
         });
-
-        // 提取选项数据
-        extractOptionsFromRecords(allRecords);
 
         const stats = calculateStatistics(allRecords);
         setStatistics({
@@ -273,7 +271,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   };
 
   // 打开导出模态框
-  const handleOpenExportModal = () => {
+  const handleOpenExportModal = async () => {
     // 设置默认时间范围为往前30天
     const now = dayjs();
     const thirtyDaysAgo = now.subtract(30, "day");
@@ -284,11 +282,17 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       product: [],
     });
 
+    // 确保获取最新的计费选项
+    await fetchBillingOptions();
+
     setExportModalVisible(true);
   };
 
-  // 页面加载时获取统计数据
+  // 页面加载时获取数据
   useState(() => {
+    // 首先获取完整的计费选项
+    fetchBillingOptions();
+    // 然后获取统计数据
     fetchStatistics();
   });
   const billingRecordsColumns: ProColumns<BillingRecord>[] = [
@@ -496,9 +500,6 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           const poolRecords = (recordsData as any)[poolName] || [];
           allRecords = allRecords.concat(poolRecords);
         });
-
-        // 每次请求都更新选项数据，确保获取到最新的服务和产品类型
-        extractOptionsFromRecords(allRecords);
 
         // 过滤数据
         let filteredRecords = allRecords;
