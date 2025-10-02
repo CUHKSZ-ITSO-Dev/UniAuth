@@ -382,4 +382,247 @@ export default {
   "pages.billingDetail.cancel": "Cancel",
   "pages.billingDetail.confirmExport": "Confirm Export",
   "pages.billingDetail.close": "Close",
+
+  // QuotaPoolListPage
+  "pages.quotaPoolList.title": "Quota Pool List",
+  "pages.quotaPoolList.description":
+    "Manage all quota pools in the system, view usage, get billing information, etc.",
+  "pages.quotaPoolList.quotaPoolName": "Quota Pool Name",
+  "pages.quotaPoolList.quotaPoolName.placeholder":
+    "Enter quota pool name to search",
+  "pages.quotaPoolList.quota": "Quota",
+  "pages.quotaPoolList.remainingQuota": "Remaining Quota",
+  "pages.quotaPoolList.quotaPoolType": "Quota Pool Type",
+  "pages.quotaPoolList.quotaPoolType.personal": "Personal Quota Pool",
+  "pages.quotaPoolList.quotaPoolType.shared": "Shared Quota Pool",
+  "pages.quotaPoolList.status": "Status",
+  "pages.quotaPoolList.status.enabled": "Enabled",
+  "pages.quotaPoolList.status.disabled": "Disabled",
+  "pages.quotaPoolList.createdAt": "Created At",
+  "pages.quotaPoolList.actions": "Actions",
+  "pages.quotaPoolList.detail": "Detail",
+  "pages.quotaPoolList.delete": "Delete",
+  "pages.quotaPoolList.delete.confirm":
+    "Are you sure to delete this quota pool?",
+  "pages.quotaPoolList.search": "Search",
+  "pages.quotaPoolList.reset": "Reset",
+  "pages.quotaPoolList.selected": "Selected",
+  "pages.quotaPoolList.item": "items",
+  "pages.quotaPoolList.cancelSelection": "Cancel selection",
+  "pages.quotaPoolList.batchReset": "Batch Reset",
+  "pages.quotaPoolList.batchDisable": "Batch Disable",
+  "pages.quotaPoolList.batchModify": "Batch Modify",
+  "pages.quotaPoolList.addNew": "Add New Quota Pool",
+  "pages.quotaPoolList.total": "Total {total} items",
+
+  // Messages
+  "pages.quotaPoolList.delete.success": "Quota pool deleted successfully",
+  "pages.quotaPoolList.delete.error": "Failed to delete quota pool",
+  "pages.quotaPoolList.batchReset.warning":
+    "Please select quota pools to reset first",
+  "pages.quotaPoolList.batchReset.success":
+    "Batch reset quota pools successfully",
+  "pages.quotaPoolList.batchReset.error": "Failed to batch reset quota pools",
+  "pages.quotaPoolList.batchDisable.warning":
+    "Please select quota pools to disable first",
+  "pages.quotaPoolList.batchDisable.success":
+    "Batch disable quota pools successfully",
+  "pages.quotaPoolList.batchDisable.error":
+    "Failed to batch disable quota pools",
+  "pages.quotaPoolList.create.success": "Quota pool created successfully",
+  "pages.quotaPoolList.create.error": "Failed to create quota pool",
+  "pages.quotaPoolList.form.validation.error":
+    "Form validation failed, please check your input",
+
+  // Batch Modify Modal
+  "pages.quotaPoolList.batchModify.title": "Batch Modify Quota Pools",
+  "pages.quotaPoolList.batchModify.step1": "Set Filter Conditions",
+  "pages.quotaPoolList.batchModify.step2": "Preview Impact Range",
+  "pages.quotaPoolList.batchModify.step3": "Confirm Modification",
+  "pages.quotaPoolList.batchModify.filterConditions": "Filter Conditions Setup",
+  "pages.quotaPoolList.batchModify.selectField": "Select Field",
+  "pages.quotaPoolList.batchModify.selectOperator": "Select Operator",
+  "pages.quotaPoolList.batchModify.addCondition": "+ Add Filter Condition",
+  "pages.quotaPoolList.batchModify.removeCondition": "Remove",
+  "pages.quotaPoolList.batchModify.modifySettings": "Modify Settings",
+  "pages.quotaPoolList.batchModify.modifyField": "Field to Modify",
+  "pages.quotaPoolList.batchModify.modifyField.required":
+    "Please select field to modify",
+  "pages.quotaPoolList.batchModify.newValue": "New Value",
+  "pages.quotaPoolList.batchModify.newValue.required":
+    "Please select new value",
+  "pages.quotaPoolList.batchModify.newValue.placeholder":
+    "Please select new value",
+  "pages.quotaPoolList.batchModify.cancel": "Cancel",
+  "pages.quotaPoolList.batchModify.preview": "Preview Impact Range",
+  "pages.quotaPoolList.batchModify.previewResult": "Preview Result",
+  "pages.quotaPoolList.batchModify.affectedCount":
+    "Number of affected quota pools",
+  "pages.quotaPoolList.batchModify.modifyOperation": "Modify Operation",
+  "pages.quotaPoolList.batchModify.field": "Field",
+  "pages.quotaPoolList.batchModify.newValueLabel": "New Value",
+  "pages.quotaPoolList.batchModify.affectedPools": "Affected Quota Pool Names",
+  "pages.quotaPoolList.batchModify.noMatch":
+    "No quota pools found matching the conditions",
+  "pages.quotaPoolList.batchModify.backToConditions":
+    "Back to Modify Conditions",
+  "pages.quotaPoolList.batchModify.confirm": "Confirm Batch Modification",
+  "pages.quotaPoolList.batchModify.noValidConditions":
+    "Please set at least one valid filter condition",
+  "pages.quotaPoolList.batchModify.success":
+    "Batch modification successful, affected {count} quota pools",
+  "pages.quotaPoolList.batchModify.error": "Batch modification failed",
+  "pages.quotaPoolList.batchModify.previewError": "Preview failed",
+
+  // Create Modal
+  "pages.quotaPoolList.create.title": "Create New Quota Pool",
+  "pages.quotaPoolList.create.quotaPoolName": "Quota Pool Name",
+  "pages.quotaPoolList.create.quotaPoolName.required":
+    "Please enter quota pool name",
+  "pages.quotaPoolList.create.quotaPoolName.placeholder":
+    "Please enter quota pool name, e.g.: itso-deep-research-vip",
+  "pages.quotaPoolList.create.cronCycle": "Refresh Cycle (Cron Expression)",
+  "pages.quotaPoolList.create.cronCycle.required": "Please enter refresh cycle",
+  "pages.quotaPoolList.create.cronCycle.invalid":
+    "Invalid Cron expression format",
+  "pages.quotaPoolList.create.cronCycle.placeholder":
+    "Please enter standard Cron expression, e.g.: 0 3 * * *",
+  "pages.quotaPoolList.create.cronCycle.help": "Execution time: {description}",
+  "pages.quotaPoolList.create.regularQuota": "Regular Quota",
+  "pages.quotaPoolList.create.regularQuota.required":
+    "Please enter regular quota",
+  "pages.quotaPoolList.create.regularQuota.placeholder":
+    "Please enter regular quota, e.g.: 10",
+  "pages.quotaPoolList.create.extraQuota": "Initial Extra Quota",
+  "pages.quotaPoolList.create.extraQuota.placeholder":
+    "Please enter initial extra quota, default is 0",
+  "pages.quotaPoolList.create.quotaPoolTypeLabel": "Quota Pool Type",
+  "pages.quotaPoolList.create.enabledStatus": "Enabled Status",
+  "pages.quotaPoolList.create.enabled": "Enabled",
+  "pages.quotaPoolList.create.disabled": "Disabled",
+
+  // Field Options
+  "pages.quotaPoolList.field.quotaPoolName": "Quota Pool Name",
+  "pages.quotaPoolList.field.cronCycle": "Refresh Cycle",
+  "pages.quotaPoolList.field.regularQuota": "Regular Quota",
+  "pages.quotaPoolList.field.remainingQuota": "Remaining Quota",
+  "pages.quotaPoolList.field.lastResetAt": "Last Reset At",
+  "pages.quotaPoolList.field.extraQuota": "Extra Quota",
+  "pages.quotaPoolList.field.personal": "Quota Pool Type",
+  "pages.quotaPoolList.field.disabled": "Status",
+  "pages.quotaPoolList.field.createdAt": "Created At",
+  "pages.quotaPoolList.field.updatedAt": "Updated At",
+
+  // Operator Options
+  "pages.quotaPoolList.operator.eq": "Equal",
+  "pages.quotaPoolList.operator.neq": "Not Equal",
+  "pages.quotaPoolList.operator.gt": "Greater Than",
+  "pages.quotaPoolList.operator.gte": "Greater Than or Equal",
+  "pages.quotaPoolList.operator.lt": "Less Than",
+  "pages.quotaPoolList.operator.lte": "Less Than or Equal",
+  "pages.quotaPoolList.operator.like": "Like",
+  "pages.quotaPoolList.operator.contains": "Contains",
+  "pages.quotaPoolList.operator.notcontains": "Not Contains",
+  "pages.quotaPoolList.operator.startswith": "Starts With",
+  "pages.quotaPoolList.operator.endswith": "Ends With",
+  "pages.quotaPoolList.operator.in": "In List",
+  "pages.quotaPoolList.operator.notin": "Not In List",
+  "pages.quotaPoolList.operator.isnull": "Is Null",
+  "pages.quotaPoolList.operator.isnotnull": "Is Not Null",
+
+  // Placeholders for operators
+  "pages.quotaPoolList.operator.like.placeholder":
+    "Enter value, wildcards supported",
+  "pages.quotaPoolList.operator.contains.placeholder":
+    "Enter content to contain",
+  "pages.quotaPoolList.operator.notcontains.placeholder":
+    "Enter content not to contain",
+  "pages.quotaPoolList.operator.startswith.placeholder":
+    "Enter starting content",
+  "pages.quotaPoolList.operator.endswith.placeholder": "Enter ending content",
+  "pages.quotaPoolList.operator.in.placeholder":
+    "Enter values, press Enter to separate multiple values",
+  "pages.quotaPoolList.operator.default.placeholder": "Please enter value",
+
+  // QuotaPoolDetailsPage
+  "pages.quotaPoolDetails.title": "Quota Pool Details",
+  "pages.quotaPoolDetails.resetQuotaPool": "Reset Quota Pool",
+  "pages.quotaPoolDetails.enableQuotaPool": "Enable Quota Pool",
+  "pages.quotaPoolDetails.disableQuotaPool": "Disable Quota Pool",
+  "pages.quotaPoolDetails.status": "Status",
+  "pages.quotaPoolDetails.status.enabled": "Enabled",
+  "pages.quotaPoolDetails.status.disabled": "Disabled",
+  "pages.quotaPoolDetails.balance": "Balance",
+  "pages.quotaPoolDetails.quotaPoolName": "Quota Pool Name",
+  "pages.quotaPoolDetails.quotaPoolType": "Quota Pool Type",
+  "pages.quotaPoolDetails.quotaPoolType.personal": "Personal Quota Pool",
+  "pages.quotaPoolDetails.quotaPoolType.shared": "Shared Quota Pool",
+  "pages.quotaPoolDetails.createdAt": "Created At",
+  "pages.quotaPoolDetails.resetAt": "Reset At",
+  "pages.quotaPoolDetails.configDetail": "Configuration Details",
+  "pages.quotaPoolDetails.billDetail": "Billing Details",
+  "pages.quotaPoolDetails.loading": "Loading...",
+  "pages.quotaPoolDetails.unknownQuotaPool": "Unknown Quota Pool",
+  "pages.quotaPoolDetails.unknownTime": "Unknown Time",
+  "pages.quotaPoolDetails.resetSuccess": "Reset quota pool successfully",
+  "pages.quotaPoolDetails.resetFailed": "Failed to reset quota pool",
+  "pages.quotaPoolDetails.enableSuccess": "Enable quota pool successfully",
+  "pages.quotaPoolDetails.enableFailed": "Failed to enable quota pool",
+  "pages.quotaPoolDetails.disableSuccess": "Disable quota pool successfully",
+  "pages.quotaPoolDetails.disableFailed": "Failed to disable quota pool",
+  "pages.quotaPoolDetails.fetchDetailFailed":
+    "Failed to fetch quota pool details",
+
+  // ConfigDetailTab - only add non-existing keys
+  "pages.quotaPoolConfigDetail.refreshCycle": "Refresh Cycle",
+  "pages.quotaPoolConfigDetail.regularQuota": "Regular Quota",
+  "pages.quotaPoolConfigDetail.extraQuota": "Extra Quota",
+  "pages.quotaPoolConfigDetail.balancePercentage": "Balance Percentage",
+  "pages.quotaPoolConfigDetail.associatedUsers": "Associated Users",
+  "pages.quotaPoolConfigDetail.quotaPoolRules": "Quota Pool Rules",
+  "pages.quotaPoolConfigDetail.name": "Name",
+  "pages.quotaPoolConfigDetail.upn": "UPN",
+  "pages.quotaPoolConfigDetail.employeeId": "Employee/Student ID",
+  "pages.quotaPoolConfigDetail.detail": "Detail",
+  "pages.quotaPoolConfigDetail.fetchUsersFailed":
+    "Failed to fetch associated users",
+  "pages.quotaPoolConfigDetail.fetchRulesFailed":
+    "Failed to fetch permission rules",
+  "pages.quotaPoolConfigDetail.totalRecords": "Total {total} records",
+
+  // BillingDetailTab - only add non-existing keys
+  "pages.billingDetail.title": "Billing Details",
+  "pages.billingDetail.currentMonthCost": "Current Month Cost",
+  "pages.billingDetail.lastMonthCost": "Last Month Cost",
+  "pages.billingDetail.totalCost": "Total Cost",
+  "pages.billingDetail.avgDailyCost": "Avg Daily Cost",
+  "pages.billingDetail.recordCount": "Record Count",
+  "pages.billingDetail.dateRange": "Date Range",
+  "pages.billingDetail.startDate": "Start Date",
+  "pages.billingDetail.endDate": "End Date",
+  "pages.billingDetail.noRemark": "No Remark",
+  "pages.billingDetail.viewRemark": "View Remark",
+  "pages.billingDetail.closeRemark": "Close",
+  "pages.billingDetail.exportModal.title": "Export Bill",
+  "pages.billingDetail.exportModal.service": "Service",
+  "pages.billingDetail.exportModal.service.extraInfo":
+    "Not selecting means exporting all service types.",
+  "pages.billingDetail.exportModal.service.placeholder":
+    "Please select service",
+  "pages.billingDetail.exportModal.product": "Product",
+  "pages.billingDetail.exportModal.product.extraInfo":
+    "Not selecting means exporting all product types.",
+  "pages.billingDetail.exportModal.product.placeholder":
+    "Please select product",
+  "pages.billingDetail.exportModal.dateRange": "Date Range",
+  "pages.billingDetail.exportModal.dateRange.required":
+    "Please select date range",
+  "pages.billingDetail.exportModal.cancel": "Cancel",
+  "pages.billingDetail.exportModal.export": "Export",
+  "pages.billingDetail.exportSuccess": "Bill exported successfully!",
+  "pages.billingDetail.exportFailed": "Failed to export bill, please try again",
+  "pages.billingDetail.fetchOptionsFailed":
+    "Failed to fetch service and product options, please refresh page",
+  "pages.billingDetail.fetchStatisticsFailed": "Failed to fetch statistics",
+  "pages.billingDetail.fetchRecordsFailed": "Failed to fetch billing records",
 };

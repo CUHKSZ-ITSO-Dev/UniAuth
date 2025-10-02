@@ -191,7 +191,12 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       }
     } catch (error) {
       console.error("获取计费选项失败:", error);
-      message.error("获取服务和产品选项失败，请刷新页面重试");
+      message.error(
+        intl.formatMessage({
+          id: "pages.billingDetail.fetchOptionsFailed",
+          defaultMessage: "获取服务和产品选项失败，请刷新页面重试",
+        }),
+      );
     }
   };
 
@@ -226,6 +231,12 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       }
     } catch (error) {
       console.error("获取统计数据失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.billingDetail.fetchStatisticsFailed",
+          defaultMessage: "获取统计数据失败",
+        }),
+      );
     }
   };
 
@@ -259,12 +270,22 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      message.success("账单导出成功！");
+      message.success(
+        intl.formatMessage({
+          id: "pages.billingDetail.exportSuccess",
+          defaultMessage: "账单导出成功！",
+        }),
+      );
       setExportModalVisible(false);
       exportForm.resetFields();
     } catch (error) {
       console.error("导出账单失败:", error);
-      message.error("导出账单失败，请重试");
+      message.error(
+        intl.formatMessage({
+          id: "pages.billingDetail.exportFailed",
+          defaultMessage: "导出账单失败，请重试",
+        }),
+      );
     } finally {
       setExportLoading(false);
     }
@@ -376,7 +397,15 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       ellipsis: true,
       width: 180,
       render: (_, record) => {
-        if (!record.remark) return <Text type="secondary">-</Text>;
+        if (!record.remark)
+          return (
+            <Text type="secondary">
+              {intl.formatMessage({
+                id: "pages.billingDetail.noRemark",
+                defaultMessage: "-",
+              })}
+            </Text>
+          );
 
         const summary = getJsonSummary(record.remark);
         const formattedJson = formatJsonObject(record.remark);
@@ -448,7 +477,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
     },
     // 添加一个专门用于时间范围搜索的虚拟列
     {
-      title: "时间范围",
+      title: intl.formatMessage({
+        id: "pages.billingDetail.dateRange",
+        defaultMessage: "时间范围",
+      }),
       dataIndex: "dateRange",
       valueType: "dateRange",
       hideInTable: true, // 在表格中隐藏此列
@@ -465,7 +497,16 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       },
       fieldProps: {
         format: "YYYY-MM-DD",
-        placeholder: ["开始日期", "结束日期"],
+        placeholder: [
+          intl.formatMessage({
+            id: "pages.billingDetail.startDate",
+            defaultMessage: "开始日期",
+          }),
+          intl.formatMessage({
+            id: "pages.billingDetail.endDate",
+            defaultMessage: "结束日期",
+          }),
+        ],
       },
     },
   ];
@@ -522,6 +563,12 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       }
     } catch (error) {
       console.error("获取账单数据失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.billingDetail.fetchRecordsFailed",
+          defaultMessage: "获取账单数据失败",
+        }),
+      );
     }
 
     // 如果 API 调用失败，返回空数据
@@ -586,20 +633,38 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         variant="borderless"
       >
         <Descriptions column={3}>
-          <Descriptions.Item label="本月消费">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.billingDetail.currentMonthCost",
+              defaultMessage: "本月消费",
+            })}
+          >
             <Text type="danger">${statistics.currentMonthCost.toFixed(4)}</Text>
           </Descriptions.Item>
-          <Descriptions.Item label="累计消费">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.billingDetail.totalCost",
+              defaultMessage: "累计消费",
+            })}
+          >
             <Text strong>${statistics.totalCost.toFixed(4)}</Text>
           </Descriptions.Item>
-          <Descriptions.Item label="总记录数">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.billingDetail.recordCount",
+              defaultMessage: "总记录数",
+            })}
+          >
             <Text>{statistics.recordCount} 条</Text>
           </Descriptions.Item>
         </Descriptions>
       </Card>
 
       <Card
-        title={`${quotaPoolName} - 消费明细`}
+        title={`${quotaPoolName} - ${intl.formatMessage({
+          id: "pages.billingDetail.title",
+          defaultMessage: "消费明细",
+        })}`}
         style={{
           marginBottom: 24,
         }}
@@ -668,7 +733,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             }}
           >
             {intl.formatMessage({
-              id: "pages.billingDetail.cancel",
+              id: "pages.billingDetail.exportModal.cancel",
               defaultMessage: "取消",
             })}
           </Button>,
@@ -681,7 +746,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             }}
           >
             {intl.formatMessage({
-              id: "pages.billingDetail.confirmExport",
+              id: "pages.billingDetail.exportModal.export",
               defaultMessage: "确定导出",
             })}
           </Button>,
@@ -699,24 +764,53 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         >
           <Form.Item
             name="dateRange"
-            label="时间范围"
-            rules={[{ required: true, message: "请选择时间范围" }]}
+            label={intl.formatMessage({
+              id: "pages.billingDetail.exportModal.dateRange",
+              defaultMessage: "时间范围",
+            })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.billingDetail.exportModal.dateRange.required",
+                  defaultMessage: "请选择时间范围",
+                }),
+              },
+            ]}
           >
             <RangePicker
               style={{ width: "100%" }}
               format="YYYY-MM-DD"
-              placeholder={["开始日期", "结束日期"]}
+              placeholder={[
+                intl.formatMessage({
+                  id: "pages.billingDetail.startDate",
+                  defaultMessage: "开始日期",
+                }),
+                intl.formatMessage({
+                  id: "pages.billingDetail.endDate",
+                  defaultMessage: "结束日期",
+                }),
+              ]}
             />
           </Form.Item>
 
           <Form.Item
             name="svc"
-            label="服务类型"
-            extra="不选择表示导出所有服务类型"
+            label={intl.formatMessage({
+              id: "pages.billingDetail.exportModal.service",
+              defaultMessage: "服务类型",
+            })}
+            extra={intl.formatMessage({
+              id: "pages.billingDetail.exportModal.service.extraInfo",
+              defaultMessage: "不选择表示导出所有服务类型",
+            })}
           >
             <Select
               mode="multiple"
-              placeholder="请选择服务类型"
+              placeholder={intl.formatMessage({
+                id: "pages.billingDetail.exportModal.service.placeholder",
+                defaultMessage: "请选择服务类型",
+              })}
               options={svcOptions}
               allowClear
             />
@@ -724,12 +818,21 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
           <Form.Item
             name="product"
-            label="产品类型"
-            extra="不选择表示导出所有产品类型"
+            label={intl.formatMessage({
+              id: "pages.billingDetail.exportModal.product",
+              defaultMessage: "产品类型",
+            })}
+            extra={intl.formatMessage({
+              id: "pages.billingDetail.exportModal.product.extraInfo",
+              defaultMessage: "不选择表示导出所有产品类型",
+            })}
           >
             <Select
               mode="multiple"
-              placeholder="请选择产品类型"
+              placeholder={intl.formatMessage({
+                id: "pages.billingDetail.exportModal.product.placeholder",
+                defaultMessage: "请选择产品类型",
+              })}
               options={productOptions}
               allowClear
             />
@@ -740,7 +843,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       {/* 备注详情模态框 */}
       <Modal
         title={intl.formatMessage({
-          id: "pages.billingDetail.remarkDetail",
+          id: "pages.billingDetail.viewRemark",
           defaultMessage: "备注详情",
         })}
         open={remarkModalVisible}
@@ -748,7 +851,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         footer={[
           <Button key="close" onClick={() => setRemarkModalVisible(false)}>
             {intl.formatMessage({
-              id: "pages.billingDetail.close",
+              id: "pages.billingDetail.closeRemark",
               defaultMessage: "关闭",
             })}
           </Button>,

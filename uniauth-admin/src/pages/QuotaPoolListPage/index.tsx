@@ -1,6 +1,6 @@
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
-import { Link, useSearchParams } from "@umijs/max";
+import { Link, useIntl, useSearchParams } from "@umijs/max";
 import {
   Button,
   Card,
@@ -36,6 +36,7 @@ import {
 const { Title, Text } = Typography;
 
 const QuotaPoolListPage: React.FC = () => {
+  const intl = useIntl();
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -76,34 +77,184 @@ const QuotaPoolListPage: React.FC = () => {
 
   // 批量修改相关配置
   const fieldOptions = [
-    { label: "配额池名称", value: "quotaPoolName" },
-    { label: "刷新周期", value: "cronCycle" },
-    { label: "定期配额", value: "regularQuota" },
-    { label: "剩余配额", value: "remainingQuota" },
-    { label: "最后重置时间", value: "lastResetAt" },
-    { label: "额外配额", value: "extraQuota" },
-    { label: "配额池类型", value: "personal" },
-    { label: "启用状态", value: "disabled" },
-    { label: "创建时间", value: "createdAt" },
-    { label: "更新时间", value: "updatedAt" },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.field.quotaPoolName",
+        defaultMessage: "配额池名称",
+      }),
+      value: "quotaPoolName",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.field.cronCycle",
+        defaultMessage: "刷新周期",
+      }),
+      value: "cronCycle",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.field.regularQuota",
+        defaultMessage: "定期配额",
+      }),
+      value: "regularQuota",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.field.remainingQuota",
+        defaultMessage: "剩余配额",
+      }),
+      value: "remainingQuota",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.field.lastResetAt",
+        defaultMessage: "最后重置时间",
+      }),
+      value: "lastResetAt",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.field.extraQuota",
+        defaultMessage: "额外配额",
+      }),
+      value: "extraQuota",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.field.personal",
+        defaultMessage: "配额池类型",
+      }),
+      value: "personal",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.field.disabled",
+        defaultMessage: "启用状态",
+      }),
+      value: "disabled",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.field.createdAt",
+        defaultMessage: "创建时间",
+      }),
+      value: "createdAt",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.field.updatedAt",
+        defaultMessage: "更新时间",
+      }),
+      value: "updatedAt",
+    },
   ];
 
   const operatorOptions = [
-    { label: "等于", value: "eq" },
-    { label: "不等于", value: "neq" },
-    { label: "大于", value: "gt" },
-    { label: "大于等于", value: "gte" },
-    { label: "小于", value: "lt" },
-    { label: "小于等于", value: "lte" },
-    { label: "模糊匹配", value: "like" },
-    { label: "包含", value: "contains" },
-    { label: "不包含", value: "notcontains" },
-    { label: "以...开头", value: "startswith" },
-    { label: "以...结尾", value: "endswith" },
-    { label: "包含在列表中", value: "in" },
-    { label: "不包含在列表中", value: "notin" },
-    { label: "为空", value: "isnull" },
-    { label: "不为空", value: "isnotnull" },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.eq",
+        defaultMessage: "等于",
+      }),
+      value: "eq",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.neq",
+        defaultMessage: "不等于",
+      }),
+      value: "neq",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.gt",
+        defaultMessage: "大于",
+      }),
+      value: "gt",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.gte",
+        defaultMessage: "大于等于",
+      }),
+      value: "gte",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.lt",
+        defaultMessage: "小于",
+      }),
+      value: "lt",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.lte",
+        defaultMessage: "小于等于",
+      }),
+      value: "lte",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.like",
+        defaultMessage: "模糊匹配",
+      }),
+      value: "like",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.contains",
+        defaultMessage: "包含",
+      }),
+      value: "contains",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.notcontains",
+        defaultMessage: "不包含",
+      }),
+      value: "notcontains",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.startswith",
+        defaultMessage: "以...开头",
+      }),
+      value: "startswith",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.endswith",
+        defaultMessage: "以...结尾",
+      }),
+      value: "endswith",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.in",
+        defaultMessage: "包含在列表中",
+      }),
+      value: "in",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.notin",
+        defaultMessage: "不包含在列表中",
+      }),
+      value: "notin",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.isnull",
+        defaultMessage: "为空",
+      }),
+      value: "isnull",
+    },
+    {
+      label: intl.formatMessage({
+        id: "pages.quotaPoolList.operator.isnotnull",
+        defaultMessage: "不为空",
+      }),
+      value: "isnotnull",
+    },
   ];
 
   // 更新URL参数
@@ -170,16 +321,25 @@ const QuotaPoolListPage: React.FC = () => {
 
   const columns: ProColumns<any>[] = [
     {
-      title: "配额池名称",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolList.quotaPoolName",
+        defaultMessage: "配额池名称",
+      }),
       dataIndex: "quotaPoolName",
       valueType: "text",
       search: true,
       fieldProps: {
-        placeholder: "请输入配额池名称进行搜索",
+        placeholder: intl.formatMessage({
+          id: "pages.quotaPoolList.quotaPoolName.placeholder",
+          defaultMessage: "请输入配额池名称进行搜索",
+        }),
       },
     },
     {
-      title: "配额",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolList.quota",
+        defaultMessage: "配额",
+      }),
       dataIndex: "regularQuota",
       valueType: "digit",
       search: false,
@@ -188,7 +348,10 @@ const QuotaPoolListPage: React.FC = () => {
       },
     },
     {
-      title: "余额",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolList.remainingQuota",
+        defaultMessage: "余额",
+      }),
       dataIndex: "remainingQuota",
       valueType: "digit",
       search: false,
@@ -197,33 +360,78 @@ const QuotaPoolListPage: React.FC = () => {
       },
     },
     {
-      title: "配额池类型",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolList.quotaPoolType",
+        defaultMessage: "配额池类型",
+      }),
       dataIndex: "personal",
       valueType: "select",
       search: true,
       valueEnum: {
-        true: { text: "个人配额池" },
-        false: { text: "共享配额池" },
+        true: {
+          text: intl.formatMessage({
+            id: "pages.quotaPoolList.quotaPoolType.personal",
+            defaultMessage: "个人配额池",
+          }),
+        },
+        false: {
+          text: intl.formatMessage({
+            id: "pages.quotaPoolList.quotaPoolType.shared",
+            defaultMessage: "共享配额池",
+          }),
+        },
       },
       render: (_, record) => {
-        return record.personal ? "个人配额池" : "共享配额池";
+        return record.personal
+          ? intl.formatMessage({
+              id: "pages.quotaPoolList.quotaPoolType.personal",
+              defaultMessage: "个人配额池",
+            })
+          : intl.formatMessage({
+              id: "pages.quotaPoolList.quotaPoolType.shared",
+              defaultMessage: "共享配额池",
+            });
       },
     },
     {
-      title: "启用状态",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolList.status",
+        defaultMessage: "启用状态",
+      }),
       dataIndex: "disabled",
       valueType: "select",
       search: true,
       valueEnum: {
-        false: { text: "启用" },
-        true: { text: "禁用" },
+        false: {
+          text: intl.formatMessage({
+            id: "pages.quotaPoolList.status.enabled",
+            defaultMessage: "启用",
+          }),
+        },
+        true: {
+          text: intl.formatMessage({
+            id: "pages.quotaPoolList.status.disabled",
+            defaultMessage: "禁用",
+          }),
+        },
       },
       render: (_, record) => {
-        return record.disabled ? "禁用" : "启用";
+        return record.disabled
+          ? intl.formatMessage({
+              id: "pages.quotaPoolList.status.disabled",
+              defaultMessage: "禁用",
+            })
+          : intl.formatMessage({
+              id: "pages.quotaPoolList.status.enabled",
+              defaultMessage: "启用",
+            });
       },
     },
     {
-      title: "创建时间",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolList.createdAt",
+        defaultMessage: "创建时间",
+      }),
       dataIndex: "createdAt",
       valueType: "dateTime",
       search: false,
@@ -234,7 +442,10 @@ const QuotaPoolListPage: React.FC = () => {
       },
     },
     {
-      title: "操作",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolList.actions",
+        defaultMessage: "操作",
+      }),
       valueType: "option",
       width: 200,
       ellipsis: true,
@@ -264,15 +475,26 @@ const QuotaPoolListPage: React.FC = () => {
         return (
           <div style={{ textAlign: "center" }}>
             <Link to={detailUrl} key="detail">
-              详情
+              {intl.formatMessage({
+                id: "pages.quotaPoolList.detail",
+                defaultMessage: "详情",
+              })}
             </Link>
             <span style={{ margin: "0 8px" }} />
             <Popconfirm
               key="delete"
-              title="确定要删除该配额池吗？"
+              title={intl.formatMessage({
+                id: "pages.quotaPoolList.delete.confirm",
+                defaultMessage: "确定要删除该配额池吗？",
+              })}
               onConfirm={() => handleDelete(record)}
             >
-              <a style={{ color: "red" }}>删除</a>
+              <a style={{ color: "red" }}>
+                {intl.formatMessage({
+                  id: "pages.quotaPoolList.delete",
+                  defaultMessage: "删除",
+                })}
+              </a>
             </Popconfirm>
           </div>
         );
@@ -289,17 +511,22 @@ const QuotaPoolListPage: React.FC = () => {
     }
 
     try {
-      // 尝试解析 cron 表达式
+      // 解析 cron 表达式
       const description = cronstrue.toString(value, {
         throwExceptionOnParseError: true,
-        locale: "zh_CN", // 使用中文
+        locale: "en_US",
         use24HourTimeFormat: true,
         verbose: true,
       });
       setCronDescription(description);
       setCronError("");
     } catch (_error) {
-      setCronError("Cron 表达式格式不正确，请检查语法");
+      setCronError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.cronCycle.invalid",
+          defaultMessage: "Cron 表达式格式不正确",
+        }),
+      );
       setCronDescription("");
     }
   };
@@ -312,14 +539,29 @@ const QuotaPoolListPage: React.FC = () => {
         quotaPoolName: record.quotaPoolName,
       });
       if (res?.ok) {
-        message.success("删除配额池成功");
+        message.success(
+          intl.formatMessage({
+            id: "pages.quotaPoolList.delete.success",
+            defaultMessage: "删除配额池成功",
+          }),
+        );
         tableRef.current?.reload();
       } else {
-        message.error("删除配额池失败");
+        message.error(
+          intl.formatMessage({
+            id: "pages.quotaPoolList.delete.error",
+            defaultMessage: "删除配额池失败",
+          }),
+        );
       }
     } catch (error) {
       console.error("删除配额池失败:", error);
-      message.error("删除配额池失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.delete.error",
+          defaultMessage: "删除配额池失败",
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -336,7 +578,12 @@ const QuotaPoolListPage: React.FC = () => {
   // 批量重置配额池
   async function handleBatchResetClick(selectedRows: any[]) {
     if (!selectedRows || selectedRows.length === 0) {
-      message.warning("请先选择要重置的配额池");
+      message.warning(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.batchReset.warning",
+          defaultMessage: "请先选择要重置的配额池",
+        }),
+      );
       return;
     }
 
@@ -349,11 +596,21 @@ const QuotaPoolListPage: React.FC = () => {
       );
 
       await Promise.all(promises);
-      message.success("批量重置配额池成功");
+      message.success(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.batchReset.success",
+          defaultMessage: "批量重置配额池成功",
+        }),
+      );
       tableRef.current?.reload();
     } catch (error) {
       console.error("批量重置配额池失败:", error);
-      message.error("批量重置配额池失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.batchReset.error",
+          defaultMessage: "批量重置配额池失败",
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -362,7 +619,12 @@ const QuotaPoolListPage: React.FC = () => {
   // 批量禁用配额池
   async function handleBatchDisableClick(selectedRows: any[]) {
     if (!selectedRows || selectedRows.length === 0) {
-      message.warning("请先选择要禁用的配额池");
+      message.warning(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.batchDisable.warning",
+          defaultMessage: "请先选择要禁用的配额池",
+        }),
+      );
       return;
     }
 
@@ -389,14 +651,29 @@ const QuotaPoolListPage: React.FC = () => {
       });
 
       if (res?.ok) {
-        message.success("批量禁用配额池成功");
+        message.success(
+          intl.formatMessage({
+            id: "pages.quotaPoolList.batchDisable.success",
+            defaultMessage: "批量禁用配额池成功",
+          }),
+        );
         tableRef.current?.reload();
       } else {
-        message.error("批量禁用配额池失败");
+        message.error(
+          intl.formatMessage({
+            id: "pages.quotaPoolList.batchDisable.error",
+            defaultMessage: "批量禁用配额池失败",
+          }),
+        );
       }
     } catch (error) {
       console.error("批量禁用配额池失败:", error);
-      message.error("批量禁用配额池失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.batchDisable.error",
+          defaultMessage: "批量禁用配额池失败",
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -418,14 +695,24 @@ const QuotaPoolListPage: React.FC = () => {
       });
 
       if (res?.ok) {
-        message.success("新建配额池成功");
+        message.success(
+          intl.formatMessage({
+            id: "pages.quotaPoolList.create.success",
+            defaultMessage: "新建配额池成功",
+          }),
+        );
         setIsModalOpen(false);
         form.resetFields();
         setCronDescription("");
         setCronError("");
         tableRef.current?.reload();
       } else {
-        message.error("新建配额池失败");
+        message.error(
+          intl.formatMessage({
+            id: "pages.quotaPoolList.create.error",
+            defaultMessage: "新建配额池失败",
+          }),
+        );
       }
     } catch (error: any) {
       if (error?.errorFields) {
@@ -433,7 +720,12 @@ const QuotaPoolListPage: React.FC = () => {
         return;
       }
       console.error("新建配额池失败:", error);
-      message.error("新建配额池失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.error",
+          defaultMessage: "新建配额池失败",
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -546,7 +838,10 @@ const QuotaPoolListPage: React.FC = () => {
       return (
         <Select
           mode="tags"
-          placeholder="请输入值，按回车分隔多个值"
+          placeholder={intl.formatMessage({
+            id: "pages.quotaPoolList.operator.in.placeholder",
+            defaultMessage: "请输入值，按回车分隔多个值",
+          })}
           value={condition.value ? String(condition.value).split(",") : []}
           onChange={(values) =>
             updateFilterCondition(index, "value", values.join(","))
@@ -560,37 +855,71 @@ const QuotaPoolListPage: React.FC = () => {
     if (condition.field === "personal" || condition.field === "disabled") {
       return (
         <Select
-          placeholder="请选择值"
+          placeholder={intl.formatMessage({
+            id: "pages.quotaPoolList.batchModify.newValue.placeholder",
+            defaultMessage: "请选择新值",
+          })}
           value={condition.value}
           onChange={(value) => updateFilterCondition(index, "value", value)}
           style={{ width: "100%" }}
         >
-          <Select.Option value="true">是</Select.Option>
-          <Select.Option value="false">否</Select.Option>
+          <Select.Option value="true">
+            {intl.formatMessage({
+              id: "pages.quotaPoolList.status.enabled",
+              defaultMessage: "启用",
+            })}
+          </Select.Option>
+          <Select.Option value="false">
+            {intl.formatMessage({
+              id: "pages.quotaPoolList.status.disabled",
+              defaultMessage: "禁用",
+            })}
+          </Select.Option>
         </Select>
       );
     }
 
     // 为不同操作符提供不同的占位符提示
-    let placeholder = "请输入值";
+    let placeholder = intl.formatMessage({
+      id: "pages.quotaPoolList.operator.default.placeholder",
+      defaultMessage: "请输入值",
+    });
     switch (op) {
       case "like":
-        placeholder = "请输入值，可使用 % 作为通配符";
+        placeholder = intl.formatMessage({
+          id: "pages.quotaPoolList.operator.like.placeholder",
+          defaultMessage: "输入值，支持通配符",
+        });
         break;
       case "contains":
-        placeholder = "请输入要包含的文本";
+        placeholder = intl.formatMessage({
+          id: "pages.quotaPoolList.operator.contains.placeholder",
+          defaultMessage: "输入包含的内容",
+        });
         break;
       case "notcontains":
-        placeholder = "请输入不包含的文本";
+        placeholder = intl.formatMessage({
+          id: "pages.quotaPoolList.operator.notcontains.placeholder",
+          defaultMessage: "输入不包含的内容",
+        });
         break;
       case "startswith":
-        placeholder = "请输入开头文本";
+        placeholder = intl.formatMessage({
+          id: "pages.quotaPoolList.operator.startswith.placeholder",
+          defaultMessage: "输入开头内容",
+        });
         break;
       case "endswith":
-        placeholder = "请输入结尾文本";
+        placeholder = intl.formatMessage({
+          id: "pages.quotaPoolList.operator.endswith.placeholder",
+          defaultMessage: "输入结尾内容",
+        });
         break;
       default:
-        placeholder = "请输入值";
+        placeholder = intl.formatMessage({
+          id: "pages.quotaPoolList.operator.default.placeholder",
+          defaultMessage: "请输入值",
+        });
     }
 
     return (
@@ -621,7 +950,12 @@ const QuotaPoolListPage: React.FC = () => {
         .map(({ id, ...condition }) => addWildcardsToCondition(condition));
 
       if (validConditions.length === 0) {
-        message.warning("请至少设置一个有效的过滤条件");
+        message.warning(
+          intl.formatMessage({
+            id: "pages.quotaPoolList.batchModify.noValidConditions",
+            defaultMessage: "请至少设置一个有效的过滤条件",
+          }),
+        );
         return;
       }
 
@@ -641,11 +975,22 @@ const QuotaPoolListPage: React.FC = () => {
         setPreviewResult(res);
         setBatchModifyCurrentStep(1);
       } else {
-        message.error(res?.err || "预览失败");
+        message.error(
+          res?.err ||
+            intl.formatMessage({
+              id: "pages.quotaPoolList.batchModify.previewError",
+              defaultMessage: "预览失败",
+            }),
+        );
       }
     } catch (error) {
       console.error("预览失败:", error);
-      message.error("预览失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.batchModify.previewError",
+          defaultMessage: "预览失败",
+        }),
+      );
     } finally {
       setBatchModifyLoading(false);
     }
@@ -681,15 +1026,34 @@ const QuotaPoolListPage: React.FC = () => {
       });
 
       if (res?.ok) {
-        message.success(`批量修改成功，共影响 ${res.affectedCount} 个配额池`);
+        message.success(
+          intl.formatMessage(
+            {
+              id: "pages.quotaPoolList.batchModify.success",
+              defaultMessage: "批量修改成功，共影响 {count} 个配额池",
+            },
+            { count: res.affectedCount },
+          ),
+        );
         handleBatchModifyCancel();
         tableRef.current?.reload();
       } else {
-        message.error(res?.err || "批量修改失败");
+        message.error(
+          res?.err ||
+            intl.formatMessage({
+              id: "pages.quotaPoolList.batchModify.error",
+              defaultMessage: "批量修改失败",
+            }),
+        );
       }
     } catch (error) {
       console.error("批量修改失败:", error);
-      message.error("批量修改失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.batchModify.error",
+          defaultMessage: "批量修改失败",
+        }),
+      );
     } finally {
       setBatchModifyLoading(false);
     }
@@ -817,9 +1181,18 @@ const QuotaPoolListPage: React.FC = () => {
   return (
     <PageContainer>
       <ProCard>
-        <Title level={4}>配额池列表</Title>
+        <Title level={4}>
+          {intl.formatMessage({
+            id: "pages.quotaPoolList.title",
+            defaultMessage: "配额池列表",
+          })}
+        </Title>
         <Text type="secondary">
-          管理系统中的所有配额池及其配置，查看使用情况、获取账单等
+          {intl.formatMessage({
+            id: "pages.quotaPoolList.description",
+            defaultMessage:
+              "管理系统中的所有配额池及其配置，查看使用情况、获取账单等",
+          })}
         </Text>
         <ProTable
           onReset={() => {
@@ -853,8 +1226,14 @@ const QuotaPoolListPage: React.FC = () => {
             collapseRender: false,
             filterType: "query",
             span: 6,
-            searchText: "查询",
-            resetText: "重置",
+            searchText: intl.formatMessage({
+              id: "pages.quotaPoolList.search",
+              defaultMessage: "查询",
+            }),
+            resetText: intl.formatMessage({
+              id: "pages.quotaPoolList.reset",
+              defaultMessage: "重置",
+            }),
           }}
           // 从URL参数设置初始表单值 - 过滤掉 undefined 值
           form={{
@@ -871,7 +1250,14 @@ const QuotaPoolListPage: React.FC = () => {
             pageSize: initialSearchParams.pageSize,
             defaultPageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 条数据`,
+            showTotal: (total) =>
+              intl.formatMessage(
+                {
+                  id: "pages.quotaPoolList.total",
+                  defaultMessage: "共 {total} 条数据",
+                },
+                { total },
+              ),
           }}
           rowSelection={{
             selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
@@ -885,9 +1271,18 @@ const QuotaPoolListPage: React.FC = () => {
             return (
               <Space size={24}>
                 <span>
-                  已选 {selectedRowKeys.length} 项
+                  {intl.formatMessage(
+                    {
+                      id: "pages.quotaPoolList.selected",
+                      defaultMessage: "已选 {count} 项",
+                    },
+                    { count: selectedRowKeys.length },
+                  )}
                   <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
-                    取消选择
+                    {intl.formatMessage({
+                      id: "pages.quotaPoolList.cancelSelection",
+                      defaultMessage: "取消选择",
+                    })}
                   </a>
                 </span>
               </Space>
@@ -897,10 +1292,16 @@ const QuotaPoolListPage: React.FC = () => {
             return (
               <Space size={16}>
                 <a onClick={() => handleBatchResetClick(selectedRows)}>
-                  批量重置
+                  {intl.formatMessage({
+                    id: "pages.quotaPoolList.batchReset",
+                    defaultMessage: "批量重置",
+                  })}
                 </a>
                 <a onClick={() => handleBatchDisableClick(selectedRows)}>
-                  批量禁用
+                  {intl.formatMessage({
+                    id: "pages.quotaPoolList.batchDisable",
+                    defaultMessage: "批量禁用",
+                  })}
                 </a>
               </Space>
             );
@@ -911,10 +1312,16 @@ const QuotaPoolListPage: React.FC = () => {
               key="batch-modify"
               onClick={handleBatchModifyClick}
             >
-              批量修改
+              {intl.formatMessage({
+                id: "pages.quotaPoolList.batchModify",
+                defaultMessage: "批量修改",
+              })}
             </Button>,
             <Button type="primary" key="new" onClick={handleNewQuotaPoolClick}>
-              添加新的配额池
+              {intl.formatMessage({
+                id: "pages.quotaPoolList.addNew",
+                defaultMessage: "添加新的配额池",
+              })}
             </Button>,
           ]}
           request={quotaPoolListRequest}
@@ -923,16 +1330,34 @@ const QuotaPoolListPage: React.FC = () => {
 
       {/* 批量修改模态框 */}
       <Modal
-        title="批量修改配额池"
+        title={intl.formatMessage({
+          id: "pages.quotaPoolList.batchModify.title",
+          defaultMessage: "批量修改配额池",
+        })}
         open={isBatchModifyModalOpen}
         onCancel={handleBatchModifyCancel}
         footer={null}
         width={800}
       >
         <Steps current={batchModifyCurrentStep} style={{ marginBottom: 24 }}>
-          <Steps.Step title="设置过滤条件" />
-          <Steps.Step title="预览影响范围" />
-          <Steps.Step title="确认修改" />
+          <Steps.Step
+            title={intl.formatMessage({
+              id: "pages.quotaPoolList.batchModify.step1",
+              defaultMessage: "设置过滤条件",
+            })}
+          />
+          <Steps.Step
+            title={intl.formatMessage({
+              id: "pages.quotaPoolList.batchModify.step2",
+              defaultMessage: "预览影响范围",
+            })}
+          />
+          <Steps.Step
+            title={intl.formatMessage({
+              id: "pages.quotaPoolList.batchModify.step3",
+              defaultMessage: "确认修改",
+            })}
+          />
         </Steps>
 
         <Form
@@ -940,7 +1365,12 @@ const QuotaPoolListPage: React.FC = () => {
           layout="vertical"
           style={{ display: batchModifyCurrentStep === 0 ? "block" : "none" }}
         >
-          <Divider>过滤条件设置</Divider>
+          <Divider>
+            {intl.formatMessage({
+              id: "pages.quotaPoolList.batchModify.filterConditions",
+              defaultMessage: "过滤条件设置",
+            })}
+          </Divider>
           {filterConditions.map((condition, index) => (
             <div
               key={condition.id}
@@ -952,7 +1382,10 @@ const QuotaPoolListPage: React.FC = () => {
               }}
             >
               <Select
-                placeholder="选择字段"
+                placeholder={intl.formatMessage({
+                  id: "pages.quotaPoolList.batchModify.selectField",
+                  defaultMessage: "选择字段",
+                })}
                 value={condition.field}
                 onChange={(value) =>
                   updateFilterCondition(index, "field", value)
@@ -967,7 +1400,10 @@ const QuotaPoolListPage: React.FC = () => {
               </Select>
 
               <Select
-                placeholder="选择操作"
+                placeholder={intl.formatMessage({
+                  id: "pages.quotaPoolList.batchModify.selectOperator",
+                  defaultMessage: "选择操作",
+                })}
                 value={condition.op}
                 onChange={(value) => updateFilterCondition(index, "op", value)}
                 style={{ width: 120 }}
@@ -989,7 +1425,10 @@ const QuotaPoolListPage: React.FC = () => {
                   danger
                   onClick={() => removeFilterCondition(index)}
                 >
-                  删除
+                  {intl.formatMessage({
+                    id: "pages.quotaPoolList.batchModify.removeCondition",
+                    defaultMessage: "删除",
+                  })}
                 </Button>
               )}
             </div>
@@ -1000,44 +1439,112 @@ const QuotaPoolListPage: React.FC = () => {
             onClick={addFilterCondition}
             style={{ width: "100%", marginBottom: 16 }}
           >
-            + 添加过滤条件
+            {intl.formatMessage({
+              id: "pages.quotaPoolList.batchModify.addCondition",
+              defaultMessage: "+ 添加过滤条件",
+            })}
           </Button>
 
-          <Divider>修改设置</Divider>
+          <Divider>
+            {intl.formatMessage({
+              id: "pages.quotaPoolList.batchModify.modifySettings",
+              defaultMessage: "修改设置",
+            })}
+          </Divider>
           <Form.Item
-            label="要修改的字段"
+            label={intl.formatMessage({
+              id: "pages.quotaPoolList.batchModify.modifyField",
+              defaultMessage: "要修改的字段",
+            })}
             name="field"
-            rules={[{ required: true, message: "请选择要修改的字段" }]}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.quotaPoolList.batchModify.modifyField.required",
+                  defaultMessage: "请选择要修改的字段",
+                }),
+              },
+            ]}
           >
             <Select
-              placeholder="请选择字段"
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolList.batchModify.selectField",
+                defaultMessage: "选择字段",
+              })}
               onChange={(value) => {
                 // 当字段改变时，清空值并更新状态
                 batchModifyForm.setFieldValue("value", undefined);
                 setSelectedModifyField(value);
               }}
             >
-              <Select.Option value="disabled">启用状态</Select.Option>
-              <Select.Option value="personal">配额池类型</Select.Option>
+              <Select.Option value="disabled">
+                {intl.formatMessage({
+                  id: "pages.quotaPoolList.status",
+                  defaultMessage: "启用状态",
+                })}
+              </Select.Option>
+              <Select.Option value="personal">
+                {intl.formatMessage({
+                  id: "pages.quotaPoolList.quotaPoolType",
+                  defaultMessage: "配额池类型",
+                })}
+              </Select.Option>
             </Select>
           </Form.Item>
 
           <Form.Item
-            label="新值"
+            label={intl.formatMessage({
+              id: "pages.quotaPoolList.batchModify.newValue",
+              defaultMessage: "新值",
+            })}
             name="value"
-            rules={[{ required: true, message: "请选择新值" }]}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.quotaPoolList.batchModify.newValue.required",
+                  defaultMessage: "请选择新值",
+                }),
+              },
+            ]}
           >
-            <Select placeholder="请选择新值">
+            <Select
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolList.batchModify.newValue.placeholder",
+                defaultMessage: "请选择新值",
+              })}
+            >
               {selectedModifyField === "disabled" && (
                 <>
-                  <Select.Option value={true}>禁用</Select.Option>
-                  <Select.Option value={false}>启用</Select.Option>
+                  <Select.Option value={true}>
+                    {intl.formatMessage({
+                      id: "pages.quotaPoolList.status.disabled",
+                      defaultMessage: "禁用",
+                    })}
+                  </Select.Option>
+                  <Select.Option value={false}>
+                    {intl.formatMessage({
+                      id: "pages.quotaPoolList.status.enabled",
+                      defaultMessage: "启用",
+                    })}
+                  </Select.Option>
                 </>
               )}
               {selectedModifyField === "personal" && (
                 <>
-                  <Select.Option value={true}>个人配额池</Select.Option>
-                  <Select.Option value={false}>共享配额池</Select.Option>
+                  <Select.Option value={true}>
+                    {intl.formatMessage({
+                      id: "pages.quotaPoolList.quotaPoolType.personal",
+                      defaultMessage: "个人配额池",
+                    })}
+                  </Select.Option>
+                  <Select.Option value={false}>
+                    {intl.formatMessage({
+                      id: "pages.quotaPoolList.quotaPoolType.shared",
+                      defaultMessage: "共享配额池",
+                    })}
+                  </Select.Option>
                 </>
               )}
             </Select>
@@ -1045,13 +1552,21 @@ const QuotaPoolListPage: React.FC = () => {
 
           <div style={{ textAlign: "right" }}>
             <Space>
-              <Button onClick={handleBatchModifyCancel}>取消</Button>
+              <Button onClick={handleBatchModifyCancel}>
+                {intl.formatMessage({
+                  id: "pages.quotaPoolList.batchModify.cancel",
+                  defaultMessage: "取消",
+                })}
+              </Button>
               <Button
                 type="primary"
                 onClick={handlePreview}
                 loading={batchModifyLoading}
               >
-                预览影响范围
+                {intl.formatMessage({
+                  id: "pages.quotaPoolList.batchModify.preview",
+                  defaultMessage: "预览影响范围",
+                })}
               </Button>
             </Space>
           </div>
@@ -1059,42 +1574,92 @@ const QuotaPoolListPage: React.FC = () => {
 
         {batchModifyCurrentStep === 1 && previewResult && (
           <div>
-            <Divider>预览结果</Divider>
+            <Divider>
+              {intl.formatMessage({
+                id: "pages.quotaPoolList.batchModify.previewResult",
+                defaultMessage: "预览结果",
+              })}
+            </Divider>
             <Card>
               <div style={{ marginBottom: 16 }}>
                 <Tag color="blue">
-                  影响的配额池数量: {previewResult.affectedCount || 0}
+                  {intl.formatMessage(
+                    {
+                      id: "pages.quotaPoolList.batchModify.affectedCount",
+                      defaultMessage: "影响的配额池数量: {count}",
+                    },
+                    { count: previewResult.affectedCount || 0 },
+                  )}
                 </Tag>
               </div>
 
               <div style={{ marginBottom: 16 }}>
-                <Text strong>修改操作：</Text>
+                <Text strong>
+                  {intl.formatMessage({
+                    id: "pages.quotaPoolList.batchModify.modifyOperation",
+                    defaultMessage: "修改操作：",
+                  })}
+                </Text>
                 <div style={{ marginTop: 8 }}>
-                  <Text>字段：</Text>
+                  <Text>
+                    {intl.formatMessage({
+                      id: "pages.quotaPoolList.batchModify.field",
+                      defaultMessage: "字段",
+                    })}
+                    ：
+                  </Text>
                   <Tag color="green">
                     {(() => {
                       const fieldValue = batchModifyForm.getFieldValue("field");
                       switch (fieldValue) {
                         case "disabled":
-                          return "启用状态";
+                          return intl.formatMessage({
+                            id: "pages.quotaPoolList.status",
+                            defaultMessage: "启用状态",
+                          });
                         case "personal":
-                          return "配额池类型";
+                          return intl.formatMessage({
+                            id: "pages.quotaPoolList.quotaPoolType",
+                            defaultMessage: "配额池类型",
+                          });
                         default:
                           return fieldValue;
                       }
                     })()}
                   </Tag>
                   <Text style={{ margin: "0 8px" }}>→</Text>
-                  <Text>新值：</Text>
+                  <Text>
+                    {intl.formatMessage({
+                      id: "pages.quotaPoolList.batchModify.newValueLabel",
+                      defaultMessage: "新值",
+                    })}
+                    ：
+                  </Text>
                   <Tag color="orange">
                     {(() => {
                       const fieldValue = batchModifyForm.getFieldValue("field");
                       const newValue = batchModifyForm.getFieldValue("value");
 
                       if (fieldValue === "disabled") {
-                        return newValue === true ? "禁用" : "启用";
+                        return newValue === true
+                          ? intl.formatMessage({
+                              id: "pages.quotaPoolList.status.disabled",
+                              defaultMessage: "禁用",
+                            })
+                          : intl.formatMessage({
+                              id: "pages.quotaPoolList.status.enabled",
+                              defaultMessage: "启用",
+                            });
                       } else if (fieldValue === "personal") {
-                        return newValue === true ? "个人配额池" : "共享配额池";
+                        return newValue === true
+                          ? intl.formatMessage({
+                              id: "pages.quotaPoolList.quotaPoolType.personal",
+                              defaultMessage: "个人配额池",
+                            })
+                          : intl.formatMessage({
+                              id: "pages.quotaPoolList.quotaPoolType.shared",
+                              defaultMessage: "共享配额池",
+                            });
                       } else {
                         return String(newValue);
                       }
@@ -1105,7 +1670,12 @@ const QuotaPoolListPage: React.FC = () => {
 
               {(previewResult.affectedCount || 0) > 0 && (
                 <div>
-                  <Text strong>受影响的配额池名称：</Text>
+                  <Text strong>
+                    {intl.formatMessage({
+                      id: "pages.quotaPoolList.batchModify.affectedPools",
+                      defaultMessage: "受影响的配额池名称：",
+                    })}
+                  </Text>
                   <List
                     size="small"
                     dataSource={previewResult.affectedPoolNames || []}
@@ -1120,16 +1690,29 @@ const QuotaPoolListPage: React.FC = () => {
               )}
 
               {(previewResult.affectedCount || 0) === 0 && (
-                <Text type="secondary">没有找到符合条件的配额池</Text>
+                <Text type="secondary">
+                  {intl.formatMessage({
+                    id: "pages.quotaPoolList.batchModify.noMatch",
+                    defaultMessage: "没有找到符合条件的配额池",
+                  })}
+                </Text>
               )}
             </Card>
 
             <div style={{ textAlign: "right", marginTop: 16 }}>
               <Space>
                 <Button onClick={() => setBatchModifyCurrentStep(0)}>
-                  返回修改条件
+                  {intl.formatMessage({
+                    id: "pages.quotaPoolList.batchModify.backToConditions",
+                    defaultMessage: "返回修改条件",
+                  })}
                 </Button>
-                <Button onClick={handleBatchModifyCancel}>取消</Button>
+                <Button onClick={handleBatchModifyCancel}>
+                  {intl.formatMessage({
+                    id: "pages.quotaPoolList.batchModify.cancel",
+                    defaultMessage: "取消",
+                  })}
+                </Button>
                 <Button
                   type="primary"
                   danger
@@ -1137,7 +1720,10 @@ const QuotaPoolListPage: React.FC = () => {
                   loading={batchModifyLoading}
                   disabled={(previewResult.affectedCount || 0) === 0}
                 >
-                  确认批量修改
+                  {intl.formatMessage({
+                    id: "pages.quotaPoolList.batchModify.confirm",
+                    defaultMessage: "确认批量修改",
+                  })}
                 </Button>
               </Space>
             </div>
@@ -1146,7 +1732,10 @@ const QuotaPoolListPage: React.FC = () => {
       </Modal>
 
       <Modal
-        title="新建配额池"
+        title={intl.formatMessage({
+          id: "pages.quotaPoolList.create.title",
+          defaultMessage: "新建配额池",
+        })}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -1164,18 +1753,44 @@ const QuotaPoolListPage: React.FC = () => {
           }}
         >
           <Form.Item
-            label="配额池名称"
+            label={intl.formatMessage({
+              id: "pages.quotaPoolList.create.quotaPoolName",
+              defaultMessage: "配额池名称",
+            })}
             name="quotaPoolName"
-            rules={[{ required: true, message: "请输入配额池名称" }]}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.quotaPoolList.create.quotaPoolName.required",
+                  defaultMessage: "请输入配额池名称",
+                }),
+              },
+            ]}
           >
-            <Input placeholder="请输入配额池名称，例如：itso-deep-research-vip" />
+            <Input
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolList.create.quotaPoolName.placeholder",
+                defaultMessage:
+                  "请输入配额池名称，例如：itso-deep-research-vip",
+              })}
+            />
           </Form.Item>
 
           <Form.Item
-            label="刷新周期（Cron表达式）"
+            label={intl.formatMessage({
+              id: "pages.quotaPoolList.create.cronCycle",
+              defaultMessage: "刷新周期（Cron表达式）",
+            })}
             name="cronCycle"
             rules={[
-              { required: true, message: "请输入刷新周期" },
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.quotaPoolList.create.cronCycle.required",
+                  defaultMessage: "请输入刷新周期",
+                }),
+              },
               {
                 validator: (_, value) => {
                   if (!value) return Promise.resolve();
@@ -1185,7 +1800,14 @@ const QuotaPoolListPage: React.FC = () => {
                     });
                     return Promise.resolve();
                   } catch {
-                    return Promise.reject(new Error("Cron 表达式格式不正确"));
+                    return Promise.reject(
+                      new Error(
+                        intl.formatMessage({
+                          id: "pages.quotaPoolList.create.cronCycle.invalid",
+                          defaultMessage: "Cron 表达式格式不正确",
+                        }),
+                      ),
+                    );
                   }
                 },
               },
@@ -1198,46 +1820,110 @@ const QuotaPoolListPage: React.FC = () => {
                 <span style={{ color: "#ff4d4f" }}>{cronError}</span>
               ) : cronDescription ? (
                 <span style={{ color: "#52c41a" }}>
-                  执行时间：{cronDescription}
+                  {intl.formatMessage(
+                    {
+                      id: "pages.quotaPoolList.create.cronCycle.help",
+                      defaultMessage: "执行时间：{description}",
+                    },
+                    { description: cronDescription },
+                  )}
                 </span>
               ) : null
             }
           >
             <Input
-              placeholder="请输入标准 Cron 表达式，例如：0 3 * * *"
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolList.create.cronCycle.placeholder",
+                defaultMessage: "请输入标准 Cron 表达式，例如：0 3 * * *",
+              })}
               onChange={(e) => handleCronChange(e.target.value)}
             />
           </Form.Item>
 
           <Form.Item
-            label="定期配额"
+            label={intl.formatMessage({
+              id: "pages.quotaPoolList.create.regularQuota",
+              defaultMessage: "定期配额",
+            })}
             name="regularQuota"
-            rules={[{ required: true, message: "请输入定期配额" }]}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.quotaPoolList.create.regularQuota.required",
+                  defaultMessage: "请输入定期配额",
+                }),
+              },
+            ]}
           >
             <InputNumber
               min={0}
               style={{ width: "100%" }}
-              placeholder="请输入定期配额，例如：10"
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolList.create.regularQuota.placeholder",
+                defaultMessage: "请输入定期配额，例如：10",
+              })}
             />
           </Form.Item>
 
-          <Form.Item label="初始加油包" name="extraQuota">
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolList.create.extraQuota",
+              defaultMessage: "初始加油包",
+            })}
+            name="extraQuota"
+          >
             <InputNumber
               min={0}
               style={{ width: "100%" }}
-              placeholder="请输入初始加油包，默认为0"
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolList.create.extraQuota.placeholder",
+                defaultMessage: "请输入初始加油包，默认为0",
+              })}
             />
           </Form.Item>
 
-          <Form.Item label="配额池类型" name="personal">
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolList.create.quotaPoolTypeLabel",
+              defaultMessage: "配额池类型",
+            })}
+            name="personal"
+          >
             <Radio.Group buttonStyle="solid">
-              <Radio.Button value={false}>共享配额池</Radio.Button>
-              <Radio.Button value={true}>个人配额池</Radio.Button>
+              <Radio.Button value={false}>
+                {intl.formatMessage({
+                  id: "pages.quotaPoolList.quotaPoolType.shared",
+                  defaultMessage: "共享配额池",
+                })}
+              </Radio.Button>
+              <Radio.Button value={true}>
+                {intl.formatMessage({
+                  id: "pages.quotaPoolList.quotaPoolType.personal",
+                  defaultMessage: "个人配额池",
+                })}
+              </Radio.Button>
             </Radio.Group>
           </Form.Item>
 
-          <Form.Item label="启用状态" name="enabled" valuePropName="checked">
-            <Switch checkedChildren="启用" unCheckedChildren="禁用" />
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolList.create.enabledStatus",
+              defaultMessage: "启用状态",
+            })}
+            name="enabled"
+            valuePropName="checked"
+          >
+            <Switch
+              checkedChildren={intl.formatMessage({
+                id: "pages.quotaPoolList.create.enabled",
+                defaultMessage: "启用",
+              })}
+              unCheckedChildren={intl.formatMessage({
+                id: "pages.quotaPoolList.create.disabled",
+                defaultMessage: "禁用",
+              })}
+            />
           </Form.Item>
         </Form>
       </Modal>

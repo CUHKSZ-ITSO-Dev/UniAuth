@@ -45,7 +45,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
 }) => {
   const intl = useIntl();
 
-  // 解析 cron 表达式为中文描述
+  // 解析 cron 表达式
   const parseCronExpression = (cronExpression: string): string => {
     if (!cronExpression || typeof cronExpression !== "string") {
       return cronExpression || "-";
@@ -53,7 +53,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
 
     try {
       return cronstrue.toString(cronExpression, {
-        locale: "zh_CN",
+        locale: "en_US",
         use24HourTimeFormat: true,
         verbose: true,
       });
@@ -110,7 +110,12 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       valueType: "option",
       render: (_: any, record: any) => [
         <Space size="middle" key={record.upn}>
-          <Link to={`/resource/user-list/${record.upn}`}>详情</Link>
+          <Link to={`/resource/user-list/${record.upn}`}>
+            {intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.detail",
+              defaultMessage: "详情",
+            })}
+          </Link>
         </Space>,
       ],
     },
@@ -285,7 +290,12 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       };
     } catch (error) {
       console.error("获取配额池关联用户失败:", error);
-      message.error("获取配额池关联用户失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.fetchUsersFailed",
+          defaultMessage: "获取配额池关联用户失败",
+        }),
+      );
       return {
         data: [],
         success: false,
@@ -338,7 +348,12 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       }
     } catch (error) {
       console.error("获取权限规则失败:", error);
-      message.error("获取权限规则失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.fetchRulesFailed",
+          defaultMessage: "获取权限规则失败",
+        }),
+      );
       return {
         data: [],
         success: false,
@@ -364,18 +379,38 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             marginBottom: 24,
           }}
         >
-          <Descriptions.Item label="刷新周期">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.refreshCycle",
+              defaultMessage: "刷新周期",
+            })}
+          >
             {quotaPoolDetail?.cronCycle
               ? parseCronExpression(quotaPoolDetail.cronCycle)
               : "-"}
           </Descriptions.Item>
-          <Descriptions.Item label="定期配额">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.regularQuota",
+              defaultMessage: "定期配额",
+            })}
+          >
             ${quotaPoolDetail?.regularQuota?.toFixed(2) || "0.00"}
           </Descriptions.Item>
-          <Descriptions.Item label="加油包">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.extraQuota",
+              defaultMessage: "加油包",
+            })}
+          >
             ${quotaPoolDetail?.extraQuota?.toFixed(2) || "0.00"}
           </Descriptions.Item>
-          <Descriptions.Item label="余额百分比">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.balancePercentage",
+              defaultMessage: "余额百分比",
+            })}
+          >
             {quotaPoolDetail ? (
               <Progress
                 percent={Number(
@@ -406,7 +441,10 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       </Card>
 
       <Card
-        title="配额池关联用户"
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.associatedUsers",
+          defaultMessage: "配额池关联用户",
+        })}
         style={{
           marginBottom: 24,
         }}
@@ -423,14 +461,24 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 条数据`,
+            showTotal: (total) =>
+              intl.formatMessage(
+                {
+                  id: "pages.quotaPoolConfigDetail.totalRecords",
+                  defaultMessage: "共 {total} 条数据",
+                },
+                { total },
+              ),
           }}
           request={associatedUsersDataRequest}
         />
       </Card>
 
       <Card
-        title="配额池权限规则"
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.quotaPoolRules",
+          defaultMessage: "配额池权限规则",
+        })}
         style={{
           marginBottom: 24,
         }}
@@ -444,7 +492,14 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             pageSize: 5,
             showSizeChanger: false,
             showQuickJumper: false,
-            showTotal: (total) => `共 ${total} 条`,
+            showTotal: (total) =>
+              intl.formatMessage(
+                {
+                  id: "pages.quotaPoolConfigDetail.totalRecords",
+                  defaultMessage: "共 {total} 条数据",
+                },
+                { total },
+              ),
           }}
           request={quotaPoolRulesDataRequest}
         />

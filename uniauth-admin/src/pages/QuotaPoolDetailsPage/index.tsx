@@ -1,7 +1,6 @@
 import { PageContainer, RouteContext } from "@ant-design/pro-components";
-import { useParams } from "@umijs/max";
+import { useIntl, useParams } from "@umijs/max";
 import { Button, Descriptions, message, Space, Statistic } from "antd";
-
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 import { postQuotaPoolAdminResetBalance } from "@/services/uniauthService/admin";
@@ -27,6 +26,7 @@ interface QuotaPoolDetail {
 }
 
 const QuotaPoolDetailsPage: FC = () => {
+  const intl = useIntl();
   const { styles } = useStyles();
   const { quotaPoolName: urlQuotaPoolName } = useParams<{
     quotaPoolName: string;
@@ -85,7 +85,12 @@ const QuotaPoolDetailsPage: FC = () => {
       }
     } catch (error) {
       console.error("获取配额池详情失败:", error);
-      message.error("获取配额池详情失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolDetails.fetchDetailFailed",
+          defaultMessage: "获取配额池详情失败",
+        }),
+      );
     } finally {
       setDetailLoading(false);
     }
@@ -112,11 +117,21 @@ const QuotaPoolDetailsPage: FC = () => {
       quotaPool: quotaPoolName,
     });
     if (res.ok) {
-      message.success("重置配额池成功");
+      message.success(
+        intl.formatMessage({
+          id: "pages.quotaPoolDetails.resetSuccess",
+          defaultMessage: "重置配额池成功",
+        }),
+      );
       // 重置成功后刷新配额池详情
       await refreshQuotaPoolDetail();
     } else {
-      message.error("重置配额池失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolDetails.resetFailed",
+          defaultMessage: "重置配额池失败",
+        }),
+      );
     }
   };
 
@@ -130,11 +145,21 @@ const QuotaPoolDetailsPage: FC = () => {
       disabled: false,
     });
     if (res.ok) {
-      message.success("启用配额池成功");
+      message.success(
+        intl.formatMessage({
+          id: "pages.quotaPoolDetails.enableSuccess",
+          defaultMessage: "启用配额池成功",
+        }),
+      );
       // 启用成功后刷新配额池详情
       await refreshQuotaPoolDetail();
     } else {
-      message.error("启用配额池失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolDetails.enableFailed",
+          defaultMessage: "启用配额池失败",
+        }),
+      );
     }
   };
 
@@ -148,11 +173,21 @@ const QuotaPoolDetailsPage: FC = () => {
       disabled: true,
     });
     if (res.ok) {
-      message.success("禁用配额池成功");
+      message.success(
+        intl.formatMessage({
+          id: "pages.quotaPoolDetails.disableSuccess",
+          defaultMessage: "禁用配额池成功",
+        }),
+      );
       // 禁用成功后刷新配额池详情
       await refreshQuotaPoolDetail();
     } else {
-      message.error("禁用配额池失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolDetails.disableFailed",
+          defaultMessage: "禁用配额池失败",
+        }),
+      );
     }
   };
 
@@ -162,7 +197,10 @@ const QuotaPoolDetailsPage: FC = () => {
         return (
           <Space>
             <Button type="primary" onClick={handleResetQuotaPool}>
-              重置配额池
+              {intl.formatMessage({
+                id: "pages.quotaPoolDetails.resetQuotaPool",
+                defaultMessage: "重置配额池",
+              })}
             </Button>
             {quotaPoolDetail?.disabled ? (
               <Button
@@ -170,7 +208,10 @@ const QuotaPoolDetailsPage: FC = () => {
                 variant="solid"
                 onClick={handleEnableQuotaPool}
               >
-                启用配额池
+                {intl.formatMessage({
+                  id: "pages.quotaPoolDetails.enableQuotaPool",
+                  defaultMessage: "启用配额池",
+                })}
               </Button>
             ) : (
               <Button
@@ -178,7 +219,10 @@ const QuotaPoolDetailsPage: FC = () => {
                 variant="solid"
                 onClick={handleDisableQuotaPool}
               >
-                禁用配额池
+                {intl.formatMessage({
+                  id: "pages.quotaPoolDetails.disableQuotaPool",
+                  defaultMessage: "禁用配额池",
+                })}
               </Button>
             )}
           </Space>
@@ -190,16 +234,35 @@ const QuotaPoolDetailsPage: FC = () => {
   const extra = (
     <div className={styles.moreInfo}>
       {quotaPoolDetail?.disabled ? (
-        <Statistic title="状态" value="已禁用" valueStyle={{ color: "red" }} />
+        <Statistic
+          title={intl.formatMessage({
+            id: "pages.quotaPoolDetails.status",
+            defaultMessage: "状态",
+          })}
+          value={intl.formatMessage({
+            id: "pages.quotaPoolDetails.status.disabled",
+            defaultMessage: "已禁用",
+          })}
+          valueStyle={{ color: "red" }}
+        />
       ) : (
         <Statistic
-          title="状态"
-          value="使用中"
+          title={intl.formatMessage({
+            id: "pages.quotaPoolDetails.status",
+            defaultMessage: "状态",
+          })}
+          value={intl.formatMessage({
+            id: "pages.quotaPoolDetails.status.enabled",
+            defaultMessage: "使用中",
+          })}
           valueStyle={{ color: "green" }}
         />
       )}
       <Statistic
-        title="配额池余额"
+        title={intl.formatMessage({
+          id: "pages.quotaPoolDetails.balance",
+          defaultMessage: "配额池余额",
+        })}
         value={
           quotaPoolDetail
             ? (
@@ -221,19 +284,63 @@ const QuotaPoolDetailsPage: FC = () => {
           size="small"
           column={isMobile ? 1 : 2}
         >
-          <Descriptions.Item label="配额池名称">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolDetails.quotaPoolName",
+              defaultMessage: "配额池名称",
+            })}
+          >
             {loading
-              ? "加载中..."
-              : quotaPoolName || urlQuotaPoolName || "未知配额池"}
+              ? intl.formatMessage({
+                  id: "pages.quotaPoolDetails.loading",
+                  defaultMessage: "加载中...",
+                })
+              : quotaPoolName ||
+                urlQuotaPoolName ||
+                intl.formatMessage({
+                  id: "pages.quotaPoolDetails.unknownQuotaPool",
+                  defaultMessage: "未知配额池",
+                })}
           </Descriptions.Item>
-          <Descriptions.Item label="配额池类型">
-            {quotaPoolDetail?.personal ? "个人配额池" : "共享配额池"}
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolDetails.quotaPoolType",
+              defaultMessage: "配额池类型",
+            })}
+          >
+            {quotaPoolDetail?.personal
+              ? intl.formatMessage({
+                  id: "pages.quotaPoolDetails.quotaPoolType.personal",
+                  defaultMessage: "个人配额池",
+                })
+              : intl.formatMessage({
+                  id: "pages.quotaPoolDetails.quotaPoolType.shared",
+                  defaultMessage: "共享配额池",
+                })}
           </Descriptions.Item>
-          <Descriptions.Item label="创建时间">
-            {quotaPoolDetail?.createdAt || "未知时间"}
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolDetails.createdAt",
+              defaultMessage: "创建时间",
+            })}
+          >
+            {quotaPoolDetail?.createdAt ||
+              intl.formatMessage({
+                id: "pages.quotaPoolDetails.unknownTime",
+                defaultMessage: "未知时间",
+              })}
           </Descriptions.Item>
-          <Descriptions.Item label="重置时间">
-            {quotaPoolDetail?.lastResetAt || "未知时间"}
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolDetails.resetAt",
+              defaultMessage: "重置时间",
+            })}
+          >
+            {quotaPoolDetail?.lastResetAt ||
+              intl.formatMessage({
+                id: "pages.quotaPoolDetails.unknownTime",
+                defaultMessage: "未知时间",
+              })}
           </Descriptions.Item>
         </Descriptions>
       )}
@@ -266,7 +373,10 @@ const QuotaPoolDetailsPage: FC = () => {
 
   return (
     <PageContainer
-      title="配额池详情"
+      title={intl.formatMessage({
+        id: "pages.quotaPoolDetails.title",
+        defaultMessage: "配额池详情",
+      })}
       extra={action}
       className={styles.pageHeader}
       content={description}
@@ -274,11 +384,17 @@ const QuotaPoolDetailsPage: FC = () => {
       tabList={[
         {
           key: "config_detail",
-          tab: "配置详情",
+          tab: intl.formatMessage({
+            id: "pages.quotaPoolDetails.configDetail",
+            defaultMessage: "配置详情",
+          }),
         },
         {
           key: "bill_detail",
-          tab: "账单详情",
+          tab: intl.formatMessage({
+            id: "pages.quotaPoolDetails.billDetail",
+            defaultMessage: "账单详情",
+          }),
         },
       ]}
       tabActiveKey={activeTabKey}
