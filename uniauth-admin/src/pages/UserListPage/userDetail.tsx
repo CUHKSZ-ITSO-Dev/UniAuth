@@ -194,24 +194,56 @@ const UserDetail: React.FC = () => {
   }, [id, form, messageApi, fetchUserQuotaPools]);
 
   const handleBack = () => {
-    // 从URL参数中读取之前的搜索状态
-    const fromKeyword = searchParams.get("from_keyword");
-    const fromCurrent = searchParams.get("from_current");
-    const fromPageSize = searchParams.get("from_pageSize");
+    // 检查是否有 referrer 且来自内部应用
+    const isFromInternalApp = () => {
+      try {
+        // 首先检查 document.referrer 是否存在且来自同一域名
+        if (document.referrer) {
+          const referrerUrl = new URL(document.referrer);
+          const currentUrl = new URL(window.location.href);
 
-    // 构建返回的URL参数
-    const backParams = new URLSearchParams();
-    if (fromKeyword) backParams.set("keyword", fromKeyword);
-    if (fromCurrent) backParams.set("current", fromCurrent);
-    if (fromPageSize) backParams.set("pageSize", fromPageSize);
+          // 如果是同一域名和端口，且路径是应用内的路径
+          if (
+            referrerUrl.origin === currentUrl.origin &&
+            (referrerUrl.pathname.startsWith("/resource/") ||
+              referrerUrl.pathname.startsWith("/config/"))
+          ) {
+            return true;
+          }
+        }
 
-    // 构建完整的返回URL
-    const backUrl = `/user-list${
-      backParams.toString() ? `?${backParams.toString()}` : ""
-    }`;
+        // 如果没有 referrer，说明是直接访问或从外部应用访问
+        // 这种情况下不应该使用浏览器后退
+        return false;
+      } catch (error) {
+        console.warn("检查来源失败:", error);
+        return false;
+      }
+    };
 
-    // 导航到用户列表页面并恢复搜索状态
-    navigate(backUrl);
+    // 如果来自内部应用，尝试使用浏览器后退
+    if (isFromInternalApp()) {
+      navigate(-1);
+    } else {
+      // 否则返回用户列表页面，并尝试恢复搜索状态
+      const fromKeyword = searchParams.get("from_keyword");
+      const fromCurrent = searchParams.get("from_current");
+      const fromPageSize = searchParams.get("from_pageSize");
+
+      // 构建返回的URL参数
+      const backParams = new URLSearchParams();
+      if (fromKeyword) backParams.set("keyword", fromKeyword);
+      if (fromCurrent) backParams.set("current", fromCurrent);
+      if (fromPageSize) backParams.set("pageSize", fromPageSize);
+
+      // 构建完整的返回URL
+      const backUrl = `/resource/user-list${
+        backParams.toString() ? `?${backParams.toString()}` : ""
+      }`;
+
+      // 导航到用户列表页面并恢复搜索状态
+      navigate(backUrl);
+    }
   };
 
   // 直接渲染表单字段，避免类型推断问题

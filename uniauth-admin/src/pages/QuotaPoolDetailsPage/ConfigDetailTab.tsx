@@ -1,19 +1,212 @@
-import { useIntl } from "@@/plugin-locale/localeExports";
+import { getLocale, useIntl } from "@@/plugin-locale/localeExports";
 import {
   GridContent,
   type ProColumns,
   ProTable,
 } from "@ant-design/pro-components";
-import { Badge, Button, Card, Descriptions, Progress } from "antd";
+import { Link } from "@umijs/max";
+import {
+  Button,
+  Card,
+  Descriptions,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  message,
+  Progress,
+  Radio,
+  Space,
+  Switch,
+} from "antd";
+import cronstrue from "cronstrue/i18n";
 import type { FC } from "react";
+import { useState } from "react";
 import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService/auth";
 import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthService/query";
-import { getQuotaPool as getConfigAPI } from "@/services/uniauthService/quotaPool";
+import { putQuotaPool } from "@/services/uniauthService/quotaPool";
+import { postUserinfosFilter } from "@/services/uniauthService/userInfo";
 
-const ConfigDetailTab: FC = () => {
+// 配额池详细信息接口
+interface QuotaPoolDetail {
+  quotaPoolName: string;
+  cronCycle: string;
+  regularQuota: number;
+  remainingQuota: number;
+  extraQuota: number;
+  lastResetAt: string;
+  personal?: boolean;
+  disabled?: boolean;
+}
+
+// 从props接收配额池名称和详细信息
+interface ConfigDetailTabProps {
+  quotaPoolName: string;
+  quotaPoolDetail: QuotaPoolDetail | null;
+  onRefresh?: () => Promise<void>;
+}
+
+// 用户信息接口
+interface UserInfo {
+  key: string;
+  upn: string;
+  name: string;
+  employeeId: string;
+  tags: string[];
+  department: string;
+}
+
+const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
+  quotaPoolName,
+  quotaPoolDetail,
+  onRefresh,
+}) => {
   const intl = useIntl();
+  const [form] = Form.useForm();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [cronDescription, setCronDescription] = useState<string>("");
+  const [cronError, setCronError] = useState<string>("");
 
-  const associatedUsersColumns: ProColumns<any>[] = [
+  // 解析 cron 表达式
+  const parseCronExpression = (cronExpression: string): string => {
+    if (!cronExpression || typeof cronExpression !== "string") {
+      return cronExpression || "-";
+    }
+
+    try {
+      return cronstrue.toString(cronExpression, {
+        locale: getLocale() === "zh-CN" ? "zh_CN" : "en_US",
+        use24HourTimeFormat: true,
+        verbose: true,
+      });
+    } catch (error) {
+      console.error("解析 cron 表达式失败:", error);
+      // 如果解析失败，返回原始表达式
+      return cronExpression;
+    }
+  };
+
+  // 处理 cron 表达式校验和解析
+  const handleCronChange = (value: string) => {
+    if (!value) {
+      setCronDescription("");
+      setCronError("");
+      return;
+    }
+
+    try {
+      const description = cronstrue.toString(value, {
+        locale: getLocale() === "zh-CN" ? "zh_CN" : "en_US",
+        use24HourTimeFormat: true,
+        verbose: true,
+      });
+      setCronDescription(description);
+      setCronError("");
+    } catch (_error) {
+      setCronDescription("");
+      setCronError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.cronCycle.invalid",
+          defaultMessage: "Cron 表达式格式不正确",
+        }),
+      );
+    }
+  };
+
+  // 打开编辑模态框
+  const handleEditClick = () => {
+    if (quotaPoolDetail) {
+      form.setFieldsValue({
+        quotaPoolName: quotaPoolDetail.quotaPoolName,
+        cronCycle: quotaPoolDetail.cronCycle,
+        regularQuota: quotaPoolDetail.regularQuota,
+        extraQuota: quotaPoolDetail.extraQuota,
+        personal: quotaPoolDetail.personal ?? false,
+        enabled: !quotaPoolDetail.disabled,
+      });
+      // 初始化 cron 描述
+      if (quotaPoolDetail.cronCycle) {
+        handleCronChange(quotaPoolDetail.cronCycle);
+      }
+    }
+    setIsEditModalOpen(true);
+  };
+
+  // 确认编辑配额池
+  const handleEditOk = async () => {
+    try {
+      const values = await form.validateFields();
+      setEditLoading(true);
+
+      const res = await putQuotaPool({
+        quotaPoolName: quotaPoolName,
+        cronCycle: values.cronCycle,
+        regularQuota: values.regularQuota,
+        extraQuota: values.extraQuota || 0,
+        personal: values.personal,
+        disabled: !values.enabled,
+      });
+
+      if (res?.ok) {
+        message.success(
+          intl.formatMessage({
+            id: "pages.quotaPoolConfigDetail.edit.success",
+            defaultMessage: "编辑配额池成功",
+          }),
+        );
+        setIsEditModalOpen(false);
+        form.resetFields();
+        setCronDescription("");
+        setCronError("");
+        // 刷新数据
+        if (onRefresh) {
+          await onRefresh();
+        }
+      } else {
+        message.error(
+          intl.formatMessage({
+            id: "pages.quotaPoolConfigDetail.edit.error",
+            defaultMessage: "编辑配额池失败",
+          }),
+        );
+      }
+    } catch (error: any) {
+      if (error?.errorFields) {
+        // 表单验证错误，不显示错误消息
+        return;
+      }
+      console.error("编辑配额池失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.edit.error",
+          defaultMessage: "编辑配额池失败",
+        }),
+      );
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // 取消编辑配额池
+  const handleEditCancel = () => {
+    setIsEditModalOpen(false);
+    form.resetFields();
+    setCronDescription("");
+    setCronError("");
+  };
+
+  const associatedUsersColumns: ProColumns<UserInfo>[] = [
+    {
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.name",
+        defaultMessage: "姓名",
+      }),
+      valueType: "text",
+      dataIndex: "name",
+      search: true,
+      ellipsis: true,
+    },
     {
       title: "UPN",
       valueType: "text",
@@ -23,45 +216,22 @@ const ConfigDetailTab: FC = () => {
     },
     {
       title: intl.formatMessage({
-        id: "pages.quotaPoolConfigDetail.displayname",
-        defaultMessage: "显示名",
+        id: "pages.quotaPoolConfigDetail.employeeId",
+        defaultMessage: "员工/学号",
       }),
       valueType: "text",
-      dataIndex: "displayName",
+      dataIndex: "employeeId",
       search: true,
       ellipsis: true,
-    },
-    {
-      title: intl.formatMessage({
-        id: "pages.quotaPoolConfigDetail.identity",
-        defaultMessage: "身份",
-      }),
-      valueType: "text",
-      dataIndex: "identity",
-      search: true,
-      ellipsis: true,
-    },
-    {
-      title: intl.formatMessage({
-        id: "pages.quotaPoolConfigDetail.tag",
-        defaultMessage: "标签",
-      }),
-      valueType: "text",
-      dataIndex: "tags",
-      search: false,
-      render: (_: any, record: any) =>
-        record.tags?.map((tag: string) => (
-          <Badge key={tag} color="blue" text={tag} />
-        )),
     },
     {
       title: intl.formatMessage({
         id: "pages.quotaPoolConfigDetail.department",
-        defaultMessage: "部门信息",
+        defaultMessage: "部门",
       }),
       valueType: "text",
       dataIndex: "department",
-      search: true,
+      search: false,
       ellipsis: true,
     },
     {
@@ -70,18 +240,15 @@ const ConfigDetailTab: FC = () => {
         defaultMessage: "操作",
       }),
       valueType: "option",
-      width: 100,
       render: (_: any, record: any) => [
-        <Button
-          type="link"
-          key="detail"
-          onClick={() => handleUserDetail(record)}
-        >
-          {intl.formatMessage({
-            id: "pages.quotaPoolConfigDetail.operation.viewDetail",
-            defaultMessage: "查看详情",
-          })}
-        </Button>,
+        <Space size="middle" key={record.upn}>
+          <Link to={`/resource/user-list/${record.upn}`}>
+            {intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.detail",
+              defaultMessage: "详情",
+            })}
+          </Link>
+        </Space>,
       ],
     },
   ];
@@ -155,100 +322,112 @@ const ConfigDetailTab: FC = () => {
     },
   ];
 
-  const itToolsRulesColumns: ProColumns<any>[] = [
-    {
-      title: intl.formatMessage({
-        id: "pages.policyList.raw",
-        defaultMessage: "完整规则",
-      }),
-      dataIndex: "userinfosRules",
-      valueType: "text",
-      ellipsis: true,
-      search: true,
-    },
-  ];
-
   const associatedUsersDataRequest = async (params: any) => {
     try {
-      // 构建API请求参数
-      const requestParams = {
-        quotaPool: "student_pool", // 可以从props或URL参数获取
-      };
-
-      // 调用真实API获取配额池关联用户
-      const response = await getUsersAPI(requestParams);
-
-      if (response?.users) {
-        // Mock API返回的是随机字符串数组，转换为表格需要的格式
-        const userData = response.users.map((userId: string, index: number) => {
-          // 为Mock数据生成合理的显示信息
-          const mockUserInfo = {
-            key: index,
-            upn: `${userId}@link.cuhk.edu.cn`, // 将Mock ID转换为UPN格式
-            displayName: `用户${index + 1}`, // 生成显示名
-            identity:
-              index % 3 === 0 ? "管理员" : index % 3 === 1 ? "教师" : "学生",
-            tags: index % 2 === 0 ? ["VIP"] : ["普通用户"],
-            department: [
-              "计算机科学系",
-              "数学系",
-              "物理系",
-              "化学系",
-              "生物系",
-            ][index % 5],
-          };
-          return mockUserInfo;
-        });
-
-        // 根据前端搜索参数进行客户端过滤
-        let filteredData = userData;
-
-        if (params.upn) {
-          filteredData = filteredData.filter((item) =>
-            item.upn.toLowerCase().includes(params.upn.toLowerCase()),
-          );
-        }
-        if (params.displayName) {
-          filteredData = filteredData.filter((item) =>
-            item.displayName
-              .toLowerCase()
-              .includes(params.displayName.toLowerCase()),
-          );
-        }
-        if (params.identity) {
-          filteredData = filteredData.filter((item) =>
-            item.identity.toLowerCase().includes(params.identity.toLowerCase()),
-          );
-        }
-        if (params.department) {
-          filteredData = filteredData.filter((item) =>
-            item.department
-              .toLowerCase()
-              .includes(params.department.toLowerCase()),
-          );
-        }
-
-        // 处理分页参数
-        const { current = 1, pageSize = 5 } = params;
-        const startIndex = (current - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedData = filteredData.slice(startIndex, endIndex);
-
+      if (!quotaPoolName) {
         return {
-          data: paginatedData,
-          success: true,
-          total: filteredData.length,
+          data: [],
+          success: false,
+          total: 0,
         };
       }
 
-      // 如果没有数据，直接返回空数据
+      // 先获取配额池关联的用户UPN列表
+      const usersResponse = await getUsersAPI({
+        quotaPool: quotaPoolName,
+      });
+
+      if (!usersResponse?.users || !Array.isArray(usersResponse.users)) {
+        return {
+          data: [],
+          success: true,
+          total: 0,
+        };
+      }
+
+      // 构建搜索条件，基于获取到的用户UPN列表
+      const filter: API.FilterGroup = {
+        logic: "and",
+        conditions: [
+          {
+            field: "upn",
+            op: "in",
+            value: usersResponse.users,
+          },
+        ],
+      };
+
+      // 添加搜索条件过滤
+      if (params.upn) {
+        filter.conditions?.push({
+          field: "upn",
+          op: "like",
+          value: `%${params.upn}%`,
+        });
+      }
+      if (params.name) {
+        filter.conditions?.push({
+          field: "name",
+          op: "like",
+          value: `%${params.name}%`,
+        });
+      }
+      if (params.employeeId) {
+        filter.conditions?.push({
+          field: "employeeId",
+          op: "like",
+          value: `%${params.employeeId}%`,
+        });
+      }
+
+      // 调用用户信息查询API获取详细信息
+      const userInfoResponse = await postUserinfosFilter({
+        filter,
+        pagination: {
+          page: params.current || 1,
+          pageSize: params.pageSize || 10,
+          all: false,
+        },
+        sort: [],
+        verbose: true,
+      });
+
+      if (
+        !userInfoResponse.userInfos ||
+        !Array.isArray(userInfoResponse.userInfos)
+      ) {
+        return {
+          data: [],
+          success: true,
+          total: 0,
+        };
+      }
+
+      // 转换数据格式
+      const userData: UserInfo[] = userInfoResponse.userInfos.map(
+        (user: any, index: number) => ({
+          key: user.upn || `user-${index}`,
+          upn: user.upn || "",
+          name: user.name || "",
+          employeeId: user.employeeId || "-",
+          tags: user.tags || [],
+          department: user.department || "",
+        }),
+      );
+
       return {
-        data: [],
-        success: false,
-        total: 0,
+        data: userData,
+        success: true,
+        total: userInfoResponse.total || userData.length,
       };
     } catch (error) {
       console.error("获取配额池关联用户失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.fetchUsersFailed",
+          defaultMessage: "获取配额池关联用户失败",
+        }),
+      );
       return {
         data: [],
         success: false,
@@ -289,71 +468,30 @@ const ConfigDetailTab: FC = () => {
         return {
           data: formattedData,
           success: true,
-          total: res.total,
+          total: res.total || 0,
         };
       } else {
         // 没有数据直接返回空数据
         return {
           data: [],
-          success: false,
+          success: true,
           total: 0,
         };
       }
     } catch (error) {
       console.error("获取权限规则失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.fetchRulesFailed",
+          defaultMessage: "获取权限规则失败",
+        }),
+      );
       return {
         data: [],
         success: false,
         total: 0,
       };
     }
-  };
-
-  const itToolsRulesDataRequest = async () => {
-    try {
-      // 请求参数
-      const getRequestParams = {
-        quotaPoolName: "student_pool",
-      };
-
-      const res = await getConfigAPI({ ...getRequestParams });
-
-      if (res && (res as any).quotaPool) {
-        // 格式化数据
-        const mockQuotaPool = (res as any).quotaPool;
-        const formattedData = [
-          {
-            id: 1,
-            quotaPoolName: "student_pool",
-            userinfosRules: `Rules for ${mockQuotaPool}: department='CS' OR tags contains 'student'`,
-          },
-        ];
-
-        return {
-          data: formattedData,
-          success: true,
-          total: formattedData.length,
-        };
-      } else {
-        // 没有数据直接返回空数据
-        return {
-          data: [],
-          success: false,
-          total: 0,
-        };
-      }
-    } catch (_error) {
-      return {
-        data: [],
-        success: false,
-        total: 0,
-      };
-    }
-  };
-
-  const handleUserDetail = (record: any) => {
-    // TODO: 跳转展示用户详情页
-    console.log(record);
   };
 
   return (
@@ -367,51 +505,120 @@ const ConfigDetailTab: FC = () => {
           marginBottom: 24,
         }}
         variant="borderless"
+        extra={
+          <Button type="primary" onClick={handleEditClick}>
+            {intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit",
+              defaultMessage: "编辑",
+            })}
+          </Button>
+        }
       >
         <Descriptions
           style={{
             marginBottom: 24,
           }}
         >
-          <Descriptions.Item label="配额池名称">
-            example@cuhk.edu.cn
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.refreshCycle",
+              defaultMessage: "刷新周期",
+            })}
+          >
+            {quotaPoolDetail?.cronCycle
+              ? parseCronExpression(quotaPoolDetail.cronCycle)
+              : "-"}
           </Descriptions.Item>
-          <Descriptions.Item label="刷新周期">每周</Descriptions.Item>
-          <Descriptions.Item label="上次刷新时间">
-            2025-8-29 19:30:00
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.regularQuota",
+              defaultMessage: "定期配额",
+            })}
+          >
+            ${quotaPoolDetail?.regularQuota?.toFixed(2) || "0.00"}
           </Descriptions.Item>
-          <Descriptions.Item label="定期配额">$648.00</Descriptions.Item>
-          <Descriptions.Item label="剩余配额">$328.00</Descriptions.Item>
-          <Descriptions.Item label="加油包">$168.00</Descriptions.Item>
-          <Descriptions.Item label="余额百分比">
-            <Progress
-              percent={Number((((328 + 168) / (648 + 168)) * 100).toFixed(1))}
-              success={{
-                percent: Number(((328 / (648 + 168)) * 100).toFixed(1)),
-              }}
-            />
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.extraQuota",
+              defaultMessage: "加油包",
+            })}
+          >
+            ${quotaPoolDetail?.extraQuota?.toFixed(2) || "0.00"}
+          </Descriptions.Item>
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.balancePercentage",
+              defaultMessage: "余额百分比",
+            })}
+          >
+            {quotaPoolDetail ? (
+              <Progress
+                percent={Number(
+                  (
+                    ((quotaPoolDetail.remainingQuota +
+                      quotaPoolDetail.extraQuota) /
+                      (quotaPoolDetail.regularQuota +
+                        quotaPoolDetail.extraQuota)) *
+                    100
+                  ).toFixed(1),
+                )}
+                success={{
+                  percent: Number(
+                    (
+                      (quotaPoolDetail.remainingQuota /
+                        (quotaPoolDetail.regularQuota +
+                          quotaPoolDetail.extraQuota)) *
+                      100
+                    ).toFixed(1),
+                  ),
+                }}
+              />
+            ) : (
+              <Progress percent={0} />
+            )}
           </Descriptions.Item>
         </Descriptions>
       </Card>
 
       <Card
-        title="配额池关联用户"
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.associatedUsers",
+          defaultMessage: "配额池关联用户",
+        })}
         style={{
           marginBottom: 24,
         }}
         variant="borderless"
       >
-        <ProTable
+        <ProTable<UserInfo>
           columns={associatedUsersColumns}
           rowKey="upn"
-          search={{ labelWidth: "auto" }}
-          pagination={{ pageSize: 5 }}
+          search={{
+            labelWidth: "auto",
+            defaultCollapsed: false,
+            filterType: "query",
+          }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) =>
+              intl.formatMessage(
+                {
+                  id: "pages.quotaPoolConfigDetail.totalRecords",
+                  defaultMessage: "共 {total} 条数据",
+                },
+                { total },
+              ),
+          }}
           request={associatedUsersDataRequest}
         />
       </Card>
 
       <Card
-        title="配额池权限规则"
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.quotaPoolRules",
+          defaultMessage: "配额池权限规则",
+        })}
         style={{
           marginBottom: 24,
         }}
@@ -425,27 +632,198 @@ const ConfigDetailTab: FC = () => {
             pageSize: 5,
             showSizeChanger: false,
             showQuickJumper: false,
-            showTotal: (total) => `共 ${total} 条`,
+            showTotal: (total) =>
+              intl.formatMessage(
+                {
+                  id: "pages.quotaPoolConfigDetail.totalRecords",
+                  defaultMessage: "共 {total} 条数据",
+                },
+                { total },
+              ),
           }}
           request={quotaPoolRulesDataRequest}
         />
       </Card>
 
-      <Card
-        title="配额池ITTools规则"
-        style={{
-          marginBottom: 24,
-        }}
-        variant="borderless"
+      {/* 编辑配额池模态框 */}
+      <Modal
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.edit.title",
+          defaultMessage: "编辑配额池",
+        })}
+        open={isEditModalOpen}
+        onOk={handleEditOk}
+        onCancel={handleEditCancel}
+        confirmLoading={editLoading}
+        width={600}
       >
-        <ProTable
-          columns={itToolsRulesColumns}
-          rowKey="id"
-          search={false}
-          pagination={{ pageSize: 5 }}
-          request={itToolsRulesDataRequest}
-        />
-      </Card>
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.quotaPoolName",
+              defaultMessage: "配额池名称",
+            })}
+            name="quotaPoolName"
+          >
+            <Input
+              disabled
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.quotaPoolName.placeholder",
+                defaultMessage: "配额池名称（不可修改）",
+              })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.cronCycle",
+              defaultMessage: "刷新周期（Cron表达式）",
+            })}
+            name="cronCycle"
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.quotaPoolConfigDetail.edit.cronCycle.required",
+                  defaultMessage: "请输入刷新周期",
+                }),
+              },
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  try {
+                    cronstrue.toString(value, {
+                      throwExceptionOnParseError: true,
+                    });
+                    return Promise.resolve();
+                  } catch {
+                    return Promise.reject(
+                      new Error(
+                        intl.formatMessage({
+                          id: "pages.quotaPoolConfigDetail.edit.cronCycle.invalid",
+                          defaultMessage: "Cron 表达式格式不正确",
+                        }),
+                      ),
+                    );
+                  }
+                },
+              },
+            ]}
+            validateStatus={
+              cronError ? "error" : cronDescription ? "success" : ""
+            }
+            help={
+              cronError ? (
+                <span style={{ color: "#ff4d4f" }}>{cronError}</span>
+              ) : cronDescription ? (
+                <span style={{ color: "#52c41a" }}>
+                  {intl.formatMessage(
+                    {
+                      id: "pages.quotaPoolConfigDetail.edit.cronCycle.help",
+                      defaultMessage: "执行时间：{description}",
+                    },
+                    { description: cronDescription },
+                  )}
+                </span>
+              ) : null
+            }
+          >
+            <Input
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.cronCycle.placeholder",
+                defaultMessage: "请输入标准 Cron 表达式，例如：0 3 * * *",
+              })}
+              onChange={(e) => handleCronChange(e.target.value)}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.regularQuota",
+              defaultMessage: "定期配额",
+            })}
+            name="regularQuota"
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.quotaPoolConfigDetail.edit.regularQuota.required",
+                  defaultMessage: "请输入定期配额",
+                }),
+              },
+            ]}
+          >
+            <InputNumber
+              min={0}
+              style={{ width: "100%" }}
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.regularQuota.placeholder",
+                defaultMessage: "请输入定期配额，例如：10",
+              })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.extraQuota",
+              defaultMessage: "额外配额",
+            })}
+            name="extraQuota"
+          >
+            <InputNumber
+              min={0}
+              style={{ width: "100%" }}
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.extraQuota.placeholder",
+                defaultMessage: "请输入额外配额，默认为0",
+              })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.quotaPoolTypeLabel",
+              defaultMessage: "配额池类型",
+            })}
+            name="personal"
+          >
+            <Radio.Group buttonStyle="solid">
+              <Radio.Button value={false}>
+                {intl.formatMessage({
+                  id: "pages.quotaPoolConfigDetail.edit.quotaPoolType.shared",
+                  defaultMessage: "共享配额池",
+                })}
+              </Radio.Button>
+              <Radio.Button value={true}>
+                {intl.formatMessage({
+                  id: "pages.quotaPoolConfigDetail.edit.quotaPoolType.personal",
+                  defaultMessage: "个人配额池",
+                })}
+              </Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.enabledStatus",
+              defaultMessage: "启用状态",
+            })}
+            name="enabled"
+            valuePropName="checked"
+          >
+            <Switch
+              checkedChildren={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.enabled",
+                defaultMessage: "启用",
+              })}
+              unCheckedChildren={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.disabled",
+                defaultMessage: "禁用",
+              })}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </GridContent>
   );
 };

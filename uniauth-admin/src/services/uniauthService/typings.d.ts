@@ -1,21 +1,19 @@
 declare namespace API {
   type AddAutoQuotaPoolConfigReq = {
-    /** 规则名称 */
-    ruleName?: string;
-    /** 规则描述 */
-    description?: string;
-    /** Cron表达式 */
-    cronCycle?: string;
-    /** 定期配额 */
-    regularQuota?: number;
-    /** 优先级 */
-    priority?: number;
-    /** 是否启用 */
+    /** 规则名称（唯一） */
+    ruleName: string;
+    /** 刷新周期，Cron 表达式 */
+    cronCycle: string;
+    /** 定期配额（每周期重置） */
+    regularQuota: Decimal;
+    /** 是否启用该规则 */
     enabled?: boolean;
-    /** 过滤条件组 */
+    /** 过滤条件组，满足条件的用户将应用该规则 */
     filterGroup?: FilterGroup;
-    /** UPN缓存 */
-    upnsCache?: string;
+    /** 规则说明 */
+    description?: string;
+    /** 优先级，数值越小优先匹配 */
+    priority?: number;
   };
 
   type AddAutoQuotaPoolConfigRes = {
@@ -41,24 +39,24 @@ declare namespace API {
 
   type AddModelConfigReq = {
     /** 模型名称 */
-    approachName?: string;
-    /** 客户端类型 */
-    clientType?: string;
-    /** 折扣 */
-    discount?: number;
-    /** 服务项标识列表 */
-    servicewares?: string[];
+    approachName: string;
     /** 定价配置 */
-    pricing?: Json;
+    pricing: Json;
+    /** 折扣 */
+    discount?: Decimal;
+    /** 客户端类型 */
+    clientType: "AsyncAzureOpenAI" | "AsyncOpenAI";
     /** 客户端参数 */
     clientArgs?: Json;
     /** 请求参数 */
     requestArgs?: Json;
+    /** 服务中间件标识 */
+    servicewares?: string[];
   };
 
   type AddModelConfigRes = {
-    /** 配置 */
-    config?: string;
+    /** 是否成功 */
+    ok?: boolean;
   };
 
   type AddPoliciesReq = {
@@ -68,22 +66,55 @@ declare namespace API {
     skip?: boolean;
   };
 
-  type AddPoliciesRes = {};
+  type AddPoliciesRes = Record<string, never>;
 
-  type BatchQuotaPoolDisabledReq = {
-    /** 配额池 */
-    quotaPools: string[];
-    /** 字段 */
-    field: string;
-    /** 值 */
-    value: boolean;
+  type AutoQuotaPoolItem = {
+    /** 自增主键 */
+    id?: number;
+    /** 规则名称，唯一 */
+    ruleName?: string;
+    /** 规则说明 */
+    description?: string;
+    /** 刷新周期 */
+    cronCycle?: string;
+    /** 定期配额 */
+    regularQuota?: Decimal;
+    /** 是否启用该配额池 */
+    enabled?: boolean;
+    /** 过滤条件组 */
+    filterGroup?: Json;
+    /** UPN缓存列表 */
+    upnsCache?: string[];
+    /** 优先级，数值越小优先匹配 */
+    priority?: number;
+    /** 该规则上次评估时间 */
+    lastEvaluatedAt?: string;
+    /** 创建时间 */
+    createdAt?: string;
+    /** 更新时间 */
+    updatedAt?: string;
   };
 
-  type BatchQuotaPoolDisabledRes = {
+  type BatchModifyQuotaPoolReq = {
+    /** 筛选条件 */
+    filter: FilterGroup;
+    /** 要修改的字段 */
+    field: "disabled" | "personal";
+    /** 新值 */
+    value: Var;
+    /** 预览模式，不执行修改，仅返回受影响的记录 */
+    preview?: boolean;
+  };
+
+  type BatchModifyQuotaPoolRes = {
     /** 是否成功 */
     ok?: boolean;
     /** 错误信息 */
     err?: string;
+    /** 受影响的记录数 */
+    affectedCount?: number;
+    /** 受影响的配额池名称列表 */
+    affectedPoolNames?: string[];
   };
 
   type BillingRecordReq = {
@@ -165,11 +196,11 @@ declare namespace API {
     tokensUsage?: Json;
   };
 
-  type Decimal = {};
+  type Decimal = number;
 
   type DeleteAutoQuotaPoolConfigReq = {
-    /** 规则名称 */
-    ruleName?: string;
+    /** 规则名称（唯一） */
+    ruleName: string;
   };
 
   type DeleteAutoQuotaPoolConfigRes = {
@@ -177,9 +208,19 @@ declare namespace API {
     ok?: boolean;
   };
 
+  type deleteConfigAutoConfigParams = {
+    /** 规则名称（唯一） */
+    ruleName: string;
+  };
+
   type deleteConfigI18nParams = {
     /** 翻译键 */
     key: string;
+  };
+
+  type deleteConfigModelParams = {
+    /** 模型名称（唯一） */
+    approachName?: string;
   };
 
   type DeleteI18ConfigReq = {
@@ -193,13 +234,13 @@ declare namespace API {
   };
 
   type DeleteModelConfigReq = {
-    /** 模型名称 */
+    /** 模型名称（唯一） */
     approachName?: string;
   };
 
   type DeleteModelConfigRes = {
-    /** 配置 */
-    config?: string;
+    /** 是否成功 */
+    ok?: boolean;
   };
 
   type DeletePoliciesReq = {
@@ -207,9 +248,15 @@ declare namespace API {
     policies: string[][];
   };
 
-  type DeletePoliciesRes = {};
+  type DeletePoliciesRes = Record<string, never>;
 
-  type DeleteQuotaPoolReq = {};
+  type deleteQuotaPoolParams = {
+    quotaPoolName: string;
+  };
+
+  type DeleteQuotaPoolReq = {
+    quotaPoolName: string;
+  };
 
   type DeleteQuotaPoolRes = {
     /** 是否成功 */
@@ -217,22 +264,20 @@ declare namespace API {
   };
 
   type EditAutoQuotaPoolConfigReq = {
-    /** 规则名称 */
-    ruleName?: string;
-    /** 规则描述 */
-    description?: string;
-    /** Cron表达式 */
-    cronCycle?: string;
-    /** 定期配额 */
-    regularQuota?: number;
-    /** 优先级 */
-    priority?: number;
-    /** 是否启用 */
+    /** 规则名称（唯一） */
+    ruleName: string;
+    /** 刷新周期，Cron 表达式 */
+    cronCycle: string;
+    /** 定期配额（每周期重置） */
+    regularQuota: Decimal;
+    /** 是否启用该配额池 */
     enabled?: boolean;
-    /** 过滤条件组 */
+    /** 过滤条件组，满足条件的用户将应用该规则 */
     filterGroup?: FilterGroup;
-    /** UPN缓存 */
-    upnsCache?: string;
+    /** 规则说明 */
+    description?: string;
+    /** 优先级，数值越小优先匹配 */
+    priority?: number;
   };
 
   type EditAutoQuotaPoolConfigRes = {
@@ -258,24 +303,24 @@ declare namespace API {
 
   type EditModelConfigReq = {
     /** 模型名称 */
-    approachName?: string;
-    /** 客户端类型 */
-    clientType?: string;
-    /** 折扣 */
-    discount?: number;
-    /** 服务项标识列表 */
-    servicewares?: string[];
+    approachName: string;
     /** 定价配置 */
-    pricing?: Json;
+    pricing: Json;
+    /** 折扣 */
+    discount?: Decimal;
+    /** 客户端类型 */
+    clientType: "AsyncAzureOpenAI" | "AsyncOpenAI";
     /** 客户端参数 */
     clientArgs?: Json;
     /** 请求参数 */
     requestArgs?: Json;
+    /** 服务中间件标识 */
+    servicewares?: string[];
   };
 
   type EditModelConfigRes = {
-    /** 配置 */
-    config?: string;
+    /** 是否成功 */
+    ok?: boolean;
   };
 
   type EditPolicyReq = {
@@ -285,13 +330,32 @@ declare namespace API {
     newPolicy: string[];
   };
 
-  type EditPolicyRes = {};
+  type EditPolicyRes = Record<string, never>;
 
-  type EditQuotaPoolReq = {};
+  type EditQuotaPoolReq = {
+    quotaPoolName: string;
+    cronCycle: string;
+    regularQuota: Decimal;
+    personal: boolean;
+    disabled?: boolean;
+    extraQuota?: Decimal;
+    userinfosRules?: Json;
+  };
 
   type EditQuotaPoolRes = {
     /** 是否成功 */
     ok?: boolean;
+  };
+
+  type EnsurePersonalQuotaPoolReq = {
+    upn: string;
+  };
+
+  type EnsurePersonalQuotaPoolRes = {
+    /** 是否成功 */
+    ok: boolean;
+    /** 是否新建 */
+    isNew: boolean;
   };
 
   type ExportBillRecordReq = {
@@ -309,7 +373,7 @@ declare namespace API {
     endTime: string;
   };
 
-  type ExportBillRecordRes = {};
+  type ExportBillRecordRes = Record<string, never>;
 
   type FilterCondition = {
     /** 字段名 */
@@ -383,25 +447,56 @@ declare namespace API {
   };
 
   type FilterPoliciesReq = {
-    /** Subjects 列表 */
-    subs?: string[];
-    /** Objects 列表 */
-    objs?: string[];
-    /** Actions 列表 */
-    acts?: string[];
-    // 原始规则
+    /** Subject */
+    sub?: string;
+    /** Object */
+    obj?: string;
+    /** Action */
+    act?: string;
+    /** Effect */
+    eft?: string;
+    /** Rule */
     rule?: string;
-    // 分页参数
+    /** 分页。当前页码。 */
     page?: number;
+    /** 分页。每页条数。 */
     pageSize?: number;
   };
 
   type FilterPoliciesRes = {
     policies?: string[][];
-    total: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
+    /** 总条数。 */
+    total?: number;
+    /** 当前页码。 */
+    page?: number;
+    /** 每页条数。 */
+    pageSize?: number;
+    /** 总页数。 */
+    totalPages?: number;
+  };
+
+  type FilterQuotaPoolReq = {
+    /** 过滤条件，支持复杂的逻辑组合查询 */
+    filter?: FilterGroup;
+    /** 排序条件，支持多字段排序 */
+    sort?: SortCondition[];
+    /** 分页参数 */
+    pagination?: PaginationReq;
+  };
+
+  type FilterQuotaPoolRes = {
+    /** 配额池列表 */
+    items?: QuotapoolQuotaPool[];
+    /** 总记录数 */
+    total?: number;
+    /** 当前页码 */
+    page?: number;
+    /** 每页条数 */
+    pageSize?: number;
+    /** 总页数 */
+    totalPages?: number;
+    /** 是否为全部数据查询 */
+    isAll?: boolean;
   };
 
   type FilterReq = {
@@ -419,7 +514,7 @@ declare namespace API {
     /** 用户UPN列表 */
     userUpns?: string[];
     /** 详细用户信息（verbose=true时返回） */
-    userInfos?: GetOneRes[];
+    userInfos?: UserinfosUserInfos[];
     /** 总记录数 */
     total?: number;
     /** 当前页码 */
@@ -432,21 +527,32 @@ declare namespace API {
     isAll?: boolean;
   };
 
-  type GetAllActionsReq = {};
+  type GetBillingOptionsReq = {
+    quotaPool: string;
+  };
+
+  type GetBillingOptionsRes = {
+    /** 该配额池存在的所有服务类型 */
+    services?: string[];
+    /** 该配额池存在的所有产品类型 */
+    products?: string[];
+  };
+
+  type GetAllActionsReq = Record<string, never>;
 
   type GetAllActionsRes = {
     /** Actions */
     actions?: string[];
   };
 
-  type GetAllLangsReq = {};
+  type GetAllLangsReq = Record<string, never>;
 
   type GetAllLangsRes = {
     /** 语言代码列表 */
     langs?: string[];
   };
 
-  type GetAllObjectsReq = {};
+  type GetAllObjectsReq = Record<string, never>;
 
   type GetAllObjectsRes = {
     /** Objects */
@@ -461,16 +567,18 @@ declare namespace API {
   type GetAllQuotaPoolsRes = {
     /** QuotaPools 列表。 */
     quotaPools?: string[];
+    /** PersonalMap。键为配额池名称，值为true时代表是自动配额池。 */
+    personalMap?: Record<string, any>;
   };
 
-  type GetAllRolesReq = {};
+  type GetAllRolesReq = Record<string, never>;
 
   type GetAllRolesRes = {
     /** Roles */
     roles?: string[];
   };
 
-  type GetAllSubjectsReq = {};
+  type GetAllSubjectsReq = Record<string, never>;
 
   type GetAllSubjectsRes = {
     /** Subjects */
@@ -502,36 +610,11 @@ declare namespace API {
     quotaPool: string;
   };
 
-  type GetAutoQuotaPoolConfigReq = {};
+  type GetAutoQuotaPoolConfigReq = Record<string, never>;
 
   type GetAutoQuotaPoolConfigRes = {
-    /** 自动配额池规则 */
-    autoQuotaPoolConfigs?: string[];
     /** 自动配额池规则列表 */
     items?: AutoQuotaPoolItem[];
-  };
-
-  type AutoQuotaPoolItem = {
-    /** 规则名称 */
-    ruleName?: string;
-    /** 规则描述 */
-    description?: string;
-    /** Cron表达式 */
-    cronCycle?: string;
-    /** 定期配额 */
-    regularQuota?: number;
-    /** 优先级 */
-    priority?: number;
-    /** 是否启用 */
-    enabled?: boolean;
-    /** 过滤条件组 */
-    filterGroup?: FilterGroup;
-    /** UPN缓存 */
-    upnsCache?: string;
-    /** 创建时间 */
-    createdAt?: string;
-    /** 更新时间 */
-    updatedAt?: string;
   };
 
   type GetAvailableModelForQuotaPoolReq = {
@@ -588,34 +671,11 @@ declare namespace API {
     langpack?: Json;
   };
 
-  type GetModelConfigReq = {};
+  type GetModelConfigReq = Record<string, never>;
 
   type GetModelConfigRes = {
-    /** 配置 */
-    config?: string;
     /** 模型配置列表 */
     items?: ModelConfigItem[];
-  };
-
-  type ModelConfigItem = {
-    /** 模型名称 */
-    approachName?: string;
-    /** 客户端类型 */
-    clientType?: string;
-    /** 折扣 */
-    discount?: number;
-    /** 服务项标识列表 */
-    servicewares?: string[];
-    /** 定价配置 */
-    pricing?: Json;
-    /** 客户端参数 */
-    clientArgs?: Json;
-    /** 请求参数 */
-    requestArgs?: Json;
-    /** 创建时间 */
-    createdAt?: string;
-    /** 更新时间 */
-    updatedAt?: string;
   };
 
   type GetOneReq = {
@@ -623,7 +683,180 @@ declare namespace API {
     upn: string;
   };
 
-  type GetOneRes = {
+  type getQuotaPoolParams = {
+    /** 配额池名称 */
+    quotaPoolName: string;
+  };
+
+  type GetQuotaPoolReq = {
+    /** 配额池名称 */
+    quotaPoolName: string;
+  };
+
+  type getUserinfosParams = {
+    /** UPN */
+    upn: string;
+  };
+
+  type I18nItem = {
+    /** 翻译键 */
+    key?: string;
+    /** 中文翻译 */
+    zh_cn?: string;
+    /** 英文翻译 */
+    en_us?: string;
+    /** 描述 */
+    description?: string;
+    /** 创建时间 */
+    created_at?: string;
+    /** 更新时间 */
+    updated_at?: string;
+  };
+
+  type I18nPaginationReq = {
+    /** 页码，从1开始 */
+    page?: number;
+    /** 每页条数，最大1000 */
+    pageSize?: number;
+  };
+
+  type I18nSortCondition = {
+    /** 排序字段 */
+    field: string;
+    /** 排序方向: asc(升序), desc(降序) */
+    order?: "asc" | "desc";
+  };
+
+  type Json = Record<string, unknown>;
+
+  type ModelConfigItem = {
+    /** 模型名称 */
+    approachName?: string;
+    /** 定价配置（JSON） */
+    pricing?: Json;
+    /** 折扣 */
+    discount?: Decimal;
+    /** 客户端类型 */
+    clientType?: string;
+    /** 客户端参数（JSON） */
+    clientArgs?: Json;
+    /** 请求参数（JSON） */
+    requestArgs?: Json;
+    /** 服务项标识 */
+    servicewares?: string[];
+    /** 创建时间 */
+    createdAt?: string;
+    /** 更新时间 */
+    updatedAt?: string;
+  };
+
+  type NDaysProductUsageChartReq = {
+    /** N Days */
+    N?: number;
+  };
+
+  type NDaysProductUsageChartRes = {
+    chartData?: Json;
+  };
+
+  type NDaysProductUsageGroupReq = {
+    /** N Days */
+    N?: number;
+  };
+
+  type NDaysProductUsageGroupRes = {
+    groupData?: Json;
+  };
+
+  type NewQuotaPoolReq = {
+    quotaPoolName: string;
+    cronCycle: string;
+    regularQuota: Decimal;
+    personal: boolean;
+    disabled?: boolean;
+    extraQuota?: Decimal;
+    userinfosRules?: Json;
+  };
+
+  type NewQuotaPoolRes = {
+    /** 是否成功 */
+    ok?: boolean;
+  };
+
+  type PaginationReq = {
+    /** 页码，从1开始 */
+    page?: number;
+    /** 每页条数，最大1000 */
+    pageSize?: number;
+    /** 是否返回全部数据 */
+    all?: boolean;
+  };
+
+  type QuotapoolQuotaPool = {
+    /** 自增主键 */
+    id?: number;
+    /** 配额池名称 */
+    quotaPoolName?: string;
+    /** 刷新周期 */
+    cronCycle?: string;
+    /** 定期配额 */
+    regularQuota?: Decimal;
+    /** 剩余配额 */
+    remainingQuota?: Decimal;
+    /** 上次刷新时间 */
+    lastResetAt?: string;
+    /** 加油包 */
+    extraQuota?: Decimal;
+    /** 是否个人配额池 */
+    personal?: boolean;
+    /** 是否禁用 */
+    disabled?: boolean;
+    /** ITTools规则 */
+    userinfosRules?: Json;
+    /** 创建时间 */
+    createdAt?: string;
+    /** 修改时间 */
+    updatedAt?: string;
+  };
+
+  type RefreshUsersOfQuotaPoolReq = {
+    qpNameList?: string[][];
+  };
+
+  type RefreshUsersOfQuotaPoolRes = {
+    /** 是否成功 */
+    ok: boolean;
+  };
+
+  type ResetBalanceReq = {
+    /** 配额池 */
+    quotaPool: string;
+  };
+
+  type ResetBalanceRes = {
+    /** 是否成功 */
+    ok?: boolean;
+    /** 错误信息 */
+    err?: string;
+  };
+
+  type SortCondition = {
+    /** 排序字段 */
+    field: string;
+    /** 排序方向 */
+    order?: "asc" | "desc";
+  };
+
+  type UniauthLoginReq = {
+    account: string;
+    password: string;
+  };
+
+  type UniauthLoginRes = {
+    ok?: boolean;
+  };
+
+  type UserinfosUserInfos = {
     /** UPN - 唯一。用户名@cuhk.edu.cn 或 学号@link.cuhk.edu.cn。用户登录名。 */
     upn?: string;
     /** 邮箱 - 唯一。用户名@cuhk.edu.cn。 */
@@ -672,105 +905,5 @@ declare namespace API {
     updatedAt?: string;
   };
 
-  type GetQuotaPoolReq = {};
-
-  type GetQuotaPoolRes = {
-    /** 配额池 */
-    quotaPool?: string;
-  };
-
-  type getUserinfosParams = {
-    /** UPN */
-    upn: string;
-  };
-
-  type HelloReq = {};
-
-  type HelloRes = {};
-
-  type I18nItem = {
-    /** 翻译键 */
-    key?: string;
-    /** 中文翻译 */
-    zh_cn?: string;
-    /** 英文翻译 */
-    en_us?: string;
-    /** 描述 */
-    description?: string;
-    /** 创建时间 */
-    created_at?: string;
-    /** 更新时间 */
-    updated_at?: string;
-  };
-
-  type I18nPaginationReq = {
-    /** 页码，从1开始 */
-    page?: number;
-    /** 每页条数，最大1000 */
-    pageSize?: number;
-  };
-
-  type I18nSortCondition = {
-    /** 排序字段 */
-    field: string;
-    /** 排序方向: asc(升序), desc(降序) */
-    order?: "asc" | "desc";
-  };
-
-  type Json = {};
-
-  type NDaysProductUsageChartReq = {
-    /** N Days */
-    N?: number;
-  };
-
-  type NDaysProductUsageChartRes = {
-    chartData?: Json;
-  };
-
-  type NDaysProductUsageGroupReq = {
-    /** N Days */
-    N?: number;
-  };
-
-  type NDaysProductUsageGroupRes = {
-    groupData?: Json;
-  };
-
-  type NewQuotaPoolReq = {};
-
-  type NewQuotaPoolRes = {
-    /** 是否成功 */
-    ok?: boolean;
-  };
-
-  type PaginationReq = {
-    /** 页码，从1开始 */
-    page?: number;
-    /** 每页条数，最大1000 */
-    pageSize?: number;
-    /** 是否返回全部数据，true时忽略分页参数，但仍有最大限制保护 */
-    all?: boolean;
-  };
-
-  type ResetBalanceReq = {
-    /** 配额池 */
-    quotaPool: string;
-  };
-
-  type ResetBalanceRes = {
-    /** 是否成功 */
-    ok?: boolean;
-    /** 错误信息 */
-    err?: string;
-  };
-
-  type SortCondition = {
-    /** 排序字段 */
-    field: string;
-    /** 排序方向: asc(升序), desc(降序) */
-    order?: "asc" | "desc";
-  };
-
-  type Var = {};
+  type Var = unknown;
 }

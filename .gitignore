@@ -7,3 +7,4 @@ uniauth
 *.db
 uniauth-go
 pro-full-example
+*.exe~

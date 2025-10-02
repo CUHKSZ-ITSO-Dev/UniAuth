@@ -41,15 +41,15 @@ export async function postConfigAutoConfig(
 
 /** 删除自动配额池规则 DELETE /config/autoConfig */
 export async function deleteConfigAutoConfig(
-  body: API.DeleteAutoQuotaPoolConfigReq,
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.deleteConfigAutoConfigParams,
   options?: { [key: string]: any },
 ) {
   return request<API.DeleteAutoQuotaPoolConfigRes>("/config/autoConfig", {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
+    params: {
+      ...params,
     },
-    data: body,
     ...(options || {}),
   });
 }

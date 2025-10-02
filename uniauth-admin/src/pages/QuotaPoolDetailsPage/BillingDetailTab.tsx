@@ -25,6 +25,7 @@ import {
   postBillingAdminGet,
   postBillingAdminOpenApiExport,
 } from "@/services/uniauthService/admin";
+import { postBillingOptions } from "@/services/uniauthService/billing";
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -49,9 +50,20 @@ interface ExportFormData {
   dateRange: [dayjs.Dayjs, dayjs.Dayjs];
 }
 
-// 从 props 接收配额池名称
+// 配额池详细信息接口
+interface QuotaPoolDetail {
+  quotaPoolName: string;
+  cronCycle: string;
+  regularQuota: number;
+  remainingQuota: number;
+  extraQuota: number;
+  lastResetAt: string;
+}
+
+// 从 props 接收配额池名称和详细信息
 interface BillingDetailTabProps {
-  quotaPoolName?: string;
+  quotaPoolName: string;
+  quotaPoolDetail?: QuotaPoolDetail | null;
 }
 
 const BillingDetailTab: FC<BillingDetailTabProps> = ({
@@ -140,47 +152,52 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
     setRemarkModalVisible(true);
   };
 
-  // 从记录中提取唯一的服务和产品选项
-  const extractOptionsFromRecords = (records: BillingRecord[]) => {
-    const svcSet = new Set<string>();
-    const productSet = new Set<string>();
+  // 获取完整的服务和产品选项
+  const fetchBillingOptions = async () => {
+    try {
+      const response = await postBillingOptions({
+        quotaPool: quotaPoolName,
+      });
 
-    records.forEach((record) => {
-      if (record.svc) {
-        svcSet.add(record.svc);
+      if (response.services && response.products) {
+        // 转换为选项格式
+        const svcOpts = response.services.map((svc) => ({
+          label: svc,
+          value: svc,
+        }));
+
+        const productOpts = response.products.map((product) => ({
+          label: product,
+          value: product,
+        }));
+
+        // 设置valueEnum格式
+        const svcEnum: Record<string, { text: string; status?: string }> = {};
+        const productEnum: Record<string, { text: string; status?: string }> =
+          {};
+
+        response.services.forEach((svc) => {
+          svcEnum[svc] = { text: svc, status: "Default" };
+        });
+
+        response.products.forEach((product) => {
+          productEnum[product] = { text: product, status: "Default" };
+        });
+
+        setSvcOptions(svcOpts);
+        setProductOptions(productOpts);
+        setSvcValueEnum(svcEnum);
+        setProductValueEnum(productEnum);
       }
-      if (record.product) {
-        productSet.add(record.product);
-      }
-    });
-
-    // 转换为选项格式
-    const svcOpts = Array.from(svcSet).map((svc) => ({
-      label: svc,
-      value: svc,
-    }));
-
-    const productOpts = Array.from(productSet).map((product) => ({
-      label: product,
-      value: product,
-    }));
-
-    // 设置valueEnum格式
-    const svcEnum: Record<string, { text: string; status?: string }> = {};
-    const productEnum: Record<string, { text: string; status?: string }> = {};
-
-    svcSet.forEach((svc) => {
-      svcEnum[svc] = { text: svc, status: "Default" };
-    });
-
-    productSet.forEach((product) => {
-      productEnum[product] = { text: product, status: "Default" };
-    });
-
-    setSvcOptions(svcOpts);
-    setProductOptions(productOpts);
-    setSvcValueEnum(svcEnum);
-    setProductValueEnum(productEnum);
+    } catch (error) {
+      console.error("获取计费选项失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.billingDetail.fetchOptionsFailed",
+          defaultMessage: "获取服务和产品选项失败，请刷新页面重试",
+        }),
+      );
+    }
   };
 
   // 获取统计数据
@@ -206,9 +223,6 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           allRecords = allRecords.concat(poolRecords);
         });
 
-        // 提取选项数据
-        extractOptionsFromRecords(allRecords);
-
         const stats = calculateStatistics(allRecords);
         setStatistics({
           ...stats,
@@ -217,6 +231,12 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       }
     } catch (error) {
       console.error("获取统计数据失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.billingDetail.fetchStatisticsFailed",
+          defaultMessage: "获取统计数据失败",
+        }),
+      );
     }
   };
 
@@ -250,34 +270,50 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      message.success("账单导出成功！");
+      message.success(
+        intl.formatMessage({
+          id: "pages.billingDetail.exportSuccess",
+          defaultMessage: "账单导出成功！",
+        }),
+      );
       setExportModalVisible(false);
       exportForm.resetFields();
     } catch (error) {
       console.error("导出账单失败:", error);
-      message.error("导出账单失败，请重试");
+      message.error(
+        intl.formatMessage({
+          id: "pages.billingDetail.exportFailed",
+          defaultMessage: "导出账单失败，请重试",
+        }),
+      );
     } finally {
       setExportLoading(false);
     }
   };
 
   // 打开导出模态框
-  const handleOpenExportModal = () => {
-    // 设置默认时间范围为本月
+  const handleOpenExportModal = async () => {
+    // 设置默认时间范围为往前30天
     const now = dayjs();
-    const startOfMonth = now.startOf("month");
+    const thirtyDaysAgo = now.subtract(30, "day");
 
     exportForm.setFieldsValue({
-      dateRange: [startOfMonth, now],
+      dateRange: [thirtyDaysAgo, now],
       svc: [],
       product: [],
     });
 
+    // 确保获取最新的计费选项
+    await fetchBillingOptions();
+
     setExportModalVisible(true);
   };
 
-  // 页面加载时获取统计数据
+  // 页面加载时获取数据
   useState(() => {
+    // 首先获取完整的计费选项
+    fetchBillingOptions();
+    // 然后获取统计数据
     fetchStatistics();
   });
   const billingRecordsColumns: ProColumns<BillingRecord>[] = [
@@ -361,7 +397,15 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       ellipsis: true,
       width: 180,
       render: (_, record) => {
-        if (!record.remark) return <Text type="secondary">-</Text>;
+        if (!record.remark)
+          return (
+            <Text type="secondary">
+              {intl.formatMessage({
+                id: "pages.billingDetail.noRemark",
+                defaultMessage: "-",
+              })}
+            </Text>
+          );
 
         const summary = getJsonSummary(record.remark);
         const formattedJson = formatJsonObject(record.remark);
@@ -427,41 +471,52 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       }),
       dataIndex: "created_at",
       valueType: "dateTime",
+      hideInTable: false,
+      ellipsis: true,
+      search: false, // 在表格列中禁用搜索
+    },
+    // 添加一个专门用于时间范围搜索的虚拟列
+    {
+      title: intl.formatMessage({
+        id: "pages.billingDetail.dateRange",
+        defaultMessage: "时间范围",
+      }),
+      dataIndex: "dateRange",
+      valueType: "dateRange",
+      hideInTable: true, // 在表格中隐藏此列
       search: {
         transform: (value: any) => {
-          return {
-            startTime: value[0],
-            endTime: value[1],
-          };
+          if (value && Array.isArray(value) && value.length === 2) {
+            return {
+              startTime: dayjs(value[0]).format("YYYY-MM-DD"),
+              endTime: dayjs(value[1]).format("YYYY-MM-DD"),
+            };
+          }
+          return {};
         },
       },
       fieldProps: {
         format: "YYYY-MM-DD",
-      },
-      hideInTable: false,
-      ellipsis: true,
-      // 设置搜索表单的valueType为dateRange
-      renderFormItem: () => {
-        const now = dayjs();
-        const startOfMonth = now.startOf("month");
-
-        return (
-          <RangePicker
-            format="YYYY-MM-DD"
-            placeholder={["开始日期", "结束日期"]}
-            defaultValue={[startOfMonth, now]}
-          />
-        );
+        placeholder: [
+          intl.formatMessage({
+            id: "pages.billingDetail.startDate",
+            defaultMessage: "开始日期",
+          }),
+          intl.formatMessage({
+            id: "pages.billingDetail.endDate",
+            defaultMessage: "结束日期",
+          }),
+        ],
       },
     },
   ];
 
   const billingRecordsDataRequest = async (params: any) => {
     try {
-      // 获取默认时间范围：本月初到当前时间
+      // 获取默认时间范围：往前30天到当前时间
       const now = dayjs();
-      const startOfMonth = now.startOf("month");
-      const defaultStartTime = startOfMonth.format("YYYY-MM-DD");
+      const thirtyDaysAgo = now.subtract(30, "day");
+      const defaultStartTime = thirtyDaysAgo.format("YYYY-MM-DD");
       const defaultEndTime = now.format("YYYY-MM-DD");
 
       // 构建API请求参数
@@ -469,6 +524,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         quotaPools: [quotaPoolName],
         svc: params.svc ? [params.svc] : [],
         product: params.product ? [params.product] : [],
+        // 优先使用用户选择的时间范围，如果没有则使用默认值
         startTime: params.startTime || defaultStartTime,
         endTime: params.endTime || defaultEndTime,
       };
@@ -485,9 +541,6 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           const poolRecords = (recordsData as any)[poolName] || [];
           allRecords = allRecords.concat(poolRecords);
         });
-
-        // 每次请求都更新选项数据，确保获取到最新的服务和产品类型
-        extractOptionsFromRecords(allRecords);
 
         // 过滤数据
         let filteredRecords = allRecords;
@@ -510,6 +563,12 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       }
     } catch (error) {
       console.error("获取账单数据失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.billingDetail.fetchRecordsFailed",
+          defaultMessage: "获取账单数据失败",
+        }),
+      );
     }
 
     // 如果 API 调用失败，返回空数据
@@ -574,29 +633,38 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         variant="borderless"
       >
         <Descriptions column={3}>
-          <Descriptions.Item label="配额池名称">
-            <Tag color="blue">{quotaPoolName}</Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="本月消费">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.billingDetail.currentMonthCost",
+              defaultMessage: "本月消费",
+            })}
+          >
             <Text type="danger">${statistics.currentMonthCost.toFixed(4)}</Text>
           </Descriptions.Item>
-          <Descriptions.Item label="上月消费">
-            <Text>${statistics.lastMonthCost.toFixed(4)}</Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="累计消费">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.billingDetail.totalCost",
+              defaultMessage: "累计消费",
+            })}
+          >
             <Text strong>${statistics.totalCost.toFixed(4)}</Text>
           </Descriptions.Item>
-          <Descriptions.Item label="平均日消费">
-            <Text>${statistics.avgDailyCost.toFixed(4)}</Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="总记录数">
+          <Descriptions.Item
+            label={intl.formatMessage({
+              id: "pages.billingDetail.recordCount",
+              defaultMessage: "总记录数",
+            })}
+          >
             <Text>{statistics.recordCount} 条</Text>
           </Descriptions.Item>
         </Descriptions>
       </Card>
 
       <Card
-        title={`${quotaPoolName} - 消费明细`}
+        title={`${quotaPoolName} - ${intl.formatMessage({
+          id: "pages.billingDetail.title",
+          defaultMessage: "消费明细",
+        })}`}
         style={{
           marginBottom: 24,
         }}
@@ -610,10 +678,11 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             collapsed: false,
             collapseRender: false,
           }}
-          params={{
-            // 设置初始搜索参数，确保默认显示本月到现在的数据
-            startTime: dayjs().startOf("month").format("YYYY-MM-DD"),
-            endTime: dayjs().format("YYYY-MM-DD"),
+          // 设置表单默认值
+          form={{
+            initialValues: {
+              dateRange: [dayjs().subtract(30, "day"), dayjs()],
+            },
           }}
           pagination={{
             pageSize: 20,
@@ -664,7 +733,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             }}
           >
             {intl.formatMessage({
-              id: "pages.billingDetail.cancel",
+              id: "pages.billingDetail.exportModal.cancel",
               defaultMessage: "取消",
             })}
           </Button>,
@@ -677,20 +746,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             }}
           >
             {intl.formatMessage({
-              id: "pages.billingDetail.cancel",
-              defaultMessage: "取消",
-            })}
-          </Button>,
-          <Button
-            key="export"
-            type="primary"
-            loading={exportLoading}
-            onClick={() => {
-              exportForm.submit();
-            }}
-          >
-            {intl.formatMessage({
-              id: "pages.billingDetail.confirmExport",
+              id: "pages.billingDetail.exportModal.export",
               defaultMessage: "确定导出",
             })}
           </Button>,
@@ -708,24 +764,53 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         >
           <Form.Item
             name="dateRange"
-            label="时间范围"
-            rules={[{ required: true, message: "请选择时间范围" }]}
+            label={intl.formatMessage({
+              id: "pages.billingDetail.exportModal.dateRange",
+              defaultMessage: "时间范围",
+            })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.billingDetail.exportModal.dateRange.required",
+                  defaultMessage: "请选择时间范围",
+                }),
+              },
+            ]}
           >
             <RangePicker
               style={{ width: "100%" }}
               format="YYYY-MM-DD"
-              placeholder={["开始日期", "结束日期"]}
+              placeholder={[
+                intl.formatMessage({
+                  id: "pages.billingDetail.startDate",
+                  defaultMessage: "开始日期",
+                }),
+                intl.formatMessage({
+                  id: "pages.billingDetail.endDate",
+                  defaultMessage: "结束日期",
+                }),
+              ]}
             />
           </Form.Item>
 
           <Form.Item
             name="svc"
-            label="服务类型"
-            extra="不选择表示导出所有服务类型"
+            label={intl.formatMessage({
+              id: "pages.billingDetail.exportModal.service",
+              defaultMessage: "服务类型",
+            })}
+            extra={intl.formatMessage({
+              id: "pages.billingDetail.exportModal.service.extraInfo",
+              defaultMessage: "不选择表示导出所有服务类型",
+            })}
           >
             <Select
               mode="multiple"
-              placeholder="请选择服务类型"
+              placeholder={intl.formatMessage({
+                id: "pages.billingDetail.exportModal.service.placeholder",
+                defaultMessage: "请选择服务类型",
+              })}
               options={svcOptions}
               allowClear
             />
@@ -733,12 +818,21 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
           <Form.Item
             name="product"
-            label="产品类型"
-            extra="不选择表示导出所有产品类型"
+            label={intl.formatMessage({
+              id: "pages.billingDetail.exportModal.product",
+              defaultMessage: "产品类型",
+            })}
+            extra={intl.formatMessage({
+              id: "pages.billingDetail.exportModal.product.extraInfo",
+              defaultMessage: "不选择表示导出所有产品类型",
+            })}
           >
             <Select
               mode="multiple"
-              placeholder="请选择产品类型"
+              placeholder={intl.formatMessage({
+                id: "pages.billingDetail.exportModal.product.placeholder",
+                defaultMessage: "请选择产品类型",
+              })}
               options={productOptions}
               allowClear
             />
@@ -749,7 +843,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       {/* 备注详情模态框 */}
       <Modal
         title={intl.formatMessage({
-          id: "pages.billingDetail.remarkDetail",
+          id: "pages.billingDetail.viewRemark",
           defaultMessage: "备注详情",
         })}
         open={remarkModalVisible}
@@ -757,7 +851,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         footer={[
           <Button key="close" onClick={() => setRemarkModalVisible(false)}>
             {intl.formatMessage({
-              id: "pages.billingDetail.close",
+              id: "pages.billingDetail.closeRemark",
               defaultMessage: "关闭",
             })}
           </Button>,
