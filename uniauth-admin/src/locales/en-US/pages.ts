@@ -189,7 +189,7 @@ export default {
   "pages.modelConfig.title": "Model Configuration List",
   "pages.modelConfig.description":
     "Manage all AI model configurations in the system, including model parameters, access permissions, etc.",
-  "pages.modelConfig.approachName": "Approach Name",
+  "pages.modelConfig.approachName": "Approach Name (unique)",
   "pages.modelConfig.clientType": "Client Type",
   "pages.modelConfig.discount": "Discount",
   "pages.modelConfig.servicewares": "Servicewares",
@@ -208,8 +208,7 @@ export default {
   "pages.modelConfig.addNew": "Add New Model Configuration",
   "pages.modelConfig.editModalTitle": "Edit Model Configuration",
   "pages.modelConfig.addModalTitle": "Add Model Configuration",
-  "pages.modelConfig.approachNamePlaceholder":
-    "Please enter a unique model name (locator key)",
+  "pages.modelConfig.approachNamePlaceholder": "Please enter a model name",
   "pages.modelConfig.approachNameRequired": "Please enter the model name",
   "pages.modelConfig.approachNameDisabled":
     "Model name cannot be modified when editing",

@@ -173,7 +173,7 @@ export default {
   "pages.modelConfig.title": "模型配置列表",
   "pages.modelConfig.description":
     "管理系统中所有AI模型的配置，包括模型参数、访问权限等",
-  "pages.modelConfig.approachName": "模型名称",
+  "pages.modelConfig.approachName": "模型名称（唯一）",
   "pages.modelConfig.clientType": "客户端类型",
   "pages.modelConfig.discount": "折扣",
   "pages.modelConfig.servicewares": "服务",
@@ -191,7 +191,7 @@ export default {
   "pages.modelConfig.addNew": "新增模型配置",
   "pages.modelConfig.editModalTitle": "编辑模型配置",
   "pages.modelConfig.addModalTitle": "新增模型配置",
-  "pages.modelConfig.approachNamePlaceholder": "请输入唯一的模型名称（定位键）",
+  "pages.modelConfig.approachNamePlaceholder": "请输入模型名称",
   "pages.modelConfig.approachNameRequired": "请输入模型名称",
   "pages.modelConfig.approachNameDisabled": "编辑时模型名称不可修改",
   "pages.modelConfig.clientTypePlaceholder": "请选择客户端类型",
