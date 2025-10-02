@@ -111,10 +111,10 @@ export default {
 
   // 自动配额池配置页面翻译
   "pages.autoQuotaPoolConfig.title": "自动配额池配置列表",
-  "pages.autoQuotaPoolConfig.description": "管理系统中的自动配额池配置规则",
-  "pages.autoQuotaPoolConfig.ruleName": "规则名称",
+  "pages.autoQuotaPoolConfig.description": "规则说明",
+  "pages.autoQuotaPoolConfig.ruleName": "规则名称（唯一）",
   "pages.autoQuotaPoolConfig.descriptionLabel": "规则说明",
-  "pages.autoQuotaPoolConfig.cronCycle": "刷新周期",
+  "pages.autoQuotaPoolConfig.cronCycle": "刷新周期（五位Cron表达式）",
   "pages.autoQuotaPoolConfig.regularQuota": "定期配额",
   "pages.autoQuotaPoolConfig.enabled": "是否启用",
   "pages.autoQuotaPoolConfig.priority": "优先级",
@@ -129,18 +129,15 @@ export default {
   "pages.autoQuotaPoolConfig.addNew": "添加新的自动配额池配置",
   "pages.autoQuotaPoolConfig.editModalTitle": "编辑自动配额池配置",
   "pages.autoQuotaPoolConfig.addModalTitle": "添加自动配额池配置",
-  "pages.autoQuotaPoolConfig.ruleNamePlaceholder":
-    "请输入唯一的规则名称（唯一）",
+  "pages.autoQuotaPoolConfig.ruleNamePlaceholder": "请输入规则名称",
   "pages.autoQuotaPoolConfig.ruleNameRequired": "请输入规则名称",
   "pages.autoQuotaPoolConfig.descriptionPlaceholder": "请输入规则说明",
   "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
-    "请输入刷新周期的Cron表达式，例如：0 0 3 * * *",
-  "pages.autoQuotaPoolConfig.cronCycleRequired": "请输入刷新周期的Cron表达式",
-  "pages.autoQuotaPoolConfig.regularQuotaPlaceholder":
-    "请输入定期配额（每周期重置）",
+    "请输入五位Cron表达式，例如：0 0 3 * *",
+  "pages.autoQuotaPoolConfig.cronCycleRequired": "请输入五位Cron表达式",
+  "pages.autoQuotaPoolConfig.regularQuotaPlaceholder": "请输入定期配额",
   "pages.autoQuotaPoolConfig.regularQuotaRequired": "请输入定期配额",
-  "pages.autoQuotaPoolConfig.priorityPlaceholder":
-    "请输入优先级，数值越小优先匹配",
+  "pages.autoQuotaPoolConfig.priorityPlaceholder": "请输入优先级",
   "pages.autoQuotaPoolConfig.filterGroup": "过滤条件组 (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
     "请输入过滤条件组的JSON格式数据，满足条件的用户将应用该规则",
@@ -176,7 +173,7 @@ export default {
   "pages.modelConfig.title": "模型配置列表",
   "pages.modelConfig.description":
     "管理系统中所有AI模型的配置，包括模型参数、访问权限等",
-  "pages.modelConfig.approachName": "模型名称",
+  "pages.modelConfig.approachName": "模型名称（唯一）",
   "pages.modelConfig.clientType": "客户端类型",
   "pages.modelConfig.discount": "折扣",
   "pages.modelConfig.servicewares": "服务",
@@ -194,7 +191,7 @@ export default {
   "pages.modelConfig.addNew": "新增模型配置",
   "pages.modelConfig.editModalTitle": "编辑模型配置",
   "pages.modelConfig.addModalTitle": "新增模型配置",
-  "pages.modelConfig.approachNamePlaceholder": "请输入唯一的模型名称（定位键）",
+  "pages.modelConfig.approachNamePlaceholder": "请输入模型名称",
   "pages.modelConfig.approachNameRequired": "请输入模型名称",
   "pages.modelConfig.approachNameDisabled": "编辑时模型名称不可修改",
   "pages.modelConfig.clientTypePlaceholder": "请选择客户端类型",
