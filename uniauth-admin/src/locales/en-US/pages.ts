@@ -146,7 +146,7 @@ export default {
   "pages.autoQuotaPoolConfig.descriptionPlaceholder":
     "Please enter rule description",
   "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
-    "Please enter refresh cycle Cron expression, e.g.: 0 0 3 * * *",
+    "Please enter refresh cycle Cron expression (must be 5 parts), e.g.: 0 0 3 * *",
   "pages.autoQuotaPoolConfig.cronCycleRequired":
     "Please enter the refresh cycle Cron expression",
   "pages.autoQuotaPoolConfig.regularQuotaPlaceholder":

@@ -134,7 +134,7 @@ export default {
   "pages.autoQuotaPoolConfig.ruleNameRequired": "请输入规则名称",
   "pages.autoQuotaPoolConfig.descriptionPlaceholder": "请输入规则说明",
   "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
-    "请输入刷新周期的Cron表达式，例如：0 0 3 * * *",
+    "请输入刷新周期的五位Cron表达式，例如：0 0 3 * *",
   "pages.autoQuotaPoolConfig.cronCycleRequired": "请输入刷新周期的Cron表达式",
   "pages.autoQuotaPoolConfig.regularQuotaPlaceholder":
     "请输入定期配额（每周期重置）",
