@@ -1,15 +1,30 @@
-import { useIntl } from "@@/plugin-locale/localeExports";
+import { getLocale, useIntl } from "@@/plugin-locale/localeExports";
 import {
   GridContent,
   type ProColumns,
   ProTable,
 } from "@ant-design/pro-components";
 import { Link } from "@umijs/max";
-import { Card, Descriptions, message, Progress, Space } from "antd";
+import {
+  Button,
+  Card,
+  Descriptions,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  message,
+  Progress,
+  Radio,
+  Space,
+  Switch,
+} from "antd";
 import cronstrue from "cronstrue/i18n";
 import type { FC } from "react";
+import { useState } from "react";
 import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService/auth";
 import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthService/query";
+import { putQuotaPool } from "@/services/uniauthService/quotaPool";
 import { postUserinfosFilter } from "@/services/uniauthService/userInfo";
 
 // 配额池详细信息接口
@@ -20,6 +35,8 @@ interface QuotaPoolDetail {
   remainingQuota: number;
   extraQuota: number;
   lastResetAt: string;
+  personal?: boolean;
+  disabled?: boolean;
 }
 
 // 从props接收配额池名称和详细信息
@@ -42,8 +59,14 @@ interface UserInfo {
 const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   quotaPoolName,
   quotaPoolDetail,
+  onRefresh,
 }) => {
   const intl = useIntl();
+  const [form] = Form.useForm();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [cronDescription, setCronDescription] = useState<string>("");
+  const [cronError, setCronError] = useState<string>("");
 
   // 解析 cron 表达式
   const parseCronExpression = (cronExpression: string): string => {
@@ -53,7 +76,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
 
     try {
       return cronstrue.toString(cronExpression, {
-        locale: "en_US",
+        locale: getLocale() === "zh-CN" ? "zh_CN" : "en_US",
         use24HourTimeFormat: true,
         verbose: true,
       });
@@ -62,6 +85,115 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       // 如果解析失败，返回原始表达式
       return cronExpression;
     }
+  };
+
+  // 处理 cron 表达式校验和解析
+  const handleCronChange = (value: string) => {
+    if (!value) {
+      setCronDescription("");
+      setCronError("");
+      return;
+    }
+
+    try {
+      const description = cronstrue.toString(value, {
+        locale: getLocale() === "zh-CN" ? "zh_CN" : "en_US",
+        use24HourTimeFormat: true,
+        verbose: true,
+      });
+      setCronDescription(description);
+      setCronError("");
+    } catch (error) {
+      setCronDescription("");
+      setCronError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.cronCycle.invalid",
+          defaultMessage: "Cron 表达式格式不正确",
+        }),
+      );
+    }
+  };
+
+  // 打开编辑模态框
+  const handleEditClick = () => {
+    if (quotaPoolDetail) {
+      form.setFieldsValue({
+        quotaPoolName: quotaPoolDetail.quotaPoolName,
+        cronCycle: quotaPoolDetail.cronCycle,
+        regularQuota: quotaPoolDetail.regularQuota,
+        extraQuota: quotaPoolDetail.extraQuota,
+        personal: quotaPoolDetail.personal ?? false,
+        enabled: !quotaPoolDetail.disabled,
+      });
+      // 初始化 cron 描述
+      if (quotaPoolDetail.cronCycle) {
+        handleCronChange(quotaPoolDetail.cronCycle);
+      }
+    }
+    setIsEditModalOpen(true);
+  };
+
+  // 确认编辑配额池
+  const handleEditOk = async () => {
+    try {
+      const values = await form.validateFields();
+      setEditLoading(true);
+
+      const res = await putQuotaPool({
+        quotaPoolName: quotaPoolName,
+        cronCycle: values.cronCycle,
+        regularQuota: values.regularQuota,
+        extraQuota: values.extraQuota || 0,
+        personal: values.personal,
+        disabled: !values.enabled,
+      });
+
+      if (res?.ok) {
+        message.success(
+          intl.formatMessage({
+            id: "pages.quotaPoolConfigDetail.edit.success",
+            defaultMessage: "编辑配额池成功",
+          }),
+        );
+        setIsEditModalOpen(false);
+        form.resetFields();
+        setCronDescription("");
+        setCronError("");
+        // 刷新数据
+        if (onRefresh) {
+          await onRefresh();
+        }
+      } else {
+        message.error(
+          intl.formatMessage({
+            id: "pages.quotaPoolConfigDetail.edit.error",
+            defaultMessage: "编辑配额池失败",
+          }),
+        );
+      }
+    } catch (error: any) {
+      if (error?.errorFields) {
+        // 表单验证错误，不显示错误消息
+        return;
+      }
+      console.error("编辑配额池失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.edit.error",
+          defaultMessage: "编辑配额池失败",
+        }),
+      );
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // 取消编辑配额池
+  const handleEditCancel = () => {
+    setIsEditModalOpen(false);
+    form.resetFields();
+    setCronDescription("");
+    setCronError("");
   };
 
   const associatedUsersColumns: ProColumns<UserInfo>[] = [
@@ -373,6 +505,14 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           marginBottom: 24,
         }}
         variant="borderless"
+        extra={
+          <Button type="primary" onClick={handleEditClick}>
+            {intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit",
+              defaultMessage: "编辑",
+            })}
+          </Button>
+        }
       >
         <Descriptions
           style={{
@@ -504,6 +644,186 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           request={quotaPoolRulesDataRequest}
         />
       </Card>
+
+      {/* 编辑配额池模态框 */}
+      <Modal
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.edit.title",
+          defaultMessage: "编辑配额池",
+        })}
+        open={isEditModalOpen}
+        onOk={handleEditOk}
+        onCancel={handleEditCancel}
+        confirmLoading={editLoading}
+        width={600}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.quotaPoolName",
+              defaultMessage: "配额池名称",
+            })}
+            name="quotaPoolName"
+          >
+            <Input
+              disabled
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.quotaPoolName.placeholder",
+                defaultMessage: "配额池名称（不可修改）",
+              })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.cronCycle",
+              defaultMessage: "刷新周期（Cron表达式）",
+            })}
+            name="cronCycle"
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.quotaPoolConfigDetail.edit.cronCycle.required",
+                  defaultMessage: "请输入刷新周期",
+                }),
+              },
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  try {
+                    cronstrue.toString(value, {
+                      throwExceptionOnParseError: true,
+                    });
+                    return Promise.resolve();
+                  } catch {
+                    return Promise.reject(
+                      new Error(
+                        intl.formatMessage({
+                          id: "pages.quotaPoolConfigDetail.edit.cronCycle.invalid",
+                          defaultMessage: "Cron 表达式格式不正确",
+                        }),
+                      ),
+                    );
+                  }
+                },
+              },
+            ]}
+            validateStatus={
+              cronError ? "error" : cronDescription ? "success" : ""
+            }
+            help={
+              cronError ? (
+                <span style={{ color: "#ff4d4f" }}>{cronError}</span>
+              ) : cronDescription ? (
+                <span style={{ color: "#52c41a" }}>
+                  {intl.formatMessage(
+                    {
+                      id: "pages.quotaPoolConfigDetail.edit.cronCycle.help",
+                      defaultMessage: "执行时间：{description}",
+                    },
+                    { description: cronDescription },
+                  )}
+                </span>
+              ) : null
+            }
+          >
+            <Input
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.cronCycle.placeholder",
+                defaultMessage: "请输入标准 Cron 表达式，例如：0 3 * * *",
+              })}
+              onChange={(e) => handleCronChange(e.target.value)}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.regularQuota",
+              defaultMessage: "定期配额",
+            })}
+            name="regularQuota"
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.quotaPoolConfigDetail.edit.regularQuota.required",
+                  defaultMessage: "请输入定期配额",
+                }),
+              },
+            ]}
+          >
+            <InputNumber
+              min={0}
+              style={{ width: "100%" }}
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.regularQuota.placeholder",
+                defaultMessage: "请输入定期配额，例如：10",
+              })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.extraQuota",
+              defaultMessage: "额外配额",
+            })}
+            name="extraQuota"
+          >
+            <InputNumber
+              min={0}
+              style={{ width: "100%" }}
+              placeholder={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.extraQuota.placeholder",
+                defaultMessage: "请输入额外配额，默认为0",
+              })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.quotaPoolTypeLabel",
+              defaultMessage: "配额池类型",
+            })}
+            name="personal"
+          >
+            <Radio.Group buttonStyle="solid">
+              <Radio.Button value={false}>
+                {intl.formatMessage({
+                  id: "pages.quotaPoolConfigDetail.edit.quotaPoolType.shared",
+                  defaultMessage: "共享配额池",
+                })}
+              </Radio.Button>
+              <Radio.Button value={true}>
+                {intl.formatMessage({
+                  id: "pages.quotaPoolConfigDetail.edit.quotaPoolType.personal",
+                  defaultMessage: "个人配额池",
+                })}
+              </Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.enabledStatus",
+              defaultMessage: "启用状态",
+            })}
+            name="enabled"
+            valuePropName="checked"
+          >
+            <Switch
+              checkedChildren={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.enabled",
+                defaultMessage: "启用",
+              })}
+              unCheckedChildren={intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.disabled",
+                defaultMessage: "禁用",
+              })}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </GridContent>
   );
 };

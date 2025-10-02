@@ -589,6 +589,37 @@ export default {
   "pages.quotaPoolConfigDetail.fetchRulesFailed":
     "Failed to fetch permission rules",
   "pages.quotaPoolConfigDetail.totalRecords": "Total {total} records",
+  "pages.quotaPoolConfigDetail.edit": "Edit",
+  "pages.quotaPoolConfigDetail.edit.title": "Edit Quota Pool",
+  "pages.quotaPoolConfigDetail.edit.success": "Edit quota pool successfully",
+  "pages.quotaPoolConfigDetail.edit.error": "Failed to edit quota pool",
+  "pages.quotaPoolConfigDetail.edit.quotaPoolName": "Quota Pool Name",
+  "pages.quotaPoolConfigDetail.edit.quotaPoolName.placeholder":
+    "Quota Pool Name (Read-only)",
+  "pages.quotaPoolConfigDetail.edit.cronCycle":
+    "Refresh Cycle (Cron Expression)",
+  "pages.quotaPoolConfigDetail.edit.cronCycle.required":
+    "Please enter refresh cycle",
+  "pages.quotaPoolConfigDetail.edit.cronCycle.invalid":
+    "Invalid Cron expression format",
+  "pages.quotaPoolConfigDetail.edit.cronCycle.placeholder":
+    "Please enter standard Cron expression, e.g.: 0 3 * * *",
+  "pages.quotaPoolConfigDetail.edit.cronCycle.help":
+    "Execution time: {description}",
+  "pages.quotaPoolConfigDetail.edit.regularQuota": "Regular Quota",
+  "pages.quotaPoolConfigDetail.edit.regularQuota.required":
+    "Please enter regular quota",
+  "pages.quotaPoolConfigDetail.edit.regularQuota.placeholder":
+    "Please enter regular quota, e.g.: 10",
+  "pages.quotaPoolConfigDetail.edit.extraQuota": "Extra Quota",
+  "pages.quotaPoolConfigDetail.edit.extraQuota.placeholder":
+    "Please enter extra quota, default is 0",
+  "pages.quotaPoolConfigDetail.edit.quotaPoolTypeLabel": "Quota Pool Type",
+  "pages.quotaPoolConfigDetail.edit.quotaPoolType.shared": "Shared Pool",
+  "pages.quotaPoolConfigDetail.edit.quotaPoolType.personal": "Personal Pool",
+  "pages.quotaPoolConfigDetail.edit.enabledStatus": "Status",
+  "pages.quotaPoolConfigDetail.edit.enabled": "Enabled",
+  "pages.quotaPoolConfigDetail.edit.disabled": "Disabled",
 
   // BillingDetailTab - only add non-existing keys
   "pages.billingDetail.title": "Billing Details",

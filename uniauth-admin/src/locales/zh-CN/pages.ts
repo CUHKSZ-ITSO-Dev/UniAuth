@@ -501,6 +501,32 @@ export default {
   "pages.quotaPoolConfigDetail.fetchUsersFailed": "获取配额池关联用户失败",
   "pages.quotaPoolConfigDetail.fetchRulesFailed": "获取权限规则失败",
   "pages.quotaPoolConfigDetail.totalRecords": "共 {total} 条数据",
+  "pages.quotaPoolConfigDetail.edit": "编辑",
+  "pages.quotaPoolConfigDetail.edit.title": "编辑配额池",
+  "pages.quotaPoolConfigDetail.edit.success": "编辑配额池成功",
+  "pages.quotaPoolConfigDetail.edit.error": "编辑配额池失败",
+  "pages.quotaPoolConfigDetail.edit.quotaPoolName": "配额池名称",
+  "pages.quotaPoolConfigDetail.edit.quotaPoolName.placeholder":
+    "配额池名称（不可修改）",
+  "pages.quotaPoolConfigDetail.edit.cronCycle": "刷新周期（Cron表达式）",
+  "pages.quotaPoolConfigDetail.edit.cronCycle.required": "请输入刷新周期",
+  "pages.quotaPoolConfigDetail.edit.cronCycle.invalid": "Cron 表达式格式不正确",
+  "pages.quotaPoolConfigDetail.edit.cronCycle.placeholder":
+    "请输入标准 Cron 表达式，例如：0 3 * * *",
+  "pages.quotaPoolConfigDetail.edit.cronCycle.help": "执行时间：{description}",
+  "pages.quotaPoolConfigDetail.edit.regularQuota": "定期配额",
+  "pages.quotaPoolConfigDetail.edit.regularQuota.required": "请输入定期配额",
+  "pages.quotaPoolConfigDetail.edit.regularQuota.placeholder":
+    "请输入定期配额，例如：10",
+  "pages.quotaPoolConfigDetail.edit.extraQuota": "额外配额",
+  "pages.quotaPoolConfigDetail.edit.extraQuota.placeholder":
+    "请输入额外配额，默认为0",
+  "pages.quotaPoolConfigDetail.edit.quotaPoolTypeLabel": "配额池类型",
+  "pages.quotaPoolConfigDetail.edit.quotaPoolType.shared": "共享配额池",
+  "pages.quotaPoolConfigDetail.edit.quotaPoolType.personal": "个人配额池",
+  "pages.quotaPoolConfigDetail.edit.enabledStatus": "启用状态",
+  "pages.quotaPoolConfigDetail.edit.enabled": "启用",
+  "pages.quotaPoolConfigDetail.edit.disabled": "禁用",
 
   // BillingDetailTab
   "pages.billingDetail.title": "账单详情",

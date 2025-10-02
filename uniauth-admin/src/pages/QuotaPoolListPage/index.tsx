@@ -1,6 +1,6 @@
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
-import { Link, useIntl, useSearchParams } from "@umijs/max";
+import { getLocale, Link, useIntl, useSearchParams } from "@umijs/max";
 import {
   Button,
   Card,
@@ -514,7 +514,7 @@ const QuotaPoolListPage: React.FC = () => {
       // 解析 cron 表达式
       const description = cronstrue.toString(value, {
         throwExceptionOnParseError: true,
-        locale: "en_US",
+        locale: getLocale() === "zh-CN" ? "zh_CN" : "en_US",
         use24HourTimeFormat: true,
         verbose: true,
       });
