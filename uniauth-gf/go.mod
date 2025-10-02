@@ -3,6 +3,7 @@ module uniauth-gf
 go 1.24.0
 
 require (
+	github.com/IguteChung/casbin-psql-watcher v1.0.0
 	github.com/casbin/casbin-pg-adapter v1.4.0
 	github.com/casbin/casbin/v2 v2.122.0
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.9.1
@@ -28,6 +29,10 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grokify/html-strip-tags-go v0.1.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
+	github.com/jackc/pgx/v5 v5.1.1 // indirect
+	github.com/jackc/puddle/v2 v2.1.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/magiconair/properties v1.8.10 // indirect
@@ -52,6 +57,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.38.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.38.0 // indirect
 	go.opentelemetry.io/otel/trace v1.38.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/crypto v0.42.0 // indirect
 	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect

@@ -51,9 +51,6 @@ func Create(ctx context.Context, newQuotaPoolInfo *entity.QuotapoolQuotaPool) (e
 		} else if !noDuplicate {
 			g.Log().Warningf(ctx, "新增配额池 %v 的角色时，发现重复角色。", newQuotaPoolInfo.QuotaPoolName)
 		}
-		if err = e.SavePolicy(); err != nil {
-			return gerror.Wrap(err, "Casbin 保存配额池角色失败")
-		}
 		return nil
 	})
 	if err != nil {
