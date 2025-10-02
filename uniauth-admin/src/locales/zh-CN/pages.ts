@@ -137,7 +137,7 @@ export default {
   "pages.autoQuotaPoolConfig.cronCycleRequired": "请输入五位Cron表达式",
   "pages.autoQuotaPoolConfig.regularQuotaPlaceholder": "请输入定期配额",
   "pages.autoQuotaPoolConfig.regularQuotaRequired": "请输入定期配额",
-  "pages.autoQuotaPoolConfig.priorityPlaceholder": "请输入优先级=",
+  "pages.autoQuotaPoolConfig.priorityPlaceholder": "请输入优先级",
   "pages.autoQuotaPoolConfig.filterGroup": "过滤条件组 (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
     "请输入过滤条件组的JSON格式数据，满足条件的用户将应用该规则",
