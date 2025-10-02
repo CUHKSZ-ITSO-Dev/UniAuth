@@ -19,10 +19,12 @@ import (
 
 // 编辑配额池，一站式完成配额池的更新，包括配额池信息、Casbin 规则。
 //
-// - editInfo 仅需传递需要改动的字段和内容
-// editInfo["QuotaPoolName"] 为必传字段
+// editInfo 仅需传递需要改动的字段和内容。其中 quotaPoolName 为必传字段。
 func Edit(ctx context.Context, editInfo g.Map) (err error) {
-	quotaPoolName := editInfo["quotaPoolName"]
+	quotaPoolName, ok := editInfo["quotaPoolName"]
+	if !ok {
+		return gerror.New("quotaPoolName 不能为空")
+	}
 	// 校验 Cron 表达式
 	cronExpr, ok := editInfo["cronCycle"]
 	if ok {
