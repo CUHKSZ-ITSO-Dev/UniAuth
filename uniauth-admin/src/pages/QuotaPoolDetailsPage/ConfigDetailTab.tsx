@@ -103,7 +103,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       });
       setCronDescription(description);
       setCronError("");
-    } catch (error) {
+    } catch (_error) {
       setCronDescription("");
       setCronError(
         intl.formatMessage({
