@@ -362,8 +362,6 @@ const UserListPage: React.FC = () => {
             );
           }}
           rowSelection={false}
-          // 优化表格性能
-          size="middle"
         />
       </ProCard>
     </PageContainer>
