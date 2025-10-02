@@ -26,6 +26,7 @@ import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService
 import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthService/query";
 import { putQuotaPool } from "@/services/uniauthService/quotaPool";
 import { postUserinfosFilter } from "@/services/uniauthService/userInfo";
+import { validateSixFieldCron } from "@/utils/cron";
 
 // 配额池详细信息接口
 interface QuotaPoolDetail {
@@ -67,15 +68,6 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   const [editLoading, setEditLoading] = useState(false);
   const [cronDescription, setCronDescription] = useState<string>("");
   const [cronError, setCronError] = useState<string>("");
-
-  // 添加6位cron表达式验证函数
-  const validateSixFieldCron = (cronExpression: string): boolean => {
-    if (!cronExpression || typeof cronExpression !== "string") {
-      return false;
-    }
-    const fields = cronExpression.trim().split(/\s+/);
-    return fields.length === 6;
-  };
 
   // 解析 cron 表达式
   const parseCronExpression = (cronExpression: string): string => {

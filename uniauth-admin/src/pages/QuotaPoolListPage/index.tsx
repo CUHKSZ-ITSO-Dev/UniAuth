@@ -32,6 +32,7 @@ import {
   postQuotaPool,
   postQuotaPoolFilter,
 } from "@/services/uniauthService/quotaPool";
+import { validateSixFieldCron } from "@/utils/cron";
 
 const { Title, Text } = Typography;
 
@@ -501,15 +502,6 @@ const QuotaPoolListPage: React.FC = () => {
       },
     },
   ];
-
-  // 添加6位cron表达式验证函数
-  const validateSixFieldCron = (cronExpression: string): boolean => {
-    if (!cronExpression || typeof cronExpression !== "string") {
-      return false;
-    }
-    const fields = cronExpression.trim().split(/\s+/);
-    return fields.length === 6;
-  };
 
   // 处理 cron 表达式校验和解析
   const handleCronChange = (value: string) => {
