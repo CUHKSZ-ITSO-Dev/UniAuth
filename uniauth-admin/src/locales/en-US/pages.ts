@@ -118,11 +118,10 @@ export default {
 
   // Auto Quota Pool Configuration Page Translations
   "pages.autoQuotaPoolConfig.title": "Auto Quota Pool Configuration List",
-  "pages.autoQuotaPoolConfig.description":
-    "Manage auto quota pool configuration rules in the system",
-  "pages.autoQuotaPoolConfig.ruleName": "Rule Name",
+  "pages.autoQuotaPoolConfig.description": "Rule Description",
+  "pages.autoQuotaPoolConfig.ruleName": "Rule Name (unique)",
   "pages.autoQuotaPoolConfig.descriptionLabel": "Description",
-  "pages.autoQuotaPoolConfig.cronCycle": "Cron Cycle",
+  "pages.autoQuotaPoolConfig.cronCycle": "Cron Cycle (five parts)",
   "pages.autoQuotaPoolConfig.regularQuota": "Regular Quota",
   "pages.autoQuotaPoolConfig.enabled": "Enabled",
   "pages.autoQuotaPoolConfig.priority": "Priority",
@@ -140,21 +139,19 @@ export default {
     "Edit Auto Quota Pool Configuration",
   "pages.autoQuotaPoolConfig.addModalTitle":
     "Add Auto Quota Pool Configuration",
-  "pages.autoQuotaPoolConfig.ruleNamePlaceholder":
-    "Please enter a unique rule name (unique)",
+  "pages.autoQuotaPoolConfig.ruleNamePlaceholder": "Please enter a rule name",
   "pages.autoQuotaPoolConfig.ruleNameRequired": "Please enter the rule name",
   "pages.autoQuotaPoolConfig.descriptionPlaceholder":
     "Please enter rule description",
   "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
-    "Please enter refresh cycle Cron expression (must be 5 parts), e.g.: 0 0 3 * *",
+    "Please enter five parts cycle Cron expression, e.g.: 0 0 3 * *",
   "pages.autoQuotaPoolConfig.cronCycleRequired":
-    "Please enter the refresh cycle Cron expression",
+    "Please enter five parts cycle Cron expression",
   "pages.autoQuotaPoolConfig.regularQuotaPlaceholder":
-    "Please enter regular quota (reset per cycle)",
+    "Please enter regular quota",
   "pages.autoQuotaPoolConfig.regularQuotaRequired":
     "Please enter regular quota",
-  "pages.autoQuotaPoolConfig.priorityPlaceholder":
-    "Please enter priority, smaller values match first",
+  "pages.autoQuotaPoolConfig.priorityPlaceholder": "Please enter priority",
   "pages.autoQuotaPoolConfig.filterGroup": "Filter Group (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
     "Please enter filter group data in JSON format, users meeting the conditions will apply this rule",
