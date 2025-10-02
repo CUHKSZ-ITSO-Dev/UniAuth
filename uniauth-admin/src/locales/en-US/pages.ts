@@ -121,7 +121,7 @@ export default {
   "pages.autoQuotaPoolConfig.description": "Rule Description",
   "pages.autoQuotaPoolConfig.ruleName": "Rule Name (unique)",
   "pages.autoQuotaPoolConfig.descriptionLabel": "Description",
-  "pages.autoQuotaPoolConfig.cronCycle": "Cron Cycle (five parts)",
+  "pages.autoQuotaPoolConfig.cronCycle": "Cron Cycle (six parts)",
   "pages.autoQuotaPoolConfig.regularQuota": "Regular Quota",
   "pages.autoQuotaPoolConfig.enabled": "Enabled",
   "pages.autoQuotaPoolConfig.priority": "Priority",
@@ -144,9 +144,9 @@ export default {
   "pages.autoQuotaPoolConfig.descriptionPlaceholder":
     "Please enter rule description",
   "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
-    "Please enter five parts cycle Cron expression, e.g.: 0 0 3 * *",
+    "Please enter six parts cycle Cron expression, e.g.: 0 0 3 * * *",
   "pages.autoQuotaPoolConfig.cronCycleRequired":
-    "Please enter five parts cycle Cron expression",
+    "Please enter six parts cycle Cron expression",
   "pages.autoQuotaPoolConfig.regularQuotaPlaceholder":
     "Please enter regular quota",
   "pages.autoQuotaPoolConfig.regularQuotaRequired":
@@ -496,6 +496,8 @@ export default {
   "pages.quotaPoolList.create.enabledStatus": "Enabled Status",
   "pages.quotaPoolList.create.enabled": "Enabled",
   "pages.quotaPoolList.create.disabled": "Disabled",
+  "pages.quotaPoolList.create.cronCycle.sixFieldRequired":
+    "Cron expressions must be in 6-digit format (seconds, minutes, hours, days, months, weeks).",
 
   // Field Options
   "pages.quotaPoolList.field.quotaPoolName": "Quota Pool Name",

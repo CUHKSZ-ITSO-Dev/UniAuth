@@ -114,7 +114,7 @@ export default {
   "pages.autoQuotaPoolConfig.description": "规则说明",
   "pages.autoQuotaPoolConfig.ruleName": "规则名称（唯一）",
   "pages.autoQuotaPoolConfig.descriptionLabel": "规则说明",
-  "pages.autoQuotaPoolConfig.cronCycle": "刷新周期（五位Cron表达式）",
+  "pages.autoQuotaPoolConfig.cronCycle": "刷新周期（六位Cron表达式）",
   "pages.autoQuotaPoolConfig.regularQuota": "定期配额",
   "pages.autoQuotaPoolConfig.enabled": "是否启用",
   "pages.autoQuotaPoolConfig.priority": "优先级",
@@ -133,8 +133,8 @@ export default {
   "pages.autoQuotaPoolConfig.ruleNameRequired": "请输入规则名称",
   "pages.autoQuotaPoolConfig.descriptionPlaceholder": "请输入规则说明",
   "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
-    "请输入五位Cron表达式，例如：0 0 3 * *",
-  "pages.autoQuotaPoolConfig.cronCycleRequired": "请输入五位Cron表达式",
+    "请输入六位Cron表达式，例如：0 0 3 * * *",
+  "pages.autoQuotaPoolConfig.cronCycleRequired": "请输入六位Cron表达式",
   "pages.autoQuotaPoolConfig.regularQuotaPlaceholder": "请输入定期配额",
   "pages.autoQuotaPoolConfig.regularQuotaRequired": "请输入定期配额",
   "pages.autoQuotaPoolConfig.priorityPlaceholder": "请输入优先级",
@@ -413,6 +413,8 @@ export default {
   "pages.quotaPoolList.create.enabledStatus": "启用状态",
   "pages.quotaPoolList.create.enabled": "启用",
   "pages.quotaPoolList.create.disabled": "禁用",
+  "pages.quotaPoolList.create.cronCycle.sixFieldRequired":
+    "Cron 表达式必须为6位格式（秒 分 时 日 月 周）",
 
   // Field Options
   "pages.quotaPoolList.field.quotaPoolName": "配额池名称",

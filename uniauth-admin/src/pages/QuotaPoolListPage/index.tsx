@@ -502,11 +502,32 @@ const QuotaPoolListPage: React.FC = () => {
     },
   ];
 
+  // 添加6位cron表达式验证函数
+  const validateSixFieldCron = (cronExpression: string): boolean => {
+    if (!cronExpression || typeof cronExpression !== "string") {
+      return false;
+    }
+    const fields = cronExpression.trim().split(/\s+/);
+    return fields.length === 6;
+  };
+
   // 处理 cron 表达式校验和解析
   const handleCronChange = (value: string) => {
     if (!value || value.trim() === "") {
       setCronDescription("");
       setCronError("");
+      return;
+    }
+
+    // 首先验证是否为6位格式
+    if (!validateSixFieldCron(value)) {
+      setCronError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.cronCycle.sixFieldRequired",
+          defaultMessage: "Cron 表达式必须为6位格式（秒 分 时 日 月 周）",
+        }),
+      );
+      setCronDescription("");
       return;
     }
 
@@ -1834,7 +1855,7 @@ const QuotaPoolListPage: React.FC = () => {
             <Input
               placeholder={intl.formatMessage({
                 id: "pages.quotaPoolList.create.cronCycle.placeholder",
-                defaultMessage: "请输入标准 Cron 表达式，例如：0 3 * * *",
+                defaultMessage: "请输入标准 Cron 表达式，例如：0 0 3 * * *",
               })}
               onChange={(e) => handleCronChange(e.target.value)}
             />

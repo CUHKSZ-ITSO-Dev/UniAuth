@@ -68,6 +68,15 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   const [cronDescription, setCronDescription] = useState<string>("");
   const [cronError, setCronError] = useState<string>("");
 
+  // 添加6位cron表达式验证函数
+  const validateSixFieldCron = (cronExpression: string): boolean => {
+    if (!cronExpression || typeof cronExpression !== "string") {
+      return false;
+    }
+    const fields = cronExpression.trim().split(/\s+/);
+    return fields.length === 6;
+  };
+
   // 解析 cron 表达式
   const parseCronExpression = (cronExpression: string): string => {
     if (!cronExpression || typeof cronExpression !== "string") {
@@ -92,6 +101,18 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     if (!value) {
       setCronDescription("");
       setCronError("");
+      return;
+    }
+
+    // 首先验证是否为6位格式
+    if (!validateSixFieldCron(value)) {
+      setCronError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.cronCycle.sixFieldRequired",
+          defaultMessage: "Cron 表达式必须为6位格式（秒 分 时 日 月 周）",
+        }),
+      );
+      setCronDescription("");
       return;
     }
 
