@@ -164,7 +164,7 @@ const UserListPage: React.FC = () => {
           );
 
         const queryString = linkParams.toString();
-        const detailUrl = `/user-list/userDetail/${record.key}${
+        const detailUrl = `/resource/user-list/${record.key}${
           queryString ? `?${queryString}` : ""
         }`;
 

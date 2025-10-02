@@ -153,7 +153,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         processedValues.upnsCache = values.upnsCache;
       } else {
         // 如果没有提供upnsCache，确保传递空字符串而不是null
-        processedValues.upnsCache = "";
+        processedValues.upnsCache = [];
       }
 
       // 根据是否为编辑状态调用不同的API
