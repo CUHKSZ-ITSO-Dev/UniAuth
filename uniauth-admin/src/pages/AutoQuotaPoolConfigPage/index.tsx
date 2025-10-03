@@ -13,6 +13,7 @@ import {
   Typography,
 } from "antd";
 import { useRef, useState } from "react";
+import JsonEditor from "@/components/JsonEditor";
 import {
   deleteConfigAutoConfig,
   getConfigAutoConfig,
@@ -71,7 +72,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     form.setFieldsValue({
       ...record,
       filterGroup: formatJsonField(record.filterGroup),
-      upnsCache: formatJsonField(record.upnsCache),
+      upnsCache: record.upnsCache || "",
     });
     setModalVisible(true);
   };
@@ -181,12 +182,12 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       }
 
       // 处理upnsCache字段 - 现在作为字符串处理
-      if (values.upnsCache) {
+      if (values.upnsCache !== undefined) {
         // 直接使用字符串值，不再解析为JSON
         processedValues.upnsCache = values.upnsCache;
       } else {
         // 如果没有提供upnsCache，确保传递空字符串而不是null
-        processedValues.upnsCache = [];
+        processedValues.upnsCache = "";
       }
 
       // 根据是否为编辑状态调用不同的API
@@ -646,23 +647,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                   id: "pages.autoQuotaPoolConfig.filterGroupRequired",
                 }),
               },
-              {
-                validator: (_, value) => {
-                  if (!value) return Promise.resolve();
-                  try {
-                    JSON.parse(value);
-                    return Promise.resolve();
-                  } catch (_e) {
-                    return Promise.reject(
-                      new Error(
-                        intl.formatMessage({
-                          id: "pages.autoQuotaPoolConfig.jsonInvalid",
-                        }),
-                      ),
-                    );
-                  }
-                },
-              },
             ]}
             help={
               jsonError.filterGroup
@@ -673,12 +657,11 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             }
             validateStatus={jsonError.filterGroup ? "error" : "success"}
           >
-            <Input.TextArea
-              rows={4}
+            <JsonEditor
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.filterGroupPlaceholder",
               })}
-              onChange={handleFilterGroupChange}
+              height={200}
             />
           </Form.Item>
 
@@ -686,15 +669,16 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             name="upnsCache"
             label={intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.upnsCache",
+              defaultMessage: "UPN Cache",
             })}
           >
             <Input.TextArea
-              rows={4}
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.upnsCachePlaceholder",
+                defaultMessage: "Please enter UPN cache",
               })}
-              readOnly
-              style={{ backgroundColor: "#f5f5f5", color: "#000" }}
+              autoSize={{ minRows: 4, maxRows: 10 }}
+              disabled={!!editingRecord}
             />
           </Form.Item>
         </Form>

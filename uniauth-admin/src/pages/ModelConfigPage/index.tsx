@@ -12,6 +12,7 @@ import {
   Typography,
 } from "antd";
 import { useRef, useState } from "react";
+import JsonEditor from "@/components/JsonEditor";
 import {
   deleteConfigModel,
   getConfigModelAll,
@@ -21,7 +22,6 @@ import {
 
 // UI组件解构
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 
 // 定义JSON错误状态类型
 interface JsonErrorState {
@@ -718,12 +718,11 @@ const ModelConfigPage: React.FC = () => {
             }
             validateStatus={jsonError.pricing ? "error" : "success"}
           >
-            <TextArea
-              rows={4}
+            <JsonEditor
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.pricingPlaceholder",
               })}
-              onChange={handlePricingChange}
+              height={200}
             />
           </Form.Item>
 
@@ -760,12 +759,11 @@ const ModelConfigPage: React.FC = () => {
             }
             validateStatus={jsonError.clientArgs ? "error" : "success"}
           >
-            <TextArea
-              rows={4}
+            <JsonEditor
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.clientArgsPlaceholder",
               })}
-              onChange={handleClientArgsChange}
+              height={200}
             />
           </Form.Item>
 
@@ -802,12 +800,11 @@ const ModelConfigPage: React.FC = () => {
             }
             validateStatus={jsonError.requestArgs ? "error" : "success"}
           >
-            <TextArea
-              rows={4}
+            <JsonEditor
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.requestArgsPlaceholder",
               })}
-              onChange={handleRequestArgsChange}
+              height={200}
             />
           </Form.Item>
         </Form>
