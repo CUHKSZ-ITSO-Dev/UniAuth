@@ -115,8 +115,10 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     if (!ruleName || loading[ruleName] || loading.all) return;
     setLoading((prev) => ({ ...prev, [ruleName]: true }));
     try {
-      const res = await postConfigAutoConfigSyncUpnsCache({ ruleName });
-      const count = res?.matchedUserCount?.[ruleName] ?? 0;
+      const res = await postConfigAutoConfigSyncUpnsCache({
+        ruleName: [ruleName],
+      });
+      const count = res.updatedCount;
       message.success(
         intl.formatMessage(
           { id: "pages.autoQuotaPoolConfig.syncOneSuccess" },
@@ -139,7 +141,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     setLoading({ all: true });
     try {
       const res = await postConfigAutoConfigSyncUpnsCache({});
-      const updated = res?.updatedRules?.length || 0;
+      const updated = res.updatedCount;
       message.success(
         intl.formatMessage(
           { id: "pages.autoQuotaPoolConfig.syncAllSuccess" },

@@ -22,17 +22,15 @@ declare namespace API {
   };
 
   type SyncAutoQuotaPoolUpnsCacheReq = {
-    /** 规则名称（可选，留空则同步全部） */
-    ruleName?: string;
+    /** 规则名称数组（可选，留空或空数组则同步全部） */
+    ruleName?: string[];
   };
 
   type SyncAutoQuotaPoolUpnsCacheRes = {
     /** 是否成功 */
-    ok?: boolean;
-    /** 已同步的规则名称列表 */
-    updatedRules?: string[];
-    /** 每条规则匹配到的 UPN 数量 */
-    matchedUserCount?: Record<string, number>;
+    ok: boolean;
+    /** 批量刷新时为更新的规则数量；单个规则刷新时为该规则匹配的用户数量 */
+    updatedCount: number;
   };
 
   type AddI18nItemReq = {
