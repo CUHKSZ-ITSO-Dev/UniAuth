@@ -15,28 +15,19 @@ import (
 //
 // 如果存在失败的情况，会在处理完一轮后返回发生错误的配额池列表，不影响其他配额池的更新。
 func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) error {
-	var qps []g.Map
-	db := dao.QuotapoolQuotaPool.Ctx(ctx)
 	if qpNameList == nil {
-		if err := db.Scan(&qps); err != nil {
+		if err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields(dao.QuotapoolQuotaPool.Columns().QuotaPoolName).Scan(&qpNameList); err != nil {
 			return gerror.Wrap(err, "查询所有配额池失败")
 		}
-	} else {
-		if len(*qpNameList) == 0 {
-			return nil // 列表为空，无需操作
-		}
-		if err := db.WhereIn(dao.QuotapoolQuotaPool.Columns().QuotaPoolName, *qpNameList).Scan(&qps); err != nil {
-			return gerror.Wrap(err, "查询指定配额池失败")
-		}
-		if len(qps) == 0 {
-			return gerror.New("找不到任何指定的配额池")
-		}
 	}
-	
+	if len(*qpNameList) == 0 {
+		return nil // 列表为空，无需操作
+	}
+
 	failures := []string{}
-	for _, qp := range qps {
-		if err := Edit(ctx, qp); err != nil {
-			failures = append(failures, err.Error())
+	for _, qp := range *qpNameList {
+		if err := Edit(ctx, g.Map{"quotaPoolName": qp}); err != nil {
+			failures = append(failures, err.Error() + " 配额池：" + qp)
 		}
 	}
 	if len(failures) > 0 {

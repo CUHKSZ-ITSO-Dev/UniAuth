@@ -552,12 +552,6 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         variant="borderless"
         extra={
           <Space>
-            <Button loading={refreshUsersLoading} onClick={handleRefreshUsers}>
-              {intl.formatMessage({
-                id: "pages.quotaPoolConfigDetail.refreshUsers",
-                defaultMessage: "刷新关联用户",
-              })}
-            </Button>
             <Button type="primary" onClick={handleEditClick}>
               {intl.formatMessage({
                 id: "pages.quotaPoolConfigDetail.edit",
@@ -642,6 +636,14 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           marginBottom: 24,
         }}
         variant="borderless"
+        extra={
+          <Button loading={refreshUsersLoading} onClick={handleRefreshUsers}>
+            {intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.refreshUsers",
+              defaultMessage: "刷新关联用户",
+            })}
+          </Button>
+        }
       >
         <ProTable<UserInfo>
           actionRef={associatedUsersActionRef}
