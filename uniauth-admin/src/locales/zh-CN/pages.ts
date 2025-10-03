@@ -124,8 +124,6 @@ export default {
   "pages.autoQuotaPoolConfig.edit": "编辑",
   "pages.autoQuotaPoolConfig.delete": "删除",
   "pages.autoQuotaPoolConfig.deleteConfirm": "确定要删除该自动配额池配置吗？",
-  "pages.autoQuotaPoolConfig.batchEnable": "批量启用",
-  "pages.autoQuotaPoolConfig.batchDisable": "批量禁用",
   "pages.autoQuotaPoolConfig.addNew": "添加新的自动配额池配置",
   "pages.autoQuotaPoolConfig.editModalTitle": "编辑自动配额池配置",
   "pages.autoQuotaPoolConfig.addModalTitle": "添加自动配额池配置",
@@ -151,12 +149,9 @@ export default {
   "pages.autoQuotaPoolConfig.updateSuccess": "更新成功",
   "pages.autoQuotaPoolConfig.createSuccess": "创建成功",
   "pages.autoQuotaPoolConfig.saveFailed": "保存失败",
-  "pages.autoQuotaPoolConfig.jsonInvalid": "JSON格式错误",
   "pages.autoQuotaPoolConfig.formInvalid": "表单验证失败，请检查输入",
   "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup":
     "保存失败：过滤条件组格式不正确",
-  "pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache":
-    "保存失败：UPN缓存列表格式不正确",
   "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired":
     "保存失败：规则名称为必填项",
   "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired":
@@ -185,14 +180,11 @@ export default {
   "pages.modelConfig.edit": "编辑",
   "pages.modelConfig.delete": "删除",
   "pages.modelConfig.deleteConfirm": "确定要删除此模型配置吗？",
-  "pages.modelConfig.batchEnable": "批量启用",
-  "pages.modelConfig.batchDisable": "批量禁用",
   "pages.modelConfig.addNew": "新增模型配置",
   "pages.modelConfig.editModalTitle": "编辑模型配置",
   "pages.modelConfig.addModalTitle": "新增模型配置",
   "pages.modelConfig.approachNamePlaceholder": "请输入模型名称",
   "pages.modelConfig.approachNameRequired": "请输入模型名称",
-  "pages.modelConfig.approachNameDisabled": "编辑时模型名称不可修改",
   "pages.modelConfig.clientTypePlaceholder": "请选择客户端类型",
   "pages.modelConfig.discountPlaceholder":
     "请输入0-1之间的小数折扣值，例如0.9表示9折",
@@ -205,13 +197,10 @@ export default {
   "pages.modelConfig.requestArgsPlaceholder":
     '请输入请求参数，例如：\'{"model": "gpt-4", "stream": true}\'',
   "pages.modelConfig.formInvalid": "表单验证失败，请检查输入",
-  "pages.modelConfig.editFailed": "编辑失败",
-  "pages.modelConfig.addFailed": "新增失败",
   "pages.modelConfig.notSet": "未设置",
   "pages.modelConfig.deleteSuccess": "删除成功",
   "pages.modelConfig.deleteFailed": "删除失败",
   "pages.modelConfig.updateSuccess": "更新成功",
-  "pages.modelConfig.jsonInvalid": "JSON格式错误",
   "pages.modelConfig.createSuccess": "创建成功",
   "pages.modelConfig.fetchFailed": "获取模型配置失败",
   "pages.modelConfig.saveFailed": "保存模型配置失败",
@@ -222,9 +211,6 @@ export default {
   "pages.modelConfig.saveFailedCheckInput": "保存失败，请检查输入",
   "pages.modelConfig.requestFailed": "请求失败",
   "pages.modelConfig.clientTypeRequired": "请选择客户端类型",
-  "pages.modelConfig.discountRequired": "请输入折扣值",
-  "pages.modelConfig.discountNumber": "折扣值必须为数字",
-  "pages.modelConfig.discountRange": "折扣值必须在0-1之间",
   "pages.modelConfig.pricingRequired": "请输入定价配置",
 
   // ConfigI18nPage
