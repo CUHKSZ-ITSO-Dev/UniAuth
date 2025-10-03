@@ -17,11 +17,11 @@ const PolicyListPage: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTabKey) {
       case "policy_tab1":
-        return <PPolicyTab tabName="P Policy" />;
+        return <PPolicyTab tabName="P-Policy" />;
       case "policy_tab2":
-        return <GPolicyTab tabName="G Policy" />;
+        return <GPolicyTab tabName="G-Policy" />;
       default:
-        return <PPolicyTab tabName="P Policy" />;
+        return <PPolicyTab tabName="P-Policy" />;
     }
   };
 

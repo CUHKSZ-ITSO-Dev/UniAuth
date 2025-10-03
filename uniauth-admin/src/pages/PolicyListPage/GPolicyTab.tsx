@@ -20,7 +20,6 @@ const { Title, Text } = Typography;
 
 // 分组关系类型
 interface GroupingItem {
-  id?: string;
   user?: string;
   role?: string;
   raw?: string[];
@@ -255,15 +254,14 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
       <Title level={4}>
         {intl.formatMessage({
           id: "pages.groupingList.title",
-          defaultMessage: "用户角色关系",
+          defaultMessage: "规则列表",
         })}{" "}
         - {tabName}
       </Title>
       <Text type="secondary">
         {intl.formatMessage({
           id: "pages.groupingList.description",
-          defaultMessage:
-            "管理用户和角色之间的继承关系，查看用户所属的角色信息",
+          defaultMessage: "管理G1和G2之间的继承关系，查看用户所属的角色信息",
         })}
       </Text>
 
@@ -323,7 +321,7 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
           >
             {intl.formatMessage({
               id: "pages.groupingList.add",
-              defaultMessage: "添加",
+              defaultMessage: "新建",
             })}
           </Button>,
           <Popconfirm
@@ -336,8 +334,8 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
           >
             <Button danger disabled={selectedRows.length === 0}>
               {intl.formatMessage({
-                id: "pages.groupingList.deleteSelected",
-                defaultMessage: "删除选中",
+                id: "pages.groupingList.batchDelete",
+                defaultMessage: "批量删除",
               })}
             </Button>
           </Popconfirm>,
