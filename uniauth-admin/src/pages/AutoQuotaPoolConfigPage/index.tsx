@@ -18,6 +18,7 @@ import {
   getConfigAutoConfig,
   postConfigAutoConfig,
   putConfigAutoConfig,
+  postConfigAutoConfigSyncUpnsCache,
 } from "@/services/uniauthService/autoQuotaPoolConfig";
 
 // UI组件解构
@@ -103,6 +104,39 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       enabled: true,
     });
     setModalVisible(true);
+  };
+
+  /** 同步指定规则的 UPN 缓存 */
+  const handleSyncOne = async (ruleName?: string) => {
+    if (!ruleName) return;
+    try {
+      const res = await postConfigAutoConfigSyncUpnsCache({ ruleName });
+      const count = res?.matchedUserCount?.[ruleName] ?? 0;
+      message.success(
+        intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncOneSuccess" }, {
+          count,
+        }),
+      );
+      actionRef.current?.reload?.();
+    } catch (_e) {
+      message.error(intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncFailed" }));
+    }
+  };
+
+  /** 同步全部规则的 UPN 缓存 */
+  const handleSyncAll = async () => {
+    try {
+      const res = await postConfigAutoConfigSyncUpnsCache({});
+      const updated = res?.updatedRules?.length || 0;
+      message.success(
+        intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncAllSuccess" }, {
+          count: updated,
+        }),
+      );
+      actionRef.current?.reload?.();
+    } catch (_e) {
+      message.error(intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncFailed" }));
+    }
   };
 
   // 本地定义RequestData类型
@@ -438,6 +472,10 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.edit" })}
           </a>
           <span style={{ margin: "0 8px" }} />
+          <a key="sync" onClick={() => handleSyncOne(record.ruleName)}>
+            {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncOne" })}
+          </a>
+          <span style={{ margin: "0 8px" }} />
           <Popconfirm
             key="delete"
             title={intl.formatMessage({
@@ -473,6 +511,15 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             <Button type="primary" key="new" onClick={handleNewConfig}>
               {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.addNew" })}
             </Button>,
+            <Popconfirm
+              key="syncAllConfirm"
+              title={intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncAllConfirm" })}
+              onConfirm={handleSyncAll}
+            >
+              <Button key="syncAll">
+                {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncAll" })}
+              </Button>
+            </Popconfirm>,
           ]}
           request={configListRequest}
         />

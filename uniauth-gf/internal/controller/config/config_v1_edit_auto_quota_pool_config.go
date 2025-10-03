@@ -1,17 +1,18 @@
 package config
 
 import (
-	"context"
+    "context"
 
-	"github.com/gogf/gf/v2/database/gdb"
-	"github.com/gogf/gf/v2/encoding/gjson"
-	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/frame/g"
-	"github.com/robfig/cron/v3"
+    "github.com/gogf/gf/v2/database/gdb"
+    "github.com/gogf/gf/v2/encoding/gjson"
+    "github.com/gogf/gf/v2/errors/gerror"
+    "github.com/gogf/gf/v2/frame/g"
+    "github.com/robfig/cron/v3"
 
-	v1 "uniauth-gf/api/config/v1"
-	"uniauth-gf/internal/dao"
-	"uniauth-gf/internal/model/entity"
+    v1 "uniauth-gf/api/config/v1"
+    "uniauth-gf/internal/dao"
+    "uniauth-gf/internal/model/entity"
+    "uniauth-gf/internal/service/autoQuotaPool"
 )
 
 func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.EditAutoQuotaPoolConfigReq) (res *v1.EditAutoQuotaPoolConfigRes, err error) {
@@ -57,11 +58,17 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 		}
 		return nil
 	})
-	if err != nil {
-		err = gerror.Wrap(err, "更新自动配额池规则失败")
-		return
-	}
+    if err != nil {
+        err = gerror.Wrap(err, "更新自动配额池规则失败")
+        return
+    }
 
-	res.OK = true
-	return
+    // 更新成功后，立即同步该规则的 upns_cache
+    if _, syncErr := autoQuotaPool.SyncOneRuleUpnsCache(ctx, req.RuleName); syncErr != nil {
+        err = gerror.Wrap(syncErr, "编辑后同步 upns_cache 失败")
+        return
+    }
+
+    res.OK = true
+    return
 }

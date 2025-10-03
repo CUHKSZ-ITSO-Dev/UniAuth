@@ -67,5 +67,17 @@ type AddAutoQuotaPoolConfigReq struct {
 	Priority int `json:"priority" dc:"优先级，数值越小优先匹配" example:"10"`
 }
 type AddAutoQuotaPoolConfigRes struct {
-	OK bool `json:"ok" dc:"是否成功"`
+    OK bool `json:"ok" dc:"是否成功"`
+}
+
+// ==================== Sync UpnsCache ====================
+type SyncAutoQuotaPoolUpnsCacheReq struct {
+    g.Meta  `path:"/autoConfig/syncUpnsCache" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"手动同步自动配额池规则的UPN缓存(upns_cache)"`
+    // 若提供，仅同步该规则；否则同步所有规则
+    RuleName string `json:"ruleName" dc:"规则名称（可选，留空时同步所有规则）"`
+}
+type SyncAutoQuotaPoolUpnsCacheRes struct {
+    OK               bool              `json:"ok" dc:"是否成功"`
+    UpdatedRules     []string          `json:"updatedRules" dc:"已同步的规则名称列表"`
+    MatchedUserCount map[string]int    `json:"matchedUserCount" dc:"每个规则匹配到的UPN数量"`
 }

@@ -21,6 +21,20 @@ declare namespace API {
     ok?: boolean;
   };
 
+  type SyncAutoQuotaPoolUpnsCacheReq = {
+    /** 规则名称（可选，留空则同步全部） */
+    ruleName?: string;
+  };
+
+  type SyncAutoQuotaPoolUpnsCacheRes = {
+    /** 是否成功 */
+    ok?: boolean;
+    /** 已同步的规则名称列表 */
+    updatedRules?: string[];
+    /** 每条规则匹配到的 UPN 数量 */
+    matchedUserCount?: Record<string, number>;
+  };
+
   type AddI18nItemReq = {
     /** 翻译键 */
     key: string;
