@@ -30,9 +30,6 @@ func Create(ctx context.Context, newQuotaPoolInfo *entity.QuotapoolQuotaPool) (e
 		filterRes, err := userinfos.NewV1().Filter(ctx, &v1.FilterReq{
 			Filter:  filterGroup,
 			Verbose: false,
-			Pagination: &v1.PaginationReq{
-				All: true,
-			},
 		})
 		if err != nil {
 			return gerror.Wrap(err, "根据 UserinfosRules 筛选用户失败")
