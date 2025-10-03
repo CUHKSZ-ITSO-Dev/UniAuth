@@ -820,7 +820,7 @@ declare namespace API {
   };
 
   type RefreshUsersOfQuotaPoolReq = {
-    qpNameList?: string[][];
+    qpNameList?: string[];
   };
 
   type RefreshUsersOfQuotaPoolRes = {

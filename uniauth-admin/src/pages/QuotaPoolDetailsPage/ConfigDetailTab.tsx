@@ -97,10 +97,9 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   const handleRefreshUsers = async () => {
     try {
       setRefreshUsersLoading(true);
-      // typings.d.ts mis-generates qpNameList as string[][]; cast to any to send string[]
       const res = await postQuotaPoolRefreshUsers({
         qpNameList: [quotaPoolName],
-      } as any);
+      });
       if (res?.ok) {
         message.success(
           intl.formatMessage({
