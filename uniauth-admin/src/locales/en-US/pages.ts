@@ -157,7 +157,8 @@ export default {
   "pages.autoQuotaPoolConfig.upnsCache": "UPN Cache",
   "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "Please enter UPN cache",
   "pages.autoQuotaPoolConfig.syncAll": "Sync All UPN Cache",
-  "pages.autoQuotaPoolConfig.syncAllConfirm": "Are you sure to sync all UPN caches?",
+  "pages.autoQuotaPoolConfig.syncAllConfirm":
+    "Are you sure to sync all UPN caches?",
   "pages.autoQuotaPoolConfig.syncAllSuccess": "Synced {count} rules",
   "pages.autoQuotaPoolConfig.syncOne": "Sync UPN Cache",
   "pages.autoQuotaPoolConfig.syncOneSuccess": "Synced. Matched {count} users",
@@ -338,6 +339,8 @@ export default {
   "pages.policyList.searchTable.effect.allow": "Allow",
   "pages.policyList.searchTable.effect.deny": "Deny",
   "pages.policyList.editRule": "Edit Rule",
+  "pages.policyList.tab_p": "P Policy List",
+  "pages.policyList.tab_g": "G Policy List",
 
   // QuotaPoolConfigDetailTab
   "pages.quotaPoolConfigDetail.displayname": "Display Name",
