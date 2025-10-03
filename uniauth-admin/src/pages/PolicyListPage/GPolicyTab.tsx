@@ -20,20 +20,22 @@ const { Title, Text } = Typography;
 
 // 分组关系类型
 interface GroupingItem {
-  user?: string;
-  role?: string;
-  raw?: string[];
+  g1?: string;
+  g2?: string;
+  rule?: string[];
+  page?: number;
+  pageSize?: number;
 }
 
 // API 请求函数
 const filterGroupings = async (params: any) => {
   // 构建筛选参数，使用Grouping API格式
   const filterRequestParams: any = {};
-  if (params.user) {
-    filterRequestParams.users = [params.user];
+  if (params.g1) {
+    filterRequestParams.g1 = params.g1;
   }
-  if (params.role) {
-    filterRequestParams.roles = [params.role];
+  if (params.g2) {
+    filterRequestParams.g2 = params.g2;
   }
 
   try {
@@ -52,8 +54,8 @@ const filterGroupings = async (params: any) => {
     const formattedData = res.groups.map(
       (grouping: string[], index: number) => ({
         id: `${grouping[0]}-${grouping[1]}-${index}`,
-        user: grouping[0] || "",
-        role: grouping[1] || "",
+        g1: grouping[0] || "",
+        g2: grouping[1] || "",
         raw: grouping,
       }),
     );
@@ -93,11 +95,11 @@ const GroupingTabContent: React.FC = () => {
         id: "pages.groupingList.user",
         defaultMessage: "G1",
       }),
-      dataIndex: "user",
+      dataIndex: "g1",
       valueType: "text",
       width: 250,
       ellipsis: true,
-      render: (_, record) => <Tag color="blue">{record.user}</Tag>,
+      render: (_, record) => <Tag color="blue">{record.g1}</Tag>,
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.groupingList.search.user.placeholder",
@@ -110,11 +112,11 @@ const GroupingTabContent: React.FC = () => {
         id: "pages.groupingList.role",
         defaultMessage: "G2",
       }),
-      dataIndex: "role",
+      dataIndex: "g2",
       valueType: "text",
       width: 250,
       ellipsis: true,
-      render: (_, record) => <Tag color="green">{record.role}</Tag>,
+      render: (_, record) => <Tag color="green">{record.g2}</Tag>,
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.groupingList.search.role.placeholder",
@@ -133,7 +135,7 @@ const GroupingTabContent: React.FC = () => {
       width: 300,
       render: (_, record) => (
         <Text code style={{ fontSize: 12 }}>
-          g, {record.raw?.join(", ")}
+          g, {record.rule?.join(", ")}
         </Text>
       ),
       search: false,
@@ -163,13 +165,13 @@ const GroupingTabContent: React.FC = () => {
           </a>
           <Popconfirm
             key="delete"
-            title={`确认删除关系 ${record.user} -> ${record.role} ?`}
+            title={`确认删除关系 ${record.g1} -> ${record.g2} ?`}
             onConfirm={async () => {
               try {
-                const raw: string[][] = record.raw
-                  ? [record.raw.map((s) => s || "")]
-                  : [[record.user || "", record.role || ""]];
-                await deleteGroupingAPI({ groupings: raw });
+                const rule: string[][] = record.rule
+                  ? [record.rule.map((s) => s || "")]
+                  : [[record.g1 || "", record.g2 || ""]];
+                await deleteGroupingAPI({ groupings: rule });
                 message.success("删除成功");
                 actionRef.current?.reload();
               } catch (e) {
@@ -190,9 +192,9 @@ const GroupingTabContent: React.FC = () => {
   ];
 
   // 添加分组关系
-  const handleAdd = async (values: { user: string; role: string }) => {
+  const handleAdd = async (values: { g1: string; g2: string }) => {
     try {
-      await addGroupingAPI({ groupings: [[values.user, values.role]] });
+      await addGroupingAPI({ groupings: [[values.g1, values.g2]] });
       message.success("添加成功");
       actionRef.current?.reload();
       setCreateModalVisible(false);
@@ -205,15 +207,15 @@ const GroupingTabContent: React.FC = () => {
   };
 
   // 编辑分组关系
-  const handleEdit = async (values: { user: string; role: string }) => {
+  const handleEdit = async (values: { g1: string; g2: string }) => {
     if (!editingGrouping) return false;
     try {
       const oldGrouping: string[] = (
-        editingGrouping.raw ?? [editingGrouping.user, editingGrouping.role]
+        editingGrouping.rule ?? [editingGrouping.g1, editingGrouping.g2]
       ).map((s) => s || "");
       await editGroupingAPI({
         oldGrouping,
-        newGrouping: [values.user, values.role],
+        newGrouping: [values.g1, values.g2],
       });
       message.success("修改成功");
       actionRef.current?.reload();
@@ -240,7 +242,7 @@ const GroupingTabContent: React.FC = () => {
     }
     try {
       const groupings: string[][] = selectedRows.map((r) =>
-        r.raw ? r.raw.map((s) => s || "") : [r.user || "", r.role || ""],
+        r.rule ? r.rule.map((s) => s || "") : [r.g1 || "", r.g2 || ""],
       );
       await deleteGroupingAPI({ groupings });
       message.success(
@@ -384,13 +386,13 @@ const GroupingTabContent: React.FC = () => {
         onFinish={handleAdd}
       >
         <ProFormText
-          name="user"
+          name="g1"
           label="G1"
           placeholder="请输入G1"
           rules={[{ required: true, message: "请输入G1" }]}
         />
         <ProFormText
-          name="role"
+          name="g2"
           label="G2"
           placeholder="请输入G2"
           rules={[{ required: true, message: "请输入G2" }]}
@@ -410,13 +412,13 @@ const GroupingTabContent: React.FC = () => {
         onFinish={handleEdit}
       >
         <ProFormText
-          name="user"
+          name="g1"
           label="G1"
           placeholder="请输入G1"
           rules={[{ required: true, message: "请输入G1" }]}
         />
         <ProFormText
-          name="role"
+          name="g2"
           label="G2"
           placeholder="请输入G2"
           rules={[{ required: true, message: "请输入G2" }]}
