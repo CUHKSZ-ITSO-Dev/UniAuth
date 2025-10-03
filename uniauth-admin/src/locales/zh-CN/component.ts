@@ -2,7 +2,7 @@ export default {
   "component.tagSelect.expand": "展开",
   "component.tagSelect.collapse": "收起",
   "component.tagSelect.all": "全部",
-  "component.jsonEditor.invalidJson": "无效的JSON格式",
+  "component.jsonEditor.invalidValue": "无效的JSON格式",
   "component.jsonEditor.invalidObject": "无法序列化对象为JSON",
   "component.jsonEditor.formatFailed": "JSON格式化失败",
   "component.jsonEditor.compactFailed": "JSON压缩失败",

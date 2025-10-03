@@ -38,10 +38,10 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
           const parsed = JSON.parse(value);
           setJsonObject(parsed);
           setError("");
-        } catch (_e) {
+        } catch (e: any) {
           setJsonObject(value);
           setError(
-            intl.formatMessage({ id: "component.jsonEditor.invalidValue" }),
+            `${intl.formatMessage({ id: "component.jsonEditor.invalidValue" })}: ${e.message || e}`,
           );
         }
       } else {
@@ -49,10 +49,10 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
         try {
           setJsonString(JSON.stringify(value)); // 不自动格式化
           setError("");
-        } catch (_e) {
+        } catch (e: any) {
           setJsonString(String(value));
           setError(
-            intl.formatMessage({ id: "component.jsonEditor.invalidValue" }),
+            `${intl.formatMessage({ id: "component.jsonEditor.invalidValue" })}: ${e.message || e}`,
           );
         }
       }
@@ -81,8 +81,10 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonObject(parsed);
       setError("");
       onChange?.(newJsonString); // 传递原始字符串而不是格式化后的字符串
-    } catch (_e) {
-      setError(intl.formatMessage({ id: "component.jsonEditor.invalidJson" }));
+    } catch (e: any) {
+      setError(
+        `${intl.formatMessage({ id: "component.jsonEditor.invalidJson" })}: ${e.message || e}`,
+      );
       // 即使JSON无效，也传递字符串值
       onChange?.(newJsonString);
     }
@@ -121,9 +123,9 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
         setJsonObject(parsed);
         setError("");
         onChange?.(newText);
-      } catch (_e) {
+      } catch (e: any) {
         setError(
-          intl.formatMessage({ id: "component.jsonEditor.invalidJson" }),
+          `${intl.formatMessage({ id: "component.jsonEditor.invalidJson" })}: ${e.message || e}`,
         );
         onChange?.(newText);
       }
@@ -142,9 +144,9 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonString(newJsonString);
       setError("");
       onChange?.(newJsonObject);
-    } catch (_e) {
+    } catch (e: any) {
       setError(
-        intl.formatMessage({ id: "component.jsonEditor.invalidObject" }),
+        `${intl.formatMessage({ id: "component.jsonEditor.invalidObject" })}: ${e.message || e}`,
       );
       onChange?.(value);
     }
@@ -168,9 +170,9 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonObject(parsed);
       setError("");
       onChange?.(formatted); // 通知父组件格式化后的值
-    } catch (_e) {
+    } catch (e: any) {
       message.error(
-        intl.formatMessage({ id: "component.jsonEditor.formatFailed" }),
+        `${intl.formatMessage({ id: "component.jsonEditor.formatFailed" })}: ${e.message || e}`,
       );
     }
   };
@@ -188,9 +190,9 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonObject(parsed);
       setError("");
       onChange?.(compacted); // 通知父组件压缩后的值
-    } catch (_e) {
+    } catch (e: any) {
       message.error(
-        intl.formatMessage({ id: "component.jsonEditor.compactFailed" }),
+        `${intl.formatMessage({ id: "component.jsonEditor.compactFailed" })}: ${e.message || e}`,
       );
     }
   };

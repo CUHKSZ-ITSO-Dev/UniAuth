@@ -2,7 +2,7 @@ export default {
   "component.tagSelect.expand": "Expand",
   "component.tagSelect.collapse": "Collapse",
   "component.tagSelect.all": "All",
-  "component.jsonEditor.invalidJson": "Invalid JSON format",
+  "component.jsonEditor.invalidValue": "Invalid JSON format",
   "component.jsonEditor.invalidObject": "Unable to serialize object to JSON",
   "component.jsonEditor.formatFailed": "JSON formatting failed",
   "component.jsonEditor.compactFailed": "JSON compaction failed",
