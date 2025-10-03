@@ -212,7 +212,7 @@ export default {
   "pages.modelConfig.deleteSuccess": "删除成功",
   "pages.modelConfig.deleteFailed": "删除失败",
   "pages.modelConfig.updateSuccess": "更新成功",
-  "pages.modelConfig.jsonInvalid": "JSON格式无效，请检查输入",
+  "pages.modelConfig.jsonInvalid": "JSON格式错误",
   "pages.modelConfig.createSuccess": "创建成功",
   "pages.modelConfig.fetchFailed": "获取模型配置失败",
   "pages.modelConfig.saveFailed": "保存模型配置失败",

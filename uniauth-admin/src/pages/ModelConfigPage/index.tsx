@@ -23,6 +23,13 @@ import {
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
+// 定义JSON错误状态类型
+interface JsonErrorState {
+  pricing: boolean;
+  clientArgs: boolean;
+  requestArgs: boolean;
+}
+
 /**
  * 模型配置页面组件
  * 提供模型配置的增删改查功能
@@ -39,6 +46,67 @@ const ModelConfigPage: React.FC = () => {
   const [form] = Form.useForm();
   // 国际化工具
   const intl = useIntl();
+  // JSON格式错误状态
+  const [jsonError, setJsonError] = useState<JsonErrorState>({
+    pricing: false,
+    clientArgs: false,
+    requestArgs: false,
+  });
+
+  /**
+   * 验证JSON格式
+   * @param value 要验证的字符串
+   * @returns 是否为有效JSON
+   */
+  const validateJSON = (value: string): boolean => {
+    if (!value) return true; // 空值认为是有效的
+    try {
+      JSON.parse(value);
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  };
+
+  /**
+   * 处理pricing字段变化
+   * @param e 变化事件
+   */
+  const handlePricingChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setJsonError((prev: JsonErrorState) => ({
+      ...prev,
+      pricing: !validateJSON(value),
+    }));
+  };
+
+  /**
+   * 处理clientArgs字段变化
+   * @param e 变化事件
+   */
+  const handleClientArgsChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    const value = e.target.value;
+    setJsonError((prev: JsonErrorState) => ({
+      ...prev,
+      clientArgs: !validateJSON(value),
+    }));
+  };
+
+  /**
+   * 处理requestArgs字段变化
+   * @param e 变化事件
+   */
+  const handleRequestArgsChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    const value = e.target.value;
+    setJsonError((prev: JsonErrorState) => ({
+      ...prev,
+      requestArgs: !validateJSON(value),
+    }));
+  };
 
   /**
    * 编辑记录处理函数
@@ -115,6 +183,11 @@ const ModelConfigPage: React.FC = () => {
       const values = await form.validateFields();
 
       // 安全地处理JSON字段的解析
+      /**
+       * 解析JSON字段
+       * @param field 要解析的字段值
+       * @returns 解析后的对象
+       */
       const parseJsonField = (field: string): any => {
         if (!field) return {};
         try {
@@ -608,7 +681,9 @@ const ModelConfigPage: React.FC = () => {
 
           <Form.Item
             name="pricing"
-            label={intl.formatMessage({ id: "pages.modelConfig.pricing" })}
+            label={intl.formatMessage({
+              id: "pages.modelConfig.pricing",
+            })}
             rules={[
               {
                 required: true,
@@ -616,37 +691,123 @@ const ModelConfigPage: React.FC = () => {
                   id: "pages.modelConfig.pricingRequired",
                 }),
               },
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  try {
+                    JSON.parse(value);
+                    return Promise.resolve();
+                  } catch (_e) {
+                    return Promise.reject(
+                      new Error(
+                        intl.formatMessage({
+                          id: "pages.modelConfig.jsonInvalid",
+                        }),
+                      ),
+                    );
+                  }
+                },
+              },
             ]}
+            help={
+              jsonError.pricing
+                ? intl.formatMessage({
+                    id: "pages.modelConfig.jsonInvalid",
+                  })
+                : ""
+            }
+            validateStatus={jsonError.pricing ? "error" : "success"}
           >
             <TextArea
               rows={4}
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.pricingPlaceholder",
               })}
+              onChange={handlePricingChange}
             />
           </Form.Item>
 
           <Form.Item
             name="clientArgs"
-            label={intl.formatMessage({ id: "pages.modelConfig.clientArgs" })}
+            label={intl.formatMessage({
+              id: "pages.modelConfig.clientArgs",
+            })}
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  try {
+                    JSON.parse(value);
+                    return Promise.resolve();
+                  } catch (_e) {
+                    return Promise.reject(
+                      new Error(
+                        intl.formatMessage({
+                          id: "pages.modelConfig.jsonInvalid",
+                        }),
+                      ),
+                    );
+                  }
+                },
+              },
+            ]}
+            help={
+              jsonError.clientArgs
+                ? intl.formatMessage({
+                    id: "pages.modelConfig.jsonInvalid",
+                  })
+                : ""
+            }
+            validateStatus={jsonError.clientArgs ? "error" : "success"}
           >
             <TextArea
               rows={4}
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.clientArgsPlaceholder",
               })}
+              onChange={handleClientArgsChange}
             />
           </Form.Item>
 
           <Form.Item
             name="requestArgs"
-            label={intl.formatMessage({ id: "pages.modelConfig.requestArgs" })}
+            label={intl.formatMessage({
+              id: "pages.modelConfig.requestArgs",
+            })}
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  try {
+                    JSON.parse(value);
+                    return Promise.resolve();
+                  } catch (_e) {
+                    return Promise.reject(
+                      new Error(
+                        intl.formatMessage({
+                          id: "pages.modelConfig.jsonInvalid",
+                        }),
+                      ),
+                    );
+                  }
+                },
+              },
+            ]}
+            help={
+              jsonError.requestArgs
+                ? intl.formatMessage({
+                    id: "pages.modelConfig.jsonInvalid",
+                  })
+                : ""
+            }
+            validateStatus={jsonError.requestArgs ? "error" : "success"}
           >
             <TextArea
               rows={4}
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.requestArgsPlaceholder",
               })}
+              onChange={handleRequestArgsChange}
             />
           </Form.Item>
         </Form>

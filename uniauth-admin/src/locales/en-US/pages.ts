@@ -230,7 +230,7 @@ export default {
   "pages.modelConfig.deleteSuccess": "Delete Successful",
   "pages.modelConfig.deleteFailed": "Delete Failed",
   "pages.modelConfig.updateSuccess": "Update Successful",
-  "pages.modelConfig.jsonInvalid": "Invalid JSON format, please check input",
+  "pages.modelConfig.jsonInvalid": "Invalid JSON format",
   "pages.modelConfig.createSuccess": "Create Successful",
   "pages.modelConfig.fetchFailed": "Failed to fetch model configurations",
   "pages.modelConfig.saveFailed": "Failed to save model configuration",
