@@ -9,7 +9,7 @@ type ChatPreCheckOneStopReq struct {
 	Upn       string `json:"upn" v:"required" dc:"UPN" example:"122020255@link.cuhk.edu.cn"`
 	Svc       string `json:"svc" v:"required" dc:"微服务" example:"Chat"`
 	Product   string `json:"product" v:"required" dc:"产品" example:"qwen3-235b-a22b-instruct-2507"`
-	Act       string `json:"action" v:"required" dc:"动作" example:"access"`
+	Act       string `json:"act" v:"required" dc:"动作" example:"access"`
 	QuotaPool string `json:"quotaPool" v:"required" dc:"配额池" example:"itso-deep-research-vip"`
 }
 type ChatPreCheckOneStopRes struct {
