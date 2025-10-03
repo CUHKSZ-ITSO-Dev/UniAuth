@@ -64,7 +64,7 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
     }
 
     // 更新成功后，立即同步该规则的 upns_cache
-    if _, syncErr := autoQuotaPool.SyncOneRuleUpnsCache(ctx, req.RuleName); syncErr != nil {
+    if _, syncErr := autoQuotaPool.SyncUpnsCache(ctx, []string{req.RuleName}); syncErr != nil {
         err = gerror.Wrap(syncErr, "编辑后同步 upns_cache 失败")
         return
     }

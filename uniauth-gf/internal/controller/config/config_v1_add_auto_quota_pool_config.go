@@ -21,7 +21,7 @@ func (c *ControllerV1) AddAutoQuotaPoolConfig(ctx context.Context, req *v1.AddAu
         return nil, gerror.Wrap(err, "新增自动配额池规则失败")
     }
     // 插入成功后，立即同步该规则的 upns_cache，保证一致性
-    if _, err := autoQuotaPool.SyncOneRuleUpnsCache(ctx, req.RuleName); err != nil {
+    if _, err := autoQuotaPool.SyncUpnsCache(ctx, []string{req.RuleName}); err != nil {
         return nil, gerror.Wrap(err, "新增后同步 upns_cache 失败")
     }
     return &v1.AddAutoQuotaPoolConfigRes{OK: true}, nil
