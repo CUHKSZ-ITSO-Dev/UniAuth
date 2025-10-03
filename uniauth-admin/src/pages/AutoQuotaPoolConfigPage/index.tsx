@@ -40,10 +40,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     useState<API.AutoQuotaPoolItem | null>(null);
   // 表单实例
   const [form] = Form.useForm();
-  // JSON格式错误状态
-  const [jsonError, setJsonError] = useState({
-    filterGroup: false,
-  });
 
   /**
    * 编辑记录处理函数
@@ -117,35 +113,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     total?: number;
     success?: boolean;
   }
-
-  /**
-   * 验证JSON格式
-   * @param value 要验证的字符串
-   * @returns 是否为有效JSON
-   */
-  const validateJSON = (value: string): boolean => {
-    if (!value) return true; // 空值认为是有效的
-    try {
-      JSON.parse(value);
-      return true;
-    } catch (_e) {
-      return false;
-    }
-  };
-
-  /**
-   * 处理filterGroup字段变化
-   * @param e 变化事件
-   */
-  const handleFilterGroupChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>,
-  ) => {
-    const value = e.target.value;
-    setJsonError((prev) => ({
-      ...prev,
-      filterGroup: !validateJSON(value),
-    }));
-  };
 
   /**
    * 模态框确认处理函数
@@ -648,14 +615,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                 }),
               },
             ]}
-            help={
-              jsonError.filterGroup
-                ? intl.formatMessage({
-                    id: "pages.autoQuotaPoolConfig.jsonInvalid",
-                  })
-                : ""
-            }
-            validateStatus={jsonError.filterGroup ? "error" : "success"}
           >
             <JsonEditor
               placeholder={intl.formatMessage({

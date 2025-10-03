@@ -23,13 +23,6 @@ import {
 // UI组件解构
 const { Title, Text } = Typography;
 
-// 定义JSON错误状态类型
-interface JsonErrorState {
-  pricing: boolean;
-  clientArgs: boolean;
-  requestArgs: boolean;
-}
-
 /**
  * 模型配置页面组件
  * 提供模型配置的增删改查功能
@@ -46,67 +39,6 @@ const ModelConfigPage: React.FC = () => {
   const [form] = Form.useForm();
   // 国际化工具
   const intl = useIntl();
-  // JSON格式错误状态
-  const [jsonError, setJsonError] = useState<JsonErrorState>({
-    pricing: false,
-    clientArgs: false,
-    requestArgs: false,
-  });
-
-  /**
-   * 验证JSON格式
-   * @param value 要验证的字符串
-   * @returns 是否为有效JSON
-   */
-  const validateJSON = (value: string): boolean => {
-    if (!value) return true; // 空值认为是有效的
-    try {
-      JSON.parse(value);
-      return true;
-    } catch (_e) {
-      return false;
-    }
-  };
-
-  /**
-   * 处理pricing字段变化
-   * @param e 变化事件
-   */
-  const handlePricingChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setJsonError((prev: JsonErrorState) => ({
-      ...prev,
-      pricing: !validateJSON(value),
-    }));
-  };
-
-  /**
-   * 处理clientArgs字段变化
-   * @param e 变化事件
-   */
-  const handleClientArgsChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>,
-  ) => {
-    const value = e.target.value;
-    setJsonError((prev: JsonErrorState) => ({
-      ...prev,
-      clientArgs: !validateJSON(value),
-    }));
-  };
-
-  /**
-   * 处理requestArgs字段变化
-   * @param e 变化事件
-   */
-  const handleRequestArgsChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>,
-  ) => {
-    const value = e.target.value;
-    setJsonError((prev: JsonErrorState) => ({
-      ...prev,
-      requestArgs: !validateJSON(value),
-    }));
-  };
 
   /**
    * 编辑记录处理函数
@@ -709,14 +641,6 @@ const ModelConfigPage: React.FC = () => {
                 },
               },
             ]}
-            help={
-              jsonError.pricing
-                ? intl.formatMessage({
-                    id: "pages.modelConfig.jsonInvalid",
-                  })
-                : ""
-            }
-            validateStatus={jsonError.pricing ? "error" : "success"}
           >
             <JsonEditor
               placeholder={intl.formatMessage({
@@ -750,14 +674,6 @@ const ModelConfigPage: React.FC = () => {
                 },
               },
             ]}
-            help={
-              jsonError.clientArgs
-                ? intl.formatMessage({
-                    id: "pages.modelConfig.jsonInvalid",
-                  })
-                : ""
-            }
-            validateStatus={jsonError.clientArgs ? "error" : "success"}
           >
             <JsonEditor
               placeholder={intl.formatMessage({
@@ -791,14 +707,6 @@ const ModelConfigPage: React.FC = () => {
                 },
               },
             ]}
-            help={
-              jsonError.requestArgs
-                ? intl.formatMessage({
-                    id: "pages.modelConfig.jsonInvalid",
-                  })
-                : ""
-            }
-            validateStatus={jsonError.requestArgs ? "error" : "success"}
           >
             <JsonEditor
               placeholder={intl.formatMessage({
