@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"uniauth-gf/internal/dao"
+	"uniauth-gf/internal/model/entity"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -15,8 +16,9 @@ import (
 //
 // 如果存在失败的情况，会在处理完一轮后返回发生错误的配额池列表，不影响其他配额池的更新。
 func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) error {
-	var qps []g.Map
-	db := dao.QuotapoolQuotaPool.Ctx(ctx)
+	nameCol := dao.QuotapoolQuotaPool.Columns().QuotaPoolName
+	db := dao.QuotapoolQuotaPool.Ctx(ctx).Fields(nameCol)
+	var qps []entity.QuotapoolQuotaPool
 	if qpNameList == nil {
 		if err := db.Scan(&qps); err != nil {
 			return gerror.Wrap(err, "查询所有配额池失败")
@@ -32,11 +34,12 @@ func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) er
 			return gerror.New("找不到任何指定的配额池")
 		}
 	}
-	
+
 	failures := []string{}
 	for _, qp := range qps {
-		if err := Edit(ctx, qp); err != nil {
-			failures = append(failures, err.Error())
+		name := qp.QuotaPoolName
+		if err := Edit(ctx, g.Map{"quotaPoolName": name}); err != nil {
+			failures = append(failures, gerror.Wrapf(err, "更新配额池 %v 失败", name).Error())
 		}
 	}
 	if len(failures) > 0 {
