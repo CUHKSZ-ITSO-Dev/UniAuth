@@ -139,8 +139,7 @@ export default {
   "pages.autoQuotaPoolConfig.regularQuotaRequired": "请输入定期配额",
   "pages.autoQuotaPoolConfig.priorityPlaceholder": "请输入优先级",
   "pages.autoQuotaPoolConfig.filterGroup": "过滤条件组 (JSON)",
-  "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
-    "请输入过滤条件组的JSON格式数据，满足条件的用户将应用该规则",
+  "pages.autoQuotaPoolConfig.filterGroupPlaceholder": "请输入过滤条件组",
   "pages.autoQuotaPoolConfig.filterGroupRequired": "请输入过滤条件组",
   "pages.autoQuotaPoolConfig.upnsCache": "UPN缓存",
   "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "请输入UPN缓存",
@@ -177,9 +176,9 @@ export default {
   "pages.modelConfig.clientType": "客户端类型",
   "pages.modelConfig.discount": "折扣",
   "pages.modelConfig.servicewares": "服务",
-  "pages.modelConfig.pricing": "定价配置",
-  "pages.modelConfig.clientArgs": "客户端参数",
-  "pages.modelConfig.requestArgs": "请求参数",
+  "pages.modelConfig.pricing": "定价配置 (JSON)",
+  "pages.modelConfig.clientArgs": "客户端参数 (JSON)",
+  "pages.modelConfig.requestArgs": "请求参数 (JSON)",
   "pages.modelConfig.createdAt": "创建时间",
   "pages.modelConfig.updatedAt": "更新时间",
   "pages.modelConfig.actions": "操作",
@@ -200,11 +199,11 @@ export default {
   "pages.modelConfig.servicewaresPlaceholder":
     "请输入服务项目标识，多个以逗号分隔",
   "pages.modelConfig.pricingPlaceholder":
-    '请输入JSON格式的定价配置，例如：\'{"type": "per_token", "input_price": 0.01, "output_price": 0.03}\'',
+    '请输入定价配置，例如：\'{"type": "per_token", "input_price": 0.01, "output_price": 0.03}\'',
   "pages.modelConfig.clientArgsPlaceholder":
-    '请输入JSON格式的客户端参数，例如：\'{"temperature": 0.7, "max_tokens": 1024}\'',
+    '请输入客户端参数，例如：\'{"temperature": 0.7, "max_tokens": 1024}\'',
   "pages.modelConfig.requestArgsPlaceholder":
-    '请输入JSON格式的请求参数，例如：\'{"model": "gpt-4", "stream": true}\'',
+    '请输入请求参数，例如：\'{"model": "gpt-4", "stream": true}\'',
   "pages.modelConfig.formInvalid": "表单验证失败，请检查输入",
   "pages.modelConfig.editFailed": "编辑失败",
   "pages.modelConfig.addFailed": "新增失败",
