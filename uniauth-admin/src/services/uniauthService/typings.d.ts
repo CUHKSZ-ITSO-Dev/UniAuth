@@ -98,7 +98,7 @@ declare namespace API {
     /** 过滤条件组 */
     filterGroup?: Json;
     /** UPN缓存列表 */
-    upnsCache?: string[];
+    upnsCache?: string;
     /** 优先级，数值越小优先匹配 */
     priority?: number;
     /** 该规则上次评估时间 */

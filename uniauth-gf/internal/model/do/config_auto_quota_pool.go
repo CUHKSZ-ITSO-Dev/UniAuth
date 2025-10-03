@@ -1,5 +1,5 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-21 23:58:44
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-10-02 22:16:54
 // =================================================================================
 
 package do
@@ -12,17 +12,18 @@ import (
 
 // ConfigAutoQuotaPool is the golang structure of table config_auto_quota_pool for DAO operations like Where/Data.
 type ConfigAutoQuotaPool struct {
-	g.Meta          `orm:"table:config_auto_quota_pool, do:true"`
-	Id              any         // 自增主键
-	RuleName        any         // 规则名称，唯一
-	Description     any         // 规则说明
-	CronCycle       any         // 刷新周期
-	RegularQuota    any         // 定期配额
-	Enabled         any         // 是否启用该配额池
-	FilterGroup     *gjson.Json // 过滤条件组
-	UpnsCache       []string    // UPN缓存列表
-	Priority        any         // 优先级，数值越小优先匹配
-	LastEvaluatedAt *gtime.Time // 该规则上次评估时间
-	CreatedAt       *gtime.Time // 创建时间
-	UpdatedAt       *gtime.Time // 更新时间
+	g.Meta                `orm:"table:config_auto_quota_pool, do:true"`
+	Id                    any         // 自增主键
+	RuleName              any         // 规则名称，唯一
+	Description           any         // 规则说明
+	CronCycle             any         // 刷新周期
+	RegularQuota          any         // 定期配额
+	Enabled               any         // 是否启用该配额池
+	FilterGroup           *gjson.Json // 过滤条件组
+	DefaultUserinfosRules *gjson.Json // 默认ITTools规则
+	UpnsCache             []string    // UPN缓存列表
+	Priority              any         // 优先级，数值越小优先匹配
+	LastEvaluatedAt       *gtime.Time // 该规则上次评估时间
+	CreatedAt             *gtime.Time // 创建时间
+	UpdatedAt             *gtime.Time // 更新时间
 }
