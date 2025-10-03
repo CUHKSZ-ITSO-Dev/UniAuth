@@ -30,12 +30,31 @@ interface GroupingItem {
 // API 请求函数
 const filterGroupings = async (params: any) => {
   // 构建筛选参数，使用Grouping API格式
-  const filterRequestParams: any = {};
+  const filterRequestParams: {
+    g1?: string;
+    g2?: string;
+    rule?: string;
+    page?: number;
+    pageSize?: number;
+  } = {};
+
+  // 处理搜索参数
   if (params.g1) {
     filterRequestParams.g1 = params.g1;
   }
   if (params.g2) {
     filterRequestParams.g2 = params.g2;
+  }
+  if (params.rule) {
+    filterRequestParams.rule = params.rule;
+  }
+
+  // 处理分页参数
+  if (params.current) {
+    filterRequestParams.page = params.current;
+  }
+  if (params.pageSize) {
+    filterRequestParams.pageSize = params.pageSize;
   }
 
   try {
@@ -92,7 +111,7 @@ const GroupingTabContent: React.FC = () => {
   const columns: ProColumns<GroupingItem>[] = [
     {
       title: intl.formatMessage({
-        id: "pages.groupingList.user",
+        id: "pages.groupingList.g1",
         defaultMessage: "G1",
       }),
       dataIndex: "g1",
@@ -102,14 +121,14 @@ const GroupingTabContent: React.FC = () => {
       render: (_, record) => <Tag color="blue">{record.g1}</Tag>,
       fieldProps: {
         placeholder: intl.formatMessage({
-          id: "pages.groupingList.search.user.placeholder",
+          id: "pages.groupingList.search.g1.placeholder",
           defaultMessage: "请输入G1进行搜索",
         }),
       },
     },
     {
       title: intl.formatMessage({
-        id: "pages.groupingList.role",
+        id: "pages.groupingList.g2",
         defaultMessage: "G2",
       }),
       dataIndex: "g2",
@@ -119,7 +138,7 @@ const GroupingTabContent: React.FC = () => {
       render: (_, record) => <Tag color="green">{record.g2}</Tag>,
       fieldProps: {
         placeholder: intl.formatMessage({
-          id: "pages.groupingList.search.role.placeholder",
+          id: "pages.groupingList.search.g2.placeholder",
           defaultMessage: "请输入G2进行搜索",
         }),
       },
@@ -127,7 +146,7 @@ const GroupingTabContent: React.FC = () => {
     {
       title: intl.formatMessage({
         id: "pages.groupingList.relationship",
-        defaultMessage: "角色继承规则",
+        defaultMessage: "分组关系规则",
       }),
       dataIndex: "raw",
       valueType: "text",
