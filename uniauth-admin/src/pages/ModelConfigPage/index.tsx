@@ -12,6 +12,7 @@ import {
   Typography,
 } from "antd";
 import { useRef, useState } from "react";
+import JsonEditor from "@/components/JsonEditor";
 import {
   deleteConfigModel,
   getConfigModelAll,
@@ -21,7 +22,6 @@ import {
 
 // UI组件解构
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 
 /**
  * 模型配置页面组件
@@ -618,11 +618,11 @@ const ModelConfigPage: React.FC = () => {
               },
             ]}
           >
-            <TextArea
-              rows={4}
+            <JsonEditor
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.pricingPlaceholder",
               })}
+              height={200}
             />
           </Form.Item>
 
@@ -630,11 +630,11 @@ const ModelConfigPage: React.FC = () => {
             name="clientArgs"
             label={intl.formatMessage({ id: "pages.modelConfig.clientArgs" })}
           >
-            <TextArea
-              rows={4}
+            <JsonEditor
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.clientArgsPlaceholder",
               })}
+              height={200}
             />
           </Form.Item>
 
@@ -642,11 +642,11 @@ const ModelConfigPage: React.FC = () => {
             name="requestArgs"
             label={intl.formatMessage({ id: "pages.modelConfig.requestArgs" })}
           >
-            <TextArea
-              rows={4}
+            <JsonEditor
               placeholder={intl.formatMessage({
                 id: "pages.modelConfig.requestArgsPlaceholder",
               })}
+              height={200}
             />
           </Form.Item>
         </Form>
