@@ -8,15 +8,7 @@ import {
   ProTable,
 } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
-import {
-  Button,
-  message,
-  Popconfirm,
-  Space,
-  Table,
-  Tag,
-  Typography,
-} from "antd";
+import { Button, message, Popconfirm, Space, Tag, Typography } from "antd";
 import { useRef, useState } from "react";
 import {
   postAuthAdminPoliciesAdd as addPoliciesAPI,
@@ -167,17 +159,15 @@ const PolicyTabContent: React.FC = () => {
     }
   };
 
-  // 批量删除按钮（与GPolicyTab风格一致，Button danger）
+  // 批量删除按钮（与GPolicyTab风格完全一致）
   const batchDeleteButton = (
     <Popconfirm
       title={intl.formatMessage(
         {
           id: "pages.policyList.deleteConfirmTitle2",
-          defaultMessage: "确定要删除选中的 {count} 条规则吗？",
+          defaultMessage: "确认删除选中的 {count} 条规则？",
         },
-        {
-          count: selectedRowKeys.length,
-        },
+        { count: selectedRows.length },
       )}
       onConfirm={() => handleBatchDelete(selectedRows)}
       okText={intl.formatMessage({
@@ -188,11 +178,11 @@ const PolicyTabContent: React.FC = () => {
         id: "pages.policyList.deleteConfirmCancel",
         defaultMessage: "取消",
       })}
-      disabled={selectedRowKeys.length === 0}
+      disabled={selectedRows.length === 0}
     >
       <Button
         danger
-        disabled={selectedRowKeys.length === 0}
+        disabled={selectedRows.length === 0}
         style={{ minWidth: 90 }}
       >
         {intl.formatMessage({
@@ -395,7 +385,15 @@ const PolicyTabContent: React.FC = () => {
           pageSize: 10,
           showSizeChanger: false,
           showQuickJumper: false,
-          showTotal: (total) => `共 ${total} 条记录`,
+          showTotal: (total) => {
+            return intl.formatMessage(
+              {
+                id: "pages.policyList.pagination.total",
+                defaultMessage: "共 {total} 条记录",
+              },
+              { total },
+            );
+          },
         }}
         search={{
           labelWidth: "auto",
@@ -435,39 +433,12 @@ const PolicyTabContent: React.FC = () => {
           syncToUrl: false,
         }}
         rowSelection={{
-          selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
-          selectedRowKeys,
-          onChange: (keys, rows) => {
-            setSelectedRowKeys(keys);
+          onChange: (_keys, rows) => {
+            setSelectedRowKeys(_keys);
             setSelectedRows(rows);
           },
+          selectedRowKeys,
         }}
-        tableAlertRender={({ selectedRowKeys, onCleanSelected }) => {
-          return (
-            <Space size={24}>
-              <span>
-                {intl.formatMessage(
-                  {
-                    id: "pages.policyList.tableAlert.selected",
-                    defaultMessage: "已选 {count} 项",
-                  },
-                  {
-                    count: selectedRowKeys.length,
-                  },
-                )}
-                <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
-                  {intl.formatMessage({
-                    id: "pages.policyList.tableAlert.cancel",
-                    defaultMessage: "取消选择",
-                  })}
-                </a>
-              </span>
-            </Space>
-          );
-        }}
-        tableAlertOptionRender={() => (
-          <Space size={16}>{batchDeleteButton}</Space>
-        )}
         toolBarRender={() => [
           <Button
             type="primary"

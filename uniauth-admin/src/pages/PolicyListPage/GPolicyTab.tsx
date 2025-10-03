@@ -328,7 +328,15 @@ const GroupingTabContent: React.FC = () => {
           pageSize: 10,
           showSizeChanger: false,
           showQuickJumper: false,
-          showTotal: (total) => `共 ${total} 条记录`,
+          showTotal: (total) => {
+            return intl.formatMessage(
+              {
+                id: "pages.groupingList.pagination.total",
+                defaultMessage: "共 {total} 条记录",
+              },
+              { total },
+            );
+          },
         }}
         search={{
           labelWidth: "auto",

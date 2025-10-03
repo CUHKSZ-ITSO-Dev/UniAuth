@@ -343,6 +343,7 @@ export default {
   "pages.policyList.searchTable.effect.allow": "Allow",
   "pages.policyList.searchTable.effect.deny": "Deny",
   "pages.policyList.editRule": "Edit Rule",
+  "pages.policyList.pagination.total": "Total {total} items",
   "pages.groupingList.relationship": "Groupings",
   "pages.groupingList.description": "Manage user and role groupings",
   "pages.groupingList.add": "New",
@@ -360,6 +361,11 @@ export default {
   "pages.groupingList.batchDelete.confirmTitle":
     "Are you sure to delete the {count} groupings?",
   "pages.groupingList.editRole": "Edit Groupings Relationship",
+  "pages.groupingList.pagination.total": "Total {total} items",
+  "pages.groupingList.batchDelete.cancel": "Cancel",
+  "pages.groupingList.batchDelete.ok": "Confirm",
+  "pages.groupingList.delete.confirmCancel": "Cancel",
+  "pages.groupingList.action": "Actions",
 
   // QuotaPoolConfigDetailTab
   "pages.quotaPoolConfigDetail.displayname": "Display Name",
