@@ -270,7 +270,7 @@ const QuotaPoolDetailsPage: FC = () => {
               ).toFixed(2)
             : 0
         }
-        prefix="$"
+        prefix="￥"
         loading={detailLoading}
       />
     </div>

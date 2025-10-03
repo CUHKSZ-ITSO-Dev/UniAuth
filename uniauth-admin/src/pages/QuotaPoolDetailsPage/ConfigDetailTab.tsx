@@ -535,7 +535,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
               defaultMessage: "定期配额",
             })}
           >
-            ${quotaPoolDetail?.regularQuota?.toFixed(2) || "0.00"}
+            ￥{quotaPoolDetail?.regularQuota?.toFixed(2) || "0.00"}
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
@@ -543,7 +543,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
               defaultMessage: "加油包",
             })}
           >
-            ${quotaPoolDetail?.extraQuota?.toFixed(2) || "0.00"}
+            ￥{quotaPoolDetail?.extraQuota?.toFixed(2) || "0.00"}
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({

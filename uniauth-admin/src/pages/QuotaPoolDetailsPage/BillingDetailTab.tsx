@@ -361,7 +361,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       search: false,
 
       render: (_, record) => (
-        <Text type="danger">${Number(record.cost).toFixed(4)}</Text>
+        <Text type="danger">￥{Number(record.cost).toFixed(4)}</Text>
       ),
     },
     {
@@ -639,7 +639,9 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               defaultMessage: "本月消费",
             })}
           >
-            <Text type="danger">${statistics.currentMonthCost.toFixed(4)}</Text>
+            <Text type="danger">
+              ￥{statistics.currentMonthCost.toFixed(4)}
+            </Text>
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
@@ -647,7 +649,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               defaultMessage: "累计消费",
             })}
           >
-            <Text strong>${statistics.totalCost.toFixed(4)}</Text>
+            <Text strong>￥{statistics.totalCost.toFixed(4)}</Text>
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
