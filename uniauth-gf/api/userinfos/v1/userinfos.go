@@ -38,7 +38,7 @@ type SortCondition struct {
 type PaginationReq struct {
 	Page     int  `json:"page" v:"min:1" dc:"页码，从1开始" default:"1"`
 	PageSize int  `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" default:"20"`
-	All      bool `json:"all" dc:"是否返回全部数据，true时忽略分页参数，但仍有最大限制保护"`
+	All      bool `json:"all" dc:"是否返回全部数据，true时忽略分页参数。"`
 }
 
 type FilterReq struct {
