@@ -120,14 +120,15 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     const newJsonString = e.target.value;
     setJsonString(newJsonString);
 
-    try {
-      if (newJsonString.trim() === "") {
-        setJsonObject(null);
-        setError("");
-        onChange?.(null);
-        return;
-      }
+    // 如果输入为空，直接设置为空状态
+    if (newJsonString.trim() === "") {
+      setJsonObject(null);
+      setError("");
+      onChange?.(null);
+      return;
+    }
 
+    try {
       const parsed = JSON.parse(newJsonString);
       setJsonObject(parsed);
       setError("");
@@ -162,14 +163,15 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       }, 0);
 
       // 触发onChange事件
-      try {
-        if (newText.trim() === "") {
-          setJsonObject(null);
-          setError("");
-          onChange?.(null);
-          return;
-        }
+      // 如果输入为空，直接设置为空状态
+      if (newText.trim() === "") {
+        setJsonObject(null);
+        setError("");
+        onChange?.(null);
+        return;
+      }
 
+      try {
         const parsed = JSON.parse(newText);
         setJsonObject(parsed);
         setError("");

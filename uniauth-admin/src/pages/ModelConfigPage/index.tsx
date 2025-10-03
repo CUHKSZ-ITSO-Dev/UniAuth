@@ -47,25 +47,11 @@ const ModelConfigPage: React.FC = () => {
   const handleEdit = (record: API.ModelConfigItem) => {
     setEditingRecord(record);
 
-    // 安全地处理JSON字段的序列化
-    const formatJsonField = (field: any): string => {
-      if (!field) return "";
-      try {
-        return typeof field === "string"
-          ? field
-          : JSON.stringify(field, null, 2);
-      } catch (_e) {
-        return typeof field === "object"
-          ? JSON.stringify(field)
-          : String(field);
-      }
-    };
-
     form.setFieldsValue({
       ...record,
-      pricing: formatJsonField(record.pricing),
-      clientArgs: formatJsonField(record.clientArgs),
-      requestArgs: formatJsonField(record.requestArgs),
+      pricing: record.pricing,
+      clientArgs: record.clientArgs,
+      requestArgs: record.requestArgs,
       servicewares: Array.isArray(record.servicewares)
         ? record.servicewares.join(", ")
         : record.servicewares || "",
@@ -114,27 +100,6 @@ const ModelConfigPage: React.FC = () => {
       // 表单验证
       const values = await form.validateFields();
 
-      // 安全地处理JSON字段的解析
-      /**
-       * 解析JSON字段
-       * @param field 要解析的字段值
-       * @returns 解析后的对象
-       */
-      const parseJsonField = (field: string): any => {
-        if (!field) return {};
-        try {
-          const parsed = JSON.parse(field);
-          return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-            ? parsed
-            : {};
-        } catch (_e) {
-          message.error(
-            intl.formatMessage({ id: "pages.modelConfig.jsonInvalid" }),
-          );
-          throw _e;
-        }
-      };
-
       // 处理服务项标识
       const processServicewares = (field: string): string[] => {
         if (!field) return [];
@@ -161,13 +126,9 @@ const ModelConfigPage: React.FC = () => {
       const processedValues = {
         ...values,
         approachName: values.approachName, // 根据API文档，approachName是必填项
-        pricing: values.pricing ? parseJsonField(values.pricing) : {}, // 确保pricing字段始终有值
-        clientArgs: values.clientArgs
-          ? parseJsonField(values.clientArgs)
-          : undefined,
-        requestArgs: values.requestArgs
-          ? parseJsonField(values.requestArgs)
-          : undefined,
+        pricing: values.pricing || {}, // 确保pricing字段始终有值
+        clientArgs: values.clientArgs,
+        requestArgs: values.requestArgs,
         servicewares: processServicewares(values.servicewares),
         discount:
           values.discount !== undefined ? processDiscount(values.discount) : 1, // 默认折扣为1
@@ -623,23 +584,6 @@ const ModelConfigPage: React.FC = () => {
                   id: "pages.modelConfig.pricingRequired",
                 }),
               },
-              {
-                validator: (_, value) => {
-                  if (!value) return Promise.resolve();
-                  try {
-                    JSON.parse(value);
-                    return Promise.resolve();
-                  } catch (_e) {
-                    return Promise.reject(
-                      new Error(
-                        intl.formatMessage({
-                          id: "pages.modelConfig.jsonInvalid",
-                        }),
-                      ),
-                    );
-                  }
-                },
-              },
             ]}
           >
             <JsonEditor
@@ -655,25 +599,6 @@ const ModelConfigPage: React.FC = () => {
             label={intl.formatMessage({
               id: "pages.modelConfig.clientArgs",
             })}
-            rules={[
-              {
-                validator: (_, value) => {
-                  if (!value) return Promise.resolve();
-                  try {
-                    JSON.parse(value);
-                    return Promise.resolve();
-                  } catch (_e) {
-                    return Promise.reject(
-                      new Error(
-                        intl.formatMessage({
-                          id: "pages.modelConfig.jsonInvalid",
-                        }),
-                      ),
-                    );
-                  }
-                },
-              },
-            ]}
           >
             <JsonEditor
               placeholder={intl.formatMessage({
@@ -688,25 +613,6 @@ const ModelConfigPage: React.FC = () => {
             label={intl.formatMessage({
               id: "pages.modelConfig.requestArgs",
             })}
-            rules={[
-              {
-                validator: (_, value) => {
-                  if (!value) return Promise.resolve();
-                  try {
-                    JSON.parse(value);
-                    return Promise.resolve();
-                  } catch (_e) {
-                    return Promise.reject(
-                      new Error(
-                        intl.formatMessage({
-                          id: "pages.modelConfig.jsonInvalid",
-                        }),
-                      ),
-                    );
-                  }
-                },
-              },
-            ]}
           >
             <JsonEditor
               placeholder={intl.formatMessage({
