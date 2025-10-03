@@ -76,7 +76,6 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 	}
 
 	// 6. 执行批量更新操作
-	updateCount := 0
 	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 更新不需要修改剩余配额的记录
 		if len(updateWithoutRemainingQuota) > 0 {
@@ -92,7 +91,6 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 				Update(); err != nil {
 				return gerror.Wrapf(err, "批量更新个人配额池失败（不更新剩余配额）")
 			}
-			updateCount += len(updateWithoutRemainingQuota)
 		}
 
 		// 更新需要修改剩余配额的记录
@@ -130,7 +128,6 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 					Update(); err != nil {
 					return gerror.Wrapf(err, "更新个人配额池失败（更新剩余配额）")
 				}
-				updateCount++
 			}
 		}
 
