@@ -21,6 +21,18 @@ declare namespace API {
     ok?: boolean;
   };
 
+  type SyncAutoQuotaPoolUpnsCacheReq = {
+    /** 规则名称数组（可选，留空或空数组则同步全部） */
+    ruleName?: string[];
+  };
+
+  type SyncAutoQuotaPoolUpnsCacheRes = {
+    /** 是否成功 */
+    ok: boolean;
+    /** 批量刷新时为更新的规则数量；单个规则刷新时为该规则匹配的用户数量 */
+    updatedCount: number;
+  };
+
   type AddI18nItemReq = {
     /** 翻译键 */
     key: string;

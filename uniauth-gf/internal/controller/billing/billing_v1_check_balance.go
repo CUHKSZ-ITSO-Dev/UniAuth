@@ -53,7 +53,7 @@ func (c *ControllerV1) CheckBalance(ctx context.Context, req *v1.CheckBalanceReq
 			quotaPool.RemainingQuota = quotaPool.RegularQuota
 			quotaPool.LastResetAt = gtime.Now()
 			// 更新并释放锁
-			_, err = dao.QuotapoolQuotaPool.Ctx(ctx).WherePri(quotaPool.Id).Data(quotaPool).Update()
+			_, err = dao.QuotapoolQuotaPool.Ctx(ctx).WherePri(quotaPool.QuotaPoolName).Data(quotaPool).Update()
 			if err != nil {
 				return gerror.Wrap(err, "更新配额池信息失败")
 			}
