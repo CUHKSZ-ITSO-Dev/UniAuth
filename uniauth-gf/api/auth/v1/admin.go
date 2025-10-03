@@ -44,6 +44,29 @@ type FilterPoliciesRes struct {
 	TotalPages int        `json:"totalPages" dc:"总页数。"`
 }
 
+type AddGroupingReq struct {
+	g.Meta `path:"/admin/groupings/add" tags:"Auth/Admin/CRUD" method:"post" summary:"添加 Grouping Policies" dc:"允许批量添加 Grouping Policies。"`
+	Groupings [][]string `json:"groupings" v:"required" dc:"Groupings" example:"[['student', 'staff'], ['student', 'staff']]"`
+	Skip     bool       `json:"skip" d:"true" dc:"开启时，当规则已经存在时自动跳过，不返回错误；否则会返回错误，并回退所有操作"`
+}
+type AddGroupingRes struct {
+}
+
+type EditGroupingReq struct {
+	g.Meta `path:"/admin/groupings/edit" tags:"Auth/Admin/CRUD" method:"post" summary:"编辑 Grouping Policies" dc:"编辑 Grouping Policies。需要提供老的 Grouping。"`
+	OldGrouping []string `json:"oldGrouping" v:"required" dc:"旧的 Grouping" example:"['student', 'staff']"`
+	NewGrouping []string `json:"newGrouping" v:"required" dc:"新的 Grouping" example:"['student', 'staff']"`
+}
+type EditGroupingRes struct {
+}
+
+type DeleteGroupingReq struct {
+	g.Meta `path:"/admin/groupings/delete" tags:"Auth/Admin/CRUD" method:"post" summary:"删除 Grouping Policies" dc:"允许批量删除 Grouping Policies。原子性操作，当规则中有一条和数据库中的规则不匹配，立即回滚所有操作并返回错误。"`
+	Groupings [][]string `json:"groupings" v:"required" dc:"Groupings" example:"[['student', 'staff'], ['student', 'staff']]"`
+}
+type DeleteGroupingRes struct {
+}
+
 type FilterGroupingsReq struct {
 	g.Meta `path:"/admin/groupings/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Grouping Policies" dc:"根据给定的条件，返回 Grouping Policies 角色继承关系。留空的字段（传空 Array）将被忽略。"`
 	Upns   []string `json:"users" dc:"Upn 列表" example:"['122020255@link.cuhk.edu.cn', 'sadt@cuhk.edu.cn']"`
