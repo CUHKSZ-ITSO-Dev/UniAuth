@@ -14,7 +14,7 @@ import (
 
 // SyncPersonalQuotaPools 根据自动配额池规则名称，更新所有个人配额池配置
 func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
-	// 1. 先获取自动配额池配置（短事务）
+	// 1. 先获取自动配额池配置（独立短事务）
 	var autoQuotaPoolConfig *entity.ConfigAutoQuotaPool
 	err := dao.ConfigAutoQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		if err := dao.ConfigAutoQuotaPool.Ctx(ctx).
@@ -40,91 +40,84 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 		personalQuotaPoolNames[i] = "personal-" + upn
 	}
 
-	// 4. 批量查询现有的个人配额池（短事务）
-	var existingQuotaPools []*entity.QuotapoolQuotaPool
+	targetCronCycle := autoQuotaPoolConfig.CronCycle
+	targetRegularQuota := autoQuotaPoolConfig.RegularQuota
+	targetDisabled := !autoQuotaPoolConfig.Enabled
+
+	// 查询+更新事务
 	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		// 4. 批量查询现有的个人配额池
+		var existingQuotaPools []*entity.QuotapoolQuotaPool
 		if err := dao.QuotapoolQuotaPool.Ctx(ctx).
 			WhereIn("quota_pool_name", personalQuotaPoolNames).
 			LockUpdate().
 			Scan(&existingQuotaPools); err != nil {
 			return gerror.Wrapf(err, "批量查询个人配额池失败")
 		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
 
-	// 5. 构建更新数据，分离需要更新剩余配额和不需要更新的记录
-	type quotaPoolUpdate struct {
-		name string
-		data g.Map
-	}
+		// 5. 构建更新数据
+		type quotaPoolUpdate struct {
+			name string
+			data g.Map
+		}
+		updateWithoutRemaining := make([]string, 0)
+		updatesWithRemaining := make([]quotaPoolUpdate, 0)
 
-	var updateWithoutRemainingQuota []string
-	var updatesWithRemaining []quotaPoolUpdate
-
-	existingPoolMap := make(map[string]*entity.QuotapoolQuotaPool)
-	for _, pool := range existingQuotaPools {
-		existingPoolMap[pool.QuotaPoolName] = pool
-	}
-
-	targetCronCycle := autoQuotaPoolConfig.CronCycle
-	targetRegularQuota := autoQuotaPoolConfig.RegularQuota
-	targetDisabled := !autoQuotaPoolConfig.Enabled
-
-	for _, poolName := range personalQuotaPoolNames {
-		pool, exists := existingPoolMap[poolName]
-		if !exists {
-			continue
+		existingPoolMap := make(map[string]*entity.QuotapoolQuotaPool)
+		for _, pool := range existingQuotaPools {
+			existingPoolMap[pool.QuotaPoolName] = pool
 		}
 
-		baseFieldsChanged := pool.CronCycle != targetCronCycle ||
-			!pool.RegularQuota.Equal(targetRegularQuota) ||
-			pool.Disabled != targetDisabled
-
-		if !pool.Disabled && autoQuotaPoolConfig.Enabled {
-			newRegularQuota := targetRegularQuota
-			diff := newRegularQuota.Sub(pool.RegularQuota)
-			newRemainingQuota := pool.RemainingQuota
-
-			if diff.GreaterThan(decimal.Zero) { // 新常规配额 > 原常规配额
-				// 新剩余配额 = 原有剩余配额 + (新常规配额 - 原有常规配额)
-				newRemainingQuota = newRemainingQuota.Add(diff)
-			} else if diff.LessThan(decimal.Zero) { // 新常规配额 < 原常规配额
-				// 新剩余配额 = min{原有剩余配额, 新常规配额}
-				if newRegularQuota.LessThan(newRemainingQuota) {
-					newRemainingQuota = newRegularQuota
-				}
+		for _, poolName := range personalQuotaPoolNames {
+			pool, exists := existingPoolMap[poolName]
+			if !exists {
+				continue
 			}
 
-			remainingChanged := !pool.RemainingQuota.Equal(newRemainingQuota)
+			baseFieldsChanged := pool.CronCycle != targetCronCycle ||
+				!pool.RegularQuota.Equal(targetRegularQuota) ||
+				pool.Disabled != targetDisabled
 
-			// 如果基础字段或剩余配额发生变化，则需要更新
-			if baseFieldsChanged || remainingChanged {
-				updateData := g.Map{
-					"cron_cycle":      targetCronCycle,
-					"regular_quota":   newRegularQuota,
-					"disabled":        targetDisabled,
-					"remaining_quota": newRemainingQuota,
+			if !pool.Disabled && autoQuotaPoolConfig.Enabled {
+				newRegularQuota := targetRegularQuota
+				diff := newRegularQuota.Sub(pool.RegularQuota)
+				newRemainingQuota := pool.RemainingQuota
+
+				if diff.GreaterThan(decimal.Zero) { // 新常规配额 > 原常规配额
+					// 新剩余配额 = 原有剩余配额 + (新常规配额 - 原有常规配额)
+					newRemainingQuota = newRemainingQuota.Add(diff)
+				} else if diff.LessThan(decimal.Zero) { // 新常规配额 < 原常规配额
+					// 新剩余配额 = min{原有剩余配额, 新常规配额}
+					if newRegularQuota.LessThan(newRemainingQuota) {
+						newRemainingQuota = newRegularQuota
+					}
 				}
-				updatesWithRemaining = append(updatesWithRemaining, quotaPoolUpdate{
-					name: poolName,
-					data: updateData,
-				})
+				remainingChanged := !pool.RemainingQuota.Equal(newRemainingQuota)
+
+				// 如果基础字段或剩余配额发生变化，则更新 updateWithRemaining
+				if baseFieldsChanged || remainingChanged {
+					updateData := g.Map{
+						"cron_cycle":      targetCronCycle,
+						"regular_quota":   newRegularQuota,
+						"disabled":        targetDisabled,
+						"remaining_quota": newRemainingQuota,
+					}
+					updatesWithRemaining = append(updatesWithRemaining, quotaPoolUpdate{
+						name: poolName,
+						data: updateData,
+					})
+				}
+				continue
 			}
-			continue
+
+			// 如果仅基础字段发生变化，则更新 updateWithoutRemaining
+			if baseFieldsChanged {
+				updateWithoutRemaining = append(updateWithoutRemaining, poolName)
+			}
 		}
 
-		if baseFieldsChanged {
-			updateWithoutRemainingQuota = append(updateWithoutRemainingQuota, poolName)
-		}
-	}
-
-	// 6. 执行批量更新操作
-	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		// 更新不需要修改剩余配额的记录
-		if len(updateWithoutRemainingQuota) > 0 {
+		// 6. 批量更新个人配额池（不更新剩余配额）
+		if len(updateWithoutRemaining) > 0 {
 			updateData := g.Map{
 				"cron_cycle":    targetCronCycle,
 				"regular_quota": targetRegularQuota,
@@ -132,14 +125,14 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 			}
 
 			if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).
-				WhereIn("quota_pool_name", updateWithoutRemainingQuota).
+				WhereIn("quota_pool_name", updateWithoutRemaining).
 				Data(updateData).
 				Update(); err != nil {
 				return gerror.Wrapf(err, "批量更新个人配额池失败（不更新剩余配额）")
 			}
 		}
 
-		// 更新需要修改剩余配额的记录
+		// 7. 批量更新个人配额池（更新剩余配额）
 		if len(updatesWithRemaining) > 0 {
 			for _, update := range updatesWithRemaining {
 				if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).
@@ -150,7 +143,6 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 				}
 			}
 		}
-
 		return nil
 	})
 	if err != nil {
