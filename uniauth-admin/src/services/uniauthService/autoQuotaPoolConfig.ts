@@ -54,9 +54,9 @@ export async function deleteConfigAutoConfig(
   });
 }
 
-/** 手动同步 UPN 缓存 POST /config/autoConfig/syncUpnsCache */
+/** 手动同步自动配额池规则的 upns_cache POST /config/autoConfig/syncUpnsCache */
 export async function postConfigAutoConfigSyncUpnsCache(
-  body?: API.SyncAutoQuotaPoolUpnsCacheReq,
+  body: API.SyncAutoQuotaPoolUpnsCacheReq,
   options?: { [key: string]: any },
 ) {
   return request<API.SyncAutoQuotaPoolUpnsCacheRes>(
@@ -66,7 +66,7 @@ export async function postConfigAutoConfigSyncUpnsCache(
       headers: {
         "Content-Type": "application/json",
       },
-      data: body || {},
+      data: body,
       ...(options || {}),
     },
   );

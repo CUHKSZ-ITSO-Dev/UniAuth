@@ -16,7 +16,7 @@ export async function getQuotaPool(
   });
 }
 
-/** 编辑配额池 PUT /quotaPool */
+/** 编辑配额池 除了 quotaPoolName 字段必传之外，其他字段可以不传。不传的字段不会更新。 PUT /quotaPool */
 export async function putQuotaPool(
   body: API.EditQuotaPoolReq,
   options?: { [key: string]: any },

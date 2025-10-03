@@ -139,14 +139,31 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       const values = await form.validateFields();
       setEditLoading(true);
 
-      const res = await putQuotaPool({
+      // 只包含发生变化的字段
+      const requestBody: API.EditQuotaPoolReq = {
         quotaPoolName: quotaPoolName,
-        cronCycle: values.cronCycle,
-        regularQuota: values.regularQuota,
-        extraQuota: values.extraQuota || 0,
-        personal: values.personal,
-        disabled: !values.enabled,
-      });
+      };
+
+      // 只传递发生变化的字段
+      if (quotaPoolDetail) {
+        if (values.cronCycle !== quotaPoolDetail.cronCycle) {
+          requestBody.cronCycle = values.cronCycle;
+        }
+        if (values.regularQuota !== quotaPoolDetail.regularQuota) {
+          requestBody.regularQuota = values.regularQuota;
+        }
+        if ((values.extraQuota || 0) !== quotaPoolDetail.extraQuota) {
+          requestBody.extraQuota = values.extraQuota || 0;
+        }
+        if (values.personal !== (quotaPoolDetail.personal ?? false)) {
+          requestBody.personal = values.personal;
+        }
+        if (!values.enabled !== (quotaPoolDetail.disabled ?? false)) {
+          requestBody.disabled = !values.enabled;
+        }
+      }
+
+      const res = await putQuotaPool(requestBody);
 
       if (res?.ok) {
         message.success(

@@ -139,9 +139,6 @@ const QuotaPoolDetailsPage: FC = () => {
   const handleEnableQuotaPool = async () => {
     const res = await putQuotaPool({
       quotaPoolName: quotaPoolName,
-      cronCycle: quotaPoolDetail?.cronCycle || "",
-      regularQuota: quotaPoolDetail?.regularQuota || 0,
-      personal: quotaPoolDetail?.personal || false,
       disabled: false,
     });
     if (res.ok) {
@@ -167,9 +164,6 @@ const QuotaPoolDetailsPage: FC = () => {
   const handleDisableQuotaPool = async () => {
     const res = await putQuotaPool({
       quotaPoolName: quotaPoolName,
-      cronCycle: quotaPoolDetail?.cronCycle || "",
-      regularQuota: quotaPoolDetail?.regularQuota || 0,
-      personal: quotaPoolDetail?.personal || false,
       disabled: true,
     });
     if (res.ok) {
