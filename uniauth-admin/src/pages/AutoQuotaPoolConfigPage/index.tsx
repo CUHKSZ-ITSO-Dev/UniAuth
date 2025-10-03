@@ -102,6 +102,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     // 设置默认值，新规则默认启用
     form.setFieldsValue({
       enabled: true,
+      upnsCache: "",
     });
     setModalVisible(true);
   };
@@ -637,7 +638,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                 defaultMessage: "Please enter UPN cache",
               })}
               autoSize={{ minRows: 4, maxRows: 10 }}
-              disabled={!!editingRecord}
+              disabled={true}
             />
           </Form.Item>
         </Form>
