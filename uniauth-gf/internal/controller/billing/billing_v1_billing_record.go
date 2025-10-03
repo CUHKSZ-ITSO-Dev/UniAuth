@@ -11,6 +11,7 @@ import (
 
 	v1 "uniauth-gf/api/billing/v1"
 	"uniauth-gf/internal/dao"
+	"uniauth-gf/internal/model/entity"
 	"uniauth-gf/internal/service/exchangeRate"
 )
 
@@ -35,17 +36,23 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 	}()
 
 	// 根据配额池属性是否为个人自动判断计费方案
-	personal, err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields("personal").Where("quota_pool_name = ?", req.Source).Value()
+	var qp *entity.QuotapoolQuotaPool
+	err = dao.QuotapoolQuotaPool.Ctx(ctx).Fields("personal, disabled").Where("quota_pool_name = ?", req.Source).Scan(&qp)
 	if err != nil {
 		err = gerror.Wrap(err, "获取配额池当前的剩余余额失败")
 		return
 	}
-	if personal == nil {
+	if qp == nil {
 		err = gerror.New("没有找到这个配额池。请重新检查")
 		return
 	}
+	if qp.Disabled {
+		err = gerror.New("这个配额池被禁用了，不能使用")
+		return
+	}
+	
 	var plan string 
-	if personal.Bool() {
+	if qp.Personal {
 		plan = "Included"
 	} else {
 		plan = "Quota Pool"

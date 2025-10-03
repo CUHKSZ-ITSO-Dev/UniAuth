@@ -205,13 +205,16 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
     try {
       const now = new Date();
       const startOfYear = new Date(now.getFullYear(), 0, 1);
+      // 结束时间加一天，确保包含当天的所有数据
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
 
       const response = await postBillingAdminGet({
         quotaPools: [quotaPoolName],
         svc: [],
         product: [],
         startTime: startOfYear.toISOString().split("T")[0],
-        endTime: now.toISOString().split("T")[0],
+        endTime: tomorrow.toISOString().split("T")[0],
       });
 
       if (response.records) {
@@ -246,7 +249,8 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       setExportLoading(true);
 
       const startTime = values.dateRange[0].format("YYYY-MM-DD");
-      const endTime = values.dateRange[1].format("YYYY-MM-DD");
+      // 结束时间加一天，确保包含结束日期当天的所有数据
+      const endTime = values.dateRange[1].add(1, "day").format("YYYY-MM-DD");
 
       const response = await postBillingAdminOpenApiExport({
         quotaPools: [quotaPoolName],
@@ -361,7 +365,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       search: false,
 
       render: (_, record) => (
-        <Text type="danger">${Number(record.cost).toFixed(4)}</Text>
+        <Text type="danger">￥{Number(record.cost).toFixed(4)}</Text>
       ),
     },
     {
@@ -517,7 +521,11 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       const now = dayjs();
       const thirtyDaysAgo = now.subtract(30, "day");
       const defaultStartTime = thirtyDaysAgo.format("YYYY-MM-DD");
-      const defaultEndTime = now.format("YYYY-MM-DD");
+
+      // 根据 params.endTime 是否存在来确定结束时间（结束时间加一天以包含当天数据）
+      const endTime = params.endTime
+        ? dayjs(params.endTime).add(1, "day").format("YYYY-MM-DD")
+        : now.add(1, "day").format("YYYY-MM-DD");
 
       // 构建API请求参数
       const requestParams = {
@@ -526,7 +534,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         product: params.product ? [params.product] : [],
         // 优先使用用户选择的时间范围，如果没有则使用默认值
         startTime: params.startTime || defaultStartTime,
-        endTime: params.endTime || defaultEndTime,
+        endTime,
       };
 
       const response = await postBillingAdminGet(requestParams);
@@ -639,7 +647,9 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               defaultMessage: "本月消费",
             })}
           >
-            <Text type="danger">${statistics.currentMonthCost.toFixed(4)}</Text>
+            <Text type="danger">
+              ￥{statistics.currentMonthCost.toFixed(4)}
+            </Text>
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
@@ -647,7 +657,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               defaultMessage: "累计消费",
             })}
           >
-            <Text strong>${statistics.totalCost.toFixed(4)}</Text>
+            <Text strong>￥{statistics.totalCost.toFixed(4)}</Text>
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({

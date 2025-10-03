@@ -30,6 +30,7 @@ import {
   putQuotaPool,
 } from "@/services/uniauthService/quotaPool";
 import { postUserinfosFilter } from "@/services/uniauthService/userInfo";
+import { validateFiveFieldCron } from "@/utils/cron";
 
 // 配额池详细信息接口
 interface QuotaPoolDetail {
@@ -140,6 +141,19 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       return;
     }
 
+    // 首先验证是否为6位格式
+    if (!validateFiveFieldCron(value)) {
+      setCronError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.cronCycle.fiveFieldRequired",
+          defaultMessage:
+            "Cron 表达式必须为5位格式（分(0-59) 时(0-23) 日(1-31) 月(1-12) 周几(0周日-6周六)）",
+        }),
+      );
+      setCronDescription("");
+      return;
+    }
+
     try {
       const description = cronstrue.toString(value, {
         locale: getLocale() === "zh-CN" ? "zh_CN" : "en_US",
@@ -184,14 +198,38 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       const values = await form.validateFields();
       setEditLoading(true);
 
-      const res = await putQuotaPool({
+      // 构建请求体
+      const requestBody: API.EditQuotaPoolReq = {
         quotaPoolName: quotaPoolName,
-        cronCycle: values.cronCycle,
-        regularQuota: values.regularQuota,
-        extraQuota: values.extraQuota || 0,
-        personal: values.personal,
-        disabled: !values.enabled,
-      });
+      };
+
+      // 如果 quotaPoolDetail 存在，只传递发生变化的字段
+      if (quotaPoolDetail) {
+        if (values.cronCycle !== quotaPoolDetail.cronCycle) {
+          requestBody.cronCycle = values.cronCycle;
+        }
+        if (values.regularQuota !== quotaPoolDetail.regularQuota) {
+          requestBody.regularQuota = values.regularQuota;
+        }
+        if ((values.extraQuota || 0) !== quotaPoolDetail.extraQuota) {
+          requestBody.extraQuota = values.extraQuota || 0;
+        }
+        if (values.personal !== (quotaPoolDetail.personal ?? false)) {
+          requestBody.personal = values.personal;
+        }
+        if (!values.enabled !== (quotaPoolDetail.disabled ?? false)) {
+          requestBody.disabled = !values.enabled;
+        }
+      } else {
+        // 如果 quotaPoolDetail 不存在，发送所有表单字段以确保用户输入不丢失
+        requestBody.cronCycle = values.cronCycle;
+        requestBody.regularQuota = values.regularQuota;
+        requestBody.extraQuota = values.extraQuota || 0;
+        requestBody.personal = values.personal;
+        requestBody.disabled = !values.enabled;
+      }
+
+      const res = await putQuotaPool(requestBody);
 
       if (res?.ok) {
         message.success(
@@ -582,7 +620,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
               defaultMessage: "定期配额",
             })}
           >
-            ${quotaPoolDetail?.regularQuota?.toFixed(2) || "0.00"}
+            ￥{quotaPoolDetail?.regularQuota?.toFixed(2) || "0.00"}
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
@@ -590,7 +628,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
               defaultMessage: "加油包",
             })}
           >
-            ${quotaPoolDetail?.extraQuota?.toFixed(2) || "0.00"}
+            ￥{quotaPoolDetail?.extraQuota?.toFixed(2) || "0.00"}
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({

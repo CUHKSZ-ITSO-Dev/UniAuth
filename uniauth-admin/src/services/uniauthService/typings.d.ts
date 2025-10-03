@@ -21,18 +21,6 @@ declare namespace API {
     ok?: boolean;
   };
 
-  type SyncAutoQuotaPoolUpnsCacheReq = {
-    /** 规则名称数组（可选，留空或空数组则同步全部） */
-    ruleName?: string[];
-  };
-
-  type SyncAutoQuotaPoolUpnsCacheRes = {
-    /** 是否成功 */
-    ok: boolean;
-    /** 批量刷新时为更新的规则数量；单个规则刷新时为该规则匹配的用户数量 */
-    updatedCount: number;
-  };
-
   type AddI18nItemReq = {
     /** 翻译键 */
     key: string;
@@ -95,6 +83,8 @@ declare namespace API {
     enabled?: boolean;
     /** 过滤条件组 */
     filterGroup?: Json;
+    /** 默认ITTools规则 */
+    defaultUserinfosRules?: Json;
     /** UPN缓存列表 */
     upnsCache?: string;
     /** 优先级，数值越小优先匹配 */
@@ -346,9 +336,9 @@ declare namespace API {
 
   type EditQuotaPoolReq = {
     quotaPoolName: string;
-    cronCycle: string;
-    regularQuota: Decimal;
-    personal: boolean;
+    cronCycle?: string;
+    regularQuota?: Decimal;
+    personal?: boolean;
     disabled?: boolean;
     extraQuota?: Decimal;
     userinfosRules?: Json;
@@ -539,17 +529,6 @@ declare namespace API {
     isAll?: boolean;
   };
 
-  type GetBillingOptionsReq = {
-    quotaPool: string;
-  };
-
-  type GetBillingOptionsRes = {
-    /** 该配额池存在的所有服务类型 */
-    services?: string[];
-    /** 该配额池存在的所有产品类型 */
-    products?: string[];
-  };
-
   type GetAllActionsReq = Record<string, never>;
 
   type GetAllActionsRes = {
@@ -637,6 +616,17 @@ declare namespace API {
   type GetAvailableModelForQuotaPoolRes = {
     /** AvailableModel 列表 */
     availableModels?: string[];
+  };
+
+  type GetBillingOptionsReq = {
+    quotaPool: string;
+  };
+
+  type GetBillingOptionsRes = {
+    /** 该配额池存在的所有服务类型 */
+    services?: string[];
+    /** 该配额池存在的所有产品类型 */
+    products?: string[];
   };
 
   type getBillingStatsChatUsageChartParams = {
@@ -805,8 +795,6 @@ declare namespace API {
   };
 
   type QuotapoolQuotaPool = {
-    /** 自增主键 */
-    id?: number;
     /** 配额池名称 */
     quotaPoolName?: string;
     /** 刷新周期 */
@@ -857,6 +845,18 @@ declare namespace API {
     field: string;
     /** 排序方向 */
     order?: "asc" | "desc";
+  };
+
+  type SyncAutoQuotaPoolUpnsCacheReq = {
+    /** 规则名称。不传或者传空数组会同步所有自动配额池的 UPNs Cache。 */
+    ruleName?: string[];
+  };
+
+  type SyncAutoQuotaPoolUpnsCacheRes = {
+    /** 是否成功 */
+    ok: boolean;
+    /** 批量刷新时，这个值是一共更改了多少个自动配额池的缓存；指定配额池刷新时，这个值是这个配额池有多少个用户 */
+    updatedCount: number;
   };
 
   type UniauthLoginReq = {
