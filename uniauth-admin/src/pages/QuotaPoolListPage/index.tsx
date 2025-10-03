@@ -32,6 +32,7 @@ import {
   postQuotaPool,
   postQuotaPoolFilter,
 } from "@/services/uniauthService/quotaPool";
+import { validateFiveFieldCron } from "@/utils/cron";
 
 const { Title, Text } = Typography;
 
@@ -507,6 +508,19 @@ const QuotaPoolListPage: React.FC = () => {
     if (!value || value.trim() === "") {
       setCronDescription("");
       setCronError("");
+      return;
+    }
+
+    // 首先验证是否为6位格式
+    if (!validateFiveFieldCron(value)) {
+      setCronError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.cronCycle.fiveFieldRequired",
+          defaultMessage:
+            "Cron 表达式必须为5位格式（分(0-59) 时(0-23) 日(1-31) 月(1-12) 周几(0周日-6周六)）",
+        }),
+      );
+      setCronDescription("");
       return;
     }
 
@@ -1834,7 +1848,7 @@ const QuotaPoolListPage: React.FC = () => {
             <Input
               placeholder={intl.formatMessage({
                 id: "pages.quotaPoolList.create.cronCycle.placeholder",
-                defaultMessage: "请输入标准 Cron 表达式，例如：0 3 * * *",
+                defaultMessage: "请输入标准 Cron 表达式，例如：0 0 3 * * *",
               })}
               onChange={(e) => handleCronChange(e.target.value)}
             />
