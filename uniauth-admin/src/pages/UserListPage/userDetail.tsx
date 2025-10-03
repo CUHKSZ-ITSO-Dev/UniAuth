@@ -75,10 +75,8 @@ const UserDetail: React.FC = () => {
         if (response?.quotaPools && Array.isArray(response.quotaPools)) {
           setQuotaPools(response.quotaPools);
 
-          // 如果有personalMap，保存配额池详情
-          if (response && response.personalMap) {
-            setQuotaPoolDetails(response.personalMap || {});
-          }
+          // 无论personalMap是否存在都更新状态，避免显示上一个用户的陈旧数据
+          setQuotaPoolDetails(response.personalMap || {});
         } else {
           setQuotaPools([]);
           setQuotaPoolDetails({});
@@ -478,11 +476,15 @@ const UserDetail: React.FC = () => {
                         key: "name",
                         render: (_, record) => (
                           <a
-                            href={`/resource/quota-pool-list/${record.name}`}
+                            href={`/resource/quota-pool-list/${encodeURIComponent(
+                              record.name,
+                            )}`}
                             onClick={(e) => {
                               e.preventDefault();
                               navigate(
-                                `/resource/quota-pool-list/${record.name}`,
+                                `/resource/quota-pool-list/${encodeURIComponent(
+                                  record.name,
+                                )}`,
                               );
                             }}
                           >
