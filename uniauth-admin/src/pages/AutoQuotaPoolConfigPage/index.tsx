@@ -1,6 +1,6 @@
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
-import { useIntl } from "@umijs/max";
+import { getLocale, useIntl } from "@umijs/max";
 import {
   Button,
   Form,
@@ -12,6 +12,7 @@ import {
   Switch,
   Typography,
 } from "antd";
+import cronstrue from "cronstrue/i18n";
 import { useRef, useState } from "react";
 import {
   deleteConfigAutoConfig,
@@ -19,6 +20,7 @@ import {
   postConfigAutoConfig,
   putConfigAutoConfig,
 } from "@/services/uniauthService/autoQuotaPoolConfig";
+import { validateSixFieldCron } from "@/utils/cron";
 
 // UI组件解构
 const { Title, Text } = Typography;
@@ -31,20 +33,70 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   // 国际化工具
   const intl = useIntl();
   // 表格操作引用
-  const actionRef = useRef<ActionType | null>(null);
+  const actionRef = useRef<ActionType>(null);
   // 控制模态框显示状态
-  const [modalVisible, setModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   // 当前编辑的记录
   const [editingRecord, setEditingRecord] =
     useState<API.AutoQuotaPoolItem | null>(null);
   // 表单实例
   const [form] = Form.useForm();
+  const [cronDescription, setCronDescription] = useState<string>("");
+  const [cronError, setCronError] = useState<string>("");
+
+  // 处理 cron 表达式校验和解析
+  const handleCronChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (!value || value.trim() === "") {
+      setCronDescription("");
+      setCronError("");
+      return;
+    }
+
+    // 首先验证是否为6位格式
+    if (!validateSixFieldCron(value)) {
+      setCronError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.cronCycle.sixFieldRequired",
+          defaultMessage: "Cron 表达式必须为6位格式（秒 分 时 日 月 周）",
+        }),
+      );
+      setCronDescription("");
+      return;
+    }
+
+    try {
+      // 解析 cron 表达式
+      const description = cronstrue.toString(value, {
+        throwExceptionOnParseError: true,
+        locale: getLocale() === "zh-CN" ? "zh_CN" : "en_US",
+        use24HourTimeFormat: true,
+        verbose: true,
+      });
+      setCronDescription(description);
+      setCronError("");
+    } catch (_error) {
+      setCronError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.cronCycle.invalid",
+          defaultMessage: "Cron 表达式格式不正确",
+        }),
+      );
+      setCronDescription("");
+    }
+  };
+
+  const resetCronState = () => {
+    setCronDescription("");
+    setCronError("");
+  };
 
   /**
    * 编辑记录处理函数
    * @param record 要编辑的记录
    */
-  const handleEdit = (record: API.AutoQuotaPoolItem) => {
+  const handleEditRecord = (record: API.AutoQuotaPoolItem) => {
+    resetCronState();
     setEditingRecord(record);
 
     // 安全地处理字段的序列化
@@ -69,7 +121,25 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       filterGroup: formatJsonField(record.filterGroup),
       upnsCache: formatJsonField(record.upnsCache),
     });
-    setModalVisible(true);
+
+    // 如果记录中有 cronCycle，尝试解析并设置描述
+    if (record.cronCycle) {
+      try {
+        const description = cronstrue.toString(record.cronCycle, {
+          throwExceptionOnParseError: true,
+          locale: getLocale() === "zh-CN" ? "zh_CN" : "en_US",
+          use24HourTimeFormat: true,
+          verbose: true,
+        });
+        setCronDescription(description);
+      } catch (error) {
+        message.error(
+          `Failed to parse cron expression: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    setIsModalVisible(true);
   };
 
   /**
@@ -95,14 +165,15 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   /**
    * 新建配置处理函数
    */
-  const handleNewConfig = () => {
+  const handleNewRecordClick = () => {
+    resetCronState();
     setEditingRecord(null);
     form.resetFields();
     // 设置默认值，新规则默认启用
     form.setFieldsValue({
       enabled: true,
     });
-    setModalVisible(true);
+    setIsModalVisible(true);
   };
 
   // 本地定义RequestData类型
@@ -116,122 +187,41 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   /**
    * 模态框确认处理函数
    */
-  const handleModalOk = async () => {
+  const handleOk = async () => {
     try {
-      // 表单验证
       const values = await form.validateFields();
-
-      // 处理表单数据，转换为API所需的格式
-      const processedValues: Partial<API.AutoQuotaPoolItem> = {
-        ruleName: values.ruleName,
-        cronCycle: values.cronCycle,
-        regularQuota: values.regularQuota ? parseFloat(values.regularQuota) : 0,
-        priority: values.priority ? parseInt(values.priority, 10) : 0,
-        enabled: values.enabled !== undefined ? values.enabled : true,
-        description: values.description || "",
-      };
-
-      // 处理filterGroup JSON字段
-      if (values.filterGroup) {
-        try {
-          processedValues.filterGroup = JSON.parse(values.filterGroup);
-        } catch (_e) {
-          message.error(
-            intl.formatMessage({
-              id: "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup",
-            }),
-          );
-          return;
-        }
-      } else {
-        // 如果没有提供filterGroup，不设置这个字段，让它保持undefined
-      }
-
-      // 处理upnsCache字段 - 现在作为字符串处理
-      if (values.upnsCache) {
-        // 直接使用字符串值，不再解析为JSON
-        processedValues.upnsCache = values.upnsCache;
-      } else {
-        // 如果没有提供upnsCache，确保传递空字符串而不是null
-        processedValues.upnsCache = [];
-      }
-
-      // 根据是否为编辑状态调用不同的API
       if (editingRecord) {
-        // 编辑现有配置
-        // 确保processedValues满足EditAutoQuotaPoolConfigReq类型要求
-        await putConfigAutoConfig(
-          processedValues as API.EditAutoQuotaPoolConfigReq,
-        );
+        // 编辑模式
+        await putConfigAutoConfig({
+          ...values,
+          id: editingRecord.id,
+        });
         message.success(
           intl.formatMessage({ id: "pages.autoQuotaPoolConfig.updateSuccess" }),
         );
       } else {
-        // 添加新配置
-        // 确保processedValues满足AddAutoQuotaPoolConfigReq类型要求
-        await postConfigAutoConfig(
-          processedValues as API.AddAutoQuotaPoolConfigReq,
-        );
+        // 新建模式
+        await postConfigAutoConfig(values);
         message.success(
           intl.formatMessage({ id: "pages.autoQuotaPoolConfig.createSuccess" }),
         );
       }
-
-      setModalVisible(false);
+      setIsModalVisible(false);
+      resetCronState(); // 重置 cron 状态
       actionRef.current?.reload();
-    } catch (_error: any) {
-      // 提供更详细的错误信息
-      let errorMessage = intl.formatMessage({
-        id: "pages.autoQuotaPoolConfig.saveFailed",
-      });
-
-      // 检查是否是字段验证错误
-      if (_error.errorFields) {
-        errorMessage = intl.formatMessage({
-          id: "pages.autoQuotaPoolConfig.formInvalid",
-        });
-      } else if (_error.message?.includes("ruleName")) {
-        errorMessage = intl.formatMessage({
-          id: "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired",
-        });
-      } else if (_error.message?.includes("cronCycle")) {
-        errorMessage = intl.formatMessage({
-          id: "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired",
-        });
-      } else if (_error.message?.includes("regularQuota")) {
-        errorMessage = intl.formatMessage({
-          id: "pages.autoQuotaPoolConfig.saveFailedRegularQuotaInvalid",
-        });
-      }
-      // 检查是否是网络或服务器错误
-      else if (
-        _error.message?.includes(
-          intl.formatMessage({ id: "pages.autoQuotaPoolConfig.requestFailed" }),
-        ) ||
-        _error.message?.includes("network")
-      ) {
-        errorMessage = intl.formatMessage({
-          id: "pages.autoQuotaPoolConfig.saveFailedNetworkError",
-        });
-      }
-      // 其他错误
-      else {
-        errorMessage = _error.message
-          ? _error.message
-          : intl.formatMessage({
-              id: "pages.autoQuotaPoolConfig.saveFailedCheckInput",
-            });
-      }
-
-      message.error(errorMessage);
+    } catch (error) {
+      message.error(
+        intl.formatMessage({ id: "pages.autoQuotaPoolConfig.saveFailed" }),
+      );
     }
   };
 
   /**
    * 模态框取消处理函数
    */
-  const handleModalCancel = () => {
-    setModalVisible(false);
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    resetCronState(); // 重置 cron 状态
     form.resetFields();
   };
 
@@ -434,7 +424,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       ellipsis: true,
       render: (_, record: API.AutoQuotaPoolItem) => (
         <div style={{ textAlign: "left" }}>
-          <a key="edit" onClick={() => handleEdit(record)}>
+          <a key="edit" onClick={() => handleEditRecord(record)}>
             {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.edit" })}
           </a>
           <span style={{ margin: "0 8px" }} />
@@ -470,7 +460,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           rowKey="ruleName"
           search={{ labelWidth: "auto" }}
           toolBarRender={() => [
-            <Button type="primary" key="new" onClick={handleNewConfig}>
+            <Button type="primary" key="new" onClick={handleNewRecordClick}>
               {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.addNew" })}
             </Button>,
           ]}
@@ -489,9 +479,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                 id: "pages.autoQuotaPoolConfig.addModalTitle",
               })
         }
-        open={modalVisible}
-        onOk={handleModalOk}
-        onCancel={handleModalCancel}
+        open={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
         width={800}
         destroyOnHidden
         forceRender
@@ -545,11 +535,29 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                 }),
               },
             ]}
+            validateStatus={
+              cronError ? "error" : cronDescription ? "success" : ""
+            }
+            help={
+              cronError ? (
+                <span style={{ color: "#ff4d4f" }}>{cronError}</span>
+              ) : cronDescription ? (
+                <span style={{ color: "#52c41a" }}>
+                  {intl.formatMessage(
+                    { id: "pages.quotaPoolList.create.cronCycle.help" },
+                    { description: cronDescription },
+                  )}
+                </span>
+              ) : (
+                ""
+              )
+            }
           >
             <Input
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.cronCyclePlaceholder",
               })}
+              onChange={handleCronChange}
             />
           </Form.Item>
 
