@@ -18,6 +18,7 @@ import {
   deleteConfigAutoConfig,
   getConfigAutoConfig,
   postConfigAutoConfig,
+  postConfigAutoConfigSyncUpnsCache,
   putConfigAutoConfig,
 } from "@/services/uniauthService/autoQuotaPoolConfig";
 
@@ -40,6 +41,8 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     useState<API.AutoQuotaPoolItem | null>(null);
   // 表单实例
   const [form] = Form.useForm();
+  // 同步操作 loading 状态（含每条与全量）
+  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
 
   /**
    * 编辑记录处理函数
@@ -105,6 +108,54 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       upnsCache: "",
     });
     setModalVisible(true);
+  };
+
+  /** 同步指定规则的 UPN 缓存 */
+  const handleSyncOne = async (ruleName?: string) => {
+    if (!ruleName || loading[ruleName] || loading.all) return;
+    setLoading((prev) => ({ ...prev, [ruleName]: true }));
+    try {
+      const res = await postConfigAutoConfigSyncUpnsCache({
+        ruleName: [ruleName],
+      });
+      const count = res.updatedCount;
+      message.success(
+        intl.formatMessage(
+          { id: "pages.autoQuotaPoolConfig.syncOneSuccess" },
+          { count },
+        ),
+      );
+      actionRef.current?.reload?.();
+    } catch (_e) {
+      message.error(
+        intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncFailed" }),
+      );
+    } finally {
+      setLoading((prev) => ({ ...prev, [ruleName]: false }));
+    }
+  };
+
+  /** 同步全部规则的 UPN 缓存 */
+  const handleSyncAll = async () => {
+    if (loading.all) return;
+    setLoading({ all: true });
+    try {
+      const res = await postConfigAutoConfigSyncUpnsCache({});
+      const updated = res.updatedCount;
+      message.success(
+        intl.formatMessage(
+          { id: "pages.autoQuotaPoolConfig.syncAllSuccess" },
+          { count: updated },
+        ),
+      );
+      actionRef.current?.reload?.();
+    } catch (_e) {
+      message.error(
+        intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncFailed" }),
+      );
+    } finally {
+      setLoading({ all: false });
+    }
   };
 
   // 本地定义RequestData类型
@@ -331,6 +382,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       dataIndex: "regularQuota",
       valueType: "digit",
       search: false,
+      align: "right",
       render: (_, record: API.AutoQuotaPoolItem) =>
         record.regularQuota !== undefined ? (
           record.regularQuota.toString()
@@ -345,6 +397,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       dataIndex: "enabled",
       valueType: "select",
       search: true,
+      align: "center",
       valueEnum: {
         true: {
           text: intl.formatMessage({
@@ -373,6 +426,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       dataIndex: "priority",
       valueType: "digit",
       search: false,
+      align: "right",
       render: (_, record: API.AutoQuotaPoolItem) =>
         record.priority || (
           <Text type="secondary">
@@ -434,11 +488,22 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       title: intl.formatMessage({ id: "pages.autoQuotaPoolConfig.actions" }),
       valueType: "option",
       ellipsis: true,
+      fixed: "right",
       render: (_, record: API.AutoQuotaPoolItem) => (
         <div style={{ textAlign: "left" }}>
           <a key="edit" onClick={() => handleEdit(record)}>
             {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.edit" })}
           </a>
+          <span style={{ margin: "0 8px" }} />
+          <Button
+            type="link"
+            key="sync"
+            onClick={() => handleSyncOne(record.ruleName)}
+            loading={!!loading[record.ruleName || ""]}
+            disabled={!!loading.all}
+          >
+            {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncOne" })}
+          </Button>
           <span style={{ margin: "0 8px" }} />
           <Popconfirm
             key="delete"
@@ -470,11 +535,27 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           columns={columns}
           actionRef={actionRef}
           rowKey="ruleName"
+          tableLayout="fixed"
+          scroll={{ x: "max-content" }}
           search={{ labelWidth: "auto" }}
           toolBarRender={() => [
             <Button type="primary" key="new" onClick={handleNewConfig}>
               {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.addNew" })}
             </Button>,
+            <Popconfirm
+              key="syncAllConfirm"
+              title={intl.formatMessage({
+                id: "pages.autoQuotaPoolConfig.syncAllConfirm",
+              })}
+              onConfirm={handleSyncAll}
+              disabled={!!loading.all}
+            >
+              <Button key="syncAll" loading={!!loading.all}>
+                {intl.formatMessage({
+                  id: "pages.autoQuotaPoolConfig.syncAll",
+                })}
+              </Button>
+            </Popconfirm>,
           ]}
           request={configListRequest}
         />

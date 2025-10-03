@@ -69,3 +69,12 @@ type AddAutoQuotaPoolConfigReq struct {
 type AddAutoQuotaPoolConfigRes struct {
 	OK bool `json:"ok" dc:"是否成功"`
 }
+
+type SyncAutoQuotaPoolUpnsCacheReq struct {
+	g.Meta   `path:"/autoConfig/syncUpnsCache" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"手动同步自动配额池规则的 upns_cache"`
+	RuleName []string `json:"ruleName" dc:"规则名称。不传或者传空数组会同步所有自动配额池的 UPNs Cache。"`
+}
+type SyncAutoQuotaPoolUpnsCacheRes struct {
+	OK           bool `json:"ok" v:"required" dc:"是否成功"`
+	UpdatedCount int  `json:"updatedCount" v:"required" dc:"批量刷新时，这个值是一共更改了多少个自动配额池的缓存；指定配额池刷新时，这个值是这个配额池有多少个用户"`
+}

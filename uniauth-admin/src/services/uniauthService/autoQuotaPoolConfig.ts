@@ -53,3 +53,21 @@ export async function deleteConfigAutoConfig(
     ...(options || {}),
   });
 }
+
+/** 手动同步 UPN 缓存 POST /config/autoConfig/syncUpnsCache */
+export async function postConfigAutoConfigSyncUpnsCache(
+  body?: API.SyncAutoQuotaPoolUpnsCacheReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.SyncAutoQuotaPoolUpnsCacheRes>(
+    "/config/autoConfig/syncUpnsCache",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body || {},
+      ...(options || {}),
+    },
+  );
+}

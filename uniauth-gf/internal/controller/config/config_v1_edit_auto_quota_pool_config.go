@@ -12,6 +12,7 @@ import (
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
+	"uniauth-gf/internal/service/autoQuotaPool"
 )
 
 func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.EditAutoQuotaPoolConfigReq) (res *v1.EditAutoQuotaPoolConfigRes, err error) {
@@ -54,6 +55,11 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 			Data(data).
 			Update(); err != nil {
 			return gerror.Wrap(err, "更新自动配额池规则失败")
+		}
+
+		// 更新成功后，立即同步该规则的 upns_cache，失败则回滚本次事务
+		if _, syncErr := autoQuotaPool.SyncUpnsCache(ctx, []string{req.RuleName}); syncErr != nil {
+			return gerror.Wrap(syncErr, "编辑后同步 upns_cache 失败")
 		}
 		return nil
 	})
