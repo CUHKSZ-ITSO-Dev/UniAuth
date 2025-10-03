@@ -31,12 +31,12 @@ export async function postBillingCheckTokensUsage(
   });
 }
 
-/** 计费接口 上传计费请求，完成配额池的扣费。 POST /billing/record */
-export async function postBillingRecord(
-  body: API.BillingRecordReq,
+/** 获取计费选项 获取指定配额池的所有服务和产品类型选项 POST /billing/options */
+export async function postBillingOptions(
+  body: API.GetBillingOptionsReq,
   options?: { [key: string]: any },
 ) {
-  return request<API.BillingRecordRes>("/billing/record", {
+  return request<API.GetBillingOptionsRes>("/billing/options", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -46,12 +46,12 @@ export async function postBillingRecord(
   });
 }
 
-/** 获取计费选项 获取指定配额池的所有服务和产品类型选项 POST /billing/options */
-export async function postBillingOptions(
-  body: API.GetBillingOptionsReq,
+/** 计费接口 上传计费请求，完成配额池的扣费。 POST /billing/record */
+export async function postBillingRecord(
+  body: API.BillingRecordReq,
   options?: { [key: string]: any },
 ) {
-  return request<API.GetBillingOptionsRes>("/billing/options", {
+  return request<API.BillingRecordRes>("/billing/record", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
