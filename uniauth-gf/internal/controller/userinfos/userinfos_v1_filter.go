@@ -62,6 +62,20 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 		}
 	}
 
+	// 当 filter 为 nil 时，按照“空结果”语义直接返回
+	// 保持分页字段与 isAll 一致，便于前端一致处理
+	if req.Filter == nil {
+		return &v1.FilterRes{
+			UserUpns:   []string{},
+			UserInfos:  nil,
+			Total:      0,
+			Page:       req.Pagination.Page,
+			PageSize:   req.Pagination.PageSize,
+			TotalPages: 0,
+			IsAll:      req.Pagination.All,
+		}, nil
+	}
+
 	// 创建查询模型
 	model := dao.UserinfosUserInfos.Ctx(ctx)
 
@@ -138,7 +152,7 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 		upns[i] = info.Upn
 	}
 	res.UserUpns = upns
-	
+
 	if req.Verbose {
 		res.UserInfos = userInfos
 	}
@@ -213,7 +227,8 @@ func (c *ControllerV1) buildGroupCondition(group *v1.FilterGroup) (string, []int
 		}
 		if conditionStr != "" {
 			conditions = append(conditions, conditionStr)
-			args = append(args, condArgs)
+			// 这里需要展开 condArgs，否则会形成嵌套切片，导致 SQL 参数绑定异常
+			args = append(args, condArgs...)
 		}
 	}
 
