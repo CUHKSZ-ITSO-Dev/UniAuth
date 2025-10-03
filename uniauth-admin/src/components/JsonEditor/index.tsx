@@ -45,7 +45,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       } else {
         setJsonObject(value);
         try {
-          setJsonString(JSON.stringify(value, null, 2));
+          setJsonString(JSON.stringify(value)); // 不自动格式化
           setError("");
         } catch (e) {
           setJsonString(String(value));
@@ -78,7 +78,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       const parsed = JSON.parse(newJsonString);
       setJsonObject(parsed);
       setError("");
-      onChange?.(parsed);
+      onChange?.(newJsonString); // 传递原始字符串而不是格式化后的字符串
     } catch (e) {
       setError(intl.formatMessage({ id: "component.jsonEditor.invalidJson" }));
       // 即使JSON无效，也传递字符串值
@@ -94,7 +94,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     setJsonObject(newJsonObject);
 
     try {
-      const newJsonString = JSON.stringify(newJsonObject, null, 2);
+      const newJsonString = JSON.stringify(newJsonObject); // 不自动格式化
       setJsonString(newJsonString);
       setError("");
       onChange?.(newJsonObject);
@@ -123,6 +123,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonString(formatted);
       setJsonObject(parsed);
       setError("");
+      onChange?.(formatted); // 通知父组件格式化后的值
     } catch (e) {
       message.error(
         intl.formatMessage({ id: "component.jsonEditor.formatFailed" }),
@@ -142,6 +143,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonString(compacted);
       setJsonObject(parsed);
       setError("");
+      onChange?.(compacted); // 通知父组件压缩后的值
     } catch (e) {
       message.error(
         intl.formatMessage({ id: "component.jsonEditor.compactFailed" }),
