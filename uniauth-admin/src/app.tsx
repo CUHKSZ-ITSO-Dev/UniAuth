@@ -3,7 +3,7 @@ import type { Settings as LayoutSettings } from "@ant-design/pro-components";
 import { SettingDrawer } from "@ant-design/pro-components";
 import type { RequestConfig, RunTimeLayoutConfig } from "@umijs/max";
 import { Link } from "@umijs/max";
-import { AvatarDropdown, AvatarName, Footer, SelectLang } from "@/components";
+import { AvatarDropdown, AvatarName, SelectLang } from "@/components";
 import defaultSettings from "../config/defaultSettings";
 import { errorConfig } from "./requestErrorConfig";
 import "@ant-design/v5-patch-for-react-19";
@@ -80,7 +80,7 @@ export const layout: RunTimeLayoutConfig = ({
     // waterMarkProps: {
     //   content: initialState?.currentUser?.name,
     // },
-    footerRender: () => <Footer />,
+    // footerRender: () => <Footer />,
     onPageChange: () => {
       // 移除登录检查
       // const { location } = history;
