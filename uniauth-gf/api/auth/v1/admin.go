@@ -68,11 +68,18 @@ type DeleteGroupingRes struct {
 }
 
 type FilterGroupingsReq struct {
-	g.Meta `path:"/admin/groupings/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Grouping Policies" dc:"根据给定的条件，返回 Grouping Policies 角色继承关系。留空的字段（传空 Array）将被忽略。"`
-	Upns   []string `json:"users" dc:"Upn 列表" example:"['122020255@link.cuhk.edu.cn', 'sadt@cuhk.edu.cn']"`
-	Roles  []string `json:"roles" dc:"Roles 列表" example:"['student', 'staff']"`
+	g.Meta   `path:"/admin/groupings/filter" tags:"Auth/Admin/Query" method:"post" summary:"筛选 Grouping Policies" dc:"根据给定的条件，返回 Grouping Policies 角色继承关系。留空的字段（传空 Array）将被忽略。"`
+	G1       string `json:"g1" dc:"G1 列表"`
+	G2       string `json:"g2" dc:"G2 列表"`
+	Rule     string `json:"rule" dc:"Rule"`
+	Page     int    `json:"page" d:"1" dc:"分页。当前页码。"`
+	PageSize int    `json:"pageSize" d:"10" dc:"分页。每页条数。"`
 }
 type FilterGroupingsRes struct {
-	g.Meta    `mime:"application/json"`
-	Groupings [][]string `json:"groups"`
+	g.Meta     `mime:"application/json"`
+	Groupings  [][]string `json:"groups"`
+	Total      int        `json:"total" dc:"总条数。"`
+	Page       int        `json:"page" dc:"当前页码。"`
+	PageSize   int        `json:"pageSize" dc:"每页条数。"`
+	TotalPages int        `json:"totalPages" dc:"总页数。"`
 }
