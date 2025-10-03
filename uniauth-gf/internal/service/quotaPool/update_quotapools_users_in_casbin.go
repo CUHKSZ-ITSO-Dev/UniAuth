@@ -40,7 +40,7 @@ func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) er
 		}
 	}
 	if len(failures) > 0 {
-		return gerror.Newf("以下配额池更新错误：%v", strings.Join(failures, "\n"))
+		return gerror.Newf("以下配额池更新错误：\n%v", strings.Join(failures, "\n"))
 	}
 	return nil
 }

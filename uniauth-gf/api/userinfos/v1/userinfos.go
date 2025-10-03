@@ -43,7 +43,7 @@ type PaginationReq struct {
 
 type FilterReq struct {
 	g.Meta     `path:"/filter" tags:"UserInfo" method:"post" summary:"自定义筛选用户信息" dc:"根据过滤条件，返回用户的所有信息。支持复杂条件查询、排序和分页。"`
-	Filter     *FilterGroup     `json:"filter" v:"required#需要filter" dc:"过滤条件，支持复杂的逻辑组合查询"`
+	Filter     *FilterGroup     `json:"filter" dc:"过滤条件，支持复杂的逻辑组合查询。注意：不传 Filter 会返回空值，不会进行查询。如果要返回所有信息，则至少需要传递 {}。"`
 	Sort       []*SortCondition `json:"sort" dc:"排序条件，支持多字段排序"`
 	Pagination *PaginationReq   `json:"pagination" dc:"分页参数，支持分页或查询全部"`
 	Verbose    bool             `json:"verbose" d:"true" dc:"是否返回详细用户信息，false时仅返回UPN列表"`
