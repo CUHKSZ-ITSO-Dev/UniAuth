@@ -88,6 +88,48 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     }
   };
 
+  // 处理键盘事件，特别是Tab键
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Tab" && !readOnly) {
+      e.preventDefault();
+
+      const textarea = e.target as HTMLTextAreaElement;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+
+      // 插入两个空格作为缩进
+      const newText = `${jsonString.substring(0, start)}  ${jsonString.substring(end)}`;
+
+      setJsonString(newText);
+
+      // 更新光标位置
+      setTimeout(() => {
+        textarea.selectionStart = start + 2;
+        textarea.selectionEnd = start + 2;
+      }, 0);
+
+      // 触发onChange事件
+      try {
+        if (newText.trim() === "") {
+          setJsonObject(null);
+          setError("");
+          onChange?.(null);
+          return;
+        }
+
+        const parsed = JSON.parse(newText);
+        setJsonObject(parsed);
+        setError("");
+        onChange?.(newText);
+      } catch (_e) {
+        setError(
+          intl.formatMessage({ id: "component.jsonEditor.invalidJson" }),
+        );
+        onChange?.(newText);
+      }
+    }
+  };
+
   // 处理JSON对象变化（来自react-json-view）
   const handleJsonChange = (edit: any) => {
     if (readOnly) return;
@@ -278,6 +320,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
                 <Input.TextArea
                   value={jsonString}
                   onChange={handleJsonStringChange}
+                  onKeyDown={handleKeyDown}
                   placeholder={placeholder}
                   readOnly={readOnly}
                   style={{
@@ -409,6 +452,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
           <Input.TextArea
             value={jsonString}
             onChange={handleJsonStringChange}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             readOnly={readOnly}
             autoSize={{ minRows: 4, maxRows: 12 }}
