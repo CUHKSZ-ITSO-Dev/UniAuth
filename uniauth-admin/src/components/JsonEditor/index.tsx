@@ -286,7 +286,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
             position: "relative",
           }}
         >
-          {/* 全屏模式下显示当前字体大小 */}
+          {/* 全屏模式下显示当前字体大小，允许手动修改 */}
           <div
             style={{
               position: "absolute",
@@ -298,9 +298,25 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
               fontSize: "12px",
               color: "#666",
               zIndex: 10,
+              display: "flex",
+              alignItems: "center",
             }}
           >
-            {fontSize}px
+            <Input
+              type="number"
+              value={fontSize}
+              onChange={(e) => setFontSize(Number(e.target.value))}
+              style={{
+                width: "50px",
+                fontSize: "12px",
+                padding: "0 2px",
+                backgroundColor: "transparent",
+                borderColor: "transparent",
+              }}
+              min={1}
+              step={1}
+            />
+            <span style={{ marginLeft: "2px" }}>px</span>
           </div>
 
           {!readOnly && (
@@ -428,7 +444,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
         position: "relative",
       }}
     >
-      {/* 显示当前字体大小 */}
+      {/* 显示当前字体大小，允许手动修改 */}
       <div
         style={{
           position: "absolute",
@@ -440,9 +456,25 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
           fontSize: "12px",
           color: "#666",
           zIndex: 10,
+          display: "flex",
+          alignItems: "center",
         }}
       >
-        {fontSize}px
+        <Input
+          type="number"
+          value={fontSize}
+          onChange={(e) => setFontSize(Number(e.target.value))}
+          style={{
+            width: "50px",
+            fontSize: "12px",
+            padding: "0 2px",
+            backgroundColor: "transparent",
+            borderColor: "transparent",
+          }}
+          min={1}
+          step={1}
+        />
+        <span style={{ marginLeft: "2px" }}>px</span>
       </div>
 
       {!readOnly && (
