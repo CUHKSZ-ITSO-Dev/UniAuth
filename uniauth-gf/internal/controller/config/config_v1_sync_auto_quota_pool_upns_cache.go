@@ -15,9 +15,10 @@ func (c *ControllerV1) SyncAutoQuotaPoolUpnsCache(ctx context.Context, req *v1.S
 		return
 	} else {
 		res = &v1.SyncAutoQuotaPoolUpnsCacheRes{}
-		res.MatchedUserCount = matchedUserCountMap
-		for k := range matchedUserCountMap{
-			res.UpdatedRules = append(res.UpdatedRules, k)
+		if len(req.RuleName) == 1 {
+			res.UpdatedCount = matchedUserCountMap[req.RuleName[0]]
+		} else {
+			res.UpdatedCount = len(matchedUserCountMap)
 		}
 		res.OK = true
 		return

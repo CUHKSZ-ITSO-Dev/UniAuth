@@ -14,22 +14,22 @@ import (
 	"uniauth-gf/internal/model/entity"
 )
 
-// SyncUpnsCache 重新计算并回写指定规则的 upns_cache，返回每个自动配额池的用户数。
+// SyncUpnsCache 重新计算并回写指定规则的 upns_cache，返回每个自动配额池的用户数 Map。
 func SyncUpnsCache(ctx context.Context, ruleNames []string) (matchedUserCountMap g.MapStrInt, err error) {
 	matchedUserCountMap = g.MapStrInt{}
-    if err := dao.ConfigAutoQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-        var autoQuotaPoolList []*entity.ConfigAutoQuotaPool
-        // 一次性拿到所有数据并锁定数据表，避免逐条锁定导致数据库死锁
-        if err := dao.ConfigAutoQuotaPool.Ctx(ctx).
-            OmitEmpty().
-            WhereIn("rule_name", ruleNames).
-            LockUpdate().
-            Scan(&autoQuotaPoolList); err != nil {
+	if err := dao.ConfigAutoQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		var autoQuotaPoolList []*entity.ConfigAutoQuotaPool
+		// 一次性拿到所有数据并锁定数据表，避免逐条锁定导致数据库死锁
+		if err := dao.ConfigAutoQuotaPool.Ctx(ctx).
+			OmitEmpty().
+			WhereIn("rule_name", ruleNames).
+			LockUpdate().
+			Scan(&autoQuotaPoolList); err != nil {
 			return gerror.Wrapf(err, "获取自动配额池 %v 记录失败", ruleNames)
 		}
 
-        // 计算需要更新的数据
-        updateData := g.MapStrAny{}
+		// 计算需要更新的数据
+		updateData := g.MapStrAny{}
 		for _, config := range autoQuotaPoolList {
 			var cfgFilterGroup userinfosV1.FilterGroup
 			if err := config.FilterGroup.Scan(&cfgFilterGroup); err != nil {
@@ -44,12 +44,12 @@ func SyncUpnsCache(ctx context.Context, ruleNames []string) (matchedUserCountMap
 			}); err != nil {
 				return gerror.Wrapf(err, "根据 FilterGroup 筛选用户失败")
 			} else {
-                updateData[config.RuleName] = g.Map{
-                    "upns_cache": upnListRes.UserUpns,
-                    "last_evaluated_at": gtime.Now(),
-                }
-                matchedUserCountMap[config.RuleName] = len(upnListRes.UserUpns)
-            }
+				updateData[config.RuleName] = g.Map{
+					"upns_cache":        upnListRes.UserUpns,
+					"last_evaluated_at": gtime.Now(),
+				}
+				matchedUserCountMap[config.RuleName] = len(upnListRes.UserUpns)
+			}
 		}
 
 		// 写入数据库 upns_cache 和 last_evaluated_at

@@ -75,7 +75,6 @@ type SyncAutoQuotaPoolUpnsCacheReq struct {
 	RuleName []string `json:"ruleName" dc:"规则名称。不传或者传空数组会同步所有自动配额池的 UPNs Cache。"`
 }
 type SyncAutoQuotaPoolUpnsCacheRes struct {
-	OK               bool        `json:"ok" dc:"是否成功"`
-	UpdatedRules     []string    `json:"updatedRules" dc:"已同步的自动配额池名称列表"`
-	MatchedUserCount g.MapStrInt `json:"matchedUserCount" dc:"每个自动配额池的用户数量"`
+	OK           bool `json:"ok" dc:"是否成功"`
+	UpdatedCount int  `json:"updatedCount" dc:"批量刷新时，这个值时一共更改了多少个规则；指定配额池刷新时，这个值是这个配额池有多少个用户"`
 }
