@@ -62,8 +62,8 @@ type NewQuotaPoolReq struct {
 	g.Meta `path:"/" tags:"QuotaPool" method:"post" summary:"新建配额池"`
 	// 配额池名称（唯一）
 	QuotaPoolName string `json:"quotaPoolName" v:"required" example:"itso-deep-research-vip"`
-	// 刷新周期（标准 Cron 表达式，支持 6 字段）
-	CronCycle string `json:"cronCycle" v:"required" example:"0 0 3 * * *"`
+	// 刷新周期（标准 Cron 表达式，支持 5 字段）
+	CronCycle string `json:"cronCycle" v:"required" example:"0 3 * * *"`
 	// 定期配额（每周期重置）
 	RegularQuota decimal.Decimal `json:"regularQuota" v:"required" example:"1000"`
 	// 是否个人配额池
