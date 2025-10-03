@@ -17,18 +17,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { getAuthQuotaPoolsAll } from "@/services/uniauthService/auth";
 import { getUserinfos } from "@/services/uniauthService/userInfo";
 
-interface QuotaPoolData {
-  id: string;
-  name: string;
-  personal: boolean;
-  regularQuota: number;
-  remainingQuota: number;
-  bonusQuota: number;
-  refreshPeriod: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 interface UserDetailData {
   upn: string;
   email: string;
@@ -69,8 +57,9 @@ const UserDetail: React.FC = () => {
   // 配额池相关状态
   const [quotaPools, setQuotaPools] = useState<string[]>([]);
   const [quotaPoolsLoading, setQuotaPoolsLoading] = useState<boolean>(false);
+  // personalMap的值直接是boolean，true表示是个人配额池
   const [quotaPoolDetails, setQuotaPoolDetails] = useState<
-    Record<string, QuotaPoolData>
+    Record<string, boolean>
   >({});
 
   // 获取用户所属的配额池
@@ -86,10 +75,8 @@ const UserDetail: React.FC = () => {
         if (response?.quotaPools && Array.isArray(response.quotaPools)) {
           setQuotaPools(response.quotaPools);
 
-          // 如果有personalMap，保存配额池详情
-          if (response && (response as any).personalMap) {
-            setQuotaPoolDetails((response as any).personalMap || {});
-          }
+          // 无论personalMap是否存在都更新状态，避免显示上一个用户的陈旧数据
+          setQuotaPoolDetails(response.personalMap || {});
         } else {
           setQuotaPools([]);
           setQuotaPoolDetails({});
@@ -489,10 +476,16 @@ const UserDetail: React.FC = () => {
                         key: "name",
                         render: (_, record) => (
                           <a
-                            href={`/quota-pool-list/${record.name}`}
+                            href={`/resource/quota-pool-list/${encodeURIComponent(
+                              record.name,
+                            )}`}
                             onClick={(e) => {
                               e.preventDefault();
-                              navigate(`/quota-pool-list/${record.name}`);
+                              navigate(
+                                `/resource/quota-pool-list/${encodeURIComponent(
+                                  record.name,
+                                )}`,
+                              );
                             }}
                           >
                             {record.name}
@@ -503,8 +496,7 @@ const UserDetail: React.FC = () => {
                         title: "是否个人配额池",
                         key: "personal",
                         render: (_, record) => {
-                          const isPersonal =
-                            quotaPoolDetails[record.name]?.personal || false;
+                          const isPersonal = !!quotaPoolDetails[record.name];
                           return isPersonal ? "是" : "否";
                         },
                       },
