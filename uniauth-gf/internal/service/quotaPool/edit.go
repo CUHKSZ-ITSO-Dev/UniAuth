@@ -64,30 +64,21 @@ func Edit(ctx context.Context, editInfo g.Map) (err error) {
 		if err = quotaPoolInfo.UserinfosRules.Scan(&filter); err != nil {
 			return gerror.Wrap(err, "解析当前配额池 UserinfosRules 失败")
 		}
-		var userUpnsNew []string
-		if isUserinfosFilterEmpty(filter) {
-			userUpnsNew = []string{}
-		} else {
-			filterRes, ferr := userinfos.NewV1().Filter(ctx, &v1.FilterReq{
-				Filter:  filter,
-				Verbose: false,
-				Pagination: &v1.PaginationReq{
-					All: true,
-				},
-			})
-			if ferr != nil {
-				return gerror.Wrap(ferr, "根据 UserinfosRules 筛选用户失败")
-			}
-			userUpnsNew = filterRes.UserUpns
+		filterRes, err := userinfos.NewV1().Filter(ctx, &v1.FilterReq{
+			Filter:  filter,
+			Verbose: false,
+		})
+		if err != nil {
+			return gerror.Wrap(err, "根据 UserinfosRules 筛选用户失败")
 		}
 		newUpnsMap := g.MapStrBool{}
-		for _, upn := range userUpnsNew { // 建索引
+		for _, upn := range filterRes.UserUpns { // 建索引
 			newUpnsMap[upn] = true
 		}
 		// 老的有，新的有，不处理
 		// 老的没有，新的有，添加
 		var policiesToAdd [][]string
-		for _, upn := range userUpnsNew {
+		for _, upn := range filterRes.UserUpns {
 			if _, ok := oldUpnsMap[upn]; !ok {
 				// 老的没有，新的有，要添加
 				policiesToAdd = append(policiesToAdd, []string{upn, quotaPoolInfo.QuotaPoolName})

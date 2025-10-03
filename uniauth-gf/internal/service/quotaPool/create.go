@@ -27,23 +27,12 @@ func Create(ctx context.Context, newQuotaPoolInfo *entity.QuotapoolQuotaPool) (e
 		if err = newQuotaPoolInfo.UserinfosRules.Scan(&filterGroup); err != nil {
 			return gerror.Wrap(err, "解析 UserinfosRules 失败")
 		}
-
-		// 空规则应当匹配 0 个用户，避免默认分页返回 20 条无关记录
-		var userUpns []string
-		if isUserinfosFilterEmpty(filterGroup) {
-			userUpns = []string{}
-		} else {
-			filterRes, ferr := userinfos.NewV1().Filter(ctx, &v1.FilterReq{
-				Filter:  filterGroup,
-				Verbose: false,
-				Pagination: &v1.PaginationReq{
-					All: true,
-				},
-			})
-			if ferr != nil {
-				return gerror.Wrap(ferr, "根据 UserinfosRules 筛选用户失败")
-			}
-			userUpns = filterRes.UserUpns
+		filterRes, err := userinfos.NewV1().Filter(ctx, &v1.FilterReq{
+			Filter:  filterGroup,
+			Verbose: false,
+		})
+		if err != nil {
+			return gerror.Wrap(err, "根据 UserinfosRules 筛选用户失败")
 		}
 
 		// 建立配额池
@@ -52,8 +41,8 @@ func Create(ctx context.Context, newQuotaPoolInfo *entity.QuotapoolQuotaPool) (e
 		}
 
 		// 建立 casbin 角色继承
-		groupings := make([][]string, 0, len(userUpns))
-		for _, upn := range userUpns {
+		groupings := make([][]string, 0, len(filterRes.UserUpns))
+		for _, upn := range filterRes.UserUpns {
 			groupings = append(groupings, []string{upn, newQuotaPoolInfo.QuotaPoolName})
 		}
 		e := casbin.GetEnforcer()
