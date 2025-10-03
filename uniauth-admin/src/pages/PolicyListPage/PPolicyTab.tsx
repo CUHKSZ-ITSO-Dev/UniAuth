@@ -127,11 +127,9 @@ const editPolicy = async (oldPolicy: string[], newPolicy: string[]) => {
   }
 };
 
-interface PolicyTabContentProps {
-  tabName: string;
-}
+// interface PolicyTabContentProps 已移除 tabName
 
-const PolicyTabContent: React.FC<PolicyTabContentProps> = ({ tabName }) => {
+const PolicyTabContent: React.FC = () => {
   const intl = useIntl();
   const actionRef = useRef<ActionType | null>(null);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -168,6 +166,42 @@ const PolicyTabContent: React.FC<PolicyTabContentProps> = ({ tabName }) => {
       setSelectedRows([]);
     }
   };
+
+  // 批量删除按钮（与GPolicyTab风格一致，Button danger）
+  const batchDeleteButton = (
+    <Popconfirm
+      title={intl.formatMessage(
+        {
+          id: "pages.policyList.deleteConfirmTitle2",
+          defaultMessage: "确定要删除选中的 {count} 条规则吗？",
+        },
+        {
+          count: selectedRowKeys.length,
+        },
+      )}
+      onConfirm={() => handleBatchDelete(selectedRows)}
+      okText={intl.formatMessage({
+        id: "pages.policyList.deleteConfirmOk",
+        defaultMessage: "确定",
+      })}
+      cancelText={intl.formatMessage({
+        id: "pages.policyList.deleteConfirmCancel",
+        defaultMessage: "取消",
+      })}
+      disabled={selectedRowKeys.length === 0}
+    >
+      <Button
+        danger
+        disabled={selectedRowKeys.length === 0}
+        style={{ minWidth: 90 }}
+      >
+        {intl.formatMessage({
+          id: "pages.policyList.batchDelete",
+          defaultMessage: "批量删除",
+        })}
+      </Button>
+    </Popconfirm>
+  );
 
   // 表格列配置
   const columns: ProColumns<PolicyItem>[] = [
@@ -344,7 +378,6 @@ const PolicyTabContent: React.FC<PolicyTabContentProps> = ({ tabName }) => {
           id: "pages.policyList.title",
           defaultMessage: "规则列表",
         })}{" "}
-        - {tabName}
       </Title>
       <Text type="secondary">
         {intl.formatMessage({
@@ -432,39 +465,9 @@ const PolicyTabContent: React.FC<PolicyTabContentProps> = ({ tabName }) => {
             </Space>
           );
         }}
-        tableAlertOptionRender={() => {
-          return (
-            <Space size={16}>
-              <Popconfirm
-                title={intl.formatMessage(
-                  {
-                    id: "pages.policyList.deleteConfirmTitle2",
-                    defaultMessage: "确定要删除选中的 {count} 条规则吗？",
-                  },
-                  {
-                    count: selectedRowKeys.length,
-                  },
-                )}
-                onConfirm={() => handleBatchDelete(selectedRows)}
-                okText={intl.formatMessage({
-                  id: "pages.policyList.deleteConfirmOk",
-                  defaultMessage: "确定",
-                })}
-                cancelText={intl.formatMessage({
-                  id: "pages.policyList.deleteConfirmCancel",
-                  defaultMessage: "取消",
-                })}
-              >
-                <a style={{ color: "#ff4d4f" }}>
-                  {intl.formatMessage({
-                    id: "pages.policyList.batchDelete",
-                    defaultMessage: "批量删除",
-                  })}
-                </a>
-              </Popconfirm>
-            </Space>
-          );
-        }}
+        tableAlertOptionRender={() => (
+          <Space size={16}>{batchDeleteButton}</Space>
+        )}
         toolBarRender={() => [
           <Button
             type="primary"
@@ -477,6 +480,7 @@ const PolicyTabContent: React.FC<PolicyTabContentProps> = ({ tabName }) => {
               defaultMessage: "新建",
             })}
           </Button>,
+          batchDeleteButton,
         ]}
         request={async (params) => filterPolicies(params)}
         scroll={{ x: 1200 }}

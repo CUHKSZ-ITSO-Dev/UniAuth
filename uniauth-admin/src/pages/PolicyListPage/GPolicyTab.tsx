@@ -74,11 +74,9 @@ const filterGroupings = async (params: any) => {
 };
 
 // 使用新增的 Grouping CRUD API，实现简单的增删改交互
-interface GroupingTabContentProps {
-  tabName: string;
-}
+// interface GroupingTabContentProps 已移除 tabName
 
-const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
+const GroupingTabContent: React.FC = () => {
   const intl = useIntl();
   const actionRef = useRef<ActionType | null>(null);
   const [selectedRows, setSelectedRows] = useState<GroupingItem[]>([]);
@@ -93,7 +91,7 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
     {
       title: intl.formatMessage({
         id: "pages.groupingList.user",
-        defaultMessage: "用户",
+        defaultMessage: "G1",
       }),
       dataIndex: "user",
       valueType: "text",
@@ -103,14 +101,14 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.groupingList.search.user.placeholder",
-          defaultMessage: "请输入用户进行搜索",
+          defaultMessage: "请输入G1进行搜索",
         }),
       },
     },
     {
       title: intl.formatMessage({
         id: "pages.groupingList.role",
-        defaultMessage: "角色",
+        defaultMessage: "G2",
       }),
       dataIndex: "role",
       valueType: "text",
@@ -120,14 +118,14 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.groupingList.search.role.placeholder",
-          defaultMessage: "请输入角色进行搜索",
+          defaultMessage: "请输入G2进行搜索",
         }),
       },
     },
     {
       title: intl.formatMessage({
         id: "pages.groupingList.relationship",
-        defaultMessage: "关系信息",
+        defaultMessage: "角色继承规则",
       }),
       dataIndex: "raw",
       valueType: "text",
@@ -232,7 +230,12 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
   // 批量删除
   const handleDeleteSelected = async () => {
     if (selectedRows.length === 0) {
-      message.info("请先选择要删除的记录");
+      message.info(
+        intl.formatMessage({
+          id: "pages.groupingList.batchDelete.selectTip",
+          defaultMessage: "请先选择要删除的记录",
+        }),
+      );
       return;
     }
     try {
@@ -240,12 +243,22 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
         r.raw ? r.raw.map((s) => s || "") : [r.user || "", r.role || ""],
       );
       await deleteGroupingAPI({ groupings });
-      message.success("删除成功");
+      message.success(
+        intl.formatMessage({
+          id: "pages.groupingList.batchDelete.success",
+          defaultMessage: "删除成功",
+        }),
+      );
       actionRef.current?.reload();
       setSelectedRows([]);
     } catch (e) {
       console.error(e);
-      message.error("删除失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.groupingList.batchDelete.fail",
+          defaultMessage: "删除失败",
+        }),
+      );
     }
   };
 
@@ -256,7 +269,6 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
           id: "pages.groupingList.title",
           defaultMessage: "规则列表",
         })}{" "}
-        - {tabName}
       </Title>
       <Text type="secondary">
         {intl.formatMessage({
@@ -326,13 +338,29 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
           </Button>,
           <Popconfirm
             key="deleteSelected"
-            title={`确认删除选中的 ${selectedRows.length} 条关系？`}
+            title={intl.formatMessage(
+              {
+                id: "pages.groupingList.batchDelete.confirmTitle",
+                defaultMessage: "确认删除选中的 {count} 条关系？",
+              },
+              { count: selectedRows.length },
+            )}
             onConfirm={handleDeleteSelected}
-            okText="确定"
-            cancelText="取消"
+            okText={intl.formatMessage({
+              id: "pages.groupingList.batchDelete.ok",
+              defaultMessage: "确定",
+            })}
+            cancelText={intl.formatMessage({
+              id: "pages.groupingList.batchDelete.cancel",
+              defaultMessage: "取消",
+            })}
             disabled={selectedRows.length === 0}
           >
-            <Button danger disabled={selectedRows.length === 0}>
+            <Button
+              danger
+              disabled={selectedRows.length === 0}
+              style={{ minWidth: 90 }}
+            >
               {intl.formatMessage({
                 id: "pages.groupingList.batchDelete",
                 defaultMessage: "批量删除",
@@ -357,15 +385,15 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
       >
         <ProFormText
           name="user"
-          label="用户"
-          placeholder="请输入用户"
-          rules={[{ required: true, message: "请输入用户" }]}
+          label="G1"
+          placeholder="请输入G1"
+          rules={[{ required: true, message: "请输入G1" }]}
         />
         <ProFormText
           name="role"
-          label="角色"
-          placeholder="请输入角色"
-          rules={[{ required: true, message: "请输入角色" }]}
+          label="G2"
+          placeholder="请输入G2"
+          rules={[{ required: true, message: "请输入G2" }]}
         />
       </ModalForm>
 
@@ -383,15 +411,15 @@ const GroupingTabContent: React.FC<GroupingTabContentProps> = ({ tabName }) => {
       >
         <ProFormText
           name="user"
-          label="用户"
-          placeholder="请输入用户"
-          rules={[{ required: true, message: "请输入用户" }]}
+          label="G1"
+          placeholder="请输入G1"
+          rules={[{ required: true, message: "请输入G1" }]}
         />
         <ProFormText
           name="role"
-          label="角色"
-          placeholder="请输入角色"
-          rules={[{ required: true, message: "请输入角色" }]}
+          label="G2"
+          placeholder="请输入G2"
+          rules={[{ required: true, message: "请输入G2" }]}
         />
       </ModalForm>
     </ProCard>

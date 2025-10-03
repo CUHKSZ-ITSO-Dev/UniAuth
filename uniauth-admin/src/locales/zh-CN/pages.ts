@@ -264,7 +264,11 @@ export default {
   "pages.configI18n.updatedAt": "更新时间",
 
   // PolicyListPage
-  "pages.policyList.title": "规则列表",
+  "pages.policyList.title": "策略规则",
+  "pages.policyList.tab_p": "策略规则",
+  "pages.policyList.tab_g": "角色继承规则",
+  // GroupingListPage
+  "pages.groupingList.title": "角色继承规则",
   "pages.policyList.description":
     "管理系统访问控制规则，配置用户、资源和操作的权限规则",
   "pages.policyList.subject": "主体",

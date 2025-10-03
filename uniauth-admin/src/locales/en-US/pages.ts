@@ -291,7 +291,11 @@ export default {
   "pages.configI18n.updatedAt": "Updated Time",
 
   // PolicyListPage
-  "pages.policyList.title": "Policy List",
+  "pages.policyList.title": "Policies",
+  "pages.policyList.tab_p": "Policies",
+  "pages.policyList.tab_g": "Groupings",
+  // GroupingListPage
+  "pages.groupingList.title": "Groupings",
   "pages.policyList.description":
     "Manage access control rules: users, resources and actions",
   "pages.policyList.subject": "Subject",
@@ -339,8 +343,7 @@ export default {
   "pages.policyList.searchTable.effect.allow": "Allow",
   "pages.policyList.searchTable.effect.deny": "Deny",
   "pages.policyList.editRule": "Edit Rule",
-  "pages.policyList.tab_p": "P Policy List",
-  "pages.policyList.tab_g": "G Policy List",
+  "pages.groupingList.relationship": "Groupings",
 
   // QuotaPoolConfigDetailTab
   "pages.quotaPoolConfigDetail.displayname": "Display Name",

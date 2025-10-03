@@ -437,14 +437,28 @@ declare namespace API {
   };
 
   type FilterGroupingsReq = {
-    /** Upn 列表 */
-    users?: string[];
-    /** Roles 列表 */
-    roles?: string[];
+    /** G1 列表 */
+    g1?: string;
+    /** G2 列表 */
+    g2?: string;
+    /** Rule */
+    rule?: string;
+    /** 分页。当前页码。 */
+    page?: number;
+    /** 分页。每页条数。 */
+    pageSize?: number;
   };
 
   type FilterGroupingsRes = {
     groups?: string[][];
+    /** 总条数。 */
+    total?: number;
+    /** 当前页码。 */
+    page?: number;
+    /** 每页条数。 */
+    pageSize?: number;
+    /** 总页数。 */
+    totalPages?: number;
   };
 
   type FilterI18nReq = {
