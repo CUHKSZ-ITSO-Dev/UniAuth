@@ -1,7 +1,7 @@
 import { FullscreenExitOutlined, FullscreenOutlined } from "@ant-design/icons";
 import { useIntl } from "@umijs/max";
 import { Button, Input, Modal, message, Space } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { ThemeKeys } from "react-json-view";
 import ReactJson from "react-json-view";
 
@@ -28,6 +28,8 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
   const [editMode, setEditMode] = useState<"json" | "tree">("json");
   const [error, setError] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [fontSize, setFontSize] = useState<number>(14); // 默认字体大小
+  const editorRef = useRef<HTMLDivElement>(null);
 
   // 初始化组件状态
   useEffect(() => {
@@ -61,6 +63,53 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonObject(null);
     }
   }, [value, intl]);
+
+  // 处理鼠标滚轮事件，支持Ctrl+滚轮调整字体大小（无限制）
+  const handleWheel = (e: WheelEvent) => {
+    if (e.ctrlKey) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -1 : 1;
+      setFontSize((prev) => prev + delta);
+    }
+  };
+
+  // 添加滚轮事件监听器
+  useEffect(() => {
+    const editorElement = editorRef.current;
+    if (editorElement) {
+      editorElement.addEventListener("wheel", handleWheel as any, {
+        passive: false,
+      });
+      return () => {
+        editorElement.removeEventListener("wheel", handleWheel as any);
+      };
+    }
+    return undefined;
+  }, []);
+
+  // 添加全屏模式下的滚轮事件监听器
+  useEffect(() => {
+    // 只在全屏模式下添加事件监听器
+    if (isFullscreen) {
+      const handleFullscreenWheel = (e: WheelEvent) => {
+        if (e.ctrlKey) {
+          e.preventDefault();
+          const delta = e.deltaY > 0 ? -1 : 1;
+          setFontSize((prev) => prev + delta);
+        }
+      };
+
+      // 添加事件监听器到document上，因为全屏模式下可能无法直接获取到容器元素
+      document.addEventListener("wheel", handleFullscreenWheel as any, {
+        passive: false,
+      });
+
+      return () => {
+        document.removeEventListener("wheel", handleFullscreenWheel as any);
+      };
+    }
+    return undefined;
+  }, [isFullscreen]);
 
   // 处理JSON字符串变化
   const handleJsonStringChange = (
@@ -234,8 +283,26 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
             overflow: "hidden",
             display: "flex",
             flexDirection: "column",
+            position: "relative",
           }}
         >
+          {/* 全屏模式下显示当前字体大小 */}
+          <div
+            style={{
+              position: "absolute",
+              top: "12px",
+              right: "12px",
+              background: "rgba(0,0,0,0.05)",
+              padding: "2px 6px",
+              borderRadius: "4px",
+              fontSize: "12px",
+              color: "#666",
+              zIndex: 10,
+            }}
+          >
+            {fontSize}px
+          </div>
+
           {!readOnly && (
             <div style={{ marginBottom: "12px" }}>
               <Space>
@@ -283,7 +350,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
                     name={false}
                     collapsed={false}
                     indentWidth={2}
-                    style={{ padding: "10px", fontSize: "14px" }}
+                    style={{ padding: "10px", fontSize: `${fontSize}px` }}
                     key="tree-view-fullscreen"
                   />
                 ) : (
@@ -328,7 +395,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
                   style={{
                     flex: 1,
                     fontFamily: "monospace",
-                    fontSize: "14px",
+                    fontSize: `${fontSize}px`,
                     backgroundColor: readOnly ? "#f5f5f5" : "inherit",
                   }}
                 />
@@ -353,12 +420,31 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
 
   return (
     <div
+      ref={editorRef}
       style={{
         border: "1px solid #d9d9d9",
         borderRadius: "6px",
         padding: "12px",
+        position: "relative",
       }}
     >
+      {/* 显示当前字体大小 */}
+      <div
+        style={{
+          position: "absolute",
+          top: "12px",
+          right: "12px",
+          background: "rgba(0,0,0,0.05)",
+          padding: "2px 6px",
+          borderRadius: "4px",
+          fontSize: "12px",
+          color: "#666",
+          zIndex: 10,
+        }}
+      >
+        {fontSize}px
+      </div>
+
       {!readOnly && (
         <div style={{ marginBottom: "12px" }}>
           <Space>
@@ -424,7 +510,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
                 name={false}
                 collapsed={false}
                 indentWidth={2}
-                style={{ padding: "10px", fontSize: "14px" }}
+                style={{ padding: "10px", fontSize: `${fontSize}px` }}
                 key="tree-view"
               />
             ) : (
@@ -460,7 +546,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
             autoSize={{ minRows: 4, maxRows: 12 }}
             style={{
               fontFamily: "monospace",
-              fontSize: "14px",
+              fontSize: `${fontSize}px`,
               backgroundColor: readOnly ? "#f5f5f5" : "inherit",
             }}
           />
