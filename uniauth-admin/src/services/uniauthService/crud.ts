@@ -45,3 +45,48 @@ export async function postAuthAdminPoliciesEdit(
     ...(options || {}),
   });
 }
+
+/** 添加 Grouping Policies POST /auth/admin/groupings/add */
+export async function postAuthAdminGroupingsAdd(
+  body: API.AddGroupingReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.AddGroupingRes>("/auth/admin/groupings/add", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 编辑 Grouping Policies POST /auth/admin/groupings/edit */
+export async function postAuthAdminGroupingsEdit(
+  body: API.EditGroupingReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.EditGroupingRes>("/auth/admin/groupings/edit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 删除 Grouping Policies POST /auth/admin/groupings/delete */
+export async function postAuthAdminGroupingsDelete(
+  body: API.DeleteGroupingReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.DeleteGroupingRes>("/auth/admin/groupings/delete", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}

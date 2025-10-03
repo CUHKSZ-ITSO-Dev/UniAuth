@@ -68,6 +68,31 @@ declare namespace API {
 
   type AddPoliciesRes = Record<string, never>;
 
+  type AddGroupingReq = {
+    /** Groupings */
+    groupings: string[][];
+    /** 开启时，当规则已经存在时自动跳过，不返回错误；否则会返回错误，并回退所有操作 */
+    skip?: boolean;
+  };
+
+  type AddGroupingRes = Record<string, never>;
+
+  type EditGroupingReq = {
+    /** 旧的 Grouping */
+    oldGrouping: string[];
+    /** 新的 Grouping */
+    newGrouping: string[];
+  };
+
+  type EditGroupingRes = Record<string, never>;
+
+  type DeleteGroupingReq = {
+    /** Groupings */
+    groupings: string[][];
+  };
+
+  type DeleteGroupingRes = Record<string, never>;
+
   type AutoQuotaPoolItem = {
     /** 自增主键 */
     id?: number;
