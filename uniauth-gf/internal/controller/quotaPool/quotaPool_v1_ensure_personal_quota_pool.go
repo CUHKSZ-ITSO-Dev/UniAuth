@@ -48,9 +48,13 @@ func (c *ControllerV1) EnsurePersonalQuotaPool(ctx context.Context, req *v1.Ensu
 			Personal:       true,
 			Disabled:       !autoQPConfig.Enabled,
 			UserinfosRules: gjson.New(g.Map{
-				"field": "upn",
-				"op":    "eq",
-				"value": req.Upn,
+				"logic": "and",
+				"conditions": g.Slice{g.Map{
+					"field": "upn",
+					"op":    "eq",
+					"value": req.Upn,
+				}},
+				"groups": g.Slice{},
 			}),
 		}
 		if err = quotaPool.Create(ctx, data); err != nil {
