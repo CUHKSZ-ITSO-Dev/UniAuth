@@ -3,11 +3,13 @@ import { Button, Modal } from "antd";
 import React from "react";
 import type { JsonEditorProps } from "./index";
 
+// 全屏模态框组件的属性接口
 interface FullscreenModalProps extends JsonEditorProps {
   visible: boolean;
   onClose: () => void;
 }
 
+// 全屏模态框组件
 const FullscreenModal: React.FC<FullscreenModalProps> = ({
   visible,
   onClose,
@@ -30,12 +32,12 @@ const FullscreenModal: React.FC<FullscreenModalProps> = ({
           flexDirection: "column",
         },
       }}
-      destroyOnClose
+      destroyOnHidden
     >
       <div style={{ flex: 1, overflow: "hidden" }}>
-        {/* 这里将渲染JsonEditor组件 */}
+        {/* 全屏模式下的内容容器 */}
         <div style={{ padding: "20px" }}>
-          {/* JsonEditor will be rendered here */}
+          {/* JsonEditor组件将在此处渲染 */}
         </div>
       </div>
     </Modal>

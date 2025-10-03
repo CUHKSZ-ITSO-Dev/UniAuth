@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import type { ThemeKeys } from "react-json-view";
 import ReactJson from "react-json-view";
 
+// JSON编辑器组件的属性接口
 export interface JsonEditorProps {
   value?: any;
   onChange?: (value: any) => void;
@@ -14,6 +15,7 @@ export interface JsonEditorProps {
   height?: number | string;
 }
 
+// JSON编辑器组件
 const JsonEditor: React.FC<JsonEditorProps> = ({
   value,
   onChange,
@@ -28,10 +30,10 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
   const [editMode, setEditMode] = useState<"json" | "tree">("json");
   const [error, setError] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [fontSize, setFontSize] = useState<number>(16); // 默认字体大小
+  const [fontSize, setFontSize] = useState<number>(16);
   const editorRef = useRef<HTMLDivElement>(null);
 
-  // 初始化组件状态
+  // 初始化组件状态 - 当value改变时更新内部状态
   useEffect(() => {
     if (value !== undefined && value !== null) {
       if (typeof value === "string") {
@@ -64,7 +66,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     }
   }, [value, intl]);
 
-  // 处理鼠标滚轮事件，支持Ctrl+滚轮调整字体大小（无限制）
+  // 处理鼠标滚轮事件 - 支持Ctrl+滚轮调整字体大小
   const handleWheel = (e: WheelEvent) => {
     if (e.ctrlKey) {
       e.preventDefault();
@@ -73,7 +75,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     }
   };
 
-  // 添加滚轮事件监听器
+  // 添加滚轮事件监听器 - 编辑器区域内的字体缩放
   useEffect(() => {
     const editorElement = editorRef.current;
     if (editorElement) {
@@ -87,7 +89,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     return undefined;
   }, []);
 
-  // 添加全屏模式下的滚轮事件监听器
+  // 添加全屏模式下的滚轮事件监听器 - 全屏时的字体缩放
   useEffect(() => {
     // 只在全屏模式下添加事件监听器
     if (isFullscreen) {
@@ -111,7 +113,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     return undefined;
   }, [isFullscreen]);
 
-  // 处理JSON字符串变化
+  // 处理JSON字符串变化 - 文本编辑模式下的输入处理
   const handleJsonStringChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>,
   ) => {
@@ -139,7 +141,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     }
   };
 
-  // 处理键盘事件，特别是Tab键
+  // 处理键盘事件 - 特别是Tab键的处理
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Tab" && !readOnly) {
       e.preventDefault();
@@ -181,7 +183,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     }
   };
 
-  // 处理JSON对象变化（来自react-json-view）
+  // 处理JSON对象变化 - 树形编辑模式下的变更处理
   const handleJsonChange = (edit: any) => {
     if (readOnly) return;
 
@@ -201,12 +203,12 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     }
   };
 
-  // 切换编辑模式
+  // 切换编辑模式 - 在文本编辑和树形编辑之间切换
   const toggleEditMode = () => {
     setEditMode(editMode === "json" ? "tree" : "json");
   };
 
-  // 格式化JSON
+  // 格式化JSON - 将JSON字符串格式化为易读格式
   const formatJson = () => {
     if (jsonString.trim() === "") {
       return;
@@ -226,7 +228,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     }
   };
 
-  // 压缩JSON
+  // 压缩JSON - 将格式化的JSON压缩为单行
   const compactJson = () => {
     if (jsonString.trim() === "") {
       return;
@@ -246,12 +248,12 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     }
   };
 
-  // 切换全屏模式
+  // 切换全屏模式 - 打开或关闭全屏编辑器
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
 
-  // 全屏模式下的JSON编辑器
+  // 全屏模式下的JSON编辑器 - 渲染全屏模态框
   const renderFullscreenEditor = () => {
     return (
       <Modal
