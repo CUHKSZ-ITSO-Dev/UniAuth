@@ -628,14 +628,16 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             name="upnsCache"
             label={intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.upnsCache",
+              defaultMessage: "UPN Cache",
             })}
           >
-            <JsonEditor
+            <Input.TextArea
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.upnsCachePlaceholder",
+                defaultMessage: "Please enter UPN cache",
               })}
-              height={200}
-              readOnly
+              autoSize={{ minRows: 4, maxRows: 10 }}
+              disabled={!!editingRecord}
             />
           </Form.Item>
         </Form>
