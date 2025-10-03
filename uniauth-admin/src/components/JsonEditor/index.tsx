@@ -496,7 +496,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
 
       {editMode === "tree" ? (
         <div>
-          <div style={{ height, overflow: "auto" }}>
+          <div style={{ height: height || 300, overflow: "auto" }}>
             {jsonObject !== null ? (
               <ReactJson
                 src={jsonObject}
@@ -543,12 +543,13 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             readOnly={readOnly}
-            autoSize={{ minRows: 4, maxRows: 12 }}
             style={{
+              height: height || 300,
               fontFamily: "monospace",
               fontSize: `${fontSize}px`,
               backgroundColor: readOnly ? "#f5f5f5" : "inherit",
             }}
+            autoSize={false}
           />
           {error && (
             <div
