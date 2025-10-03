@@ -56,22 +56,68 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 	}
 
 	// 5. 构建更新数据，分离需要更新剩余配额和不需要更新的记录
-	var updateWithRemainingQuota []string
+	type quotaPoolUpdate struct {
+		name string
+		data g.Map
+	}
+
 	var updateWithoutRemainingQuota []string
+	var updatesWithRemaining []quotaPoolUpdate
 
 	existingPoolMap := make(map[string]*entity.QuotapoolQuotaPool)
 	for _, pool := range existingQuotaPools {
 		existingPoolMap[pool.QuotaPoolName] = pool
 	}
 
+	targetCronCycle := autoQuotaPoolConfig.CronCycle
+	targetRegularQuota := autoQuotaPoolConfig.RegularQuota
+	targetDisabled := !autoQuotaPoolConfig.Enabled
+
 	for _, poolName := range personalQuotaPoolNames {
-		if pool, exists := existingPoolMap[poolName]; exists {
-			// 如果个人配额池当前是启用状态，则需要更新剩余配额
-			if !pool.Disabled && autoQuotaPoolConfig.Enabled {
-				updateWithRemainingQuota = append(updateWithRemainingQuota, poolName)
-			} else {
-				updateWithoutRemainingQuota = append(updateWithoutRemainingQuota, poolName)
+		pool, exists := existingPoolMap[poolName]
+		if !exists {
+			continue
+		}
+
+		baseFieldsChanged := pool.CronCycle != targetCronCycle ||
+			!pool.RegularQuota.Equal(targetRegularQuota) ||
+			pool.Disabled != targetDisabled
+
+		if !pool.Disabled && autoQuotaPoolConfig.Enabled {
+			newRegularQuota := targetRegularQuota
+			diff := newRegularQuota.Sub(pool.RegularQuota)
+			newRemainingQuota := pool.RemainingQuota
+
+			if diff.GreaterThan(decimal.Zero) { // 新常规配额 > 原常规配额
+				// 新剩余配额 = 原有剩余配额 + (新常规配额 - 原有常规配额)
+				newRemainingQuota = newRemainingQuota.Add(diff)
+			} else if diff.LessThan(decimal.Zero) { // 新常规配额 < 原常规配额
+				// 新剩余配额 = min{原有剩余配额, 新常规配额}
+				if newRegularQuota.LessThan(newRemainingQuota) {
+					newRemainingQuota = newRegularQuota
+				}
 			}
+
+			remainingChanged := !pool.RemainingQuota.Equal(newRemainingQuota)
+
+			// 如果基础字段或剩余配额发生变化，则需要更新
+			if baseFieldsChanged || remainingChanged {
+				updateData := g.Map{
+					"cron_cycle":      targetCronCycle,
+					"regular_quota":   newRegularQuota,
+					"disabled":        targetDisabled,
+					"remaining_quota": newRemainingQuota,
+				}
+				updatesWithRemaining = append(updatesWithRemaining, quotaPoolUpdate{
+					name: poolName,
+					data: updateData,
+				})
+			}
+			continue
+		}
+
+		if baseFieldsChanged {
+			updateWithoutRemainingQuota = append(updateWithoutRemainingQuota, poolName)
 		}
 	}
 
@@ -80,9 +126,9 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 		// 更新不需要修改剩余配额的记录
 		if len(updateWithoutRemainingQuota) > 0 {
 			updateData := g.Map{
-				"cron_cycle":    autoQuotaPoolConfig.CronCycle,
-				"regular_quota": autoQuotaPoolConfig.RegularQuota,
-				"disabled":      !autoQuotaPoolConfig.Enabled,
+				"cron_cycle":    targetCronCycle,
+				"regular_quota": targetRegularQuota,
+				"disabled":      targetDisabled,
 			}
 
 			if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).
@@ -94,37 +140,11 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 		}
 
 		// 更新需要修改剩余配额的记录
-		if len(updateWithRemainingQuota) > 0 {
-			for _, poolName := range updateWithRemainingQuota {
-				pool := existingPoolMap[poolName]
-				if pool == nil {
-					continue
-				}
-
-				newRegularQuota := autoQuotaPoolConfig.RegularQuota
-				diff := newRegularQuota.Sub(pool.RegularQuota)
-				newRemainingQuota := pool.RemainingQuota
-
-				if diff.GreaterThan(decimal.Zero) { // 新常规配额 > 原常规配额
-					// 新剩余配额 = 原有剩余配额 + (新常规配额 - 原有常规配额)
-					newRemainingQuota = newRemainingQuota.Add(diff)
-				} else if diff.LessThan(decimal.Zero) { // 新常规配额 < 原常规配额
-					// 新剩余配额 = min{原有剩余配额, 新常规配额}
-					if newRegularQuota.LessThan(newRemainingQuota) {
-						newRemainingQuota = newRegularQuota
-					}
-				}
-
-				updateData := g.Map{
-					"cron_cycle":      autoQuotaPoolConfig.CronCycle,
-					"regular_quota":   newRegularQuota,
-					"disabled":        !autoQuotaPoolConfig.Enabled,
-					"remaining_quota": newRemainingQuota,
-				}
-
+		if len(updatesWithRemaining) > 0 {
+			for _, update := range updatesWithRemaining {
 				if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).
-					Where("quota_pool_name", poolName).
-					Data(updateData).
+					Where("quota_pool_name", update.name).
+					Data(update.data).
 					Update(); err != nil {
 					return gerror.Wrapf(err, "更新个人配额池失败（更新剩余配额）")
 				}
