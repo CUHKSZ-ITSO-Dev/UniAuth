@@ -1,4 +1,5 @@
 import { getLocale, useIntl } from "@@/plugin-locale/localeExports";
+import type { ActionType } from "@ant-design/pro-components";
 import {
   GridContent,
   type ProColumns,
@@ -21,10 +22,13 @@ import {
 } from "antd";
 import cronstrue from "cronstrue/i18n";
 import type { FC } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService/auth";
 import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthService/query";
-import { putQuotaPool } from "@/services/uniauthService/quotaPool";
+import {
+  postQuotaPoolRefreshUsers,
+  putQuotaPool,
+} from "@/services/uniauthService/quotaPool";
 import { postUserinfosFilter } from "@/services/uniauthService/userInfo";
 
 // 配额池详细信息接口
@@ -67,6 +71,8 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   const [editLoading, setEditLoading] = useState(false);
   const [cronDescription, setCronDescription] = useState<string>("");
   const [cronError, setCronError] = useState<string>("");
+  const [refreshUsersLoading, setRefreshUsersLoading] = useState(false);
+  const associatedUsersActionRef = useRef<ActionType>();
 
   // 解析 cron 表达式
   const parseCronExpression = (cronExpression: string): string => {
@@ -84,6 +90,46 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       console.error("解析 cron 表达式失败:", error);
       // 如果解析失败，返回原始表达式
       return cronExpression;
+    }
+  };
+
+  // 手动刷新配额池关联用户（根据 UserInfos Rules 刷新 Casbin 继承关系）
+  const handleRefreshUsers = async () => {
+    try {
+      setRefreshUsersLoading(true);
+      // typings.d.ts mis-generates qpNameList as string[][]; cast to any to send string[]
+      const res = await postQuotaPoolRefreshUsers({
+        qpNameList: [quotaPoolName],
+      } as any);
+      if (res?.ok) {
+        message.success(
+          intl.formatMessage({
+            id: "pages.quotaPoolConfigDetail.refreshUsers.success",
+            defaultMessage: "已根据规则刷新关联用户",
+          }),
+        );
+        // 刷新关联用户表格
+        associatedUsersActionRef.current?.reload();
+        // 需要的话也刷新上层详情
+        if (onRefresh) await onRefresh();
+      } else {
+        message.error(
+          intl.formatMessage({
+            id: "pages.quotaPoolConfigDetail.refreshUsers.error",
+            defaultMessage: "刷新关联用户失败",
+          }),
+        );
+      }
+    } catch (error) {
+      console.error("刷新关联用户失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.refreshUsers.error",
+          defaultMessage: "刷新关联用户失败",
+        }),
+      );
+    } finally {
+      setRefreshUsersLoading(false);
     }
   };
 
@@ -506,12 +552,20 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         }}
         variant="borderless"
         extra={
-          <Button type="primary" onClick={handleEditClick}>
-            {intl.formatMessage({
-              id: "pages.quotaPoolConfigDetail.edit",
-              defaultMessage: "编辑",
-            })}
-          </Button>
+          <Space>
+            <Button loading={refreshUsersLoading} onClick={handleRefreshUsers}>
+              {intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.refreshUsers",
+                defaultMessage: "刷新关联用户",
+              })}
+            </Button>
+            <Button type="primary" onClick={handleEditClick}>
+              {intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit",
+                defaultMessage: "编辑",
+              })}
+            </Button>
+          </Space>
         }
       >
         <Descriptions
@@ -591,6 +645,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         variant="borderless"
       >
         <ProTable<UserInfo>
+          actionRef={associatedUsersActionRef}
           columns={associatedUsersColumns}
           rowKey="upn"
           search={{
