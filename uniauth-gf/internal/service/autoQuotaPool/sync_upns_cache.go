@@ -53,6 +53,7 @@ func SyncUpnsCache(ctx context.Context, ruleNames []string) (matchedUserCountMap
 		}
 
 		// 写入数据库 upns_cache 和 last_evaluated_at
+        // 考虑了一下自动配额池应该不会有太多，就不继续优化成一次 SQL 操作了
 		for ruleName, data := range updateData {
 			if _, err := dao.ConfigAutoQuotaPool.
 				Ctx(ctx).
