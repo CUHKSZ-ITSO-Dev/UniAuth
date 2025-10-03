@@ -1,5 +1,5 @@
 // ==========================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 22:47:28
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-10-02 22:16:54
 // ==========================================================================
 
 package internal
@@ -21,34 +21,36 @@ type ConfigAutoQuotaPoolDao struct {
 
 // ConfigAutoQuotaPoolColumns defines and stores column names for the table config_auto_quota_pool.
 type ConfigAutoQuotaPoolColumns struct {
-	Id              string // 自增主键
-	RuleName        string // 规则名称，唯一
-	Description     string // 规则说明
-	CronCycle       string // 刷新周期
-	RegularQuota    string // 定期配额
-	Enabled         string // 是否启用该配额池
-	FilterGroup     string // 过滤条件组
-	UpnsCache       string // UPN缓存列表
-	Priority        string // 优先级，数值越小优先匹配
-	LastEvaluatedAt string // 该规则上次评估时间
-	CreatedAt       string // 创建时间
-	UpdatedAt       string // 更新时间
+	Id                    string // 自增主键
+	RuleName              string // 规则名称，唯一
+	Description           string // 规则说明
+	CronCycle             string // 刷新周期
+	RegularQuota          string // 定期配额
+	Enabled               string // 是否启用该配额池
+	FilterGroup           string // 过滤条件组
+	DefaultUserinfosRules string // 默认ITTools规则
+	UpnsCache             string // UPN缓存列表
+	Priority              string // 优先级，数值越小优先匹配
+	LastEvaluatedAt       string // 该规则上次评估时间
+	CreatedAt             string // 创建时间
+	UpdatedAt             string // 更新时间
 }
 
 // configAutoQuotaPoolColumns holds the columns for the table config_auto_quota_pool.
 var configAutoQuotaPoolColumns = ConfigAutoQuotaPoolColumns{
-	Id:              "id",
-	RuleName:        "rule_name",
-	Description:     "description",
-	CronCycle:       "cron_cycle",
-	RegularQuota:    "regular_quota",
-	Enabled:         "enabled",
-	FilterGroup:     "filter_group",
-	UpnsCache:       "upns_cache",
-	Priority:        "priority",
-	LastEvaluatedAt: "last_evaluated_at",
-	CreatedAt:       "created_at",
-	UpdatedAt:       "updated_at",
+	Id:                    "id",
+	RuleName:              "rule_name",
+	Description:           "description",
+	CronCycle:             "cron_cycle",
+	RegularQuota:          "regular_quota",
+	Enabled:               "enabled",
+	FilterGroup:           "filter_group",
+	DefaultUserinfosRules: "default_userinfos_rules",
+	UpnsCache:             "upns_cache",
+	Priority:              "priority",
+	LastEvaluatedAt:       "last_evaluated_at",
+	CreatedAt:             "created_at",
+	UpdatedAt:             "updated_at",
 }
 
 // NewConfigAutoQuotaPoolDao creates and returns a new DAO object for table data access.
