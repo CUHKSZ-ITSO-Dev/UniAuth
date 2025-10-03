@@ -277,7 +277,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
             flexDirection: "column",
           },
         }}
-        destroyOnClose
+        destroyOnHidden
       >
         <div
           style={{
