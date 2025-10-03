@@ -14,6 +14,7 @@ import {
 } from "antd";
 import cronstrue from "cronstrue/i18n";
 import { useRef, useState } from "react";
+import JsonEditor from "@/components/JsonEditor";
 import {
   deleteConfigAutoConfig,
   getConfigAutoConfig,
@@ -119,7 +120,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     form.setFieldsValue({
       ...record,
       filterGroup: formatJsonField(record.filterGroup),
-      upnsCache: formatJsonField(record.upnsCache),
+      upnsCache: record.upnsCache || "",
     });
 
     // 如果记录中有 cronCycle，尝试解析并设置描述
@@ -172,6 +173,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     // 设置默认值，新规则默认启用
     form.setFieldsValue({
       enabled: true,
+      upnsCache: "",
     });
     setIsModalVisible(true);
   };
@@ -190,6 +192,43 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+
+      // 处理表单数据，转换为API所需的格式
+      const processedValues: Partial<API.AutoQuotaPoolItem> = {
+        ruleName: values.ruleName,
+        cronCycle: values.cronCycle,
+        regularQuota: values.regularQuota ? parseFloat(values.regularQuota) : 0,
+        priority: values.priority ? parseInt(values.priority, 10) : 0,
+        enabled: values.enabled !== undefined ? values.enabled : true,
+        description: values.description || "",
+      };
+
+      // 处理filterGroup JSON字段
+      if (values.filterGroup) {
+        try {
+          processedValues.filterGroup = JSON.parse(values.filterGroup);
+        } catch (_e) {
+          message.error(
+            intl.formatMessage({
+              id: "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup",
+            }),
+          );
+          return;
+        }
+      } else {
+        // 如果没有提供filterGroup，不设置这个字段，让它保持undefined
+      }
+
+      // 处理upnsCache字段 - 现在作为字符串处理
+      if (values.upnsCache !== undefined) {
+        // 直接使用字符串值，不再解析为JSON
+        processedValues.upnsCache = values.upnsCache;
+      } else {
+        // 如果没有提供upnsCache，确保传递空字符串而不是null
+        processedValues.upnsCache = "";
+      }
+
+      // 根据是否为编辑状态调用不同的API
       if (editingRecord) {
         // 编辑模式
         await putConfigAutoConfig({
@@ -621,30 +660,13 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                   id: "pages.autoQuotaPoolConfig.filterGroupRequired",
                 }),
               },
-              {
-                validator: (_, value) => {
-                  if (!value) return Promise.resolve();
-                  try {
-                    JSON.parse(value);
-                    return Promise.resolve();
-                  } catch (_e) {
-                    return Promise.reject(
-                      new Error(
-                        intl.formatMessage({
-                          id: "pages.autoQuotaPoolConfig.jsonInvalid",
-                        }),
-                      ),
-                    );
-                  }
-                },
-              },
             ]}
           >
-            <Input.TextArea
-              rows={4}
+            <JsonEditor
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.filterGroupPlaceholder",
               })}
+              height={200}
             />
           </Form.Item>
 
@@ -652,15 +674,16 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             name="upnsCache"
             label={intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.upnsCache",
+              defaultMessage: "UPN Cache",
             })}
           >
             <Input.TextArea
-              rows={4}
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.upnsCachePlaceholder",
+                defaultMessage: "Please enter UPN cache",
               })}
-              readOnly
-              style={{ backgroundColor: "#f5f5f5", color: "#000" }}
+              autoSize={{ minRows: 4, maxRows: 10 }}
+              disabled={true}
             />
           </Form.Item>
         </Form>

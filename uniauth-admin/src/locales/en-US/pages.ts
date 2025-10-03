@@ -132,8 +132,6 @@ export default {
   "pages.autoQuotaPoolConfig.delete": "Delete",
   "pages.autoQuotaPoolConfig.deleteConfirm":
     "Are you sure you want to delete this auto quota pool configuration?",
-  "pages.autoQuotaPoolConfig.batchEnable": "Batch Enable",
-  "pages.autoQuotaPoolConfig.batchDisable": "Batch Disable",
   "pages.autoQuotaPoolConfig.addNew": "Add New Auto Quota Pool Configuration",
   "pages.autoQuotaPoolConfig.editModalTitle":
     "Edit Auto Quota Pool Configuration",
@@ -154,7 +152,7 @@ export default {
   "pages.autoQuotaPoolConfig.priorityPlaceholder": "Please enter priority",
   "pages.autoQuotaPoolConfig.filterGroup": "Filter Group (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
-    "Please enter filter group data in JSON format, users meeting the conditions will apply this rule",
+    "Please enter filter group",
   "pages.autoQuotaPoolConfig.filterGroupRequired": "Please enter filter group",
   "pages.autoQuotaPoolConfig.upnsCache": "UPN Cache",
   "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "Please enter UPN cache",
@@ -166,13 +164,10 @@ export default {
   "pages.autoQuotaPoolConfig.updateSuccess": "Update Successful",
   "pages.autoQuotaPoolConfig.createSuccess": "Create Successful",
   "pages.autoQuotaPoolConfig.saveFailed": "Save Failed",
-  "pages.autoQuotaPoolConfig.jsonInvalid": "Invalid JSON format",
   "pages.autoQuotaPoolConfig.formInvalid":
     "Form validation failed, please check input",
   "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup":
     "Save Failed: Invalid filter group format",
-  "pages.autoQuotaPoolConfig.saveFailedInvalidUpnsCache":
-    "Save Failed: Invalid UPN cache list format",
   "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired":
     "Save Failed: Rule name is required",
   "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired":
@@ -193,9 +188,9 @@ export default {
   "pages.modelConfig.clientType": "Client Type",
   "pages.modelConfig.discount": "Discount",
   "pages.modelConfig.servicewares": "Servicewares",
-  "pages.modelConfig.pricing": "Pricing",
-  "pages.modelConfig.clientArgs": "Client Arguments",
-  "pages.modelConfig.requestArgs": "Request Arguments",
+  "pages.modelConfig.pricing": "Pricing (JSON)",
+  "pages.modelConfig.clientArgs": "Client Arguments (JSON)",
+  "pages.modelConfig.requestArgs": "Request Arguments (JSON)",
   "pages.modelConfig.createdAt": "Created At",
   "pages.modelConfig.updatedAt": "Updated At",
   "pages.modelConfig.actions": "Actions",
@@ -203,34 +198,27 @@ export default {
   "pages.modelConfig.delete": "Delete",
   "pages.modelConfig.deleteConfirm":
     "Are you sure you want to delete this model configuration?",
-  "pages.modelConfig.batchEnable": "Batch Enable",
-  "pages.modelConfig.batchDisable": "Batch Disable",
   "pages.modelConfig.addNew": "Add New Model Configuration",
   "pages.modelConfig.editModalTitle": "Edit Model Configuration",
   "pages.modelConfig.addModalTitle": "Add Model Configuration",
   "pages.modelConfig.approachNamePlaceholder": "Please enter a model name",
   "pages.modelConfig.approachNameRequired": "Please enter the model name",
-  "pages.modelConfig.approachNameDisabled":
-    "Model name cannot be modified when editing",
   "pages.modelConfig.clientTypePlaceholder": "Please select client type",
   "pages.modelConfig.discountPlaceholder":
     "Please enter discount value between 0-1, e.g. 0.9 for 90% off",
   "pages.modelConfig.servicewaresPlaceholder":
     "Please enter service item identifiers, separated by commas",
   "pages.modelConfig.pricingPlaceholder":
-    'Please enter pricing configuration in JSON format, e.g.: \'{"type": "per_token", "input_price": 0.01, "output_price": 0.03}\'',
+    'Please enter pricing, e.g.: \'{"type": "per_token", "input_price": 0.01, "output_price": 0.03}\'',
   "pages.modelConfig.clientArgsPlaceholder":
-    'Please enter client arguments in JSON format, e.g.: \'{"temperature": 0.7, "max_tokens": 1024}\'',
+    'Please enter client arguments, e.g.: \'{"temperature": 0.7, "max_tokens": 1024}\'',
   "pages.modelConfig.requestArgsPlaceholder":
-    'Please enter request arguments in JSON format, e.g.: \'{"model": "gpt-4", "stream": true}\'',
+    'Please enter request arguments, e.g.: \'{"model": "gpt-4", "stream": true}\'',
   "pages.modelConfig.formInvalid": "Form validation failed, please check input",
-  "pages.modelConfig.editFailed": "Edit Failed",
-  "pages.modelConfig.addFailed": "Add Failed",
   "pages.modelConfig.notSet": "Not Set",
   "pages.modelConfig.deleteSuccess": "Delete Successful",
   "pages.modelConfig.deleteFailed": "Delete Failed",
   "pages.modelConfig.updateSuccess": "Update Successful",
-  "pages.modelConfig.jsonInvalid": "Invalid JSON format, please check input",
   "pages.modelConfig.createSuccess": "Create Successful",
   "pages.modelConfig.fetchFailed": "Failed to fetch model configurations",
   "pages.modelConfig.saveFailed": "Failed to save model configuration",
@@ -243,9 +231,6 @@ export default {
     "Save failed, please check your input",
   "pages.modelConfig.requestFailed": "Request failed",
   "pages.modelConfig.clientTypeRequired": "Please select the client type",
-  "pages.modelConfig.discountRequired": "Please enter the discount value",
-  "pages.modelConfig.discountNumber": "Discount value must be a number",
-  "pages.modelConfig.discountRange": "Discount value must be between 0 and 1",
   "pages.modelConfig.pricingRequired": "Please enter the pricing configuration",
 
   // ConfigI18nPage
