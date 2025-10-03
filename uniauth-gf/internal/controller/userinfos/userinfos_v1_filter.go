@@ -138,7 +138,6 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 		upns[i] = info.Upn
 	}
 	res.UserUpns = upns
-	
 	if req.Verbose {
 		res.UserInfos = userInfos
 	}
@@ -148,14 +147,14 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 
 // applyFilterGroup 递归应用过滤条件组
 func (c *ControllerV1) applyFilterGroup(model *gdb.Model, group *v1.FilterGroup) (*gdb.Model, error) {
-	// 未声明规则则直接跳过过滤
+	// 未声明规则则直接加 Where(false) 返回空查询结果
 	if group == nil {
-		return model, nil
+		return model.Where(false), nil
 	}
 
 	// 构建当前组的条件
 	var groupConditions g.ArrayStr
-	var groupArgs []interface{}
+	var groupArgs []any
 
 	// 处理条件列表
 	for _, condition := range group.Conditions {
