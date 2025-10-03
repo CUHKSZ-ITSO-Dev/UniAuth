@@ -521,13 +521,11 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       const now = dayjs();
       const thirtyDaysAgo = now.subtract(30, "day");
       const defaultStartTime = thirtyDaysAgo.format("YYYY-MM-DD");
-      const defaultEndTime = now.add(1, "day").format("YYYY-MM-DD");
-      let actualEndTime = defaultEndTime;
-      if (params.endTime) {
-        actualEndTime = dayjs(params.endTime)
-          .add(1, "day")
-          .format("YYYY-MM-DD");
-      }
+
+      // 根据 params.endTime 是否存在来确定结束时间（结束时间加一天以包含当天数据）
+      const endTime = params.endTime
+        ? dayjs(params.endTime).add(1, "day").format("YYYY-MM-DD")
+        : now.add(1, "day").format("YYYY-MM-DD");
 
       // 构建API请求参数
       const requestParams = {
@@ -536,7 +534,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         product: params.product ? [params.product] : [],
         // 优先使用用户选择的时间范围，如果没有则使用默认值
         startTime: params.startTime || defaultStartTime,
-        endTime: actualEndTime,
+        endTime,
       };
 
       const response = await postBillingAdminGet(requestParams);
