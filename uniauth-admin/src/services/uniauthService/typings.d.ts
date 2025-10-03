@@ -68,6 +68,31 @@ declare namespace API {
 
   type AddPoliciesRes = Record<string, never>;
 
+  type AddGroupingReq = {
+    /** Groupings */
+    groupings: string[][];
+    /** 开启时，当规则已经存在时自动跳过，不返回错误；否则会返回错误，并回退所有操作 */
+    skip?: boolean;
+  };
+
+  type AddGroupingRes = Record<string, never>;
+
+  type EditGroupingReq = {
+    /** 旧的 Grouping */
+    oldGrouping: string[];
+    /** 新的 Grouping */
+    newGrouping: string[];
+  };
+
+  type EditGroupingRes = Record<string, never>;
+
+  type DeleteGroupingReq = {
+    /** Groupings */
+    groupings: string[][];
+  };
+
+  type DeleteGroupingRes = Record<string, never>;
+
   type AutoQuotaPoolItem = {
     /** 自增主键 */
     id?: number;
@@ -412,14 +437,28 @@ declare namespace API {
   };
 
   type FilterGroupingsReq = {
-    /** Upn 列表 */
-    users?: string[];
-    /** Roles 列表 */
-    roles?: string[];
+    /** G1 列表 */
+    g1?: string;
+    /** G2 列表 */
+    g2?: string;
+    /** Rule */
+    rule?: string;
+    /** 分页。当前页码。 */
+    page?: number;
+    /** 分页。每页条数。 */
+    pageSize?: number;
   };
 
   type FilterGroupingsRes = {
     groups?: string[][];
+    /** 总条数。 */
+    total?: number;
+    /** 当前页码。 */
+    page?: number;
+    /** 每页条数。 */
+    pageSize?: number;
+    /** 总页数。 */
+    totalPages?: number;
   };
 
   type FilterI18nReq = {

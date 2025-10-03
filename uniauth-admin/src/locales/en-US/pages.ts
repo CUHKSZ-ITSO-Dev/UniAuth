@@ -157,7 +157,8 @@ export default {
   "pages.autoQuotaPoolConfig.upnsCache": "UPN Cache",
   "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "Please enter UPN cache",
   "pages.autoQuotaPoolConfig.syncAll": "Sync All UPN Cache",
-  "pages.autoQuotaPoolConfig.syncAllConfirm": "Are you sure to sync all UPN caches?",
+  "pages.autoQuotaPoolConfig.syncAllConfirm":
+    "Are you sure to sync all UPN caches?",
   "pages.autoQuotaPoolConfig.syncAllSuccess": "Synced {count} rules",
   "pages.autoQuotaPoolConfig.syncOne": "Sync UPN Cache",
   "pages.autoQuotaPoolConfig.syncOneSuccess": "Synced. Matched {count} users",
@@ -290,7 +291,11 @@ export default {
   "pages.configI18n.updatedAt": "Updated Time",
 
   // PolicyListPage
-  "pages.policyList.title": "Policy List",
+  "pages.policyList.title": "Policies",
+  "pages.policyList.tab_p": "Policies",
+  "pages.policyList.tab_g": "Groupings",
+  // GroupingListPage
+  "pages.groupingList.title": "Groupings",
   "pages.policyList.description":
     "Manage access control rules: users, resources and actions",
   "pages.policyList.subject": "Subject",
@@ -338,6 +343,29 @@ export default {
   "pages.policyList.searchTable.effect.allow": "Allow",
   "pages.policyList.searchTable.effect.deny": "Deny",
   "pages.policyList.editRule": "Edit Rule",
+  "pages.policyList.pagination.total": "Total {total} items",
+  "pages.groupingList.relationship": "Groupings",
+  "pages.groupingList.description": "Manage user and role groupings",
+  "pages.groupingList.add": "New",
+  "pages.groupingList.edit": "Edit",
+  "pages.groupingList.delete": "Delete",
+  "pages.groupingList.batchDelete": "Batch Delete",
+  "pages.groupingList.search.g1.placeholder": "Enter g1 to search",
+  "pages.groupingList.search.g2.placeholder": "Enter g2 to search",
+  "pages.groupingList.search.rule.placeholder": "Enter rule to search",
+  "pages.goupingList.delete.confirmTitle":
+    "Are you sure to delete this grouping?",
+  "pages.groupingList.delete.confirmDescription":
+    "This action cannot be undone",
+  "pages.groupingList.delete.confirmOk": "Confirm",
+  "pages.groupingList.batchDelete.confirmTitle":
+    "Are you sure to delete the {count} groupings?",
+  "pages.groupingList.editRole": "Edit Groupings Relationship",
+  "pages.groupingList.pagination.total": "Total {total} items",
+  "pages.groupingList.batchDelete.cancel": "Cancel",
+  "pages.groupingList.batchDelete.ok": "Confirm",
+  "pages.groupingList.delete.confirmCancel": "Cancel",
+  "pages.groupingList.action": "Actions",
 
   // QuotaPoolConfigDetailTab
   "pages.quotaPoolConfigDetail.displayname": "Display Name",
