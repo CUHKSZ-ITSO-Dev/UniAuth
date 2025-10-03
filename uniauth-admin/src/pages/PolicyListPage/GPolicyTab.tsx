@@ -146,9 +146,9 @@ const GroupingTabContent: React.FC = () => {
     {
       title: intl.formatMessage({
         id: "pages.groupingList.relationship",
-        defaultMessage: "分组关系规则",
+        defaultMessage: "角色继承关系规则",
       }),
-      dataIndex: "raw",
+      dataIndex: "rule",
       valueType: "text",
       ellipsis: true,
       width: 300,
@@ -398,7 +398,7 @@ const GroupingTabContent: React.FC = () => {
 
       {/* 添加分组关系弹窗 */}
       <ModalForm
-        title="添加分组关系"
+        title="添加角色继承关系"
         width={400}
         open={createModalVisible}
         onOpenChange={setCreateModalVisible}
@@ -418,9 +418,9 @@ const GroupingTabContent: React.FC = () => {
         />
       </ModalForm>
 
-      {/* 编辑分组关系弹窗 */}
+      {/* 编辑角色继承关系弹窗 */}
       <ModalForm
-        title="编辑分组关系"
+        title="编辑角色继承关系"
         width={400}
         open={editModalVisible}
         onOpenChange={(v) => {
