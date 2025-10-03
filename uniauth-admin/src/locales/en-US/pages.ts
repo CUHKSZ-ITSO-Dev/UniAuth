@@ -344,6 +344,7 @@ export default {
   "pages.policyList.searchTable.effect.deny": "Deny",
   "pages.policyList.editRule": "Edit Rule",
   "pages.groupingList.relationship": "Groupings",
+  "pages.groupingList.description": "Manage user and resource groupings",
 
   // QuotaPoolConfigDetailTab
   "pages.quotaPoolConfigDetail.displayname": "Display Name",
