@@ -6,6 +6,7 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/shopspring/decimal"
 
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
@@ -96,19 +97,41 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 
 		// 更新需要修改剩余配额的记录
 		if len(updateWithRemainingQuota) > 0 {
-			updateData := g.Map{
-				"cron_cycle":    autoQuotaPoolConfig.CronCycle,
-				"regular_quota": autoQuotaPoolConfig.RegularQuota,
-				"disabled":      !autoQuotaPoolConfig.Enabled,
-			}
+			for _, poolName := range updateWithRemainingQuota {
+				pool := existingPoolMap[poolName]
+				if pool == nil {
+					continue
+				}
 
-			if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).
-				WhereIn("quota_pool_name", updateWithRemainingQuota).
-				Data(updateData).
-				Update(); err != nil {
-				return gerror.Wrapf(err, "批量更新个人配额池失败（更新剩余配额）")
+				newRegularQuota := autoQuotaPoolConfig.RegularQuota
+				diff := newRegularQuota.Sub(pool.RegularQuota)
+				newRemainingQuota := pool.RemainingQuota
+
+				if diff.GreaterThan(decimal.Zero) { // 新常规配额 > 原常规配额
+					// 新剩余配额 = 原有剩余配额 + (新常规配额 - 原有常规配额)
+					newRemainingQuota = newRemainingQuota.Add(diff)
+				} else if diff.LessThan(decimal.Zero) { // 新常规配额 < 原常规配额
+					// 新剩余配额 = min{原有剩余配额, 新常规配额}
+					if newRegularQuota.LessThan(newRemainingQuota) {
+						newRemainingQuota = newRegularQuota
+					}
+				}
+
+				updateData := g.Map{
+					"cron_cycle":      autoQuotaPoolConfig.CronCycle,
+					"regular_quota":   newRegularQuota,
+					"disabled":        !autoQuotaPoolConfig.Enabled,
+					"remaining_quota": newRemainingQuota,
+				}
+
+				if _, err := dao.QuotapoolQuotaPool.Ctx(ctx).
+					Where("quota_pool_name", poolName).
+					Data(updateData).
+					Update(); err != nil {
+					return gerror.Wrapf(err, "更新个人配额池失败（更新剩余配额）")
+				}
+				updateCount++
 			}
-			updateCount += len(updateWithRemainingQuota)
 		}
 
 		return nil
