@@ -1,5 +1,6 @@
+import { FullscreenExitOutlined, FullscreenOutlined } from "@ant-design/icons";
 import { useIntl } from "@umijs/max";
-import { Button, Input, message, Space } from "antd";
+import { Button, Input, Modal, message, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import type { ThemeKeys } from "react-json-view";
 import ReactJson from "react-json-view";
@@ -26,6 +27,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
   const [jsonObject, setJsonObject] = useState<any>(null);
   const [editMode, setEditMode] = useState<"json" | "tree">("json");
   const [error, setError] = useState<string>("");
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   // 初始化组件状态
   useEffect(() => {
@@ -36,10 +38,10 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
           const parsed = JSON.parse(value);
           setJsonObject(parsed);
           setError("");
-        } catch (e) {
+        } catch (_e) {
           setJsonObject(value);
           setError(
-            intl.formatMessage({ id: "component.jsonEditor.invalidJson" }),
+            intl.formatMessage({ id: "component.jsonEditor.invalidValue" }),
           );
         }
       } else {
@@ -47,10 +49,10 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
         try {
           setJsonString(JSON.stringify(value)); // 不自动格式化
           setError("");
-        } catch (e) {
+        } catch (_e) {
           setJsonString(String(value));
           setError(
-            intl.formatMessage({ id: "component.jsonEditor.invalidObject" }),
+            intl.formatMessage({ id: "component.jsonEditor.invalidValue" }),
           );
         }
       }
@@ -79,7 +81,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonObject(parsed);
       setError("");
       onChange?.(newJsonString); // 传递原始字符串而不是格式化后的字符串
-    } catch (e) {
+    } catch (_e) {
       setError(intl.formatMessage({ id: "component.jsonEditor.invalidJson" }));
       // 即使JSON无效，也传递字符串值
       onChange?.(newJsonString);
@@ -98,11 +100,11 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonString(newJsonString);
       setError("");
       onChange?.(newJsonObject);
-    } catch (e) {
+    } catch (_e) {
       setError(
         intl.formatMessage({ id: "component.jsonEditor.invalidObject" }),
       );
-      onChange?.(newJsonObject);
+      onChange?.(value);
     }
   };
 
@@ -124,7 +126,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonObject(parsed);
       setError("");
       onChange?.(formatted); // 通知父组件格式化后的值
-    } catch (e) {
+    } catch (_e) {
       message.error(
         intl.formatMessage({ id: "component.jsonEditor.formatFailed" }),
       );
@@ -144,11 +146,164 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       setJsonObject(parsed);
       setError("");
       onChange?.(compacted); // 通知父组件压缩后的值
-    } catch (e) {
+    } catch (_e) {
       message.error(
         intl.formatMessage({ id: "component.jsonEditor.compactFailed" }),
       );
     }
+  };
+
+  // 切换全屏模式
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  // 全屏模式下的JSON编辑器
+  const renderFullscreenEditor = () => {
+    return (
+      <Modal
+        open={isFullscreen}
+        onCancel={() => setIsFullscreen(false)}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => setIsFullscreen(false)}
+            icon={<FullscreenExitOutlined />}
+          >
+            {intl.formatMessage({ id: "component.jsonEditor.exitFullscreen" })}
+          </Button>,
+        ]}
+        width="90vw"
+        style={{ top: 20 }}
+        styles={{
+          body: {
+            height: "80vh",
+            display: "flex",
+            flexDirection: "column",
+          },
+        }}
+        destroyOnClose
+      >
+        <div
+          style={{
+            flex: 1,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {!readOnly && (
+            <div style={{ marginBottom: "12px" }}>
+              <Space>
+                <Button size="small" onClick={toggleEditMode}>
+                  {editMode === "json"
+                    ? intl.formatMessage({
+                        id: "component.jsonEditor.switchToTree",
+                      })
+                    : intl.formatMessage({
+                        id: "component.jsonEditor.switchToJson",
+                      })}
+                </Button>
+
+                {editMode === "json" && (
+                  <>
+                    <Button size="small" onClick={formatJson}>
+                      {intl.formatMessage({
+                        id: "component.jsonEditor.format",
+                      })}
+                    </Button>
+                    <Button size="small" onClick={compactJson}>
+                      {intl.formatMessage({
+                        id: "component.jsonEditor.compact",
+                      })}
+                    </Button>
+                  </>
+                )}
+              </Space>
+            </div>
+          )}
+
+          <div style={{ flex: 1, overflow: "hidden" }}>
+            {editMode === "tree" ? (
+              <div style={{ height: "100%", overflow: "auto" }}>
+                {jsonObject !== null ? (
+                  <ReactJson
+                    src={jsonObject}
+                    theme={theme}
+                    onEdit={readOnly ? false : handleJsonChange}
+                    onAdd={readOnly ? false : handleJsonChange}
+                    onDelete={readOnly ? false : handleJsonChange}
+                    enableClipboard={!readOnly}
+                    displayDataTypes={!readOnly}
+                    displayObjectSize={!readOnly}
+                    name={false}
+                    collapsed={false}
+                    indentWidth={2}
+                    style={{ padding: "10px", fontSize: "14px" }}
+                    key="tree-view-fullscreen"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      color: "#999",
+                      fontStyle: "italic",
+                      padding: "20px",
+                      textAlign: "center",
+                    }}
+                  >
+                    {placeholder ||
+                      intl.formatMessage({ id: "component.jsonEditor.empty" })}
+                  </div>
+                )}
+                {error && (
+                  <div
+                    style={{
+                      color: "#ff4d4f",
+                      marginTop: "4px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {error}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <Input.TextArea
+                  value={jsonString}
+                  onChange={handleJsonStringChange}
+                  placeholder={placeholder}
+                  readOnly={readOnly}
+                  style={{
+                    flex: 1,
+                    fontFamily: "monospace",
+                    fontSize: "14px",
+                    backgroundColor: readOnly ? "#f5f5f5" : "inherit",
+                  }}
+                />
+                {error && (
+                  <div
+                    style={{
+                      color: "#ff4d4f",
+                      marginTop: "4px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {error}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
+    );
   };
 
   return (
@@ -180,11 +335,33 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
                 <Button size="small" onClick={compactJson}>
                   {intl.formatMessage({ id: "component.jsonEditor.compact" })}
                 </Button>
+                <Button
+                  size="small"
+                  onClick={toggleFullscreen}
+                  icon={<FullscreenOutlined />}
+                >
+                  {intl.formatMessage({
+                    id: "component.jsonEditor.fullscreen",
+                  })}
+                </Button>
               </>
+            )}
+
+            {editMode === "tree" && (
+              <Button
+                size="small"
+                onClick={toggleFullscreen}
+                icon={<FullscreenOutlined />}
+              >
+                {intl.formatMessage({ id: "component.jsonEditor.fullscreen" })}
+              </Button>
             )}
           </Space>
         </div>
       )}
+
+      {/* 渲染全屏编辑器 */}
+      {renderFullscreenEditor()}
 
       {editMode === "tree" ? (
         <div>
@@ -202,7 +379,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
                 name={false}
                 collapsed={false}
                 indentWidth={2}
-                style={{ padding: "10px", fontSize: "18px" }}
+                style={{ padding: "10px", fontSize: "14px" }}
                 key="tree-view"
               />
             ) : (
@@ -221,7 +398,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
           </div>
           {error && (
             <div
-              style={{ color: "#ff4d4f", marginTop: "4px", fontSize: "16px" }}
+              style={{ color: "#ff4d4f", marginTop: "4px", fontSize: "12px" }}
             >
               {error}
             </div>
@@ -237,13 +414,13 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
             autoSize={{ minRows: 4, maxRows: 12 }}
             style={{
               fontFamily: "monospace",
-              fontSize: "18px",
+              fontSize: "14px",
               backgroundColor: readOnly ? "#f5f5f5" : "inherit",
             }}
           />
           {error && (
             <div
-              style={{ color: "#ff4d4f", marginTop: "4px", fontSize: "16px" }}
+              style={{ color: "#ff4d4f", marginTop: "4px", fontSize: "12px" }}
             >
               {error}
             </div>

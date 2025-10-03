@@ -10,5 +10,7 @@ export default {
   "component.jsonEditor.switchToJson": "切换到JSON视图",
   "component.jsonEditor.format": "格式化",
   "component.jsonEditor.compact": "压缩",
+  "component.jsonEditor.fullscreen": "全屏",
+  "component.jsonEditor.exitFullscreen": "退出全屏",
   "component.jsonEditor.empty": "暂无数据",
 };

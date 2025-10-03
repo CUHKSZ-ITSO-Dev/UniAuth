@@ -10,5 +10,7 @@ export default {
   "component.jsonEditor.switchToJson": "Switch to JSON View",
   "component.jsonEditor.format": "Format",
   "component.jsonEditor.compact": "Compact",
+  "component.jsonEditor.fullscreen": "Fullscreen",
+  "component.jsonEditor.exitFullscreen": "Exit Fullscreen",
   "component.jsonEditor.empty": "No data",
 };
