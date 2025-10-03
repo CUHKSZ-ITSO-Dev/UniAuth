@@ -79,11 +79,6 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 
 	// 检查是否请求全部数据
 	if req.Pagination.All {
-		// 安全检查：防止返回过多数据
-		const maxAllLimit = 10000
-		if total > maxAllLimit {
-			return nil, gerror.Newf("查询结果过多(%d)，超过最大限制(%d)，请添加更精确的过滤条件", total, maxAllLimit)
-		}
 		// 重置分页参数为全部数据
 		req.Pagination.Page = 1
 		req.Pagination.PageSize = total
