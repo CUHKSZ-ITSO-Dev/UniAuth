@@ -72,7 +72,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   const [cronDescription, setCronDescription] = useState<string>("");
   const [cronError, setCronError] = useState<string>("");
   const [refreshUsersLoading, setRefreshUsersLoading] = useState(false);
-  const associatedUsersActionRef = useRef<ActionType>();
+  const associatedUsersActionRef = useRef<ActionType | null>(null);
 
   // 解析 cron 表达式
   const parseCronExpression = (cronExpression: string): string => {
