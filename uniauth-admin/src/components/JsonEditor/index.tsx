@@ -28,7 +28,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
   const [editMode, setEditMode] = useState<"json" | "tree">("json");
   const [error, setError] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [fontSize, setFontSize] = useState<number>(14); // 默认字体大小
+  const [fontSize, setFontSize] = useState<number>(16); // 默认字体大小
   const editorRef = useRef<HTMLDivElement>(null);
 
   // 初始化组件状态
