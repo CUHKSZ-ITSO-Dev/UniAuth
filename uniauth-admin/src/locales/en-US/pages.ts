@@ -121,7 +121,7 @@ export default {
   "pages.autoQuotaPoolConfig.description": "Rule Description",
   "pages.autoQuotaPoolConfig.ruleName": "Rule Name (unique)",
   "pages.autoQuotaPoolConfig.descriptionLabel": "Description",
-  "pages.autoQuotaPoolConfig.cronCycle": "Cron Cycle (six parts)",
+  "pages.autoQuotaPoolConfig.cronCycle": "Cron Cycle (five parts)",
   "pages.autoQuotaPoolConfig.regularQuota": "Regular Quota",
   "pages.autoQuotaPoolConfig.enabled": "Enabled",
   "pages.autoQuotaPoolConfig.priority": "Priority",
@@ -142,9 +142,9 @@ export default {
   "pages.autoQuotaPoolConfig.descriptionPlaceholder":
     "Please enter rule description",
   "pages.autoQuotaPoolConfig.cronCyclePlaceholder":
-    "Please enter six parts cycle Cron expression, e.g.: 0 0 3 * * *",
+    "Please enter five parts cycle Cron expression, e.g.: 0 3 * * *",
   "pages.autoQuotaPoolConfig.cronCycleRequired":
-    "Please enter six parts cycle Cron expression",
+    "Please enter five parts cycle Cron expression",
   "pages.autoQuotaPoolConfig.regularQuotaPlaceholder":
     "Please enter regular quota",
   "pages.autoQuotaPoolConfig.regularQuotaRequired":
@@ -464,8 +464,7 @@ export default {
     "Please enter quota pool name, e.g.: itso-deep-research-vip",
   "pages.quotaPoolList.create.cronCycle": "Refresh Cycle (Cron Expression)",
   "pages.quotaPoolList.create.cronCycle.required": "Please enter refresh cycle",
-  "pages.quotaPoolList.create.cronCycle.invalid":
-    "Invalid Cron expression format",
+  "pages.quotaPoolList.create.cronCycle.invalid": "Invalid Cron expression",
   "pages.quotaPoolList.create.cronCycle.placeholder":
     "Please enter standard Cron expression, e.g.: 0 3 * * *",
   "pages.quotaPoolList.create.cronCycle.help": "Execution time: {description}",
@@ -481,8 +480,8 @@ export default {
   "pages.quotaPoolList.create.enabledStatus": "Enabled Status",
   "pages.quotaPoolList.create.enabled": "Enabled",
   "pages.quotaPoolList.create.disabled": "Disabled",
-  "pages.quotaPoolList.create.cronCycle.sixFieldRequired":
-    "Cron expressions must be in 6-digit format (seconds, minutes, hours, days, months, weeks).",
+  "pages.quotaPoolList.create.cronCycle.fiveFieldRequired":
+    "Cron expressions must be in 5-digit format (minutes (0-59), hours (0-23), day of month (1-31), months (1-12), day of the week (0 Sunday - 6 Saturday)).",
 
   // Field Options
   "pages.quotaPoolList.field.quotaPoolName": "Quota Pool Name",

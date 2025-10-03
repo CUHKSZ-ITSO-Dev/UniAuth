@@ -26,7 +26,7 @@ import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService
 import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthService/query";
 import { putQuotaPool } from "@/services/uniauthService/quotaPool";
 import { postUserinfosFilter } from "@/services/uniauthService/userInfo";
-import { validateSixFieldCron } from "@/utils/cron";
+import { validateFiveFieldCron } from "@/utils/cron";
 
 // 配额池详细信息接口
 interface QuotaPoolDetail {
@@ -97,11 +97,12 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     }
 
     // 首先验证是否为6位格式
-    if (!validateSixFieldCron(value)) {
+    if (!validateFiveFieldCron(value)) {
       setCronError(
         intl.formatMessage({
-          id: "pages.quotaPoolList.create.cronCycle.sixFieldRequired",
-          defaultMessage: "Cron 表达式必须为6位格式（秒 分 时 日 月 周）",
+          id: "pages.quotaPoolList.create.cronCycle.fiveFieldRequired",
+          defaultMessage:
+            "Cron 表达式必须为5位格式（分(0-59) 时(0-23) 日(1-31) 月(1-12) 周几(0周日-6周六)）",
         }),
       );
       setCronDescription("");
