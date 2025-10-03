@@ -46,6 +46,12 @@ export default [
         component: "@/pages/QuotaPoolDetailsPage",
         hideInMenu: true,
       },
+      {
+        path: "/resource/policy-list",
+        name: "policy-list",
+        icon: "SafetyCertificate",
+        component: "@/pages/PolicyListPage",
+      },
     ],
   },
 
@@ -71,12 +77,6 @@ export default [
         name: "config-i18n",
         icon: "Global",
         component: "@/pages/ConfigI18nPage",
-      },
-      {
-        path: "/config/policy-list",
-        name: "policy-list",
-        icon: "SafetyCertificate",
-        component: "@/pages/PolicyListPage",
       },
     ],
   },
