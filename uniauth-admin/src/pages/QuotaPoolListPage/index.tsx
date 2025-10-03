@@ -873,8 +873,10 @@ const QuotaPoolListPage: React.FC = () => {
             id: "pages.quotaPoolList.batchModify.newValue.placeholder",
             defaultMessage: "请选择新值",
           })}
-          value={condition.value}
-          onChange={(value) => updateFilterCondition(index, "value", value)}
+          value={condition.value ?? null}
+          onChange={(value) =>
+            updateFilterCondition(index, "value", value ?? "")
+          }
           style={{ width: "100%" }}
         >
           <Select.Option value="true">
