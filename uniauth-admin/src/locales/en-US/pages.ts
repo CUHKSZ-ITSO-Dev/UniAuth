@@ -344,7 +344,22 @@ export default {
   "pages.policyList.searchTable.effect.deny": "Deny",
   "pages.policyList.editRule": "Edit Rule",
   "pages.groupingList.relationship": "Groupings",
-  "pages.groupingList.description": "Manage user and resource groupings",
+  "pages.groupingList.description": "Manage user and role groupings",
+  "pages.groupingList.add": "New",
+  "pages.groupingList.edit": "Edit",
+  "pages.groupingList.delete": "Delete",
+  "pages.groupingList.batchDelete": "Batch Delete",
+  "pages.groupingList.search.g1.placeholder": "Enter g1 to search",
+  "pages.groupingList.search.g2.placeholder": "Enter g2 to search",
+  "pages.groupingList.search.rule.placeholder": "Enter rule to search",
+  "pages.goupingList.delete.confirmTitle":
+    "Are you sure to delete this grouping?",
+  "pages.groupingList.delete.confirmDescription":
+    "This action cannot be undone",
+  "pages.groupingList.delete.confirmOk": "Confirm",
+  "pages.groupingList.batchDelete.confirmTitle":
+    "Are you sure to delete the {count} groupings?",
+  "pages.groupingList.editRole": "Edit Groupings Relationship",
 
   // QuotaPoolConfigDetailTab
   "pages.quotaPoolConfigDetail.displayname": "Display Name",

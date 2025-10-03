@@ -46,7 +46,8 @@ const filterGroupings = async (params: any) => {
     filterRequestParams.g2 = params.g2;
   }
   if (params.rule) {
-    filterRequestParams.rule = params.rule;
+    // 将搜索的rule转换为正确的格式
+    filterRequestParams.rule = `g,${params.g1 || ""},${params.g2 || ""}`;
   }
 
   // 处理分页参数
@@ -154,10 +155,18 @@ const GroupingTabContent: React.FC = () => {
       width: 300,
       render: (_, record) => (
         <Text code style={{ fontSize: 12 }}>
-          g, {record.rule?.join(", ")}
+          g, {record.g1}, {record.g2}
         </Text>
       ),
-      search: false,
+      search: {
+        transform: (value) => ({ rule: value }),
+      },
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.groupingList.search.rule.placeholder",
+          defaultMessage: "搜索规则",
+        }),
+      },
     },
     {
       title: intl.formatMessage({
@@ -184,7 +193,10 @@ const GroupingTabContent: React.FC = () => {
           </a>
           <Popconfirm
             key="delete"
-            title={`确认删除关系 ${record.g1} -> ${record.g2} ?`}
+            title={intl.formatMessage({
+              id: "pages.goupingList.delete.confirmTitle",
+              defaultMessage: "确认删除这条角色继承关系？",
+            })}
             onConfirm={async () => {
               try {
                 const rule: string[][] = record.rule
@@ -198,11 +210,21 @@ const GroupingTabContent: React.FC = () => {
                 message.error("删除失败");
               }
             }}
-            okText="确定"
-            cancelText="取消"
+            okText={intl.formatMessage({
+              id: "pages.groupingList.delete.confirmOk",
+              defaultMessage: "确定",
+            })}
+            cancelText={intl.formatMessage({
+              id: "pages.groupingList.delete.confirmCancel",
+              defaultMessage: "取消",
+            })}
           >
             <a style={{ color: "#ff4d4f" }}>
-              <DeleteOutlined /> 删除
+              <DeleteOutlined />{" "}
+              {intl.formatMessage({
+                id: "pages.groupingList.delete",
+                defaultMessage: "删除",
+              })}
             </a>
           </Popconfirm>
         </Space>
@@ -420,7 +442,10 @@ const GroupingTabContent: React.FC = () => {
 
       {/* 编辑角色继承关系弹窗 */}
       <ModalForm
-        title="编辑角色继承关系"
+        title={intl.formatMessage({
+          id: "pages.groupingList.editRole",
+          defaultMessage: "编辑角色继承关系",
+        })}
         width={400}
         open={editModalVisible}
         onOpenChange={(v) => {
