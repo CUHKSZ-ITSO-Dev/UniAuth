@@ -444,7 +444,7 @@ const GroupingTabContent: React.FC = () => {
             title={intl.formatMessage(
               {
                 id: "pages.groupingList.batchDelete.confirmTitle",
-                defaultMessage: "确认删除选中的 {count} 条关系？",
+                defaultMessage: "确定要删除选中的 {count} 条关系吗？",
               },
               { count: selectedRows.length },
             )}
