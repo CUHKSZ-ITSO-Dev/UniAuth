@@ -7,7 +7,7 @@ import {
   ProFormText,
   ProTable,
 } from "@ant-design/pro-components";
-import { useIntl } from "@umijs/max";
+import { useIntl, useSearchParams } from "@umijs/max";
 import {
   Button,
   message,
@@ -17,7 +17,7 @@ import {
   Tag,
   Typography,
 } from "antd";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   postAuthAdminPoliciesAdd as addPoliciesAPI,
   postAuthAdminPoliciesOpenApiDelete as deletePoliciesAPI,
@@ -43,6 +43,40 @@ const PPolicyTab: React.FC = () => {
   const [editingPolicy, setEditingPolicy] = useState<PolicyItem | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<PolicyItem[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // 记忆分页参数，响应URL变化
+  const initialPagination = useMemo(() => {
+    const current = parseInt(searchParams.get("current") || "1", 10);
+    const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
+    return {
+      current,
+      pageSize,
+    };
+  }, [searchParams]);
+
+  // 更新URL参数
+  const updateURLParams = (params: { current?: number; pageSize?: number }) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (params.current !== undefined && params.current > 1) {
+      newSearchParams.set("current", params.current.toString());
+    } else {
+      newSearchParams.delete("current");
+    }
+    if (params.pageSize !== undefined && params.pageSize !== 10) {
+      newSearchParams.set("pageSize", params.pageSize.toString());
+    } else {
+      newSearchParams.delete("pageSize");
+    }
+    setSearchParams(newSearchParams);
+  };
+
+  // 监听URL参数变化，重载表格
+  useEffect(() => {
+    if (actionRef.current && actionRef.current.reload) {
+      actionRef.current.reload();
+    }
+  }, [initialPagination.current, initialPagination.pageSize]);
 
   const filterPolicies = async (params: any) => {
     const filterRequestParams = {
@@ -383,7 +417,9 @@ const PPolicyTab: React.FC = () => {
         actionRef={actionRef}
         rowKey={(record) => record.rule?.join(",") || ""}
         pagination={{
-          pageSize: 10,
+          current: initialPagination.current,
+          pageSize: initialPagination.pageSize,
+          defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: false,
           showTotal: (total) => {
@@ -514,6 +550,11 @@ const PPolicyTab: React.FC = () => {
           </Button>,
         ]}
         request={async (params) => {
+          // 分页参数同步到URL
+          updateURLParams({
+            current: params.current || 1,
+            pageSize: params.pageSize || 10,
+          });
           const searchParams = {
             sub: params.sub,
             obj: params.obj,

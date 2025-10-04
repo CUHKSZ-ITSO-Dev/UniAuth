@@ -6,9 +6,9 @@ import {
   ProFormText,
   ProTable,
 } from "@ant-design/pro-components";
-import { useIntl } from "@umijs/max";
+import { useIntl, useSearchParams } from "@umijs/max";
 import { Button, message, Popconfirm, Space, Tag, Typography } from "antd";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   postAuthAdminGroupingsAdd as addGroupingAPI,
   postAuthAdminGroupingsDelete as deleteGroupingAPI,
@@ -109,6 +109,40 @@ const GroupingTabContent: React.FC = () => {
   const [editingGrouping, setEditingGrouping] = useState<GroupingItem | null>(
     null,
   );
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // 记忆分页参数，响应URL变化
+  const initialPagination = useMemo(() => {
+    const current = parseInt(searchParams.get("current") || "1", 10);
+    const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
+    return {
+      current,
+      pageSize,
+    };
+  }, [searchParams]);
+
+  // 更新URL参数
+  const updateURLParams = (params: { current?: number; pageSize?: number }) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (params.current !== undefined && params.current > 1) {
+      newSearchParams.set("current", params.current.toString());
+    } else {
+      newSearchParams.delete("current");
+    }
+    if (params.pageSize !== undefined && params.pageSize !== 10) {
+      newSearchParams.set("pageSize", params.pageSize.toString());
+    } else {
+      newSearchParams.delete("pageSize");
+    }
+    setSearchParams(newSearchParams);
+  };
+
+  // 监听URL参数变化，重载表格
+  useEffect(() => {
+    if (actionRef.current && actionRef.current.reload) {
+      actionRef.current.reload();
+    }
+  }, [initialPagination.current, initialPagination.pageSize]);
 
   const columns: ProColumns<GroupingItem>[] = [
     {
@@ -374,7 +408,8 @@ const GroupingTabContent: React.FC = () => {
         actionRef={actionRef}
         rowKey="id"
         pagination={{
-          pageSize: 10,
+          current: initialPagination.current,
+          pageSize: initialPagination.pageSize,
           defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: false,
@@ -388,7 +423,13 @@ const GroupingTabContent: React.FC = () => {
             );
           },
         }}
-        request={async (params) => filterGroupings(params)}
+        request={async (params) => {
+          updateURLParams({
+            current: params.current || 1,
+            pageSize: params.pageSize || 10,
+          });
+          return filterGroupings(params);
+        }}
         search={{
           labelWidth: "auto",
           searchText: intl.formatMessage({
