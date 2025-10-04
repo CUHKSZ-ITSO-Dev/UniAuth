@@ -345,7 +345,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       dataIndex: "sub",
       valueType: "text",
       ellipsis: true,
-      search: true,
+      search: false,
     },
     {
       title: intl.formatMessage({
@@ -395,10 +395,10 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     },
     {
       title: intl.formatMessage({
-        id: "pages.quotaPoolConfigDetail.roleGroup",
-        defaultMessage: "角色分组",
+        id: "pages.quotaPoolConfigDetail.rawPolicy",
+        defaultMessage: "完整规则",
       }),
-      dataIndex: "g",
+      dataIndex: "rule",
       valueType: "text",
       ellipsis: true,
       search: true,
@@ -524,6 +524,11 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     try {
       // 请求参数
       const getPolicyRequestParams = {
+        // 将当前页传入以便后端可以根据配额池过滤规则
+        // 注意：后端的 FilterPoliciesReq 类型中没有声明 quotaPool 字段，
+        // 我们在这里通过类型断言扩展请求体以传递 quotaPoolName 给后端（如果后端支持）
+        // 这样可以确保获取到与当前配额池相关的规则
+        quotaPool: quotaPoolName,
         sub: params.sub || undefined,
         obj: params.obj || undefined,
         act: params.act || undefined,
@@ -533,7 +538,10 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         pageSize: params.pageSize || 5,
       };
 
-      const res = await getPolcyAPI(getPolicyRequestParams);
+      // 使用类型断言绕过 typings 中没有 quotaPool 字段的限制
+      const res = await getPolcyAPI(
+        getPolicyRequestParams as unknown as API.FilterPoliciesReq,
+      );
 
       if (res?.policies) {
         // 格式化数据

@@ -266,8 +266,15 @@ const PPolicyTab: React.FC = () => {
       }),
       dataIndex: "raw",
       valueType: "text",
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.policyList.search.raw.placeholder",
+          defaultMessage: "请输入完整规则进行搜索",
+        }),
+        style: { minWidth: 200 },
+      },
       ellipsis: true,
-      width: 300,
+      width: 500,
       render: (_, record) => (
         <Text code style={{ fontSize: 12 }}>
           p, {record.rule?.map((item) => `${item}`).join(", ")}

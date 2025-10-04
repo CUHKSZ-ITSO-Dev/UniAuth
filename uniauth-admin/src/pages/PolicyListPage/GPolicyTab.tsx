@@ -8,6 +8,7 @@ import {
 } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
 import { Button, message, Popconfirm, Space, Tag, Typography } from "antd";
+import { min } from "lodash";
 import { useRef, useState } from "react";
 import {
   postAuthAdminGroupingsAdd as addGroupingAPI,
@@ -108,7 +109,6 @@ const GroupingTabContent: React.FC = () => {
     null,
   );
 
-  // 表格列配置
   const columns: ProColumns<GroupingItem>[] = [
     {
       title: intl.formatMessage({
@@ -125,6 +125,7 @@ const GroupingTabContent: React.FC = () => {
           id: "pages.groupingList.search.g1.placeholder",
           defaultMessage: "请输入G1进行搜索",
         }),
+        style: { minWidth: 100 },
       },
     },
     {
@@ -142,6 +143,7 @@ const GroupingTabContent: React.FC = () => {
           id: "pages.groupingList.search.g2.placeholder",
           defaultMessage: "请输入G2进行搜索",
         }),
+        style: { minWidth: 100 },
       },
     },
     {
@@ -166,6 +168,7 @@ const GroupingTabContent: React.FC = () => {
           id: "pages.groupingList.search.rule.placeholder",
           defaultMessage: "搜索规则",
         }),
+        style: { minWidth: 200 },
       },
     },
     {
@@ -367,7 +370,8 @@ const GroupingTabContent: React.FC = () => {
             id: "pages.userList.search.reset",
             defaultMessage: "重置",
           }),
-          span: 6,
+          // 使用 24 栅格来配合每列的 colSize（12/12/24）布局
+          span: 24,
           defaultCollapsed: false,
           collapseRender: false,
           optionRender: ({ searchText, resetText }, { form }) => [

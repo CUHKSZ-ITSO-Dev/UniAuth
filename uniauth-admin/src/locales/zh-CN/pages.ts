@@ -282,6 +282,7 @@ export default {
   "pages.policyList.effect.deny": "拒绝",
   "pages.policyList.search.effect.placeholder": "请选择效果",
   "pages.policyList.raw": "完整规则",
+  "pages.policyList.search.raw.placeholder": "请输入完整规则进行搜索",
   "pages.policyList.edit": "编辑",
   "pages.policyList.delete": "删除",
   "pages.policyList.deleteConfirmTitle": "确定要删除该规则吗？",
