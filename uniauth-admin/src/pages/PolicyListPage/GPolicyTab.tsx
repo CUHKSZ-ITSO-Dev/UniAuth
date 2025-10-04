@@ -46,8 +46,10 @@ const filterGroupings = async (params: any) => {
     filterRequestParams.g2 = params.g2;
   }
   if (params.rule) {
-    // 将搜索的rule转换为正确的格式
-    filterRequestParams.rule = `g,${params.g1 || ""},${params.g2 || ""}`;
+    // 使用用户输入的 rule 作为过滤条件
+    // 列定义中已经通过 transform 将输入赋值到 params.rule
+    filterRequestParams.rule =
+      typeof params.rule === "string" ? params.rule.trim() : params.rule;
   }
 
   // 处理分页参数
@@ -374,8 +376,8 @@ const GroupingTabContent: React.FC = () => {
         pagination={{
           pageSize: 10,
           defaultPageSize: 10,
-          showSizeChanger: false,
-          showQuickJumper: true,
+          showSizeChanger: true,
+          showQuickJumper: false,
           showTotal: (total) => {
             return intl.formatMessage(
               {
@@ -386,6 +388,7 @@ const GroupingTabContent: React.FC = () => {
             );
           },
         }}
+        request={async (params) => filterGroupings(params)}
         search={{
           labelWidth: "auto",
           searchText: intl.formatMessage({
@@ -471,7 +474,6 @@ const GroupingTabContent: React.FC = () => {
         rowSelection={{
           onChange: (_keys, rows) => setSelectedRows(rows as GroupingItem[]),
         }}
-        request={async (params) => filterGroupings(params)}
         scroll={{ x: 1200 }}
       />
 

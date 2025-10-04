@@ -306,6 +306,11 @@ const PPolicyTab: React.FC = () => {
           p, {record.rule?.map((item) => `${item}`).join(", ")}
         </Text>
       ),
+      search: {
+        transform: (value) => ({
+          rule: typeof value === "string" ? value.trim() : value,
+        }),
+      },
     },
     {
       title: intl.formatMessage({
@@ -379,7 +384,7 @@ const PPolicyTab: React.FC = () => {
         rowKey={(record) => record.rule?.join(",") || ""}
         pagination={{
           pageSize: 10,
-          showSizeChanger: false,
+          showSizeChanger: true,
           showQuickJumper: false,
           showTotal: (total) => {
             return intl.formatMessage(

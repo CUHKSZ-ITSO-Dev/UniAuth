@@ -953,6 +953,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           }}
           pagination={{
             pageSize: 10,
+            defaultPageSize: 10,
             showSizeChanger: true,
             showTotal: (total) =>
               intl.formatMessage(
@@ -990,7 +991,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           }}
           pagination={{
             pageSize: 5,
-            showSizeChanger: false,
+            showSizeChanger: true,
             showQuickJumper: false,
             showTotal: (total) =>
               intl.formatMessage(
@@ -1029,7 +1030,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           }}
           pagination={{
             pageSize: 5,
-            showSizeChanger: false,
+            showSizeChanger: true,
             showQuickJumper: false,
             showTotal: (total) =>
               intl.formatMessage(
@@ -1068,7 +1069,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           }}
           pagination={{
             pageSize: 5,
-            showSizeChanger: false,
+            showSizeChanger: true,
             showQuickJumper: false,
             showTotal: (total) =>
               intl.formatMessage(
