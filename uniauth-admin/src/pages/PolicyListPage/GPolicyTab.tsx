@@ -8,7 +8,6 @@ import {
 } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
 import { Button, message, Popconfirm, Space, Tag, Typography } from "antd";
-import { min } from "lodash";
 import { useRef, useState } from "react";
 import {
   postAuthAdminGroupingsAdd as addGroupingAPI,
@@ -125,7 +124,7 @@ const GroupingTabContent: React.FC = () => {
           id: "pages.groupingList.search.g1.placeholder",
           defaultMessage: "请输入G1进行搜索",
         }),
-        style: { minWidth: 100 },
+        style: { maxWidth: 200 },
       },
     },
     {
@@ -143,7 +142,7 @@ const GroupingTabContent: React.FC = () => {
           id: "pages.groupingList.search.g2.placeholder",
           defaultMessage: "请输入G2进行搜索",
         }),
-        style: { minWidth: 100 },
+        style: { maxWidth: 200 },
       },
     },
     {
@@ -168,7 +167,7 @@ const GroupingTabContent: React.FC = () => {
           id: "pages.groupingList.search.rule.placeholder",
           defaultMessage: "搜索规则",
         }),
-        style: { minWidth: 200 },
+        style: { maxWidth: 300 },
       },
     },
     {

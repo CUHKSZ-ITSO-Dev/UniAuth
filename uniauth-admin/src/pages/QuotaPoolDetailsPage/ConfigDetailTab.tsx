@@ -19,6 +19,7 @@ import {
   Radio,
   Space,
   Switch,
+  Typography,
 } from "antd";
 import cronstrue from "cronstrue/i18n";
 import type { FC } from "react";
@@ -400,8 +401,41 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       }),
       dataIndex: "rule",
       valueType: "text",
+      fieldProps: {
+        style: { minWidth: 100 },
+      },
       ellipsis: true,
       search: true,
+      width: 300,
+      render: (_: any, record: any) => {
+        try {
+          const { Text } = Typography;
+          const rule = record.rule;
+          if (!rule) return "-";
+          if (Array.isArray(rule)) {
+            return (
+              <Text code style={{ fontSize: 12 }}>
+                p, {rule.map((item: any) => `${item}`).join(", ")}
+              </Text>
+            );
+          }
+          if (typeof rule === "string") {
+            return (
+              <Text code style={{ fontSize: 12 }}>
+                p, {rule}
+              </Text>
+            );
+          }
+          return (
+            <Text code style={{ fontSize: 12 }}>
+              p, {JSON.stringify(rule)}
+            </Text>
+          );
+        } catch (e) {
+          console.error("格式化规则失败:", e);
+          return "-";
+        }
+      },
     },
   ];
 
