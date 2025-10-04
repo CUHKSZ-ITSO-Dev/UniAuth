@@ -124,7 +124,6 @@ const GroupingTabContent: React.FC = () => {
           id: "pages.groupingList.search.g1.placeholder",
           defaultMessage: "请输入G1进行搜索",
         }),
-        style: { maxWidth: 200 },
       },
     },
     {
@@ -142,7 +141,6 @@ const GroupingTabContent: React.FC = () => {
           id: "pages.groupingList.search.g2.placeholder",
           defaultMessage: "请输入G2进行搜索",
         }),
-        style: { maxWidth: 200 },
       },
     },
     {
@@ -167,7 +165,6 @@ const GroupingTabContent: React.FC = () => {
           id: "pages.groupingList.search.rule.placeholder",
           defaultMessage: "搜索规则",
         }),
-        style: { maxWidth: 300 },
       },
     },
     {
@@ -370,7 +367,7 @@ const GroupingTabContent: React.FC = () => {
             defaultMessage: "重置",
           }),
           // 使用 24 栅格来配合每列的 colSize（12/12/24）布局
-          span: 24,
+          span: 12,
           defaultCollapsed: false,
           collapseRender: false,
           optionRender: ({ searchText, resetText }, { form }) => [
