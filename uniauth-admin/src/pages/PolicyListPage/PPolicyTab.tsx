@@ -8,7 +8,15 @@ import {
   ProTable,
 } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
-import { Button, message, Popconfirm, Space, Tag, Typography } from "antd";
+import {
+  Button,
+  message,
+  Popconfirm,
+  Space,
+  Table,
+  Tag,
+  Typography,
+} from "antd";
 import { useRef, useState } from "react";
 import {
   postAuthAdminPoliciesAdd as addPoliciesAPI,
@@ -19,32 +27,26 @@ import { postAuthAdminPoliciesFilter as filterPoliciesAPI } from "@/services/uni
 
 const { Title, Text } = Typography;
 
-// 规则类型
 interface PolicyItem {
-  id?: string;
-  subject: string;
-  object: string;
-  action: string;
-  effect: string;
-  raw?: string[];
+  sub: string;
+  obj: string;
+  act: string;
+  eft: string;
+  rule?: string[];
 }
 
-// API 请求函数
 const filterPolicies = async (params: any) => {
-  // 构建筛选参数，使用字符串格式（符合API类型定义）
   const filterRequestParams = {
     sub: params.sub || undefined,
     obj: params.obj || undefined,
     act: params.act || undefined,
     eft: params.eft || undefined,
-    rule: params.raw || undefined,
+    rule: params.rule || undefined,
     page: params.current || 1,
     pageSize: params.pageSize || 10,
   };
-
   try {
     const res = await filterPoliciesAPI(filterRequestParams);
-
     if (!res || !res.policies) {
       return {
         data: [],
@@ -52,24 +54,20 @@ const filterPolicies = async (params: any) => {
         total: 0,
       };
     }
-
-    // 将 API 返回的二维数组转换为表格需要的格式
-    const formattedData = res.policies.map((policy: string[]) => ({
-      id: policy.join(","),
-      subject: policy[0] || "",
-      object: policy[1] || "",
-      action: policy[2] || "",
-      effect: policy[3] || "",
+    const formattedData = res.policies.map((policy: any) => ({
+      sub: policy[0] || "",
+      obj: policy[1] || "",
+      act: policy[2] || "",
+      eft: policy[3] || "",
+      rule: policy,
       raw: policy,
     }));
-
     return {
       data: formattedData,
       success: true,
-      total: res.total || 0,
+      total: typeof res.total === "number" ? res.total : 0,
     };
-  } catch (error) {
-    console.error("Filter policies error:", error);
+  } catch (_error) {
     return {
       data: [],
       success: false,
@@ -87,7 +85,7 @@ const addPolicies = async (policies: string[][]) => {
     return true;
   } catch (error) {
     console.error("Add policies error:", error);
-    message.error("Add policies failed");
+    message.error("添加规则失败");
     return false;
   }
 };
@@ -100,7 +98,7 @@ const deletePolicies = async (policies: string[][]) => {
     return true;
   } catch (error) {
     console.error("Delete policies error:", error);
-    message.error("Delete policies failed");
+    message.error("删除规则失败");
     return false;
   }
 };
@@ -114,14 +112,12 @@ const editPolicy = async (oldPolicy: string[], newPolicy: string[]) => {
     return true;
   } catch (error) {
     console.error("Edit policy error:", error);
-    message.error("Edit policy failed");
+    message.error("编辑规则失败");
     return false;
   }
 };
 
-// interface PolicyTabContentProps 已移除 tabName
-
-const PolicyTabContent: React.FC = () => {
+const PPolicyTab: React.FC = () => {
   const intl = useIntl();
   const actionRef = useRef<ActionType | null>(null);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -130,70 +126,43 @@ const PolicyTabContent: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<PolicyItem[]>([]);
 
-  // 处理函数
   const handleEdit = (record: PolicyItem) => {
     setEditingPolicy(record);
     setEditModalVisible(true);
   };
 
   const handleDelete = async (record: PolicyItem) => {
-    if (record.raw) {
-      const success = await deletePolicies([record.raw]);
+    if (record.rule) {
+      const success = await deletePolicies([record.rule]);
       if (success) {
-        message.success("Delete policy successfully");
-        actionRef.current?.reload();
+        message.success("删除成功");
+        // 强制重置到第一页并刷新，确保UI立即反映
+        if (actionRef.current && actionRef.current.reloadAndRest) {
+          await actionRef.current.reloadAndRest();
+        } else if (actionRef.current && actionRef.current.reload) {
+          await actionRef.current.reload();
+        }
       }
     }
   };
 
   const handleBatchDelete = async (selectedRows: PolicyItem[]) => {
     const policies = selectedRows
-      .map((row) => row.raw)
+      .map((row) => row.rule)
       .filter(Boolean) as string[][];
     const success = await deletePolicies(policies);
     if (success) {
-      message.success(`Batch delete ${policies.length} policies successfully`);
-      actionRef.current?.reload();
+      message.success(`批量删除 ${policies.length} 条规则成功`);
+      if (actionRef.current && actionRef.current.reloadAndRest) {
+        await actionRef.current.reloadAndRest();
+      } else if (actionRef.current && actionRef.current.reload) {
+        await actionRef.current.reload();
+      }
       setSelectedRowKeys([]);
       setSelectedRows([]);
     }
   };
 
-  // 批量删除按钮（与GPolicyTab风格完全一致）
-  const batchDeleteButton = (
-    <Popconfirm
-      title={intl.formatMessage(
-        {
-          id: "pages.policyList.deleteConfirmTitle2",
-          defaultMessage: "确认删除选中的 {count} 条规则？",
-        },
-        { count: selectedRows.length },
-      )}
-      onConfirm={() => handleBatchDelete(selectedRows)}
-      okText={intl.formatMessage({
-        id: "pages.policyList.deleteConfirmOk",
-        defaultMessage: "确定",
-      })}
-      cancelText={intl.formatMessage({
-        id: "pages.policyList.deleteConfirmCancel",
-        defaultMessage: "取消",
-      })}
-      disabled={selectedRows.length === 0}
-    >
-      <Button
-        danger
-        disabled={selectedRows.length === 0}
-        style={{ minWidth: 90 }}
-      >
-        {intl.formatMessage({
-          id: "pages.policyList.batchDelete",
-          defaultMessage: "批量删除",
-        })}
-      </Button>
-    </Popconfirm>
-  );
-
-  // 表格列配置
   const columns: ProColumns<PolicyItem>[] = [
     {
       title: intl.formatMessage({
@@ -204,7 +173,7 @@ const PolicyTabContent: React.FC = () => {
       valueType: "text",
       width: 200,
       ellipsis: true,
-      render: (_, record) => <Tag color="blue">{record.subject}</Tag>,
+      render: (_, record) => <Tag color="blue">{record.sub}</Tag>,
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.policyList.search.subject.placeholder",
@@ -221,7 +190,7 @@ const PolicyTabContent: React.FC = () => {
       valueType: "text",
       width: 200,
       ellipsis: true,
-      render: (_, record) => <Tag color="green">{record.object}</Tag>,
+      render: (_, record) => <Tag color="green">{record.obj}</Tag>,
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.policyList.search.object.placeholder",
@@ -238,7 +207,7 @@ const PolicyTabContent: React.FC = () => {
       valueType: "text",
       width: 150,
       ellipsis: true,
-      render: (_, record) => <Tag color="orange">{record.action}</Tag>,
+      render: (_, record) => <Tag color="orange">{record.act}</Tag>,
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.policyList.search.action.placeholder",
@@ -257,14 +226,14 @@ const PolicyTabContent: React.FC = () => {
       render: (_, record) => (
         <Tag
           color={
-            record.effect === "allow"
+            record.eft === "allow"
               ? "success"
-              : record.effect === "deny"
+              : record.eft === "deny"
                 ? "error"
                 : "default"
           }
         >
-          {record.effect}
+          {record.eft}
         </Tag>
       ),
       valueEnum: {
@@ -286,7 +255,7 @@ const PolicyTabContent: React.FC = () => {
       fieldProps: {
         placeholder: intl.formatMessage({
           id: "pages.policyList.search.effect.placeholder",
-          defaultMessage: "请选择效果进行搜索",
+          defaultMessage: "请选择效果",
         }),
       },
     },
@@ -301,15 +270,9 @@ const PolicyTabContent: React.FC = () => {
       width: 300,
       render: (_, record) => (
         <Text code style={{ fontSize: 12 }}>
-          p, {record.raw?.map((item) => `${item}`).join(", ")}
+          p, {record.rule?.map((item) => `${item}`).join(", ")}
         </Text>
       ),
-      fieldProps: {
-        placeholder: intl.formatMessage({
-          id: "pages.policyList.search.raw.placeholder",
-          defaultMessage: "请输入完整规则进行搜索",
-        }),
-      },
     },
     {
       title: intl.formatMessage({
@@ -367,7 +330,7 @@ const PolicyTabContent: React.FC = () => {
         {intl.formatMessage({
           id: "pages.policyList.tab_p",
           defaultMessage: "规则列表",
-        })}{" "}
+        })}
       </Title>
       <Text type="secondary">
         {intl.formatMessage({
@@ -433,11 +396,68 @@ const PolicyTabContent: React.FC = () => {
           syncToUrl: false,
         }}
         rowSelection={{
-          onChange: (_keys, rows) => {
-            setSelectedRowKeys(_keys);
+          selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+          selectedRowKeys,
+          onChange: (keys, rows) => {
+            setSelectedRowKeys(keys);
             setSelectedRows(rows);
           },
-          selectedRowKeys,
+        }}
+        tableAlertRender={({ selectedRowKeys, onCleanSelected }) => {
+          return (
+            <Space size={24}>
+              <span>
+                {intl.formatMessage(
+                  {
+                    id: "pages.policyList.tableAlert.selected",
+                    defaultMessage: "已选 {count} 项",
+                  },
+                  {
+                    count: selectedRowKeys.length,
+                  },
+                )}
+                <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
+                  {intl.formatMessage({
+                    id: "pages.policyList.tableAlert.cancel",
+                    defaultMessage: "取消选择",
+                  })}
+                </a>
+              </span>
+            </Space>
+          );
+        }}
+        tableAlertOptionRender={() => {
+          return (
+            <Space size={16}>
+              <Popconfirm
+                title={intl.formatMessage(
+                  {
+                    id: "pages.policyList.deleteConfirmTitle2",
+                    defaultMessage: "确定要删除选中的 {count} 条规则吗？",
+                  },
+                  {
+                    count: selectedRowKeys.length,
+                  },
+                )}
+                onConfirm={() => handleBatchDelete(selectedRows)}
+                okText={intl.formatMessage({
+                  id: "pages.policyList.deleteConfirmOk",
+                  defaultMessage: "确定",
+                })}
+                cancelText={intl.formatMessage({
+                  id: "pages.policyList.deleteConfirmCancel",
+                  defaultMessage: "取消",
+                })}
+              >
+                <a style={{ color: "#ff4d4f" }}>
+                  {intl.formatMessage({
+                    id: "pages.policyList.batchDelete",
+                    defaultMessage: "批量删除",
+                  })}
+                </a>
+              </Popconfirm>
+            </Space>
+          );
         }}
         toolBarRender={() => [
           <Button
@@ -451,9 +471,16 @@ const PolicyTabContent: React.FC = () => {
               defaultMessage: "新建",
             })}
           </Button>,
-          batchDeleteButton,
         ]}
-        request={async (params) => filterPolicies(params)}
+        request={async (params) => {
+          const searchParams = {
+            sub: params.sub,
+            obj: params.obj,
+            act: params.act,
+            ...params,
+          };
+          return await filterPolicies(searchParams);
+        }}
         scroll={{ x: 1200 }}
       />
 
@@ -510,7 +537,7 @@ const PolicyTabContent: React.FC = () => {
         <ProFormText
           name="object"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.object.label",
+            id: "pages.policyList.searchTable.object",
             defaultMessage: "对象",
           })}
           placeholder={intl.formatMessage({
@@ -530,7 +557,7 @@ const PolicyTabContent: React.FC = () => {
         <ProFormText
           name="action"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.action.label",
+            id: "pages.policyList.searchTable.action",
             defaultMessage: "操作",
           })}
           placeholder={intl.formatMessage({
@@ -550,12 +577,12 @@ const PolicyTabContent: React.FC = () => {
         <ProFormSelect
           name="effect"
           label={intl.formatMessage({
-            id: "pages.policyList.searchTable.effect.label",
+            id: "pages.policyList.searchTable.effect",
             defaultMessage: "效果",
           })}
           placeholder={intl.formatMessage({
             id: "pages.policyList.searchTable.effect.placeholder",
-            defaultMessage: "请选择效果, 如: allow、deny",
+            defaultMessage: "请选择效果, 如: allow, deny",
           })}
           options={[
             {
@@ -596,12 +623,12 @@ const PolicyTabContent: React.FC = () => {
         onOpenChange={setEditModalVisible}
         initialValues={editingPolicy || {}}
         onFinish={async (values) => {
-          if (editingPolicy?.raw) {
+          if (editingPolicy?.rule) {
             const oldPolicyStr = [
-              editingPolicy.raw[0],
-              editingPolicy.raw[1],
-              editingPolicy.raw[2],
-              editingPolicy.raw[3],
+              editingPolicy.rule[0],
+              editingPolicy.rule[1],
+              editingPolicy.rule[2],
+              editingPolicy.rule[3],
             ];
             const newPolicy = [
               values.subject,
@@ -611,7 +638,7 @@ const PolicyTabContent: React.FC = () => {
             ];
             const success = await editPolicy(oldPolicyStr, newPolicy);
             if (success) {
-              message.success("Edit successfully");
+              message.success("编辑成功");
               actionRef.current?.reload();
               setEditingPolicy(null);
               return true;
@@ -627,7 +654,7 @@ const PolicyTabContent: React.FC = () => {
             defaultMessage: "主体",
           })}
           placeholder={intl.formatMessage({
-            id: "pages.policyList.subject",
+            id: "pages.policyList.searchTable.subject.required",
             defaultMessage: "请输入主体",
           })}
           rules={[
@@ -643,7 +670,7 @@ const PolicyTabContent: React.FC = () => {
         <ProFormText
           name="object"
           label={intl.formatMessage({
-            id: "pages.policyList.object",
+            id: "pages.policyList.searchTable.object.label",
             defaultMessage: "对象",
           })}
           placeholder={intl.formatMessage({
@@ -663,7 +690,7 @@ const PolicyTabContent: React.FC = () => {
         <ProFormText
           name="action"
           label={intl.formatMessage({
-            id: "pages.policyList.action",
+            id: "pages.policyList.searchTable.action.label",
             defaultMessage: "操作",
           })}
           placeholder={intl.formatMessage({
@@ -683,8 +710,8 @@ const PolicyTabContent: React.FC = () => {
         <ProFormSelect
           name="effect"
           label={intl.formatMessage({
-            id: "pages.policyList.effect",
-            defaultMessage: "效果",
+            id: "pages.policyList.searchTable.effect.label",
+            defaultMessage: "效果 (Effect)",
           })}
           placeholder={intl.formatMessage({
             id: "pages.policyList.searchTable.effect.required",
@@ -721,4 +748,4 @@ const PolicyTabContent: React.FC = () => {
   );
 };
 
-export default PolicyTabContent;
+export default PPolicyTab;
