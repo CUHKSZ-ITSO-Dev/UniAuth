@@ -519,6 +519,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     }
   };
 
+  // 权限规则查询请求
   const quotaPoolRulesDataRequest = async (params: any) => {
     try {
       // 请求参数
@@ -527,7 +528,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         obj: params.obj || undefined,
         act: params.act || undefined,
         eft: params.eft || undefined,
-        rule: params.raw || undefined,
+        rule: params.rule || undefined,
         page: params.current || 1,
         pageSize: params.pageSize || 5,
       };
@@ -544,7 +545,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             act: policy[2] || `action_${index}`,
             eft: policy[3] || "allow",
             g: policy[4] || "",
-            raw: policy,
+            rule: policy,
           }),
         );
 
@@ -575,6 +576,14 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         total: 0,
       };
     }
+  };
+
+  // 权限规则表格 actionRef
+  const quotaPoolRulesActionRef = useRef<ActionType | null>(null);
+
+  // 权限规则查询表单重置
+  const handleResetRulesSearch = () => {
+    quotaPoolRulesActionRef.current?.reset?.();
   };
 
   return (
@@ -717,11 +726,40 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           marginBottom: 24,
         }}
         variant="borderless"
+        extra={
+          <Button onClick={handleResetRulesSearch}>
+            {intl.formatMessage({
+              id: "pages.policyList.reset",
+              defaultMessage: "重置",
+            })}
+          </Button>
+        }
       >
         <ProTable
+          actionRef={quotaPoolRulesActionRef}
           columns={quotaPoolRulesColumns}
           rowKey="id"
-          search={false}
+          search={{
+            labelWidth: "auto",
+            defaultCollapsed: false,
+            filterType: "query",
+            span: 6,
+            optionRender: (searchConfig, formProps, dom) => [
+              ...dom,
+              <Button
+                key="reset"
+                onClick={() => {
+                  formProps?.form?.resetFields();
+                  quotaPoolRulesActionRef.current?.reset?.();
+                }}
+              >
+                {intl.formatMessage({
+                  id: "pages.policyList.reset",
+                  defaultMessage: "重置",
+                })}
+              </Button>,
+            ],
+          }}
           pagination={{
             pageSize: 5,
             showSizeChanger: false,
