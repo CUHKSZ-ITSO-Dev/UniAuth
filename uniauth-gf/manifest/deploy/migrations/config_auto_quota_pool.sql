@@ -6,7 +6,7 @@ CREATE TABLE config_auto_quota_pool (
     regular_quota NUMERIC(25, 10) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     filter_group JSONB,
-    default_userinfos_rules JSONB,
+    default_casbin_rules JSONB,
     upns_cache VARCHAR(255)[],
     priority INTEGER NOT NULL DEFAULT 100,
     last_evaluated_at TIMESTAMP WITH TIME ZONE,
@@ -28,7 +28,7 @@ COMMENT ON COLUMN config_auto_quota_pool.cron_cycle IS '刷新周期';
 COMMENT ON COLUMN config_auto_quota_pool.regular_quota IS '定期配额';
 COMMENT ON COLUMN config_auto_quota_pool.enabled IS '是否启用该配额池';
 COMMENT ON COLUMN config_auto_quota_pool.filter_group IS '过滤条件组';
-COMMENT ON COLUMN config_auto_quota_pool.default_userinfos_rules IS '默认ITTools规则';
+COMMENT ON COLUMN config_auto_quota_pool.default_casbin_rules IS '默认Casbin规则配置';
 COMMENT ON COLUMN config_auto_quota_pool.upns_cache IS 'UPN缓存列表';
 COMMENT ON COLUMN config_auto_quota_pool.priority IS '优先级，数值越小优先匹配';
 COMMENT ON COLUMN config_auto_quota_pool.last_evaluated_at IS '该规则上次评估时间';
