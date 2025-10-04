@@ -204,11 +204,21 @@ const GroupingTabContent: React.FC = () => {
                     ? [record.rule.map((s) => s || "")]
                     : [[record.g1 || "", record.g2 || ""]];
                 await deleteGroupingAPI({ groupings: groupingArr });
-                message.success("删除成功");
+                message.success(
+                  intl.formatMessage({
+                    id: "pages.groupingList.delete.success",
+                    defaultMessage: "删除成功",
+                  }),
+                );
                 await actionRef.current?.reload();
               } catch (e) {
                 console.error(e);
-                message.error("删除失败");
+                message.error(
+                  intl.formatMessage({
+                    id: "pages.groupingList.delete.error",
+                    defaultMessage: "删除失败",
+                  }),
+                );
               }
             }}
             okText={intl.formatMessage({
@@ -237,7 +247,12 @@ const GroupingTabContent: React.FC = () => {
   const handleAdd = async (values: { g1: string; g2: string }) => {
     try {
       await addGroupingAPI({ groupings: [[values.g1, values.g2]] });
-      message.success("添加成功");
+      message.success(
+        intl.formatMessage({
+          id: "pages.groupingList.add.success",
+          defaultMessage: "添加成功",
+        }),
+      );
       setCreateModalVisible(false);
 
       // 先刷新数据
@@ -257,7 +272,12 @@ const GroupingTabContent: React.FC = () => {
       return true;
     } catch (e) {
       console.error(e);
-      message.error("添加失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.groupingList.add.error",
+          defaultMessage: "添加失败",
+        }),
+      );
       return false;
     }
   };
@@ -275,14 +295,24 @@ const GroupingTabContent: React.FC = () => {
         oldGrouping,
         newGrouping: [values.g1, values.g2],
       });
-      message.success("修改成功");
+      message.success(
+        intl.formatMessage({
+          id: "pages.groupingList.edit.success",
+          defaultMessage: "修改成功",
+        }),
+      );
       await actionRef.current?.reload();
       setEditModalVisible(false);
       setEditingGrouping(null);
       return true;
     } catch (e) {
       console.error(e);
-      message.error("修改失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.groupingList.edit.error",
+          defaultMessage: "修改失败",
+        }),
+      );
       return false;
     }
   };
@@ -293,7 +323,7 @@ const GroupingTabContent: React.FC = () => {
       message.info(
         intl.formatMessage({
           id: "pages.groupingList.batchDelete.selectTip",
-          defaultMessage: "请先选择要删除的记录",
+          defaultMessage: "请先选择要删除的规则",
         }),
       );
       return;
@@ -306,7 +336,7 @@ const GroupingTabContent: React.FC = () => {
       message.success(
         intl.formatMessage({
           id: "pages.groupingList.batchDelete.success",
-          defaultMessage: "删除成功",
+          defaultMessage: "批量删除成功",
         }),
       );
       actionRef.current?.reload();
@@ -315,8 +345,8 @@ const GroupingTabContent: React.FC = () => {
       console.error(e);
       message.error(
         intl.formatMessage({
-          id: "pages.groupingList.batchDelete.fail",
-          defaultMessage: "删除失败",
+          id: "pages.groupingList.batchDelete.error",
+          defaultMessage: "批量删除失败",
         }),
       );
     }
@@ -447,7 +477,10 @@ const GroupingTabContent: React.FC = () => {
 
       {/* 添加分组关系弹窗 */}
       <ModalForm
-        title="添加角色继承关系"
+        title={intl.formatMessage({
+          id: "pages.groupingList.addGroupingTitle",
+          defaultMessage: "添加角色继承规则",
+        })}
         width={400}
         open={createModalVisible}
         onOpenChange={setCreateModalVisible}
@@ -456,14 +489,36 @@ const GroupingTabContent: React.FC = () => {
         <ProFormText
           name="g1"
           label="G1"
-          placeholder="请输入G1"
-          rules={[{ required: true, message: "请输入G1" }]}
+          placeholder={intl.formatMessage({
+            id: "pages.groupingList.g1.add.placeholder",
+            defaultMessage: "请输入G1",
+          })}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: "pages.groupingList.g1.add.placeholder",
+                defaultMessage: "请输入G1",
+              }),
+            },
+          ]}
         />
         <ProFormText
           name="g2"
           label="G2"
-          placeholder="请输入G2"
-          rules={[{ required: true, message: "请输入G2" }]}
+          placeholder={intl.formatMessage({
+            id: "pages.groupingList.g2.add.placeholder",
+            defaultMessage: "请输入G2",
+          })}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: "pages.groupingList.g2.add.placeholder",
+                defaultMessage: "请输入G2",
+              }),
+            },
+          ]}
         />
       </ModalForm>
 

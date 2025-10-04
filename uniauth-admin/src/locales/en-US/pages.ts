@@ -344,6 +344,14 @@ export default {
   "pages.policyList.searchTable.effect.deny": "Deny",
   "pages.policyList.editRule": "Edit Rule",
   "pages.policyList.pagination.total": "Total {total} items",
+  "pages.policyList.delete.success": "Deleted successfully",
+  "pages.policyList.delete.error": "Delete failed",
+  "pages.policyList.edit.success": "Edited successfully",
+  "pages.policyList.edit.error": "Edit failed",
+  "pages.policyList.add.error": "Add failed",
+  "pages.policyList.batchDelete.success": "Batch delete successful",
+  "pages.policyList.batchDelete.error": "Batch delete failed",
+
   "pages.groupingList.relationship": "Groupings",
   "pages.groupingList.description": "Manage user and role groupings",
   "pages.groupingList.add": "New",
@@ -366,6 +374,19 @@ export default {
   "pages.groupingList.batchDelete.ok": "Confirm",
   "pages.groupingList.delete.confirmCancel": "Cancel",
   "pages.groupingList.action": "Actions",
+  "pages.groupingList.delete.success": "Deleted successfully",
+  "pages.groupingList.delete.error": "Delete failed",
+  "pages.groupingList.add.success": "Add successfully",
+  "pages.groupingList.add.error": "Add failed",
+  "pages.groupingList.edit.success": "Edit successfully",
+  "pages.groupingList.edit.error": "Edit failed",
+  "pages.groupingList.batchDelete.selectTip":
+    "Please select the policies first",
+  "pages.groupingList.batchDelete.success": "Batch delete successful",
+  "pages.groupingList.batchDelete.error": "Batch delete failed",
+  "pages.groupingList.addGroupingTitle": "Add Grouping Policy",
+  "pages.groupingList.g1.add.placeholder": "Please enter g1",
+  "pages.groupingList.g2.add.placeholder": "Please enter g2",
 
   // QuotaPoolConfigDetailTab
   "pages.quotaPoolConfigDetail.displayname": "Display Name",
@@ -377,6 +398,7 @@ export default {
   "pages.quotaPoolConfigDetail.roleGroup": "Role Group",
   "pages.quotaPoolConfigDetail.detailInfo": "Detail Information",
   "pages.quotaPoolConfigDetail.quotaPoolName": "Quota Pool Name",
+  "pages.quotaPoolConfigDetail.rawPolicy": "Raw Policy",
 
   // BillingDetailTab
   "pages.billingDetail.user": "User",
@@ -636,6 +658,8 @@ export default {
   "pages.quotaPoolConfigDetail.edit.enabledStatus": "Status",
   "pages.quotaPoolConfigDetail.edit.enabled": "Enabled",
   "pages.quotaPoolConfigDetail.edit.disabled": "Disabled",
+  "pages.quotaPoolConfigDetail.g1Title": "Parent Role",
+  "pages.quotaPoolConfigDetail.g2Title": "Child Role",
 
   // BillingDetailTab - only add non-existing keys
   "pages.billingDetail.title": "Billing Details",

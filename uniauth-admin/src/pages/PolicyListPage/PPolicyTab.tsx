@@ -35,88 +35,6 @@ interface PolicyItem {
   rule?: string[];
 }
 
-const filterPolicies = async (params: any) => {
-  const filterRequestParams = {
-    sub: params.sub || undefined,
-    obj: params.obj || undefined,
-    act: params.act || undefined,
-    eft: params.eft || undefined,
-    rule: params.rule || undefined,
-    page: params.current || 1,
-    pageSize: params.pageSize || 10,
-  };
-  try {
-    const res = await filterPoliciesAPI(filterRequestParams);
-    if (!res || !res.policies) {
-      return {
-        data: [],
-        success: false,
-        total: 0,
-      };
-    }
-    const formattedData = res.policies.map((policy: any) => ({
-      sub: policy[0] || "",
-      obj: policy[1] || "",
-      act: policy[2] || "",
-      eft: policy[3] || "",
-      rule: policy,
-      raw: policy,
-    }));
-    return {
-      data: formattedData,
-      success: true,
-      total: typeof res.total === "number" ? res.total : 0,
-    };
-  } catch (_error) {
-    return {
-      data: [],
-      success: false,
-      total: 0,
-    };
-  }
-};
-
-const addPolicies = async (policies: string[][]) => {
-  try {
-    await addPoliciesAPI({
-      policies: policies,
-      skip: false,
-    });
-    return true;
-  } catch (error) {
-    console.error("Add policies error:", error);
-    message.error("添加规则失败");
-    return false;
-  }
-};
-
-const deletePolicies = async (policies: string[][]) => {
-  try {
-    await deletePoliciesAPI({
-      policies: policies,
-    });
-    return true;
-  } catch (error) {
-    console.error("Delete policies error:", error);
-    message.error("删除规则失败");
-    return false;
-  }
-};
-
-const editPolicy = async (oldPolicy: string[], newPolicy: string[]) => {
-  try {
-    await editPolicyAPI({
-      oldPolicy,
-      newPolicy,
-    });
-    return true;
-  } catch (error) {
-    console.error("Edit policy error:", error);
-    message.error("编辑规则失败");
-    return false;
-  }
-};
-
 const PPolicyTab: React.FC = () => {
   const intl = useIntl();
   const actionRef = useRef<ActionType | null>(null);
@@ -125,6 +43,103 @@ const PPolicyTab: React.FC = () => {
   const [editingPolicy, setEditingPolicy] = useState<PolicyItem | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<PolicyItem[]>([]);
+
+  const filterPolicies = async (params: any) => {
+    const filterRequestParams = {
+      sub: params.sub || undefined,
+      obj: params.obj || undefined,
+      act: params.act || undefined,
+      eft: params.eft || undefined,
+      rule: params.rule || undefined,
+      page: params.current || 1,
+      pageSize: params.pageSize || 10,
+    };
+    try {
+      const res = await filterPoliciesAPI(filterRequestParams);
+      if (!res || !res.policies) {
+        return {
+          data: [],
+          success: false,
+          total: 0,
+        };
+      }
+      const formattedData = res.policies.map((policy: any) => ({
+        sub: policy[0] || "",
+        obj: policy[1] || "",
+        act: policy[2] || "",
+        eft: policy[3] || "",
+        rule: policy,
+        raw: policy,
+      }));
+      return {
+        data: formattedData,
+        success: true,
+        total: typeof res.total === "number" ? res.total : 0,
+      };
+    } catch (_error) {
+      return {
+        data: [],
+        success: false,
+        total: 0,
+      };
+    }
+  };
+
+  const addPolicies = async (policies: string[][]) => {
+    try {
+      await addPoliciesAPI({
+        policies: policies,
+        skip: false,
+      });
+      return true;
+    } catch (error) {
+      console.error("Add policies error:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.policyList.add.error",
+          defaultMessage: "添加失败",
+        }),
+      );
+      return false;
+    }
+  };
+
+  const deletePolicies = async (policies: string[][]) => {
+    try {
+      await deletePoliciesAPI({
+        policies: policies,
+      });
+      return true;
+    } catch (error) {
+      console.error("Delete policies error:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.policyList.delete.error",
+          defaultMessage: "删除失败",
+        }),
+      );
+      return false;
+    }
+  };
+
+  const editPolicy = async (oldPolicy: string[], newPolicy: string[]) => {
+    try {
+      await editPolicyAPI({
+        oldPolicy,
+        newPolicy,
+      });
+      return true;
+    } catch (error) {
+      console.error("Edit policy error:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.policyList.edit.error",
+          defaultMessage: "编辑失败",
+        }),
+      );
+      return false;
+    }
+  };
 
   const handleEdit = (record: PolicyItem) => {
     setEditingPolicy(record);
@@ -135,7 +150,12 @@ const PPolicyTab: React.FC = () => {
     if (record.rule) {
       const success = await deletePolicies([record.rule]);
       if (success) {
-        message.success("删除成功");
+        message.success(
+          intl.formatMessage({
+            id: "pages.policyList.delete.success",
+            defaultMessage: "删除成功",
+          }),
+        );
         // 强制重置到第一页并刷新，确保UI立即反映
         if (actionRef.current && actionRef.current.reloadAndRest) {
           await actionRef.current.reloadAndRest();
@@ -152,7 +172,13 @@ const PPolicyTab: React.FC = () => {
       .filter(Boolean) as string[][];
     const success = await deletePolicies(policies);
     if (success) {
-      message.success(`批量删除 ${policies.length} 条规则成功`);
+      message.success(
+        intl.formatMessage({
+          id: "pages.policyList.batchDelete.success",
+          defaultMessage: "批量删除成功",
+        }),
+      );
+      // 强制重置到第一页并刷新，确保UI立即反映
       if (actionRef.current && actionRef.current.reloadAndRest) {
         await actionRef.current.reloadAndRest();
       } else if (actionRef.current && actionRef.current.reload) {
@@ -664,7 +690,12 @@ const PPolicyTab: React.FC = () => {
             ];
             const success = await editPolicy(oldPolicyStr, newPolicy);
             if (success) {
-              message.success("编辑成功");
+              message.success(
+                intl.formatMessage({
+                  id: "pages.policyList.edit.success",
+                  defaultMessage: "编辑成功",
+                }),
+              );
               actionRef.current?.reload();
               setEditModalVisible(false);
               setEditingPolicy(null);

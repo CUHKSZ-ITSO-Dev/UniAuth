@@ -458,7 +458,10 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       search: true,
     },
     {
-      title: "完整规则",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.rawPolicy",
+        defaultMessage: "完整规则",
+      }),
       dataIndex: "rule",
       valueType: "text",
       ellipsis: true,
@@ -512,7 +515,10 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       search: false,
     },
     {
-      title: "完整规则",
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.rawPolicy",
+        defaultMessage: "完整规则",
+      }),
       dataIndex: "rule",
       valueType: "text",
       ellipsis: true,
@@ -943,6 +949,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             labelWidth: "auto",
             defaultCollapsed: false,
             filterType: "query",
+            collapseRender: false,
           }}
           pagination={{
             pageSize: 10,
@@ -979,6 +986,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             defaultCollapsed: false,
             filterType: "query",
             span: 6,
+            collapseRender: false,
           }}
           pagination={{
             pageSize: 5,
@@ -999,7 +1007,10 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
 
       {/* 继承规则 - G1 */}
       <Card
-        title={"父角色"}
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.g1Title",
+          defaultMessage: "父角色",
+        })}
         style={{
           marginBottom: 24,
         }}
@@ -1014,6 +1025,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             defaultCollapsed: false,
             filterType: "query",
             span: 6,
+            collapseRender: false,
           }}
           pagination={{
             pageSize: 5,
@@ -1034,7 +1046,10 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
 
       {/* 复制的权限规则卡 - G2 */}
       <Card
-        title={"子角色"}
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.g2Title",
+          defaultMessage: "子角色",
+        })}
         style={{
           marginBottom: 24,
         }}
@@ -1049,6 +1064,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             defaultCollapsed: false,
             filterType: "query",
             span: 6,
+            collapseRender: false,
           }}
           pagination={{
             pageSize: 5,
