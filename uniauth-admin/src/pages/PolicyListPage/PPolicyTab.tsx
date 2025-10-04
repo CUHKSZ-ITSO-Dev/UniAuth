@@ -343,7 +343,7 @@ const PPolicyTab: React.FC = () => {
       <ProTable<PolicyItem>
         columns={columns}
         actionRef={actionRef}
-        rowKey="id"
+        rowKey={(record) => record.rule?.join(",") || ""}
         pagination={{
           pageSize: 10,
           showSizeChanger: false,
@@ -428,35 +428,38 @@ const PPolicyTab: React.FC = () => {
         }}
         tableAlertOptionRender={() => {
           return (
-            <Space size={16}>
-              <Popconfirm
-                title={intl.formatMessage(
-                  {
-                    id: "pages.policyList.deleteConfirmTitle2",
-                    defaultMessage: "确定要删除选中的 {count} 条规则吗？",
-                  },
-                  {
-                    count: selectedRowKeys.length,
-                  },
-                )}
-                onConfirm={() => handleBatchDelete(selectedRows)}
-                okText={intl.formatMessage({
-                  id: "pages.policyList.deleteConfirmOk",
-                  defaultMessage: "确定",
-                })}
-                cancelText={intl.formatMessage({
-                  id: "pages.policyList.deleteConfirmCancel",
-                  defaultMessage: "取消",
-                })}
+            <Popconfirm
+              title={intl.formatMessage(
+                {
+                  id: "pages.policyList.deleteConfirmTitle2",
+                  defaultMessage: "确定要删除选中的 {count} 条规则吗？",
+                },
+                {
+                  count: selectedRowKeys.length,
+                },
+              )}
+              onConfirm={() => handleBatchDelete(selectedRows)}
+              okText={intl.formatMessage({
+                id: "pages.policyList.deleteConfirmOk",
+                defaultMessage: "确定",
+              })}
+              cancelText={intl.formatMessage({
+                id: "pages.policyList.deleteConfirmCancel",
+                defaultMessage: "取消",
+              })}
+              disabled={selectedRowKeys.length === 0}
+            >
+              <Button
+                danger
+                disabled={selectedRowKeys.length === 0}
+                style={{ minWidth: 90 }}
               >
-                <a style={{ color: "#ff4d4f" }}>
-                  {intl.formatMessage({
-                    id: "pages.policyList.batchDelete",
-                    defaultMessage: "批量删除",
-                  })}
-                </a>
-              </Popconfirm>
-            </Space>
+                {intl.formatMessage({
+                  id: "pages.policyList.batchDelete",
+                  defaultMessage: "批量删除",
+                })}
+              </Button>
+            </Popconfirm>
           );
         }}
         toolBarRender={() => [
@@ -614,6 +617,13 @@ const PPolicyTab: React.FC = () => {
 
       {/* 编辑规则弹窗 */}
       <ModalForm
+        key={
+          editingPolicy
+            ? editingPolicy.rule
+              ? editingPolicy.rule.join(",")
+              : ""
+            : "empty"
+        }
         title={intl.formatMessage({
           id: "pages.policyList.editRule",
           defaultMessage: "编辑规则",
@@ -621,7 +631,16 @@ const PPolicyTab: React.FC = () => {
         width={500}
         open={editModalVisible}
         onOpenChange={setEditModalVisible}
-        initialValues={editingPolicy || {}}
+        initialValues={
+          editingPolicy
+            ? {
+                subject: editingPolicy.sub,
+                object: editingPolicy.obj,
+                action: editingPolicy.act,
+                effect: editingPolicy.eft,
+              }
+            : {}
+        }
         onFinish={async (values) => {
           if (editingPolicy?.rule) {
             const oldPolicyStr = [
@@ -640,6 +659,7 @@ const PPolicyTab: React.FC = () => {
             if (success) {
               message.success("编辑成功");
               actionRef.current?.reload();
+              setEditModalVisible(false);
               setEditingPolicy(null);
               return true;
             }

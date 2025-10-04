@@ -199,12 +199,14 @@ const GroupingTabContent: React.FC = () => {
             })}
             onConfirm={async () => {
               try {
-                const rule: string[][] = record.rule
-                  ? [record.rule.map((s) => s || "")]
-                  : [[record.g1 || "", record.g2 || ""]];
-                await deleteGroupingAPI({ groupings: rule });
+                // 兼容rule为undefined的情况
+                const groupingArr: string[][] =
+                  record.rule && Array.isArray(record.rule)
+                    ? [record.rule.map((s) => s || "")]
+                    : [[record.g1 || "", record.g2 || ""]];
+                await deleteGroupingAPI({ groupings: groupingArr });
                 message.success("删除成功");
-                actionRef.current?.reload();
+                await actionRef.current?.reload();
               } catch (e) {
                 console.error(e);
                 message.error("删除失败");
@@ -265,15 +267,17 @@ const GroupingTabContent: React.FC = () => {
   const handleEdit = async (values: { g1: string; g2: string }) => {
     if (!editingGrouping) return false;
     try {
-      const oldGrouping: string[] = (
-        editingGrouping.rule ?? [editingGrouping.g1, editingGrouping.g2]
-      ).map((s) => s || "");
+      // 兼容rule为undefined的情况
+      const oldGrouping: string[] =
+        editingGrouping.rule && Array.isArray(editingGrouping.rule)
+          ? editingGrouping.rule.map((s) => s || "")
+          : [editingGrouping.g1 || "", editingGrouping.g2 || ""];
       await editGroupingAPI({
         oldGrouping,
         newGrouping: [values.g1, values.g2],
       });
       message.success("修改成功");
-      actionRef.current?.reload();
+      await actionRef.current?.reload();
       setEditModalVisible(false);
       setEditingGrouping(null);
       return true;
@@ -465,6 +469,13 @@ const GroupingTabContent: React.FC = () => {
 
       {/* 编辑角色继承关系弹窗 */}
       <ModalForm
+        key={
+          editingGrouping
+            ? editingGrouping.rule
+              ? editingGrouping.rule.join(",")
+              : `${editingGrouping.g1 || ""},${editingGrouping.g2 || ""}`
+            : "empty"
+        }
         title={intl.formatMessage({
           id: "pages.groupingList.editRole",
           defaultMessage: "编辑角色继承关系",
@@ -475,7 +486,14 @@ const GroupingTabContent: React.FC = () => {
           setEditModalVisible(v);
           if (!v) setEditingGrouping(null);
         }}
-        initialValues={editingGrouping || {}}
+        initialValues={
+          editingGrouping
+            ? {
+                g1: editingGrouping.g1,
+                g2: editingGrouping.g2,
+              }
+            : {}
+        }
         onFinish={handleEdit}
       >
         <ProFormText
