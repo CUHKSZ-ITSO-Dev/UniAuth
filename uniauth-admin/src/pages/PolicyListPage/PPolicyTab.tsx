@@ -477,65 +477,8 @@ const PPolicyTab: React.FC = () => {
             setSelectedRows(rows);
           },
         }}
-        tableAlertRender={({ selectedRowKeys, onCleanSelected }) => {
-          return (
-            <Space size={24}>
-              <span>
-                {intl.formatMessage(
-                  {
-                    id: "pages.policyList.tableAlert.selected",
-                    defaultMessage: "已选 {count} 项",
-                  },
-                  {
-                    count: selectedRowKeys.length,
-                  },
-                )}
-                <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
-                  {intl.formatMessage({
-                    id: "pages.policyList.tableAlert.cancel",
-                    defaultMessage: "取消选择",
-                  })}
-                </a>
-              </span>
-            </Space>
-          );
-        }}
-        tableAlertOptionRender={() => {
-          return (
-            <Popconfirm
-              title={intl.formatMessage(
-                {
-                  id: "pages.policyList.deleteConfirmTitle2",
-                  defaultMessage: "确定要删除选中的 {count} 条规则吗？",
-                },
-                {
-                  count: selectedRowKeys.length,
-                },
-              )}
-              onConfirm={() => handleBatchDelete(selectedRows)}
-              okText={intl.formatMessage({
-                id: "pages.policyList.deleteConfirmOk",
-                defaultMessage: "确定",
-              })}
-              cancelText={intl.formatMessage({
-                id: "pages.policyList.deleteConfirmCancel",
-                defaultMessage: "取消",
-              })}
-              disabled={selectedRowKeys.length === 0}
-            >
-              <Button
-                danger
-                disabled={selectedRowKeys.length === 0}
-                style={{ minWidth: 90 }}
-              >
-                {intl.formatMessage({
-                  id: "pages.policyList.batchDelete",
-                  defaultMessage: "批量删除",
-                })}
-              </Button>
-            </Popconfirm>
-          );
-        }}
+        tableAlertRender={false}
+        tableAlertOptionRender={false}
         toolBarRender={() => [
           <Button
             type="primary"
@@ -548,6 +491,54 @@ const PPolicyTab: React.FC = () => {
               defaultMessage: "新建",
             })}
           </Button>,
+          <Popconfirm
+            key="deleteSelected"
+            title={intl.formatMessage(
+              {
+                id: "pages.policyList.deleteConfirmTitle2",
+                defaultMessage: "确定要删除选中的 {count} 条规则吗？",
+              },
+              {
+                count: selectedRowKeys.length,
+              },
+            )}
+            onConfirm={() => handleBatchDelete(selectedRows)}
+            okText={intl.formatMessage({
+              id: "pages.policyList.deleteConfirmOk",
+              defaultMessage: "确定",
+            })}
+            cancelText={intl.formatMessage({
+              id: "pages.policyList.deleteConfirmCancel",
+              defaultMessage: "取消",
+            })}
+            disabled={selectedRowKeys.length === 0}
+          >
+            <Button
+              danger
+              disabled={selectedRowKeys.length === 0}
+              style={{ minWidth: 90 }}
+            >
+              {intl.formatMessage({
+                id: "pages.policyList.batchDelete",
+                defaultMessage: "批量删除",
+              })}
+            </Button>
+          </Popconfirm>,
+          selectedRowKeys.length > 0 && (
+            <Button
+              key="clearSelection"
+              onClick={() => {
+                setSelectedRowKeys([]);
+                setSelectedRows([]);
+              }}
+              style={{ marginLeft: 8 }}
+            >
+              {intl.formatMessage({
+                id: "pages.policyList.tableAlert.cancel",
+                defaultMessage: "取消选择",
+              })}
+            </Button>
+          ),
         ]}
         request={async (params) => {
           // 分页参数同步到URL

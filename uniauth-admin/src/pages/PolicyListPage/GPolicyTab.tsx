@@ -511,10 +511,23 @@ const GroupingTabContent: React.FC = () => {
               })}
             </Button>
           </Popconfirm>,
+          selectedRows.length > 0 && (
+            <Button
+              key="clearSelection"
+              onClick={() => setSelectedRows([])}
+              style={{ marginLeft: 8 }}
+            >
+              {intl.formatMessage({
+                id: "pages.policyList.tableAlert.cancel",
+                defaultMessage: "取消选择",
+              })}
+            </Button>
+          ),
         ]}
         rowSelection={{
           onChange: (_keys, rows) => setSelectedRows(rows as GroupingItem[]),
         }}
+        tableAlertRender={false}
         scroll={{ x: 1200 }}
       />
 
