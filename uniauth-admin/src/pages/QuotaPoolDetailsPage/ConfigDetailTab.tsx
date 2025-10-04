@@ -581,11 +581,6 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   // 权限规则表格 actionRef
   const quotaPoolRulesActionRef = useRef<ActionType | null>(null);
 
-  // 权限规则查询表单重置
-  const handleResetRulesSearch = () => {
-    quotaPoolRulesActionRef.current?.reset?.();
-  };
-
   return (
     <GridContent>
       <Card
@@ -726,14 +721,6 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           marginBottom: 24,
         }}
         variant="borderless"
-        extra={
-          <Button onClick={handleResetRulesSearch}>
-            {intl.formatMessage({
-              id: "pages.policyList.reset",
-              defaultMessage: "重置",
-            })}
-          </Button>
-        }
       >
         <ProTable
           actionRef={quotaPoolRulesActionRef}
@@ -744,21 +731,6 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             defaultCollapsed: false,
             filterType: "query",
             span: 6,
-            optionRender: (searchConfig, formProps, dom) => [
-              ...dom,
-              <Button
-                key="reset"
-                onClick={() => {
-                  formProps?.form?.resetFields();
-                  quotaPoolRulesActionRef.current?.reset?.();
-                }}
-              >
-                {intl.formatMessage({
-                  id: "pages.policyList.reset",
-                  defaultMessage: "重置",
-                })}
-              </Button>,
-            ],
           }}
           pagination={{
             pageSize: 5,
