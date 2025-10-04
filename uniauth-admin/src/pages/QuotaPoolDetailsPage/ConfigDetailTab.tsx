@@ -5,7 +5,7 @@ import {
   type ProColumns,
   ProTable,
 } from "@ant-design/pro-components";
-import { Link } from "@umijs/max";
+import { Link, useSearchParams } from "@umijs/max";
 import {
   Button,
   Card,
@@ -23,7 +23,7 @@ import {
 } from "antd";
 import cronstrue from "cronstrue/i18n";
 import type { FC } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService/auth";
 import {
   postAuthAdminGroupingsFilter as getGroupingPolicyAPI,
@@ -78,6 +78,58 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   const [cronError, setCronError] = useState<string>("");
   const [refreshUsersLoading, setRefreshUsersLoading] = useState(false);
   const associatedUsersActionRef = useRef<ActionType | null>(null);
+  const quotaPoolRulesActionRef = useRef<ActionType | null>(null);
+  const g1ActionRef = useRef<ActionType | null>(null);
+  const g2ActionRef = useRef<ActionType | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // 记忆分页参数，分别为权限规则、父角色、子角色
+  const initialPagination = useMemo(() => {
+    return {
+      rules: {
+        current: parseInt(searchParams.get("rulesCurrent") || "1", 10),
+        pageSize: parseInt(searchParams.get("rulesPageSize") || "5", 10),
+      },
+      g1: {
+        current: parseInt(searchParams.get("g1Current") || "1", 10),
+        pageSize: parseInt(searchParams.get("g1PageSize") || "5", 10),
+      },
+      g2: {
+        current: parseInt(searchParams.get("g2Current") || "1", 10),
+        pageSize: parseInt(searchParams.get("g2PageSize") || "5", 10),
+      },
+    };
+  }, [searchParams]);
+
+  // 更新URL参数
+  const updateURLParams = (
+    type: "rules" | "g1" | "g2",
+    params: { current?: number; pageSize?: number },
+  ) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (params.current !== undefined && params.current > 1) {
+      newSearchParams.set(`${type}Current`, params.current.toString());
+    } else {
+      newSearchParams.delete(`${type}Current`);
+    }
+    if (params.pageSize !== undefined && params.pageSize !== 5) {
+      newSearchParams.set(`${type}PageSize`, params.pageSize.toString());
+    } else {
+      newSearchParams.delete(`${type}PageSize`);
+    }
+    setSearchParams(newSearchParams);
+  };
+
+  // 监听URL参数变化，重载表格
+  useEffect(() => {
+    quotaPoolRulesActionRef.current?.reload?.();
+  }, [initialPagination.rules.current, initialPagination.rules.pageSize]);
+  useEffect(() => {
+    g1ActionRef.current?.reload?.();
+  }, [initialPagination.g1.current, initialPagination.g1.pageSize]);
+  useEffect(() => {
+    g2ActionRef.current?.reload?.();
+  }, [initialPagination.g2.current, initialPagination.g2.pageSize]);
 
   // 解析 cron 表达式
   const parseCronExpression = (cronExpression: string): string => {
@@ -409,7 +461,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       },
       ellipsis: true,
       search: true,
-      width: 300,
+      width: 520,
       render: (_: any, record: any) => {
         try {
           const { Text } = Typography;
@@ -466,7 +518,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       valueType: "text",
       ellipsis: true,
       search: true,
-      width: 300,
+      width: 520,
       render: (_: any, record: any) => {
         try {
           const { Text } = Typography;
@@ -475,20 +527,20 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           if (Array.isArray(rule)) {
             return (
               <Text code style={{ fontSize: 12 }}>
-                p, {rule.map((item: any) => `${item}`).join(", ")}
+                g, {rule.map((item: any) => `${item}`).join(", ")}
               </Text>
             );
           }
           if (typeof rule === "string") {
             return (
               <Text code style={{ fontSize: 12 }}>
-                p, {rule}
+                g, {rule}
               </Text>
             );
           }
           return (
             <Text code style={{ fontSize: 12 }}>
-              p, {JSON.stringify(rule)}
+              g, {JSON.stringify(rule)}
             </Text>
           );
         } catch (e) {
@@ -523,7 +575,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       valueType: "text",
       ellipsis: true,
       search: true,
-      width: 300,
+      width: 520,
       render: (_: any, record: any) => {
         try {
           const { Text } = Typography;
@@ -532,20 +584,20 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
           if (Array.isArray(rule)) {
             return (
               <Text code style={{ fontSize: 12 }}>
-                {`p, ${rule.map((item: any) => `${item}`).join(", ")}`}
+                {`g, ${rule.map((item: any) => `${item}`).join(", ")}`}
               </Text>
             );
           }
           if (typeof rule === "string") {
             return (
               <Text code style={{ fontSize: 12 }}>
-                {`p, ${rule}`}
+                {`g, ${rule}`}
               </Text>
             );
           }
           return (
             <Text code style={{ fontSize: 12 }}>
-              {`p, ${JSON.stringify(rule)}`}
+              {`g, ${JSON.stringify(rule)}`}
             </Text>
           );
         } catch (e) {
@@ -829,11 +881,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     }
   };
 
-  // 权限规则表格 actionRef
-  const quotaPoolRulesActionRef = useRef<ActionType | null>(null);
-  // G1 G2 规则的 actionRef（G1, G2）
-  const g1ActionRef = useRef<ActionType | null>(null);
-  const g2ActionRef = useRef<ActionType | null>(null);
+  // Remove this duplicate declaration since it's already defined above
 
   return (
     <GridContent>
@@ -990,7 +1038,9 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             collapseRender: false,
           }}
           pagination={{
-            pageSize: 5,
+            current: initialPagination.rules.current,
+            pageSize: initialPagination.rules.pageSize,
+            defaultPageSize: 5,
             showSizeChanger: true,
             showQuickJumper: false,
             showTotal: (total) =>
@@ -1002,7 +1052,14 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
                 { total },
               ),
           }}
-          request={quotaPoolRulesDataRequest}
+          scroll={{ x: 1200 }}
+          request={async (params) => {
+            updateURLParams("rules", {
+              current: params.current || 1,
+              pageSize: params.pageSize || 5,
+            });
+            return quotaPoolRulesDataRequest(params);
+          }}
         />
       </Card>
 
@@ -1029,7 +1086,9 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             collapseRender: false,
           }}
           pagination={{
-            pageSize: 5,
+            current: initialPagination.g1.current,
+            pageSize: initialPagination.g1.pageSize,
+            defaultPageSize: 5,
             showSizeChanger: true,
             showQuickJumper: false,
             showTotal: (total) =>
@@ -1041,7 +1100,14 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
                 { total },
               ),
           }}
-          request={g1PolicyDataRequest}
+          scroll={{ x: 1200 }}
+          request={async (params) => {
+            updateURLParams("g1", {
+              current: params.current || 1,
+              pageSize: params.pageSize || 5,
+            });
+            return g1PolicyDataRequest(params);
+          }}
         />
       </Card>
 
@@ -1068,7 +1134,9 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             collapseRender: false,
           }}
           pagination={{
-            pageSize: 5,
+            current: initialPagination.g2.current,
+            pageSize: initialPagination.g2.pageSize,
+            defaultPageSize: 5,
             showSizeChanger: true,
             showQuickJumper: false,
             showTotal: (total) =>
@@ -1080,7 +1148,14 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
                 { total },
               ),
           }}
-          request={g2PolicyDataRequest}
+          scroll={{ x: 1200 }}
+          request={async (params) => {
+            updateURLParams("g2", {
+              current: params.current || 1,
+              pageSize: params.pageSize || 5,
+            });
+            return g2PolicyDataRequest(params);
+          }}
         />
       </Card>
 
