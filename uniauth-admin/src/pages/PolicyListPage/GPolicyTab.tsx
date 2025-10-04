@@ -83,7 +83,7 @@ const filterGroupings = async (params: any) => {
     return {
       data: formattedData,
       success: true,
-      total: formattedData.length,
+      total: res.total || formattedData.length, // 使用API返回的policy总数
     };
   } catch (error) {
     console.error("Filter groupings error:", error);
@@ -117,7 +117,7 @@ const GroupingTabContent: React.FC = () => {
       }),
       dataIndex: "g1",
       valueType: "text",
-      width: 250,
+      width: 120,
       ellipsis: true,
       render: (_, record) => <Tag color="blue">{record.g1}</Tag>,
       fieldProps: {
@@ -134,7 +134,7 @@ const GroupingTabContent: React.FC = () => {
       }),
       dataIndex: "g2",
       valueType: "text",
-      width: 250,
+      width: 120,
       ellipsis: true,
       render: (_, record) => <Tag color="green">{record.g2}</Tag>,
       fieldProps: {
@@ -237,8 +237,22 @@ const GroupingTabContent: React.FC = () => {
     try {
       await addGroupingAPI({ groupings: [[values.g1, values.g2]] });
       message.success("添加成功");
-      actionRef.current?.reload();
       setCreateModalVisible(false);
+
+      // 先刷新数据
+      await actionRef.current?.reload();
+
+      // 获取最新数据以计算最后一页
+      const currentData = await filterGroupings({});
+      const total = currentData.total || 0;
+      const pageSize = 10; // 使用表格当前的pageSize
+      const lastPage = Math.ceil(total / pageSize);
+
+      // 确保数据刷新完成后再跳转到最后一页
+      setTimeout(() => {
+        actionRef.current?.setPageInfo?.({ current: lastPage });
+      }, 100);
+
       return true;
     } catch (e) {
       console.error(e);
@@ -326,8 +340,9 @@ const GroupingTabContent: React.FC = () => {
         rowKey="id"
         pagination={{
           pageSize: 10,
+          defaultPageSize: 10,
           showSizeChanger: false,
-          showQuickJumper: false,
+          showQuickJumper: true,
           showTotal: (total) => {
             return intl.formatMessage(
               {
