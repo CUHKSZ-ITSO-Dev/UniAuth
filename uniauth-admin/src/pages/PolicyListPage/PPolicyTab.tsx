@@ -365,7 +365,7 @@ const PolicyTabContent: React.FC = () => {
     <ProCard>
       <Title level={4}>
         {intl.formatMessage({
-          id: "pages.policyList.title",
+          id: "pages.policyList.tab_p",
           defaultMessage: "规则列表",
         })}{" "}
       </Title>

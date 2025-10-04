@@ -264,7 +264,7 @@ export default {
   "pages.configI18n.updatedAt": "更新时间",
 
   // PolicyListPage
-  "pages.policyList.title": "策略规则",
+  "pages.policyList.title": "规则管理",
   "pages.policyList.tab_p": "策略规则",
   "pages.policyList.tab_g": "角色继承规则",
   // GroupingListPage
