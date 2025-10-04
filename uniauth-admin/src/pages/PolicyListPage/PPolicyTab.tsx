@@ -511,11 +511,11 @@ const PPolicyTab: React.FC = () => {
               id: "pages.policyList.deleteConfirmCancel",
               defaultMessage: "取消",
             })}
-            disabled={selectedRowKeys.length === 0}
+            disabled={selectedRowKeys.length < 2}
           >
             <Button
               danger
-              disabled={selectedRowKeys.length === 0}
+              disabled={selectedRowKeys.length < 2}
               style={{ minWidth: 90 }}
             >
               {intl.formatMessage({

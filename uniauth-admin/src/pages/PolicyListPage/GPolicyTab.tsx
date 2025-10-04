@@ -498,11 +498,11 @@ const GroupingTabContent: React.FC = () => {
               id: "pages.groupingList.batchDelete.cancel",
               defaultMessage: "取消",
             })}
-            disabled={selectedRows.length === 0}
+            disabled={selectedRows.length < 2}
           >
             <Button
               danger
-              disabled={selectedRows.length === 0}
+              disabled={selectedRows.length < 2}
               style={{ minWidth: 90 }}
             >
               {intl.formatMessage({
