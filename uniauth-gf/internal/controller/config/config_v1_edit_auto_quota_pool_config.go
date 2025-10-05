@@ -13,7 +13,6 @@ import (
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
 	"uniauth-gf/internal/service/autoQuotaPool"
-	"uniauth-gf/internal/service/casbin"
 )
 
 func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.EditAutoQuotaPoolConfigReq) (res *v1.EditAutoQuotaPoolConfigRes, err error) {
@@ -66,10 +65,10 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 		if updateErr := autoQuotaPool.SyncPersonalQuotaPools(ctx, req.RuleName); updateErr != nil {
 			return gerror.Wrap(updateErr, "更新受影响的个人配额池失败")
 		}
-		if err := casbin.SyncAutoQuotaPoolCasbinRules(ctx, []string{req.RuleName}); err != nil {
+		if err := autoQuotaPool.SyncAutoQuotaPoolCasbinRules(ctx, []string{req.RuleName}); err != nil {
 			return gerror.Wrap(err, "编辑后同步 casbin 规则失败")
 		}
-		if err := casbin.SyncAutoQuotaPoolGroupingPolicies(ctx, []string{req.RuleName}); err != nil {
+		if err := autoQuotaPool.SyncAutoQuotaPoolGroupingPolicies(ctx, []string{req.RuleName}); err != nil {
 			return gerror.Wrap(err, "编辑后同步 casbin 分组策略失败")
 		}
 		return nil

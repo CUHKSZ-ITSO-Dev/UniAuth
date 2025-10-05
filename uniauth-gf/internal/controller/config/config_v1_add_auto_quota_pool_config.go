@@ -10,7 +10,6 @@ import (
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/service/autoQuotaPool"
-	"uniauth-gf/internal/service/casbin"
 )
 
 func (c *ControllerV1) AddAutoQuotaPoolConfig(ctx context.Context, req *v1.AddAutoQuotaPoolConfigReq) (res *v1.AddAutoQuotaPoolConfigRes, err error) {
@@ -29,10 +28,10 @@ func (c *ControllerV1) AddAutoQuotaPoolConfig(ctx context.Context, req *v1.AddAu
 		if _, err := autoQuotaPool.SyncUpnsCache(ctx, []string{req.RuleName}); err != nil {
 			return gerror.Wrap(err, "新增后同步 upns_cache 失败")
 		}
-		if err := casbin.SyncAutoQuotaPoolCasbinRules(ctx, []string{req.RuleName}); err != nil {
+		if err := autoQuotaPool.SyncAutoQuotaPoolCasbinRules(ctx, []string{req.RuleName}); err != nil {
 			return gerror.Wrap(err, "新增后同步 casbin 规则失败")
 		}
-		if err := casbin.SyncAutoQuotaPoolGroupingPolicies(ctx, []string{req.RuleName}); err != nil {
+		if err := autoQuotaPool.SyncAutoQuotaPoolGroupingPolicies(ctx, []string{req.RuleName}); err != nil {
 			return gerror.Wrap(err, "新增后同步 casbin 分组策略失败")
 		}
 		return nil
