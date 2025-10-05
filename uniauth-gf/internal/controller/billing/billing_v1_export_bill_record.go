@@ -22,6 +22,7 @@ import (
 
 func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillRecordReq) (res *v1.ExportBillRecordRes, err error) {
 	recordsPri, err := c.GetBillRecord(ctx, &v1.GetBillRecordReq{
+		Type:       req.Type,
 		Upns:       req.Upns,
 		QuotaPools: req.QuotaPools,
 		Svc:        req.Svc,
@@ -404,7 +405,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 	// 收尾工作
 	_ = f.DeleteSheet("Sheet1")
 	var filename string
-	if len(req.Upns) > 0 {
+	if req.Type == "upn" {
 		_ = f.SetDocProps(&excelize.DocProperties{
 			Creator:     "UniAuth Automated System, Billing Module",
 			Description: fmt.Sprintf("GPT 服务账单 - UPNs %v", req.Upns),
