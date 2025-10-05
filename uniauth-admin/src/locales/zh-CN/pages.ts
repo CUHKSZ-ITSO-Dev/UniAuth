@@ -424,6 +424,35 @@ export default {
   "pages.quotaPoolList.field.createdAt": "创建时间",
   "pages.quotaPoolList.field.updatedAt": "更新时间",
 
+  // UserinfosRules related
+  "pages.quotaPoolList.userinfosRules": "用户规则",
+  "pages.quotaPoolList.userinfosRules.noRules": "-",
+  "pages.quotaPoolList.userinfosRules.detail": "用户规则详情",
+  "pages.quotaPoolList.userinfosRules.hover": "悬停查看详情，点击查看完整内容",
+  "pages.quotaPoolList.userinfosRules.click": "查看完整规则",
+  "pages.quotaPoolList.userinfosRules.viewRules": "用户规则详情",
+  "pages.quotaPoolList.userinfosRules.closeRules": "关闭",
+
+  // QuotaPool Create/Edit UserinfosRules
+  "pages.quotaPoolList.create.userinfosRules": "用户规则",
+  "pages.quotaPoolList.create.userinfosRules.help":
+    "请输入用户过滤规则的JSON配置，留空则不设置规则",
+  "pages.quotaPoolList.create.userinfosRules.invalidJson": "JSON格式不正确",
+  "pages.quotaPoolList.create.userinfosRules.validationError":
+    "请修正用户规则的JSON格式错误",
+  "pages.quotaPoolList.create.userinfosRules.parseError":
+    "用户规则JSON解析失败",
+
+  "pages.quotaPoolConfigDetail.edit.userinfosRules": "用户规则",
+  "pages.quotaPoolConfigDetail.edit.userinfosRules.help":
+    "请输入用户过滤规则的JSON配置，留空则不设置规则",
+  "pages.quotaPoolConfigDetail.edit.userinfosRules.invalidJson":
+    "JSON格式不正确",
+  "pages.quotaPoolConfigDetail.edit.userinfosRules.validationError":
+    "请修正用户规则的JSON格式错误",
+  "pages.quotaPoolConfigDetail.edit.userinfosRules.parseError":
+    "用户规则JSON解析失败",
+
   // Operator Options
   "pages.quotaPoolList.operator.eq": "等于",
   "pages.quotaPoolList.operator.neq": "不等于",

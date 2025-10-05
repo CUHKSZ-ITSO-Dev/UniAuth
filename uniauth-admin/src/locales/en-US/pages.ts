@@ -551,6 +551,37 @@ export default {
   "pages.quotaPoolList.field.createdAt": "Created At",
   "pages.quotaPoolList.field.updatedAt": "Updated At",
 
+  // UserinfosRules related
+  "pages.quotaPoolList.userinfosRules": "User Rules",
+  "pages.quotaPoolList.userinfosRules.noRules": "-",
+  "pages.quotaPoolList.userinfosRules.detail": "User Rules Detail",
+  "pages.quotaPoolList.userinfosRules.hover":
+    "Hover to view details, click to view full content",
+  "pages.quotaPoolList.userinfosRules.click": "View Full Rules",
+  "pages.quotaPoolList.userinfosRules.viewRules": "User Rules Detail",
+  "pages.quotaPoolList.userinfosRules.closeRules": "Close",
+
+  // QuotaPool Create/Edit UserinfosRules
+  "pages.quotaPoolList.create.userinfosRules": "User Rules",
+  "pages.quotaPoolList.create.userinfosRules.help":
+    "Please enter user filter rules in JSON format, leave empty to not set rules",
+  "pages.quotaPoolList.create.userinfosRules.invalidJson":
+    "Invalid JSON format",
+  "pages.quotaPoolList.create.userinfosRules.validationError":
+    "Please fix JSON format errors in user rules",
+  "pages.quotaPoolList.create.userinfosRules.parseError":
+    "Failed to parse user rules JSON",
+
+  "pages.quotaPoolConfigDetail.edit.userinfosRules": "User Rules",
+  "pages.quotaPoolConfigDetail.edit.userinfosRules.help":
+    "Please enter user filter rules in JSON format, leave empty to not set rules",
+  "pages.quotaPoolConfigDetail.edit.userinfosRules.invalidJson":
+    "Invalid JSON format",
+  "pages.quotaPoolConfigDetail.edit.userinfosRules.validationError":
+    "Please fix JSON format errors in user rules",
+  "pages.quotaPoolConfigDetail.edit.userinfosRules.parseError":
+    "Failed to parse user rules JSON",
+
   // Operator Options
   "pages.quotaPoolList.operator.eq": "Equal",
   "pages.quotaPoolList.operator.neq": "Not Equal",

@@ -139,7 +139,7 @@ const GroupingTabContent: React.FC = () => {
 
   // 监听URL参数变化，重载表格
   useEffect(() => {
-    if (actionRef.current && actionRef.current.reload) {
+    if (actionRef.current?.reload) {
       actionRef.current.reload();
     }
   }, [initialPagination.current, initialPagination.pageSize]);

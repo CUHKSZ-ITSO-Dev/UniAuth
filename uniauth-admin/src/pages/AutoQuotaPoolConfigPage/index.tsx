@@ -142,7 +142,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         setCronDescription(description);
       } catch (error) {
         message.error(
-          `Failed to parse cron expression: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to parse cron expression: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
         );
       }
     }
@@ -305,7 +307,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       setIsModalVisible(false);
       resetCronState(); // 重置 cron 状态
       actionRef.current?.reload();
-    } catch (error) {
+    } catch (_error) {
       message.error(
         intl.formatMessage({ id: "pages.autoQuotaPoolConfig.saveFailed" }),
       );

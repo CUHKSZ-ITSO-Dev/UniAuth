@@ -5,6 +5,7 @@ import {
   type ProColumns,
   ProTable,
 } from "@ant-design/pro-components";
+import Editor from "@monaco-editor/react";
 import { Link, useSearchParams } from "@umijs/max";
 import {
   Button,
@@ -46,6 +47,7 @@ interface QuotaPoolDetail {
   lastResetAt: string;
   personal?: boolean;
   disabled?: boolean;
+  userinfosRules?: any;
 }
 
 // 从props接收配额池名称和详细信息
@@ -77,6 +79,10 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   const [cronDescription, setCronDescription] = useState<string>("");
   const [cronError, setCronError] = useState<string>("");
   const [refreshUsersLoading, setRefreshUsersLoading] = useState(false);
+
+  // userinfosRules 编辑相关状态
+  const [userinfosRulesValue, setUserinfosRulesValue] = useState<string>("");
+  const [userinfosRulesError, setUserinfosRulesError] = useState<string>("");
   const associatedUsersActionRef = useRef<ActionType | null>(null);
   const quotaPoolRulesActionRef = useRef<ActionType | null>(null);
   const g1ActionRef = useRef<ActionType | null>(null);
@@ -229,6 +235,30 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     }
   };
 
+  // 处理userinfosRules编辑器值变化
+  const handleUserinfosRulesChange = (value: string | undefined) => {
+    const jsonValue = value || "";
+    setUserinfosRulesValue(jsonValue);
+
+    // 验证JSON格式
+    if (jsonValue.trim() === "") {
+      setUserinfosRulesError("");
+      return;
+    }
+
+    try {
+      JSON.parse(jsonValue);
+      setUserinfosRulesError("");
+    } catch (_error) {
+      setUserinfosRulesError(
+        intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.edit.userinfosRules.invalidJson",
+          defaultMessage: "JSON格式不正确",
+        }),
+      );
+    }
+  };
+
   // 打开编辑模态框
   const handleEditClick = () => {
     if (quotaPoolDetail) {
@@ -244,6 +274,12 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       if (quotaPoolDetail.cronCycle) {
         handleCronChange(quotaPoolDetail.cronCycle);
       }
+      // 初始化 userinfosRules
+      const userinfosRulesStr = quotaPoolDetail.userinfosRules
+        ? JSON.stringify(quotaPoolDetail.userinfosRules, null, 2)
+        : "";
+      setUserinfosRulesValue(userinfosRulesStr);
+      setUserinfosRulesError("");
     }
     setIsEditModalOpen(true);
   };
@@ -252,7 +288,36 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   const handleEditOk = async () => {
     try {
       const values = await form.validateFields();
+
+      // 验证userinfosRules格式
+      if (userinfosRulesError) {
+        message.error(
+          intl.formatMessage({
+            id: "pages.quotaPoolConfigDetail.edit.userinfosRules.validationError",
+            defaultMessage: "请修正用户规则的JSON格式错误",
+          }),
+        );
+        return;
+      }
+
       setEditLoading(true);
+
+      // 解析userinfosRules
+      let parsedUserinfosRules = null;
+      if (userinfosRulesValue.trim() !== "") {
+        try {
+          parsedUserinfosRules = JSON.parse(userinfosRulesValue);
+        } catch (_error) {
+          message.error(
+            intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.userinfosRules.parseError",
+              defaultMessage: "用户规则JSON解析失败",
+            }),
+          );
+          setEditLoading(false);
+          return;
+        }
+      }
 
       // 构建请求体
       const requestBody: API.EditQuotaPoolReq = {
@@ -276,6 +341,16 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         if (!values.enabled !== (quotaPoolDetail.disabled ?? false)) {
           requestBody.disabled = !values.enabled;
         }
+        // 检查userinfosRules是否发生变化
+        const currentRulesStr = quotaPoolDetail.userinfosRules
+          ? JSON.stringify(quotaPoolDetail.userinfosRules)
+          : "";
+        const newRulesStr = parsedUserinfosRules
+          ? JSON.stringify(parsedUserinfosRules)
+          : "";
+        if (currentRulesStr !== newRulesStr) {
+          requestBody.userinfosRules = parsedUserinfosRules;
+        }
       } else {
         // 如果 quotaPoolDetail 不存在，发送所有表单字段以确保用户输入不丢失
         requestBody.cronCycle = values.cronCycle;
@@ -283,6 +358,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         requestBody.extraQuota = values.extraQuota || 0;
         requestBody.personal = values.personal;
         requestBody.disabled = !values.enabled;
+        requestBody.userinfosRules = parsedUserinfosRules;
       }
 
       const res = await putQuotaPool(requestBody);
@@ -298,6 +374,8 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         form.resetFields();
         setCronDescription("");
         setCronError("");
+        setUserinfosRulesValue("");
+        setUserinfosRulesError("");
         // 刷新数据
         if (onRefresh) {
           await onRefresh();
@@ -333,6 +411,8 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     form.resetFields();
     setCronDescription("");
     setCronError("");
+    setUserinfosRulesValue("");
+    setUserinfosRulesError("");
   };
 
   const associatedUsersColumns: ProColumns<UserInfo>[] = [
@@ -1315,6 +1395,65 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
                 })}
               </Radio.Button>
             </Radio.Group>
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolConfigDetail.edit.userinfosRules",
+              defaultMessage: "用户规则",
+            })}
+            validateStatus={userinfosRulesError ? "error" : ""}
+            help={
+              userinfosRulesError ||
+              intl.formatMessage({
+                id: "pages.quotaPoolConfigDetail.edit.userinfosRules.help",
+                defaultMessage:
+                  "请输入用户过滤规则的JSON配置，留空则不设置规则",
+              })
+            }
+            style={{ marginBottom: 24 }}
+          >
+            <div
+              style={{
+                border: "1px solid #d9d9d9",
+                borderRadius: "6px",
+                overflow: "hidden",
+              }}
+            >
+              <Editor
+                height="200px"
+                defaultLanguage="json"
+                theme="light"
+                value={userinfosRulesValue}
+                onChange={handleUserinfosRulesChange}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  lineNumbers: "off",
+                  glyphMargin: false,
+                  folding: false,
+                  lineDecorationsWidth: 0,
+                  lineNumbersMinChars: 0,
+                  overviewRulerLanes: 0,
+                  overviewRulerBorder: false,
+                  hideCursorInOverviewRuler: true,
+                  scrollbar: {
+                    vertical: "visible",
+                    horizontal: "visible",
+                    useShadows: false,
+                    verticalHasArrows: false,
+                    horizontalHasArrows: false,
+                  },
+                  tabSize: 2,
+                  insertSpaces: true,
+                }}
+              />
+            </div>
           </Form.Item>
 
           <Form.Item

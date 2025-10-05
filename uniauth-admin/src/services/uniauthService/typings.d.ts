@@ -386,6 +386,8 @@ declare namespace API {
   };
 
   type ExportBillRecordReq = {
+    /**  类型 */
+    type: "qp" | "upn";
     /** UPN列表 */
     upns?: string[];
     /** 配额池 */
@@ -398,9 +400,11 @@ declare namespace API {
     startTime: string;
     /** 结束时间 */
     endTime: string;
+    /** 排序顺序 */
+    order: "asc" | "desc";
   };
 
-  type ExportBillRecordRes = Record<string, never>;
+  type ExportBillRecordRes = ArrayBuffer;
 
   type FilterCondition = {
     /** 字段名 */
@@ -679,6 +683,8 @@ declare namespace API {
   };
 
   type GetBillRecordReq = {
+    /** 类型 */
+    type: "qp" | "upn";
     /** UPN列表 */
     upns?: string[];
     /** 配额池 */
@@ -691,6 +697,8 @@ declare namespace API {
     startTime: string;
     /** 结束时间 */
     endTime: string;
+    /** 排序顺序 */
+    order: "asc" | "desc";
   };
 
   type GetBillRecordRes = {

@@ -1,5 +1,7 @@
+import { EyeOutlined } from "@ant-design/icons";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
+import Editor from "@monaco-editor/react";
 import { getLocale, Link, useIntl, useSearchParams } from "@umijs/max";
 import {
   Button,
@@ -12,6 +14,7 @@ import {
   Modal,
   message,
   Popconfirm,
+  Popover,
   Radio,
   Select,
   Space,
@@ -58,6 +61,14 @@ const QuotaPoolListPage: React.FC = () => {
   const [previewResult, setPreviewResult] =
     useState<API.BatchModifyQuotaPoolRes | null>(null);
   const [selectedModifyField, setSelectedModifyField] = useState<string>("");
+
+  // userinfosRules 展示相关状态
+  const [rulesModalVisible, setRulesModalVisible] = useState(false);
+  const [selectedRules, setSelectedRules] = useState<any>(null);
+
+  // userinfosRules 编辑相关状态
+  const [userinfosRulesValue, setUserinfosRulesValue] = useState<string>("");
+  const [userinfosRulesError, setUserinfosRulesError] = useState<string>("");
 
   // 使用 useMemo 确保初始参数响应 URL 变化
   const initialSearchParams = useMemo(() => {
@@ -307,6 +318,80 @@ const QuotaPoolListPage: React.FC = () => {
     setSearchParams(newSearchParams);
   };
 
+  // 工具函数：格式化JSON对象
+  const formatJsonObject = (obj: any): string => {
+    try {
+      if (obj === null || obj === undefined) return "-";
+      if (typeof obj === "string") {
+        // 尝试解析字符串是否为JSON
+        try {
+          const parsed = JSON.parse(obj);
+          return JSON.stringify(parsed, null, 2);
+        } catch {
+          return obj;
+        }
+      }
+      return JSON.stringify(obj, null, 2);
+    } catch {
+      return String(obj);
+    }
+  };
+
+  // 工具函数：获取JSON对象的简要描述
+  const getJsonSummary = (obj: any): string => {
+    try {
+      if (!obj) return "-";
+
+      const parsed = typeof obj === "string" ? JSON.parse(obj) : obj;
+
+      if (typeof parsed === "object" && parsed !== null) {
+        const keys = Object.keys(parsed);
+        if (keys.length === 0) return "{}";
+        if (keys.length === 1) return `{${keys[0]}: ...}`;
+        return `{${keys.slice(0, 2).join(", ")}, ...}`;
+      }
+
+      return (
+        String(parsed).substring(0, 20) +
+        (String(parsed).length > 20 ? "..." : "")
+      );
+    } catch {
+      return (
+        String(obj).substring(0, 20) + (String(obj).length > 20 ? "..." : "")
+      );
+    }
+  };
+
+  // 处理规则点击事件
+  const handleRulesClick = (rules: any) => {
+    setSelectedRules(rules);
+    setRulesModalVisible(true);
+  };
+
+  // 处理userinfosRules编辑器值变化
+  const handleUserinfosRulesChange = (value: string | undefined) => {
+    const jsonValue = value || "";
+    setUserinfosRulesValue(jsonValue);
+
+    // 验证JSON格式
+    if (jsonValue.trim() === "") {
+      setUserinfosRulesError("");
+      return;
+    }
+
+    try {
+      JSON.parse(jsonValue);
+      setUserinfosRulesError("");
+    } catch (_error) {
+      setUserinfosRulesError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.userinfosRules.invalidJson",
+          defaultMessage: "JSON格式不正确",
+        }),
+      );
+    }
+  };
+
   // 监听URL参数变化，同步更新表单和表格
   useEffect(() => {
     if (formRef.current) {
@@ -444,6 +529,84 @@ const QuotaPoolListPage: React.FC = () => {
     },
     {
       title: intl.formatMessage({
+        id: "pages.quotaPoolList.userinfosRules",
+        defaultMessage: "用户规则",
+      }),
+      dataIndex: "userinfosRules",
+      valueType: "text",
+      search: false,
+      ellipsis: true,
+      width: 180,
+      render: (_, record) => {
+        if (!record.userinfosRules)
+          return (
+            <Typography.Text type="secondary">
+              {intl.formatMessage({
+                id: "pages.quotaPoolList.userinfosRules.noRules",
+                defaultMessage: "-",
+              })}
+            </Typography.Text>
+          );
+
+        const summary = getJsonSummary(record.userinfosRules);
+        const formattedJson = formatJsonObject(record.userinfosRules);
+
+        return (
+          <Space size="small">
+            <Popover
+              title={intl.formatMessage({
+                id: "pages.quotaPoolList.userinfosRules.detail",
+                defaultMessage: "用户规则详情",
+              })}
+              content={
+                <pre
+                  style={{
+                    maxWidth: 400,
+                    maxHeight: 300,
+                    overflow: "auto",
+                    fontSize: "12px",
+                    margin: 0,
+                    background: "#f5f5f5",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {formattedJson}
+                </pre>
+              }
+              trigger="hover"
+              placement="left"
+              overlayStyle={{ maxWidth: 500 }}
+            >
+              <Typography.Text
+                ellipsis
+                style={{ cursor: "pointer" }}
+                title={intl.formatMessage({
+                  id: "pages.quotaPoolList.userinfosRules.hover",
+                  defaultMessage: "悬停查看详情，点击查看完整内容",
+                })}
+              >
+                {summary}
+              </Typography.Text>
+            </Popover>
+            <Button
+              type="link"
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => handleRulesClick(record.userinfosRules)}
+              style={{ padding: "0 4px", fontSize: "12px" }}
+              title={intl.formatMessage({
+                id: "pages.quotaPoolList.userinfosRules.click",
+                defaultMessage: "查看完整规则",
+              })}
+            />
+          </Space>
+        );
+      },
+    },
+    {
+      title: intl.formatMessage({
         id: "pages.quotaPoolList.actions",
         defaultMessage: "操作",
       }),
@@ -474,7 +637,7 @@ const QuotaPoolListPage: React.FC = () => {
         }`;
 
         return (
-          <div style={{ textAlign: "center" }}>
+          <div>
             <Link to={detailUrl} key="detail">
               {intl.formatMessage({
                 id: "pages.quotaPoolList.detail",
@@ -697,7 +860,36 @@ const QuotaPoolListPage: React.FC = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+
+      // 验证userinfosRules格式
+      if (userinfosRulesError) {
+        message.error(
+          intl.formatMessage({
+            id: "pages.quotaPoolList.create.userinfosRules.validationError",
+            defaultMessage: "请修正用户规则的JSON格式错误",
+          }),
+        );
+        return;
+      }
+
       setLoading(true);
+
+      // 解析userinfosRules
+      let parsedUserinfosRules = null;
+      if (userinfosRulesValue.trim() !== "") {
+        try {
+          parsedUserinfosRules = JSON.parse(userinfosRulesValue);
+        } catch (_error) {
+          message.error(
+            intl.formatMessage({
+              id: "pages.quotaPoolList.create.userinfosRules.parseError",
+              defaultMessage: "用户规则JSON解析失败",
+            }),
+          );
+          setLoading(false);
+          return;
+        }
+      }
 
       const res = await postQuotaPool({
         quotaPoolName: values.quotaPoolName,
@@ -706,6 +898,7 @@ const QuotaPoolListPage: React.FC = () => {
         extraQuota: values.extraQuota || 0,
         personal: values.personal,
         disabled: !values.enabled,
+        userinfosRules: parsedUserinfosRules,
       });
 
       if (res?.ok) {
@@ -719,6 +912,8 @@ const QuotaPoolListPage: React.FC = () => {
         form.resetFields();
         setCronDescription("");
         setCronError("");
+        setUserinfosRulesValue("");
+        setUserinfosRulesError("");
         tableRef.current?.reload();
       } else {
         message.error(
@@ -751,6 +946,8 @@ const QuotaPoolListPage: React.FC = () => {
     form.resetFields();
     setCronDescription("");
     setCronError("");
+    setUserinfosRulesValue("");
+    setUserinfosRulesError("");
   };
 
   // 生成唯一ID的函数
@@ -1924,6 +2121,65 @@ const QuotaPoolListPage: React.FC = () => {
 
           <Form.Item
             label={intl.formatMessage({
+              id: "pages.quotaPoolList.create.userinfosRules",
+              defaultMessage: "用户规则",
+            })}
+            validateStatus={userinfosRulesError ? "error" : ""}
+            help={
+              userinfosRulesError ||
+              intl.formatMessage({
+                id: "pages.quotaPoolList.create.userinfosRules.help",
+                defaultMessage:
+                  "请输入用户过滤规则的JSON配置，留空则不设置规则",
+              })
+            }
+            style={{ marginBottom: 24 }}
+          >
+            <div
+              style={{
+                border: "1px solid #d9d9d9",
+                borderRadius: "6px",
+                overflow: "hidden",
+              }}
+            >
+              <Editor
+                height="200px"
+                defaultLanguage="json"
+                theme="light"
+                value={userinfosRulesValue}
+                onChange={handleUserinfosRulesChange}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  lineNumbers: "off",
+                  glyphMargin: false,
+                  folding: false,
+                  lineDecorationsWidth: 0,
+                  lineNumbersMinChars: 0,
+                  overviewRulerLanes: 0,
+                  overviewRulerBorder: false,
+                  hideCursorInOverviewRuler: true,
+                  scrollbar: {
+                    vertical: "visible",
+                    horizontal: "visible",
+                    useShadows: false,
+                    verticalHasArrows: false,
+                    horizontalHasArrows: false,
+                  },
+                  tabSize: 2,
+                  insertSpaces: true,
+                }}
+              />
+            </div>
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
               id: "pages.quotaPoolList.create.enabledStatus",
               defaultMessage: "启用状态",
             })}
@@ -1942,6 +2198,41 @@ const QuotaPoolListPage: React.FC = () => {
             />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 用户规则详情模态框 */}
+      <Modal
+        title={intl.formatMessage({
+          id: "pages.quotaPoolList.userinfosRules.viewRules",
+          defaultMessage: "用户规则详情",
+        })}
+        open={rulesModalVisible}
+        onCancel={() => setRulesModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setRulesModalVisible(false)}>
+            {intl.formatMessage({
+              id: "pages.quotaPoolList.userinfosRules.closeRules",
+              defaultMessage: "关闭",
+            })}
+          </Button>,
+        ]}
+        width={700}
+      >
+        <pre
+          style={{
+            maxHeight: "60vh",
+            overflow: "auto",
+            fontSize: "13px",
+            background: "#f8f9fa",
+            padding: "16px",
+            borderRadius: "6px",
+            border: "1px solid #e9ecef",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+          }}
+        >
+          {formatJsonObject(selectedRules)}
+        </pre>
       </Modal>
     </PageContainer>
   );

@@ -16,6 +16,14 @@ export async function request<T>(url: string, options?: any): Promise<T> {
   const contentType = res.headers?.["content-type"] || "";
   const isJsonResponse = contentType.includes("application/json");
 
+  // 对于文件下载请求（明确指定了 responseType），直接返回原始响应数据
+  if (
+    options?.responseType === "arraybuffer" ||
+    options?.responseType === "blob"
+  ) {
+    return res.data as T;
+  }
+
   // 对于非 JSON 响应（如文件下载），直接返回原始响应数据
   if (!isJsonResponse) {
     return res.data as T;

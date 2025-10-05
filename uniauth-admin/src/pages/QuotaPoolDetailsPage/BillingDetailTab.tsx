@@ -37,6 +37,7 @@ interface BillingRecord {
   svc: string;
   product: string;
   cost: number;
+  original_cost?: number; // 折扣前的费用
   plan: string;
   source: string;
   remark?: any;
@@ -210,11 +211,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       tomorrow.setDate(tomorrow.getDate() + 1);
 
       const response = await postBillingAdminGet({
+        type: "qp",
         quotaPools: [quotaPoolName],
         svc: [],
         product: [],
         startTime: startOfYear.toISOString().split("T")[0],
         endTime: tomorrow.toISOString().split("T")[0],
+        order: "desc",
       });
 
       if (response.records) {
@@ -253,16 +256,18 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       const endTime = values.dateRange[1].add(1, "day").format("YYYY-MM-DD");
 
       const response = await postBillingAdminOpenApiExport({
+        type: "qp" as const,
         quotaPools: [quotaPoolName],
         upns: [],
         svc: values.svc || [],
         product: values.product || [],
         startTime,
         endTime,
+        order: "asc" as const,
       });
 
       // 创建下载链接
-      const blob = new Blob([response as any], {
+      const blob = new Blob([response], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       const url = window.URL.createObjectURL(blob);
@@ -340,7 +345,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       valueType: "select",
       search: true,
       ellipsis: true,
-
+      fieldProps: {
+        mode: "multiple",
+        placeholder: intl.formatMessage({
+          id: "pages.billingDetail.svcPlaceholder",
+          defaultMessage: "请选择服务类型",
+        }),
+      },
       valueEnum: svcValueEnum,
     },
     {
@@ -352,7 +363,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       valueType: "select",
       search: true,
       ellipsis: true,
-
+      fieldProps: {
+        mode: "multiple",
+        placeholder: intl.formatMessage({
+          id: "pages.billingDetail.productPlaceholder",
+          defaultMessage: "请选择产品类型",
+        }),
+      },
       valueEnum: productValueEnum,
     },
     {
@@ -364,9 +381,27 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       valueType: "money",
       search: false,
 
-      render: (_, record) => (
-        <Text type="danger">￥{Number(record.cost).toFixed(4)}</Text>
-      ),
+      render: (_, record) => {
+        const cost = Number(record.cost);
+        const originalCost = record.original_cost
+          ? Number(record.original_cost)
+          : null;
+
+        // 如果没有 original_cost 或者 cost 和 original_cost 相同，直接显示 cost
+        if (!originalCost || Math.abs(cost - originalCost) < 0.0001) {
+          return <Text type="danger">￥{cost.toFixed(4)}</Text>;
+        }
+
+        // 如果不相同，显示划掉的 original_cost 和正常的 cost
+        return (
+          <Space size={4}>
+            <Text delete type="secondary">
+              ￥{originalCost.toFixed(4)}
+            </Text>
+            <Text type="danger">￥{cost.toFixed(4)}</Text>
+          </Space>
+        );
+      },
     },
     {
       title: intl.formatMessage({
@@ -529,12 +564,22 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
       // 构建API请求参数
       const requestParams = {
+        type: "qp" as const,
         quotaPools: [quotaPoolName],
-        svc: params.svc ? [params.svc] : [],
-        product: params.product ? [params.product] : [],
+        svc: params.svc
+          ? Array.isArray(params.svc)
+            ? params.svc
+            : [params.svc]
+          : [],
+        product: params.product
+          ? Array.isArray(params.product)
+            ? params.product
+            : [params.product]
+          : [],
         // 优先使用用户选择的时间范围，如果没有则使用默认值
         startTime: params.startTime || defaultStartTime,
         endTime,
+        order: "desc" as const,
       };
 
       const response = await postBillingAdminGet(requestParams);

@@ -73,7 +73,7 @@ const PPolicyTab: React.FC = () => {
 
   // 监听URL参数变化，重载表格
   useEffect(() => {
-    if (actionRef.current && actionRef.current.reload) {
+    if (actionRef.current?.reload) {
       actionRef.current.reload();
     }
   }, [initialPagination.current, initialPagination.pageSize]);
@@ -191,9 +191,9 @@ const PPolicyTab: React.FC = () => {
           }),
         );
         // 强制重置到第一页并刷新，确保UI立即反映
-        if (actionRef.current && actionRef.current.reloadAndRest) {
+        if (actionRef.current?.reloadAndRest) {
           await actionRef.current.reloadAndRest();
-        } else if (actionRef.current && actionRef.current.reload) {
+        } else if (actionRef.current?.reload) {
           await actionRef.current.reload();
         }
       }
@@ -213,9 +213,9 @@ const PPolicyTab: React.FC = () => {
         }),
       );
       // 强制重置到第一页并刷新，确保UI立即反映
-      if (actionRef.current && actionRef.current.reloadAndRest) {
+      if (actionRef.current?.reloadAndRest) {
         await actionRef.current.reloadAndRest();
-      } else if (actionRef.current && actionRef.current.reload) {
+      } else if (actionRef.current?.reload) {
         await actionRef.current.reload();
       }
       setSelectedRowKeys([]);

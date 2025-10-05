@@ -23,6 +23,7 @@ interface QuotaPoolDetail {
   personal: boolean;
   disabled: boolean;
   createdAt: string;
+  userinfosRules?: any;
 }
 
 const QuotaPoolDetailsPage: FC = () => {
@@ -81,6 +82,7 @@ const QuotaPoolDetailsPage: FC = () => {
           personal: resData.personal || false,
           disabled: resData.disabled || false,
           createdAt: resData.createdAt || "",
+          userinfosRules: resData.userinfosRules || null,
         });
       }
     } catch (error) {
