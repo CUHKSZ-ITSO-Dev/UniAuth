@@ -29,6 +29,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		Product:    req.Product,
 		StartTime:  req.StartTime,
 		EndTime:    req.EndTime,
+		Order:		req.Order,
 	})
 	if err != nil {
 		return nil, gerror.Wrap(err, "复用获取账单记录接口时失败")

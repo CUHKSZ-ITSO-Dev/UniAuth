@@ -16,6 +16,7 @@ type ExportBillRecordReq struct {
 	Product    []string `json:"product" dc:"产品" example:"['chat', 'voice']"`
 	StartTime  string   `json:"startTime" v:"required" dc:"开始时间" example:"2024-01-01"`
 	EndTime    string   `json:"endTime" v:"required" dc:"结束时间" example:"2024-01-01"`
+	Order      string   `json:"order" dc:"账单返回时按照账单创建时间排序。默认倒序 desc。" v:"required|in:asc,desc" d:"desc"`
 }
 type ExportBillRecordRes struct {
 }
@@ -29,6 +30,7 @@ type GetBillRecordReq struct {
 	Product    []string `json:"product" dc:"产品" example:"['chat', 'voice']"`
 	StartTime  string   `json:"startTime" v:"required" dc:"开始时间" example:"2024-01-01"`
 	EndTime    string   `json:"endTime" v:"required" dc:"结束时间" example:"2024-01-01"`
+	Order      string   `json:"order" dc:"账单返回时按照账单创建时间排序。默认倒序 desc。" v:"required|in:asc,desc" d:"desc"`
 }
 type GetBillRecordRes struct {
 	Records *gjson.Json `json:"records"`
