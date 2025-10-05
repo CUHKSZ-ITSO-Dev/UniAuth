@@ -32,6 +32,9 @@ func (c *ControllerV1) AddAutoQuotaPoolConfig(ctx context.Context, req *v1.AddAu
 		if err := casbin.SyncAutoQuotaPoolCasbinRules(ctx, []string{req.RuleName}); err != nil {
 			return gerror.Wrap(err, "新增后同步 casbin 规则失败")
 		}
+		if err := casbin.SyncAutoQuotaPoolGroupingPolicies(ctx, []string{req.RuleName}); err != nil {
+			return gerror.Wrap(err, "新增后同步 casbin 分组策略失败")
+		}
 		return nil
 	}); err != nil {
 		return nil, gerror.Wrap(err, "新增自动配额池规则事务失败，已回滚")

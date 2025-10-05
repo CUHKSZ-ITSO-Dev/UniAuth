@@ -78,6 +78,9 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 		if err := casbin.SyncAutoQuotaPoolCasbinRules(ctx, []string{req.RuleName}); err != nil {
 			return gerror.Wrap(err, "编辑后同步 casbin 规则失败")
 		}
+		if err := casbin.SyncAutoQuotaPoolGroupingPolicies(ctx, []string{req.RuleName}); err != nil {
+			return gerror.Wrap(err, "编辑后同步 casbin 分组策略失败")
+		}
 		return nil
 
 	})

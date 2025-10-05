@@ -37,6 +37,11 @@ func (c *ControllerV1) DeleteAutoQuotaPoolConfig(ctx context.Context, req *v1.De
 		if _, err := casbin.GetEnforcer().RemoveFilteredPolicy(0, casbin_subject); err != nil {
 			return gerror.Wrap(err, "删除自动配额池规则的现有 Casbin 策略失败")
 		}
+
+		// 删除Casbin分组策略
+		if _, err := casbin.GetEnforcer().RemoveFilteredPolicy(1, casbin_subject); err != nil {
+			return gerror.Wrap(err, "删除自动配额池规则的现有 Casbin 分组策略失败")
+		}
 		return nil
 	})
 	if err != nil {
