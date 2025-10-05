@@ -1,5 +1,5 @@
 // ==========================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-16 12:07:45
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
 // ==========================================================================
 
 package internal
@@ -21,28 +21,30 @@ type BillingCostRecordsDao struct {
 
 // BillingCostRecordsColumns defines and stores column names for the table billing_cost_records.
 type BillingCostRecordsColumns struct {
-	Id        string // 自增主键
-	Upn       string // UPN
-	Svc       string // 服务名称
-	Product   string // 产品名称
-	Cost      string // 费用
-	Plan      string // 计费方案
-	Source    string // 来源
-	Remark    string // 备注信息
-	CreatedAt string // 创建时间
+	Id           string // 自增主键
+	Upn          string // UPN
+	Svc          string // 服务名称
+	Product      string // 产品名称
+	Cost         string // 费用
+	Plan         string // 计费方案
+	Source       string // 来源
+	Remark       string // 备注信息
+	CreatedAt    string // 创建时间
+	OriginalCost string // 原始费用
 }
 
 // billingCostRecordsColumns holds the columns for the table billing_cost_records.
 var billingCostRecordsColumns = BillingCostRecordsColumns{
-	Id:        "id",
-	Upn:       "upn",
-	Svc:       "svc",
-	Product:   "product",
-	Cost:      "cost",
-	Plan:      "plan",
-	Source:    "source",
-	Remark:    "remark",
-	CreatedAt: "created_at",
+	Id:           "id",
+	Upn:          "upn",
+	Svc:          "svc",
+	Product:      "product",
+	Cost:         "cost",
+	Plan:         "plan",
+	Source:       "source",
+	Remark:       "remark",
+	CreatedAt:    "created_at",
+	OriginalCost: "original_cost",
 }
 
 // NewBillingCostRecordsDao creates and returns a new DAO object for table data access.
