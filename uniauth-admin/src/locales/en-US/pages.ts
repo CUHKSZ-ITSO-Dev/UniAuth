@@ -551,6 +551,16 @@ export default {
   "pages.quotaPoolList.field.createdAt": "Created At",
   "pages.quotaPoolList.field.updatedAt": "Updated At",
 
+  // UserinfosRules related
+  "pages.quotaPoolList.userinfosRules": "User Rules",
+  "pages.quotaPoolList.userinfosRules.noRules": "-",
+  "pages.quotaPoolList.userinfosRules.detail": "User Rules Detail",
+  "pages.quotaPoolList.userinfosRules.hover":
+    "Hover to view details, click to view full content",
+  "pages.quotaPoolList.userinfosRules.click": "View Full Rules",
+  "pages.quotaPoolList.userinfosRules.viewRules": "User Rules Detail",
+  "pages.quotaPoolList.userinfosRules.closeRules": "Close",
+
   // Operator Options
   "pages.quotaPoolList.operator.eq": "Equal",
   "pages.quotaPoolList.operator.neq": "Not Equal",

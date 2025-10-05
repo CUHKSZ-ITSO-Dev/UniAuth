@@ -424,6 +424,15 @@ export default {
   "pages.quotaPoolList.field.createdAt": "创建时间",
   "pages.quotaPoolList.field.updatedAt": "更新时间",
 
+  // UserinfosRules related
+  "pages.quotaPoolList.userinfosRules": "用户规则",
+  "pages.quotaPoolList.userinfosRules.noRules": "-",
+  "pages.quotaPoolList.userinfosRules.detail": "用户规则详情",
+  "pages.quotaPoolList.userinfosRules.hover": "悬停查看详情，点击查看完整内容",
+  "pages.quotaPoolList.userinfosRules.click": "查看完整规则",
+  "pages.quotaPoolList.userinfosRules.viewRules": "用户规则详情",
+  "pages.quotaPoolList.userinfosRules.closeRules": "关闭",
+
   // Operator Options
   "pages.quotaPoolList.operator.eq": "等于",
   "pages.quotaPoolList.operator.neq": "不等于",
