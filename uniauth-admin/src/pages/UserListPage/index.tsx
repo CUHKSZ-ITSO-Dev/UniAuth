@@ -244,7 +244,7 @@ const UserListPage: React.FC = () => {
             defaultPageSize: 10, // 设置默认页面大小，防止reset后变为20
             showSizeChanger: true,
             showTotal: (total) => intl.formatMessage({
-              id: "pages.configI18n.pagination.total",
+              id: "pages.userList.pagination.total",
               defaultMessage: "共 {total} 条数据",
             }, { total }),
           }}

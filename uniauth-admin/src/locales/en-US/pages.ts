@@ -89,6 +89,7 @@ export default {
     "Enter name, UPN, employee/student ID, email",
   "pages.userList.search.query": "Query",
   "pages.userList.search.reset": "Reset",
+  "pages.userList.pagination.total": "Total {total} items",
 
   // User detail page translations
   "pages.userDetail.backToList": "Back to List",
