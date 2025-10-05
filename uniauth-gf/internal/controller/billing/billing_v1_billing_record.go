@@ -93,12 +93,16 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 	// 如果查不到提交的 product 对应的 approach，或出现查询错误，则忽略错误，并不进行折扣
 	if req.Service == "chat" {
 		var singleModelApproach *entity.ConfigSingleModelApproach
-		_ = dao.ConfigSingleModelApproach.Ctx(ctx).Where("approach_name = ?", req.Product).Scan(&singleModelApproach)
+		if err := dao.ConfigSingleModelApproach.Ctx(ctx).Where("approach_name = ?", req.Product).Scan(&singleModelApproach); err != nil {
+			g.Log().Warningf(ctx, "查询产品 %s 的折扣信息失败，将不应用折扣。错误: %v", req.Product, err)
+		}
 		if singleModelApproach != nil {
 			cost = originalCost.Mul(singleModelApproach.Discount)
 			if wrtErr := req.Remark.Set("discount", singleModelApproach.Discount.String()); wrtErr != nil {
 				g.Log().Infof(ctx, "计费流程中折扣信息写入 Remark 失败。原始计费记录：%v", req)
 			}
+		} else {
+			g.Log().Warningf(ctx, "找不到产品 %s 的折扣信息，将不应用折扣", req.Product)
 		}
 	}
 
