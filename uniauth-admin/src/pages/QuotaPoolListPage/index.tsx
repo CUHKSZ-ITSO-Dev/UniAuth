@@ -382,7 +382,7 @@ const QuotaPoolListPage: React.FC = () => {
     try {
       JSON.parse(jsonValue);
       setUserinfosRulesError("");
-    } catch (error) {
+    } catch (_error) {
       setUserinfosRulesError(
         intl.formatMessage({
           id: "pages.quotaPoolList.create.userinfosRules.invalidJson",
@@ -879,7 +879,7 @@ const QuotaPoolListPage: React.FC = () => {
       if (userinfosRulesValue.trim() !== "") {
         try {
           parsedUserinfosRules = JSON.parse(userinfosRulesValue);
-        } catch (error) {
+        } catch (_error) {
           message.error(
             intl.formatMessage({
               id: "pages.quotaPoolList.create.userinfosRules.parseError",

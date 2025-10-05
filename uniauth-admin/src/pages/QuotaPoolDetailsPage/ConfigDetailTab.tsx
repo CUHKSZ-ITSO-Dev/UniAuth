@@ -249,7 +249,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     try {
       JSON.parse(jsonValue);
       setUserinfosRulesError("");
-    } catch (error) {
+    } catch (_error) {
       setUserinfosRulesError(
         intl.formatMessage({
           id: "pages.quotaPoolConfigDetail.edit.userinfosRules.invalidJson",
@@ -307,7 +307,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       if (userinfosRulesValue.trim() !== "") {
         try {
           parsedUserinfosRules = JSON.parse(userinfosRulesValue);
-        } catch (error) {
+        } catch (_error) {
           message.error(
             intl.formatMessage({
               id: "pages.quotaPoolConfigDetail.edit.userinfosRules.parseError",
