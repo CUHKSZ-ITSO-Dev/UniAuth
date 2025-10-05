@@ -13,9 +13,9 @@ type AutoQuotaPoolItem struct {
 }
 
 type DefaultCasbinRule struct {
-	Object string `json:"resource" dc:"资源对象"`
-	Action string `json:"action" dc:"动作"`
-	Effect string `json:"effect" dc:"效果"`
+	Obj string `json:"obj" dc:"资源对象"`
+	Act string `json:"act" dc:"动作"`
+	Eft string `json:"eft" dc:"效果"`
 }
 
 type GetAutoQuotaPoolConfigReq struct {

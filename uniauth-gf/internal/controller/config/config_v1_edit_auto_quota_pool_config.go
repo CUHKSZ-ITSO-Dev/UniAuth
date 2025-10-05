@@ -51,6 +51,14 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 			}
 		}
 
+		if _, ok := g.RequestFromCtx(ctx).GetRequestMap()["defaultCasbinRules"]; ok {
+			if req.DefaultCasbinRules == nil {
+				data["default_casbin_rules"] = nil
+			} else {
+				data["default_casbin_rules"] = gjson.New(req.DefaultCasbinRules)
+			}
+		}
+
 		if _, err := dao.ConfigAutoQuotaPool.Ctx(ctx).
 			Where("rule_name = ?", req.RuleName).
 			Data(data).

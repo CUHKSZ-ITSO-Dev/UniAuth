@@ -76,10 +76,16 @@ func GetEnforcer() *casbin.Enforcer {
 }
 
 func SyncAutoQuotaPoolCasbinRules(ctx context.Context, ruleNames []string) error {
+	type CasbinRule struct {
+		Obj string `json:"obj" dc:"资源对象"`
+		Act string `json:"act" dc:"动作"`
+		Eft string `json:"eft" dc:"效果"`
+	}
+
 	for _, ruleName := range ruleNames {
 		// 1. 删除指定规则名称的所有现有策略
 		subject := "auto_qp_" + ruleName
-		if removed, err := e.RemoveFilteredPolicy(1, subject); err != nil {
+		if removed, err := e.RemoveFilteredPolicy(0, subject); err != nil {
 			return gerror.Wrapf(err, "删除自动配额池规则 %s 的现有策略失败", ruleName)
 		} else if removed {
 			g.Log().Infof(ctx, "成功删除了自动配额池规则 %s 的现有策略", ruleName)
@@ -103,11 +109,6 @@ func SyncAutoQuotaPoolCasbinRules(ctx context.Context, ruleNames []string) error
 		if config.DefaultCasbinRules == nil {
 			continue
 		}
-		type CasbinRule struct {
-			Action   string `json:"action"`
-			Effect   string `json:"effect"`
-			Resource string `json:"resource"`
-		}
 		var casbinRules []CasbinRule
 		if err := config.DefaultCasbinRules.Scan(&casbinRules); err != nil {
 			return gerror.Wrapf(err, "解析自动配额池规则 %s 的 default_casbin_rules 失败", config.RuleName)
@@ -117,11 +118,10 @@ func SyncAutoQuotaPoolCasbinRules(ctx context.Context, ruleNames []string) error
 		for _, rule := range casbinRules {
 			// 构建casbin策略: p, auto_qp_{rule_name}, {resource}, {action}, {effect}
 			policy := []string{
-				"p",                          // policy type
 				"auto_qp_" + config.RuleName, // subject
-				rule.Resource,                // object (resource)
-				rule.Action,                  // action
-				rule.Effect,                  // effect
+				rule.Obj,                     // object (resource)
+				rule.Act,                     // action
+				rule.Eft,                     // effect
 			}
 			allPolicies = append(allPolicies, policy)
 		}
