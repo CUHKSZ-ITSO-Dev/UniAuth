@@ -6,9 +6,9 @@ import {
   ProFormText,
   ProTable,
 } from "@ant-design/pro-components";
-import { useIntl } from "@umijs/max";
+import { useIntl, useSearchParams } from "@umijs/max";
 import { Button, message, Popconfirm, Space, Tag, Typography } from "antd";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   postAuthAdminGroupingsAdd as addGroupingAPI,
   postAuthAdminGroupingsDelete as deleteGroupingAPI,
@@ -46,8 +46,10 @@ const filterGroupings = async (params: any) => {
     filterRequestParams.g2 = params.g2;
   }
   if (params.rule) {
-    // 将搜索的rule转换为正确的格式
-    filterRequestParams.rule = `g,${params.g1 || ""},${params.g2 || ""}`;
+    // 使用用户输入的 rule 作为过滤条件
+    // 列定义中已经通过 transform 将输入赋值到 params.rule
+    filterRequestParams.rule =
+      typeof params.rule === "string" ? params.rule.trim() : params.rule;
   }
 
   // 处理分页参数
@@ -83,7 +85,7 @@ const filterGroupings = async (params: any) => {
     return {
       data: formattedData,
       success: true,
-      total: formattedData.length,
+      total: res.total || formattedData.length, // 使用API返回的policy总数
     };
   } catch (error) {
     console.error("Filter groupings error:", error);
@@ -107,8 +109,41 @@ const GroupingTabContent: React.FC = () => {
   const [editingGrouping, setEditingGrouping] = useState<GroupingItem | null>(
     null,
   );
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // 表格列配置
+  // 记忆分页参数，响应URL变化
+  const initialPagination = useMemo(() => {
+    const current = parseInt(searchParams.get("current") || "1", 10);
+    const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
+    return {
+      current,
+      pageSize,
+    };
+  }, [searchParams]);
+
+  // 更新URL参数
+  const updateURLParams = (params: { current?: number; pageSize?: number }) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (params.current !== undefined && params.current > 1) {
+      newSearchParams.set("current", params.current.toString());
+    } else {
+      newSearchParams.delete("current");
+    }
+    if (params.pageSize !== undefined && params.pageSize !== 10) {
+      newSearchParams.set("pageSize", params.pageSize.toString());
+    } else {
+      newSearchParams.delete("pageSize");
+    }
+    setSearchParams(newSearchParams);
+  };
+
+  // 监听URL参数变化，重载表格
+  useEffect(() => {
+    if (actionRef.current && actionRef.current.reload) {
+      actionRef.current.reload();
+    }
+  }, [initialPagination.current, initialPagination.pageSize]);
+
   const columns: ProColumns<GroupingItem>[] = [
     {
       title: intl.formatMessage({
@@ -117,7 +152,7 @@ const GroupingTabContent: React.FC = () => {
       }),
       dataIndex: "g1",
       valueType: "text",
-      width: 250,
+      width: 120,
       ellipsis: true,
       render: (_, record) => <Tag color="blue">{record.g1}</Tag>,
       fieldProps: {
@@ -134,7 +169,7 @@ const GroupingTabContent: React.FC = () => {
       }),
       dataIndex: "g2",
       valueType: "text",
-      width: 250,
+      width: 120,
       ellipsis: true,
       render: (_, record) => <Tag color="green">{record.g2}</Tag>,
       fieldProps: {
@@ -199,15 +234,27 @@ const GroupingTabContent: React.FC = () => {
             })}
             onConfirm={async () => {
               try {
-                const rule: string[][] = record.rule
-                  ? [record.rule.map((s) => s || "")]
-                  : [[record.g1 || "", record.g2 || ""]];
-                await deleteGroupingAPI({ groupings: rule });
-                message.success("删除成功");
-                actionRef.current?.reload();
+                // 兼容rule为undefined的情况
+                const groupingArr: string[][] =
+                  record.rule && Array.isArray(record.rule)
+                    ? [record.rule.map((s) => s || "")]
+                    : [[record.g1 || "", record.g2 || ""]];
+                await deleteGroupingAPI({ groupings: groupingArr });
+                message.success(
+                  intl.formatMessage({
+                    id: "pages.groupingList.delete.success",
+                    defaultMessage: "删除成功",
+                  }),
+                );
+                await actionRef.current?.reload();
               } catch (e) {
                 console.error(e);
-                message.error("删除失败");
+                message.error(
+                  intl.formatMessage({
+                    id: "pages.groupingList.delete.error",
+                    defaultMessage: "删除失败",
+                  }),
+                );
               }
             }}
             okText={intl.formatMessage({
@@ -236,13 +283,37 @@ const GroupingTabContent: React.FC = () => {
   const handleAdd = async (values: { g1: string; g2: string }) => {
     try {
       await addGroupingAPI({ groupings: [[values.g1, values.g2]] });
-      message.success("添加成功");
-      actionRef.current?.reload();
+      message.success(
+        intl.formatMessage({
+          id: "pages.groupingList.add.success",
+          defaultMessage: "添加成功",
+        }),
+      );
       setCreateModalVisible(false);
+
+      // 先刷新数据
+      await actionRef.current?.reload();
+
+      // 获取最新数据以计算最后一页
+      const currentData = await filterGroupings({});
+      const total = currentData.total || 0;
+      const pageSize = 10; // 使用表格当前的pageSize
+      const lastPage = Math.ceil(total / pageSize);
+
+      // 确保数据刷新完成后再跳转到最后一页
+      setTimeout(() => {
+        actionRef.current?.setPageInfo?.({ current: lastPage });
+      }, 100);
+
       return true;
     } catch (e) {
       console.error(e);
-      message.error("添加失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.groupingList.add.error",
+          defaultMessage: "添加失败",
+        }),
+      );
       return false;
     }
   };
@@ -251,21 +322,33 @@ const GroupingTabContent: React.FC = () => {
   const handleEdit = async (values: { g1: string; g2: string }) => {
     if (!editingGrouping) return false;
     try {
-      const oldGrouping: string[] = (
-        editingGrouping.rule ?? [editingGrouping.g1, editingGrouping.g2]
-      ).map((s) => s || "");
+      // 兼容rule为undefined的情况
+      const oldGrouping: string[] =
+        editingGrouping.rule && Array.isArray(editingGrouping.rule)
+          ? editingGrouping.rule.map((s) => s || "")
+          : [editingGrouping.g1 || "", editingGrouping.g2 || ""];
       await editGroupingAPI({
         oldGrouping,
         newGrouping: [values.g1, values.g2],
       });
-      message.success("修改成功");
-      actionRef.current?.reload();
+      message.success(
+        intl.formatMessage({
+          id: "pages.groupingList.edit.success",
+          defaultMessage: "修改成功",
+        }),
+      );
+      await actionRef.current?.reload();
       setEditModalVisible(false);
       setEditingGrouping(null);
       return true;
     } catch (e) {
       console.error(e);
-      message.error("修改失败");
+      message.error(
+        intl.formatMessage({
+          id: "pages.groupingList.edit.error",
+          defaultMessage: "修改失败",
+        }),
+      );
       return false;
     }
   };
@@ -276,7 +359,7 @@ const GroupingTabContent: React.FC = () => {
       message.info(
         intl.formatMessage({
           id: "pages.groupingList.batchDelete.selectTip",
-          defaultMessage: "请先选择要删除的记录",
+          defaultMessage: "请先选择要删除的规则",
         }),
       );
       return;
@@ -289,7 +372,7 @@ const GroupingTabContent: React.FC = () => {
       message.success(
         intl.formatMessage({
           id: "pages.groupingList.batchDelete.success",
-          defaultMessage: "删除成功",
+          defaultMessage: "批量删除成功",
         }),
       );
       actionRef.current?.reload();
@@ -298,8 +381,8 @@ const GroupingTabContent: React.FC = () => {
       console.error(e);
       message.error(
         intl.formatMessage({
-          id: "pages.groupingList.batchDelete.fail",
-          defaultMessage: "删除失败",
+          id: "pages.groupingList.batchDelete.error",
+          defaultMessage: "批量删除失败",
         }),
       );
     }
@@ -325,8 +408,10 @@ const GroupingTabContent: React.FC = () => {
         actionRef={actionRef}
         rowKey="id"
         pagination={{
-          pageSize: 10,
-          showSizeChanger: false,
+          current: initialPagination.current,
+          pageSize: initialPagination.pageSize,
+          defaultPageSize: 10,
+          showSizeChanger: true,
           showQuickJumper: false,
           showTotal: (total) => {
             return intl.formatMessage(
@@ -338,6 +423,13 @@ const GroupingTabContent: React.FC = () => {
             );
           },
         }}
+        request={async (params) => {
+          updateURLParams({
+            current: params.current || 1,
+            pageSize: params.pageSize || 10,
+          });
+          return filterGroupings(params);
+        }}
         search={{
           labelWidth: "auto",
           searchText: intl.formatMessage({
@@ -348,7 +440,8 @@ const GroupingTabContent: React.FC = () => {
             id: "pages.userList.search.reset",
             defaultMessage: "重置",
           }),
-          span: 6,
+          // 使用 24 栅格来配合每列的 colSize（12/12/24）布局
+          span: 12,
           defaultCollapsed: false,
           collapseRender: false,
           optionRender: ({ searchText, resetText }, { form }) => [
@@ -392,7 +485,7 @@ const GroupingTabContent: React.FC = () => {
             title={intl.formatMessage(
               {
                 id: "pages.groupingList.batchDelete.confirmTitle",
-                defaultMessage: "确认删除选中的 {count} 条关系？",
+                defaultMessage: "确定要删除选中的 {count} 条关系吗？",
               },
               { count: selectedRows.length },
             )}
@@ -405,11 +498,11 @@ const GroupingTabContent: React.FC = () => {
               id: "pages.groupingList.batchDelete.cancel",
               defaultMessage: "取消",
             })}
-            disabled={selectedRows.length === 0}
+            disabled={selectedRows.length < 2}
           >
             <Button
               danger
-              disabled={selectedRows.length === 0}
+              disabled={selectedRows.length < 2}
               style={{ minWidth: 90 }}
             >
               {intl.formatMessage({
@@ -418,17 +511,32 @@ const GroupingTabContent: React.FC = () => {
               })}
             </Button>
           </Popconfirm>,
+          selectedRows.length > 0 && (
+            <Button
+              key="clearSelection"
+              onClick={() => setSelectedRows([])}
+              style={{ marginLeft: 8 }}
+            >
+              {intl.formatMessage({
+                id: "pages.policyList.tableAlert.cancel",
+                defaultMessage: "取消选择",
+              })}
+            </Button>
+          ),
         ]}
         rowSelection={{
           onChange: (_keys, rows) => setSelectedRows(rows as GroupingItem[]),
         }}
-        request={async (params) => filterGroupings(params)}
+        tableAlertRender={false}
         scroll={{ x: 1200 }}
       />
 
       {/* 添加分组关系弹窗 */}
       <ModalForm
-        title="添加角色继承关系"
+        title={intl.formatMessage({
+          id: "pages.groupingList.addGroupingTitle",
+          defaultMessage: "添加角色继承规则",
+        })}
         width={400}
         open={createModalVisible}
         onOpenChange={setCreateModalVisible}
@@ -437,19 +545,48 @@ const GroupingTabContent: React.FC = () => {
         <ProFormText
           name="g1"
           label="G1"
-          placeholder="请输入G1"
-          rules={[{ required: true, message: "请输入G1" }]}
+          placeholder={intl.formatMessage({
+            id: "pages.groupingList.g1.add.placeholder",
+            defaultMessage: "请输入G1",
+          })}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: "pages.groupingList.g1.add.placeholder",
+                defaultMessage: "请输入G1",
+              }),
+            },
+          ]}
         />
         <ProFormText
           name="g2"
           label="G2"
-          placeholder="请输入G2"
-          rules={[{ required: true, message: "请输入G2" }]}
+          placeholder={intl.formatMessage({
+            id: "pages.groupingList.g2.add.placeholder",
+            defaultMessage: "请输入G2",
+          })}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: "pages.groupingList.g2.add.placeholder",
+                defaultMessage: "请输入G2",
+              }),
+            },
+          ]}
         />
       </ModalForm>
 
       {/* 编辑角色继承关系弹窗 */}
       <ModalForm
+        key={
+          editingGrouping
+            ? editingGrouping.rule
+              ? editingGrouping.rule.join(",")
+              : `${editingGrouping.g1 || ""},${editingGrouping.g2 || ""}`
+            : "empty"
+        }
         title={intl.formatMessage({
           id: "pages.groupingList.editRole",
           defaultMessage: "编辑角色继承关系",
@@ -460,7 +597,14 @@ const GroupingTabContent: React.FC = () => {
           setEditModalVisible(v);
           if (!v) setEditingGrouping(null);
         }}
-        initialValues={editingGrouping || {}}
+        initialValues={
+          editingGrouping
+            ? {
+                g1: editingGrouping.g1,
+                g2: editingGrouping.g2,
+              }
+            : {}
+        }
         onFinish={handleEdit}
       >
         <ProFormText

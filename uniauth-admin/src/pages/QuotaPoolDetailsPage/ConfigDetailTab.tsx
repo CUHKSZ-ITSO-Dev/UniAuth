@@ -5,7 +5,7 @@ import {
   type ProColumns,
   ProTable,
 } from "@ant-design/pro-components";
-import { Link } from "@umijs/max";
+import { Link, useSearchParams } from "@umijs/max";
 import {
   Button,
   Card,
@@ -19,12 +19,16 @@ import {
   Radio,
   Space,
   Switch,
+  Typography,
 } from "antd";
 import cronstrue from "cronstrue/i18n";
 import type { FC } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getAuthQuotaPoolsUsers as getUsersAPI } from "@/services/uniauthService/auth";
-import { postAuthAdminPoliciesFilter as getPolcyAPI } from "@/services/uniauthService/query";
+import {
+  postAuthAdminGroupingsFilter as getGroupingPolicyAPI,
+  postAuthAdminPoliciesFilter as getPolicyAPI,
+} from "@/services/uniauthService/query";
 import {
   postQuotaPoolRefreshUsers,
   putQuotaPool,
@@ -74,6 +78,58 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
   const [cronError, setCronError] = useState<string>("");
   const [refreshUsersLoading, setRefreshUsersLoading] = useState(false);
   const associatedUsersActionRef = useRef<ActionType | null>(null);
+  const quotaPoolRulesActionRef = useRef<ActionType | null>(null);
+  const g1ActionRef = useRef<ActionType | null>(null);
+  const g2ActionRef = useRef<ActionType | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // 记忆分页参数，分别为权限规则、父角色、子角色
+  const initialPagination = useMemo(() => {
+    return {
+      rules: {
+        current: parseInt(searchParams.get("rulesCurrent") || "1", 10),
+        pageSize: parseInt(searchParams.get("rulesPageSize") || "5", 10),
+      },
+      g1: {
+        current: parseInt(searchParams.get("g1Current") || "1", 10),
+        pageSize: parseInt(searchParams.get("g1PageSize") || "5", 10),
+      },
+      g2: {
+        current: parseInt(searchParams.get("g2Current") || "1", 10),
+        pageSize: parseInt(searchParams.get("g2PageSize") || "5", 10),
+      },
+    };
+  }, [searchParams]);
+
+  // 更新URL参数
+  const updateURLParams = (
+    type: "rules" | "g1" | "g2",
+    params: { current?: number; pageSize?: number },
+  ) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (params.current !== undefined && params.current > 1) {
+      newSearchParams.set(`${type}Current`, params.current.toString());
+    } else {
+      newSearchParams.delete(`${type}Current`);
+    }
+    if (params.pageSize !== undefined && params.pageSize !== 5) {
+      newSearchParams.set(`${type}PageSize`, params.pageSize.toString());
+    } else {
+      newSearchParams.delete(`${type}PageSize`);
+    }
+    setSearchParams(newSearchParams);
+  };
+
+  // 监听URL参数变化，重载表格
+  useEffect(() => {
+    quotaPoolRulesActionRef.current?.reload?.();
+  }, [initialPagination.rules.current, initialPagination.rules.pageSize]);
+  useEffect(() => {
+    g1ActionRef.current?.reload?.();
+  }, [initialPagination.g1.current, initialPagination.g1.pageSize]);
+  useEffect(() => {
+    g2ActionRef.current?.reload?.();
+  }, [initialPagination.g2.current, initialPagination.g2.pageSize]);
 
   // 解析 cron 表达式
   const parseCronExpression = (cronExpression: string): string => {
@@ -345,7 +401,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       dataIndex: "sub",
       valueType: "text",
       ellipsis: true,
-      search: true,
+      search: false,
     },
     {
       title: intl.formatMessage({
@@ -395,13 +451,160 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     },
     {
       title: intl.formatMessage({
-        id: "pages.quotaPoolConfigDetail.roleGroup",
-        defaultMessage: "角色分组",
+        id: "pages.quotaPoolConfigDetail.rawPolicy",
+        defaultMessage: "完整规则",
       }),
-      dataIndex: "g",
+      dataIndex: "rule",
+      valueType: "text",
+      fieldProps: {
+        style: { minWidth: 100 },
+      },
+      ellipsis: true,
+      search: true,
+      width: 520,
+      render: (_: any, record: any) => {
+        try {
+          const { Text } = Typography;
+          const rule = record.rule;
+          if (!rule) return "-";
+          if (Array.isArray(rule)) {
+            return (
+              <Text code style={{ fontSize: 12 }}>
+                p, {rule.map((item: any) => `${item}`).join(", ")}
+              </Text>
+            );
+          }
+          if (typeof rule === "string") {
+            return (
+              <Text code style={{ fontSize: 12 }}>
+                p, {rule}
+              </Text>
+            );
+          }
+          return (
+            <Text code style={{ fontSize: 12 }}>
+              p, {JSON.stringify(rule)}
+            </Text>
+          );
+        } catch (e) {
+          console.error("格式化规则失败:", e);
+          return "-";
+        }
+      },
+    },
+  ];
+
+  const g1PolicyColumns: ProColumns<any>[] = [
+    {
+      title: "G1",
+      dataIndex: "g1",
+      valueType: "text",
+      ellipsis: true,
+      search: false,
+    },
+    {
+      title: "G2",
+      dataIndex: "g2",
       valueType: "text",
       ellipsis: true,
       search: true,
+    },
+    {
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.rawPolicy",
+        defaultMessage: "完整规则",
+      }),
+      dataIndex: "rule",
+      valueType: "text",
+      ellipsis: true,
+      search: true,
+      width: 520,
+      render: (_: any, record: any) => {
+        try {
+          const { Text } = Typography;
+          const rule = record.rule;
+          if (!rule) return "-";
+          if (Array.isArray(rule)) {
+            return (
+              <Text code style={{ fontSize: 12 }}>
+                g, {rule.map((item: any) => `${item}`).join(", ")}
+              </Text>
+            );
+          }
+          if (typeof rule === "string") {
+            return (
+              <Text code style={{ fontSize: 12 }}>
+                g, {rule}
+              </Text>
+            );
+          }
+          return (
+            <Text code style={{ fontSize: 12 }}>
+              g, {JSON.stringify(rule)}
+            </Text>
+          );
+        } catch (e) {
+          console.error("格式化G1规则失败:", e);
+          return "-";
+        }
+      },
+    },
+  ];
+
+  const g2PolicyColumns: ProColumns<any>[] = [
+    {
+      title: "G1",
+      dataIndex: "g1",
+      valueType: "text",
+      ellipsis: true,
+      search: true,
+    },
+    {
+      title: "G2",
+      dataIndex: "g2",
+      valueType: "text",
+      ellipsis: true,
+      search: false,
+    },
+    {
+      title: intl.formatMessage({
+        id: "pages.quotaPoolConfigDetail.rawPolicy",
+        defaultMessage: "完整规则",
+      }),
+      dataIndex: "rule",
+      valueType: "text",
+      ellipsis: true,
+      search: true,
+      width: 520,
+      render: (_: any, record: any) => {
+        try {
+          const { Text } = Typography;
+          const rule = record.rule;
+          if (!rule) return "-";
+          if (Array.isArray(rule)) {
+            return (
+              <Text code style={{ fontSize: 12 }}>
+                {`g, ${rule.map((item: any) => `${item}`).join(", ")}`}
+              </Text>
+            );
+          }
+          if (typeof rule === "string") {
+            return (
+              <Text code style={{ fontSize: 12 }}>
+                {`g, ${rule}`}
+              </Text>
+            );
+          }
+          return (
+            <Text code style={{ fontSize: 12 }}>
+              {`g, ${JSON.stringify(rule)}`}
+            </Text>
+          );
+        } catch (e) {
+          console.error("格式化G2规则失败:", e);
+          return "-";
+        }
+      },
     },
   ];
 
@@ -519,20 +722,23 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
     }
   };
 
+  // 权限规则查询请求
   const quotaPoolRulesDataRequest = async (params: any) => {
     try {
       // 请求参数
       const getPolicyRequestParams = {
-        sub: params.sub || undefined,
+        sub: quotaPoolName,
         obj: params.obj || undefined,
         act: params.act || undefined,
         eft: params.eft || undefined,
-        rule: params.raw || undefined,
+        rule: params.rule || undefined,
         page: params.current || 1,
         pageSize: params.pageSize || 5,
       };
 
-      const res = await getPolcyAPI(getPolicyRequestParams);
+      const res = await getPolicyAPI(
+        getPolicyRequestParams as unknown as API.FilterPoliciesReq,
+      );
 
       if (res?.policies) {
         // 格式化数据
@@ -544,7 +750,7 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             act: policy[2] || `action_${index}`,
             eft: policy[3] || "allow",
             g: policy[4] || "",
-            raw: policy,
+            rule: policy,
           }),
         );
 
@@ -576,6 +782,106 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
       };
     }
   };
+
+  const g1PolicyDataRequest = async (params: any) => {
+    try {
+      const g1Params = {
+        g1: quotaPoolName,
+        g2: params.g2 || undefined,
+        rule: params.rule || undefined,
+        page: params.current || 1,
+        pageSize: params.pageSize || 5,
+      };
+      const res = await getGroupingPolicyAPI(
+        g1Params as unknown as API.FilterGroupingsReq,
+      );
+
+      if (res?.groups) {
+        // 格式化数据
+        const formattedData = res.groups.map((policy: any, index: number) => ({
+          g1: policy[0] || `g1_${index}`,
+          g2: policy[1] || `g2_${index}`,
+          rule: policy,
+        }));
+        return {
+          data: formattedData,
+          success: true,
+          total: res.total || 0,
+        };
+      } else {
+        // 没有数据直接返回空数据
+        return {
+          data: [],
+          success: true,
+          total: 0,
+        };
+      }
+    } catch (error) {
+      console.error("获取G1继承规则失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.fetchG1RulesFailed",
+          defaultMessage: "获取G1继承规则失败",
+        }),
+      );
+      return {
+        data: [],
+        success: false,
+        total: 0,
+      };
+    }
+  };
+
+  const g2PolicyDataRequest = async (params: any) => {
+    try {
+      const g2Params = {
+        g2: quotaPoolName,
+        g1: params.g1 || undefined,
+        rule: params.rule || undefined,
+        page: params.current || 1,
+        pageSize: params.pageSize || 5,
+      };
+      const res = await getGroupingPolicyAPI(
+        g2Params as unknown as API.FilterGroupingsReq,
+      );
+
+      if (res?.groups) {
+        // 格式化数据
+        const formattedData = res.groups.map((policy: any, index: number) => ({
+          g1: policy[0] || `g1_${index}`,
+          g2: policy[1] || `g2_${index}`,
+          rule: policy,
+        }));
+        return {
+          data: formattedData,
+          success: true,
+          total: res.total || 0,
+        };
+      } else {
+        // 没有数据直接返回空数据
+        return {
+          data: [],
+          success: true,
+          total: 0,
+        };
+      }
+    } catch (error) {
+      console.error("获取G2继承规则失败:", error);
+      message.error(
+        intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.fetchG2RulesFailed",
+          defaultMessage: "获取G2继承规则失败",
+        }),
+      );
+      return {
+        data: [],
+        success: false,
+        total: 0,
+      };
+    }
+  };
+
+  // Remove this duplicate declaration since it's already defined above
 
   return (
     <GridContent>
@@ -691,9 +997,11 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
             labelWidth: "auto",
             defaultCollapsed: false,
             filterType: "query",
+            collapseRender: false,
           }}
           pagination={{
             pageSize: 10,
+            defaultPageSize: 10,
             showSizeChanger: true,
             showTotal: (total) =>
               intl.formatMessage(
@@ -719,12 +1027,21 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
         variant="borderless"
       >
         <ProTable
+          actionRef={quotaPoolRulesActionRef}
           columns={quotaPoolRulesColumns}
           rowKey="id"
-          search={false}
+          search={{
+            labelWidth: "auto",
+            defaultCollapsed: false,
+            filterType: "query",
+            span: 6,
+            collapseRender: false,
+          }}
           pagination={{
-            pageSize: 5,
-            showSizeChanger: false,
+            current: initialPagination.rules.current,
+            pageSize: initialPagination.rules.pageSize,
+            defaultPageSize: 5,
+            showSizeChanger: true,
             showQuickJumper: false,
             showTotal: (total) =>
               intl.formatMessage(
@@ -735,7 +1052,110 @@ const ConfigDetailTab: FC<ConfigDetailTabProps> = ({
                 { total },
               ),
           }}
-          request={quotaPoolRulesDataRequest}
+          scroll={{ x: 1200 }}
+          request={async (params) => {
+            updateURLParams("rules", {
+              current: params.current || 1,
+              pageSize: params.pageSize || 5,
+            });
+            return quotaPoolRulesDataRequest(params);
+          }}
+        />
+      </Card>
+
+      {/* 继承规则 - G1 */}
+      <Card
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.g1Title",
+          defaultMessage: "父角色",
+        })}
+        style={{
+          marginBottom: 24,
+        }}
+        variant="borderless"
+      >
+        <ProTable
+          actionRef={g1ActionRef}
+          columns={g1PolicyColumns}
+          rowKey="id"
+          search={{
+            labelWidth: "auto",
+            defaultCollapsed: false,
+            filterType: "query",
+            span: 6,
+            collapseRender: false,
+          }}
+          pagination={{
+            current: initialPagination.g1.current,
+            pageSize: initialPagination.g1.pageSize,
+            defaultPageSize: 5,
+            showSizeChanger: true,
+            showQuickJumper: false,
+            showTotal: (total) =>
+              intl.formatMessage(
+                {
+                  id: "pages.quotaPoolConfigDetail.totalRecords",
+                  defaultMessage: "共 {total} 条数据",
+                },
+                { total },
+              ),
+          }}
+          scroll={{ x: 1200 }}
+          request={async (params) => {
+            updateURLParams("g1", {
+              current: params.current || 1,
+              pageSize: params.pageSize || 5,
+            });
+            return g1PolicyDataRequest(params);
+          }}
+        />
+      </Card>
+
+      {/* 复制的权限规则卡 - G2 */}
+      <Card
+        title={intl.formatMessage({
+          id: "pages.quotaPoolConfigDetail.g2Title",
+          defaultMessage: "子角色",
+        })}
+        style={{
+          marginBottom: 24,
+        }}
+        variant="borderless"
+      >
+        <ProTable
+          actionRef={g2ActionRef}
+          columns={g2PolicyColumns}
+          rowKey="id"
+          search={{
+            labelWidth: "auto",
+            defaultCollapsed: false,
+            filterType: "query",
+            span: 6,
+            collapseRender: false,
+          }}
+          pagination={{
+            current: initialPagination.g2.current,
+            pageSize: initialPagination.g2.pageSize,
+            defaultPageSize: 5,
+            showSizeChanger: true,
+            showQuickJumper: false,
+            showTotal: (total) =>
+              intl.formatMessage(
+                {
+                  id: "pages.quotaPoolConfigDetail.totalRecords",
+                  defaultMessage: "共 {total} 条数据",
+                },
+                { total },
+              ),
+          }}
+          scroll={{ x: 1200 }}
+          request={async (params) => {
+            updateURLParams("g2", {
+              current: params.current || 1,
+              pageSize: params.pageSize || 5,
+            });
+            return g2PolicyDataRequest(params);
+          }}
         />
       </Card>
 
