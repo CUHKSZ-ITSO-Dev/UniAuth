@@ -117,7 +117,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		"remark":        req.Remark,
 	}).Insert()
 	if err != nil {
-		return
+		return nil, gerror.Wrapf(err, "计费记录写入失败。终止扣费流程，没有扣费。计费信息：%v", req)
 	}
 
 	// 扣钱流程，使用事务
