@@ -50,8 +50,8 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		err = gerror.New("这个配额池被禁用了，不能使用")
 		return
 	}
-	
-	var plan string 
+
+	var plan string
 	if qp.Personal {
 		plan = "Included"
 	} else {
@@ -59,7 +59,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 	}
 
 	// 记录
-	var cost decimal.Decimal
+	var originalCost decimal.Decimal
 	var rate decimal.Decimal
 	if !req.USDCost.IsZero() {
 		// 算钱
@@ -84,18 +84,31 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 			}
 		}
 
-		cost = req.CNYCost.Add(req.USDCost.Mul(rate))
+		originalCost = req.CNYCost.Add(req.USDCost.Mul(rate))
 	} else {
-		cost = req.CNYCost
+		originalCost = req.CNYCost
 	}
+	cost := originalCost
+	
+	// 对话服务特判折扣问题
+	// 如果查不到提交的 product 对应的 approach，或出现查询错误，则忽略错误，并不进行折扣
+	if req.Service == "chat" {
+		var singleModelApproach *entity.ConfigSingleModelApproach
+		_ = dao.ConfigSingleModelApproach.Ctx(ctx).Where("approach_name = ?", req.Product).Scan(&singleModelApproach)
+		if singleModelApproach != nil {
+			cost = originalCost.Mul(singleModelApproach.Discount)
+		}
+	}
+
 	_, err = dao.BillingCostRecords.Ctx(ctx).Data(g.Map{
-		"upn":     req.Upn,
-		"svc":     req.Service,
-		"product": req.Product,
-		"cost":    cost,
-		"plan":    plan,
-		"source":  req.Source,
-		"remark":  req.Remark.MustToJsonString(),
+		"upn":           req.Upn,
+		"svc":           req.Service,
+		"product":       req.Product,
+		"original_cost": originalCost,
+		"cost":          cost,
+		"plan":          plan,
+		"source":        req.Source,
+		"remark":        req.Remark.MustToJsonString(),
 	}).Insert()
 	if err != nil {
 		return
@@ -117,19 +130,19 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		extra_quota := old_quota.ExtraQuota
 		// 1. 优先扣除基本余额的正值部分
 		if remaining_quota.IsPositive() {
-			deduction := decimal.Min(remaining_quota, cost)
+			deduction := decimal.Min(remaining_quota, originalCost)
 			remaining_quota = remaining_quota.Sub(deduction)
-			cost = cost.Sub(deduction)
+			originalCost = originalCost.Sub(deduction)
 		}
 		// 2. 如果还有剩余费用，则从额外余额中扣除
-		if cost.IsPositive() {
-			deduction := decimal.Min(extra_quota, cost)
+		if originalCost.IsPositive() {
+			deduction := decimal.Min(extra_quota, originalCost)
 			extra_quota = extra_quota.Sub(deduction)
-			cost = cost.Sub(deduction)
+			originalCost = originalCost.Sub(deduction)
 		}
 		// 3. 如果费用还未扣完，则计入基本余额的欠款
-		if cost.IsPositive() {
-			remaining_quota = remaining_quota.Sub(cost)
+		if originalCost.IsPositive() {
+			remaining_quota = remaining_quota.Sub(originalCost)
 		}
 
 		// 回写数据
