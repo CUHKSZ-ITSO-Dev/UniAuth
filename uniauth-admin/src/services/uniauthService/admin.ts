@@ -12,6 +12,7 @@ export async function postBillingAdminOpenApiExport(
       "Content-Type": "application/json",
     },
     data: body,
+    responseType: "arraybuffer",
     ...(options || {}),
   });
 }

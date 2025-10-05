@@ -404,7 +404,7 @@ declare namespace API {
     order: "asc" | "desc";
   };
 
-  type ExportBillRecordRes = Record<string, never>;
+  type ExportBillRecordRes = ArrayBuffer;
 
   type FilterCondition = {
     /** 字段名 */
