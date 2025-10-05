@@ -2,31 +2,24 @@ package autoQuotaPool
 
 import (
 	"context"
+	"uniauth-gf/internal/dao"
+	"uniauth-gf/internal/model/entity"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/shopspring/decimal"
-
-	"uniauth-gf/internal/dao"
-	"uniauth-gf/internal/model/entity"
 )
 
 // SyncPersonalQuotaPools 根据自动配额池规则名称，更新所有个人配额池配置
 func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
-	// 1. 先获取自动配额池配置（独立短事务）
+	// 1. 获取自动配额池配置
 	var autoQuotaPoolConfig *entity.ConfigAutoQuotaPool
-	err := dao.ConfigAutoQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		if err := dao.ConfigAutoQuotaPool.Ctx(ctx).
-			Where("rule_name = ?", ruleName).
-			LockUpdate().
-			Scan(&autoQuotaPoolConfig); err != nil {
-			return gerror.Wrapf(err, "获取自动配额池配置 %v 失败", ruleName)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
+	if err := dao.ConfigAutoQuotaPool.Ctx(ctx).
+		Where("rule_name = ?", ruleName).
+		LockUpdate().
+		Scan(&autoQuotaPoolConfig); err != nil {
+		return gerror.Wrapf(err, "获取自动配额池配置 %v 失败", ruleName)
 	}
 
 	// 2. 检查是否有影响的用户
@@ -45,7 +38,7 @@ func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
 	targetDisabled := !autoQuotaPoolConfig.Enabled
 
 	// 查询+更新事务
-	err = dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+	err := dao.QuotapoolQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		// 4. 批量查询现有的个人配额池
 		var existingQuotaPools []*entity.QuotapoolQuotaPool
 		if err := dao.QuotapoolQuotaPool.Ctx(ctx).

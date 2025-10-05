@@ -42,12 +42,11 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 			"priority":      req.Priority,
 		}
 		// 仅当字段在请求中出现时才处理；显式 null 或空对象 {} 则置为数据库 NULL
-		if _, ok := g.RequestFromCtx(ctx).GetRequestMap()["filterGroup"]; ok {
-			if req.FilterGroup == nil {
-				data["filter_group"] = nil
-			} else {
-				data["filter_group"] = gjson.New(req.FilterGroup)
-			}
+		if req.FilterGroup != nil {
+			data["filter_group"] = gjson.New(req.FilterGroup)
+		}
+		if req.DefaultCasbinRules != nil {
+			data["default_casbin_rules"] = gjson.New(req.DefaultCasbinRules)
 		}
 
 		if _, err := dao.ConfigAutoQuotaPool.Ctx(ctx).
@@ -65,6 +64,12 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 		// 同步 upns_cache 成功后，更新所有受影响的个人配额池配置
 		if updateErr := autoQuotaPool.SyncPersonalQuotaPools(ctx, req.RuleName); updateErr != nil {
 			return gerror.Wrap(updateErr, "更新受影响的个人配额池失败")
+		}
+		if err := autoQuotaPool.SyncAutoQuotaPoolCasbinRules(ctx, []string{req.RuleName}); err != nil {
+			return gerror.Wrap(err, "编辑后同步 casbin 规则失败")
+		}
+		if err := autoQuotaPool.SyncAutoQuotaPoolGroupingPolicies(ctx, []string{req.RuleName}); err != nil {
+			return gerror.Wrap(err, "编辑后同步 casbin 分组策略失败")
 		}
 		return nil
 

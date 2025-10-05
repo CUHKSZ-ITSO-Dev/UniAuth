@@ -2,16 +2,15 @@ package autoQuotaPool
 
 import (
 	"context"
+	userinfosV1 "uniauth-gf/api/userinfos/v1"
+	userinfos "uniauth-gf/internal/controller/userinfos"
+	"uniauth-gf/internal/dao"
+	"uniauth-gf/internal/model/entity"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
-
-	userinfosV1 "uniauth-gf/api/userinfos/v1"
-	userinfos "uniauth-gf/internal/controller/userinfos"
-	"uniauth-gf/internal/dao"
-	"uniauth-gf/internal/model/entity"
 )
 
 // SyncUpnsCache 重新计算并回写指定规则的 upns_cache，返回每个自动配额池的用户数 Map。
@@ -53,7 +52,7 @@ func SyncUpnsCache(ctx context.Context, ruleNames []string) (matchedUserCountMap
 		}
 
 		// 写入数据库 upns_cache 和 last_evaluated_at
-        // 考虑了一下自动配额池应该不会有太多，就不继续优化成一次 SQL 操作了
+		// 考虑了一下自动配额池应该不会有太多，就不继续优化成一次 SQL 操作了
 		for ruleName, data := range updateData {
 			if _, err := dao.ConfigAutoQuotaPool.
 				Ctx(ctx).
