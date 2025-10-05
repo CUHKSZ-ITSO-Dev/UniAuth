@@ -62,8 +62,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       setCronError(
         intl.formatMessage({
           id: "pages.quotaPoolList.create.cronCycle.fiveFieldRequired",
-          defaultMessage:
-            "Cron 表达式必须为5位格式（分(0-59) 时(0-23) 日(1-31) 月(1-12) 周几(0周日-6周六)）",
         }),
       );
       setCronDescription("");
@@ -84,7 +82,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       setCronError(
         intl.formatMessage({
           id: "pages.quotaPoolList.create.cronCycle.invalid",
-          defaultMessage: "Cron 表达式格式不正确",
         }),
       );
       setCronDescription("");
@@ -114,7 +111,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       if (typeof field === "string") {
         return field;
       }
-      // 对于 filterGroup，保持原有的 JSON 处理逻辑
+      // 对于 filterGroup 和 defaultCasbinRules，保持原有的 JSON 处理逻辑
       try {
         return JSON.stringify(field, null, 2);
       } catch (_e) {
@@ -127,6 +124,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     form.setFieldsValue({
       ...record,
       filterGroup: formatJsonField(record.filterGroup),
+      defaultCasbinRules: formatJsonField(record.defaultCasbinRules),
       upnsCache: record.upnsCache || "",
     });
 
@@ -285,6 +283,25 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       } else {
         // 如果没有提供upnsCache，确保传递空字符串而不是null
         processedValues.upnsCache = "";
+      }
+
+      // 处理defaultCasbinRules字段
+      if (values.defaultCasbinRules) {
+        try {
+          processedValues.defaultCasbinRules = JSON.parse(
+            values.defaultCasbinRules,
+          );
+        } catch (_e) {
+          message.error(
+            intl.formatMessage({
+              id: "pages.autoQuotaPoolConfig.saveFailedInvalidDefaultCasbinRules",
+            }),
+          );
+          setModalSaving(false); // 出错时重置保存状态
+          return;
+        }
+      } else {
+        // 如果没有提供defaultCasbinRules，不设置这个字段，让它保持undefined
       }
 
       // 根据是否为编辑状态调用不同的API
@@ -763,18 +780,28 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
               height={200}
             />
           </Form.Item>
-
+          <Form.Item
+            name="defaultCasbinRules"
+            label={intl.formatMessage({
+              id: "pages.autoQuotaPoolConfig.defaultCasbinRules",
+            })}
+          >
+            <JsonEditor
+              placeholder={intl.formatMessage({
+                id: "pages.autoQuotaPoolConfig.defaultCasbinRulesPlaceholder",
+              })}
+              height={200}
+            />
+          </Form.Item>
           <Form.Item
             name="upnsCache"
             label={intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.upnsCache",
-              defaultMessage: "UPN Cache",
             })}
           >
             <Input.TextArea
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.upnsCachePlaceholder",
-                defaultMessage: "Please enter UPN cache",
               })}
               autoSize={{ minRows: 4, maxRows: 10 }}
               disabled={true}

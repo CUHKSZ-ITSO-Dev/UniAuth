@@ -38,15 +38,21 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     if (value !== undefined && value !== null) {
       if (typeof value === "string") {
         setJsonString(value);
-        try {
-          const parsed = JSON.parse(value);
-          setJsonObject(parsed);
+        // 如果输入为空，直接设置为空状态，不进行JSON验证
+        if (value.trim() === "") {
+          setJsonObject(null);
           setError("");
-        } catch (e: any) {
-          setJsonObject(value);
-          setError(
-            `${intl.formatMessage({ id: "component.jsonEditor.invalidValue" })}: ${e.message || e}`,
-          );
+        } else {
+          try {
+            const parsed = JSON.parse(value);
+            setJsonObject(parsed);
+            setError("");
+          } catch (e: any) {
+            setJsonObject(value);
+            setError(
+              `${intl.formatMessage({ id: "component.jsonEditor.invalidValue" })}: ${e.message || e}`,
+            );
+          }
         }
       } else {
         setJsonObject(value);
@@ -120,7 +126,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
     const newJsonString = e.target.value;
     setJsonString(newJsonString);
 
-    // 如果输入为空，直接设置为空状态
+    // 如果输入为空，直接设置为空状态，不进行JSON验证
     if (newJsonString.trim() === "") {
       setJsonObject(null);
       setError("");
@@ -163,7 +169,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       }, 0);
 
       // 触发onChange事件
-      // 如果输入为空，直接设置为空状态
+      // 如果输入为空，直接设置为空状态，不进行JSON验证
       if (newText.trim() === "") {
         setJsonObject(null);
         setError("");

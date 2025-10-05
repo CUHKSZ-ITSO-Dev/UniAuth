@@ -154,6 +154,11 @@ export default {
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder":
     "Please enter filter group",
   "pages.autoQuotaPoolConfig.filterGroupRequired": "Please enter filter group",
+  "pages.autoQuotaPoolConfig.defaultCasbinRules": "Default Casbin Rules (JSON)",
+  "pages.autoQuotaPoolConfig.defaultCasbinRulesPlaceholder":
+    "Please enter default Casbin rules, format as array of objects with obj, act, eft fields",
+  "pages.autoQuotaPoolConfig.defaultCasbinRulesRequired":
+    "Please enter default Casbin rules",
   "pages.autoQuotaPoolConfig.upnsCache": "UPN Cache",
   "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "Please enter UPN cache",
   "pages.autoQuotaPoolConfig.syncAll": "Sync All UPN Cache",
