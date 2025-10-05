@@ -89,7 +89,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		originalCost = req.CNYCost
 	}
 	cost := originalCost
-	
+
 	// 对话服务特判折扣问题
 	// 如果查不到提交的 product 对应的 approach，或出现查询错误，则忽略错误，并不进行折扣
 	if req.Service == "chat" {
@@ -97,6 +97,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		_ = dao.ConfigSingleModelApproach.Ctx(ctx).Where("approach_name = ?", req.Product).Scan(&singleModelApproach)
 		if singleModelApproach != nil {
 			cost = originalCost.Mul(singleModelApproach.Discount)
+			req.Remark.Set("discount", singleModelApproach.Discount.String())
 		}
 	}
 
@@ -108,7 +109,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		"cost":          cost,
 		"plan":          plan,
 		"source":        req.Source,
-		"remark":        req.Remark.MustToJsonString(),
+		"remark":        req.Remark,
 	}).Insert()
 	if err != nil {
 		return
