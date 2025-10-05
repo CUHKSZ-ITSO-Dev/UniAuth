@@ -474,7 +474,7 @@ const QuotaPoolListPage: React.FC = () => {
         }`;
 
         return (
-          <div style={{ textAlign: "center" }}>
+          <div>
             <Link to={detailUrl} key="detail">
               {intl.formatMessage({
                 id: "pages.quotaPoolList.detail",
