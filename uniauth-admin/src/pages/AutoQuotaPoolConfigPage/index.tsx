@@ -62,8 +62,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       setCronError(
         intl.formatMessage({
           id: "pages.quotaPoolList.create.cronCycle.fiveFieldRequired",
-          defaultMessage:
-            "Cron 表达式必须为5位格式（分(0-59) 时(0-23) 日(1-31) 月(1-12) 周几(0周日-6周六)）",
         }),
       );
       setCronDescription("");
@@ -84,7 +82,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       setCronError(
         intl.formatMessage({
           id: "pages.quotaPoolList.create.cronCycle.invalid",
-          defaultMessage: "Cron 表达式格式不正确",
         }),
       );
       setCronDescription("");
@@ -296,7 +293,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           message.error(
             intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.saveFailedInvalidDefaultCasbinRules",
-              defaultMessage: "默认Casbin规则格式不正确",
             }),
           );
           setModalSaving(false); // 出错时重置保存状态
@@ -786,14 +782,11 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             name="defaultCasbinRules"
             label={intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.defaultCasbinRules",
-              defaultMessage: "默认Casbin规则",
             })}
           >
             <JsonEditor
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.defaultCasbinRulesPlaceholder",
-                defaultMessage:
-                  "请输入默认Casbin规则，格式为包含obj、act、eft字段的对象数组",
               })}
               height={200}
             />
@@ -802,13 +795,11 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             name="upnsCache"
             label={intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.upnsCache",
-              defaultMessage: "UPN Cache",
             })}
           >
             <Input.TextArea
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.upnsCachePlaceholder",
-                defaultMessage: "Please enter UPN cache",
               })}
               autoSize={{ minRows: 4, maxRows: 10 }}
               disabled={true}
