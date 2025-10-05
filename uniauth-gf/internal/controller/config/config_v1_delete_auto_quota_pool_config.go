@@ -10,6 +10,7 @@ import (
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
+	"uniauth-gf/internal/service/casbin"
 )
 
 func (c *ControllerV1) DeleteAutoQuotaPoolConfig(ctx context.Context, req *v1.DeleteAutoQuotaPoolConfigReq) (res *v1.DeleteAutoQuotaPoolConfigRes, err error) {
@@ -29,6 +30,12 @@ func (c *ControllerV1) DeleteAutoQuotaPoolConfig(ctx context.Context, req *v1.De
 			Delete()
 		if delErr != nil {
 			return gerror.WrapCode(gcode.CodeDbOperationError, delErr, "删除规则失败")
+		}
+
+		// 删除Casbin规则
+		casbin_subject := "auto_qp_" + req.RuleName
+		if _, err := casbin.GetEnforcer().RemoveFilteredPolicy(1, casbin_subject); err != nil {
+			return gerror.Wrap(err, "删除自动配额池规则的现有 Casbin 策略失败")
 		}
 		return nil
 	})

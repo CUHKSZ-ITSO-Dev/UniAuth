@@ -1,12 +1,17 @@
 package casbin
 
 import (
+	"context"
+	"uniauth-gf/internal/dao"
+	"uniauth-gf/internal/model/entity"
+
 	psqlwatcher "github.com/IguteChung/casbin-psql-watcher"
 	pgadapter "github.com/casbin/casbin-pg-adapter"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 
+	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/gres"
@@ -68,4 +73,72 @@ func init() {
 
 func GetEnforcer() *casbin.Enforcer {
 	return e
+}
+
+func SyncAutoQuotaPoolCasbinRules(ctx context.Context, ruleNames []string) error {
+	for _, ruleName := range ruleNames {
+		// 1. 删除指定规则名称的所有现有策略
+		subject := "auto_qp_" + ruleName
+		if removed, err := e.RemoveFilteredPolicy(1, subject); err != nil {
+			return gerror.Wrapf(err, "删除自动配额池规则 %s 的现有策略失败", ruleName)
+		} else if removed {
+			g.Log().Infof(ctx, "成功删除了自动配额池规则 %s 的现有策略", ruleName)
+		} else {
+			g.Log().Infof(ctx, "自动配额池规则 %s 没有现有策略需要删除", ruleName)
+		}
+	}
+
+	// 2. 查询指定的自动配额池规则
+	var autoQuotaPoolList []*entity.ConfigAutoQuotaPool
+	if err := dao.ConfigAutoQuotaPool.Ctx(ctx).
+		WhereIn("rule_name", ruleNames).
+		Scan(&autoQuotaPoolList); err != nil {
+		return gerror.Wrapf(err, "查询自动配额池规则失败: %v", ruleNames)
+	}
+
+	// 3. 收集所有需要添加的casbin策略
+	var allPolicies [][]string
+
+	for _, config := range autoQuotaPoolList {
+		if config.DefaultCasbinRules == nil {
+			continue
+		}
+		type CasbinRule struct {
+			Action   string `json:"action"`
+			Effect   string `json:"effect"`
+			Resource string `json:"resource"`
+		}
+		var casbinRules []CasbinRule
+		if err := config.DefaultCasbinRules.Scan(&casbinRules); err != nil {
+			return gerror.Wrapf(err, "解析自动配额池规则 %s 的 default_casbin_rules 失败", config.RuleName)
+		}
+
+		// 为每个规则生成casbin策略
+		for _, rule := range casbinRules {
+			// 构建casbin策略: p, auto_qp_{rule_name}, {resource}, {action}, {effect}
+			policy := []string{
+				"p",                          // policy type
+				"auto_qp_" + config.RuleName, // subject
+				rule.Resource,                // object (resource)
+				rule.Action,                  // action
+				rule.Effect,                  // effect
+			}
+			allPolicies = append(allPolicies, policy)
+		}
+	}
+
+	// 4. 添加新策略
+	if len(allPolicies) == 0 {
+		g.Log().Infof(ctx, "没有策略需要添加")
+		return nil
+	}
+	if added, err := e.AddPolicies(allPolicies); err != nil {
+		return gerror.Wrapf(err, "添加casbin策略失败: %v", allPolicies)
+	} else if added {
+		g.Log().Infof(ctx, "成功添加了 %d 条casbin策略", len(allPolicies))
+	} else {
+		g.Log().Infof(ctx, "没有新策略需要添加")
+	}
+
+	return nil
 }
