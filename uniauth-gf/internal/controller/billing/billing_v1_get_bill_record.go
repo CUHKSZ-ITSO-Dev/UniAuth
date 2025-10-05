@@ -27,7 +27,7 @@ func (c *ControllerV1) GetBillRecord(ctx context.Context, req *v1.GetBillRecordR
 				WhereIn("product", req.Product).
 				WhereGTE("created_at", req.StartTime).
 				WhereLTE("created_at", req.EndTime).
-				Order("created_at asc").
+				Order("created_at desc").
 				All()
 			if err != nil {
 				return nil, gerror.Wrapf(err, "[UPN 模式] 获取 UPN = %s 账单信息失败", upn)
@@ -48,7 +48,7 @@ func (c *ControllerV1) GetBillRecord(ctx context.Context, req *v1.GetBillRecordR
 				WhereIn("product", req.Product).
 				WhereGTE("created_at", req.StartTime).
 				WhereLTE("created_at", req.EndTime).
-				Order("created_at asc").
+				Order("created_at desc").
 				All()
 			if err != nil {
 				return nil, gerror.Wrapf(err, "[Quota Pool 模式] 获取 Source = %s 账单信息失败", quotaPool)
