@@ -217,7 +217,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         product: [],
         startTime: startOfYear.toISOString().split("T")[0],
         endTime: tomorrow.toISOString().split("T")[0],
-        sortOrder: "desc",
+        order: "desc",
       });
 
       if (response.records) {
@@ -256,12 +256,14 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       const endTime = values.dateRange[1].add(1, "day").format("YYYY-MM-DD");
 
       const response = await postBillingAdminOpenApiExport({
+        type: "qp" as const,
         quotaPools: [quotaPoolName],
         upns: [],
         svc: values.svc || [],
         product: values.product || [],
         startTime,
         endTime,
+        order: "asc" as const,
       });
 
       // 创建下载链接
@@ -343,7 +345,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       valueType: "select",
       search: true,
       ellipsis: true,
-
+      fieldProps: {
+        mode: "multiple",
+        placeholder: intl.formatMessage({
+          id: "pages.billingDetail.svcPlaceholder",
+          defaultMessage: "请选择服务类型",
+        }),
+      },
       valueEnum: svcValueEnum,
     },
     {
@@ -355,7 +363,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       valueType: "select",
       search: true,
       ellipsis: true,
-
+      fieldProps: {
+        mode: "multiple",
+        placeholder: intl.formatMessage({
+          id: "pages.billingDetail.productPlaceholder",
+          defaultMessage: "请选择产品类型",
+        }),
+      },
       valueEnum: productValueEnum,
     },
     {
@@ -552,12 +566,20 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       const requestParams = {
         type: "qp" as const,
         quotaPools: [quotaPoolName],
-        svc: params.svc ? [params.svc] : [],
-        product: params.product ? [params.product] : [],
+        svc: params.svc
+          ? Array.isArray(params.svc)
+            ? params.svc
+            : [params.svc]
+          : [],
+        product: params.product
+          ? Array.isArray(params.product)
+            ? params.product
+            : [params.product]
+          : [],
         // 优先使用用户选择的时间范围，如果没有则使用默认值
         startTime: params.startTime || defaultStartTime,
         endTime,
-        sortOrder: "desc" as const,
+        order: "desc" as const,
       };
 
       const response = await postBillingAdminGet(requestParams);
