@@ -317,23 +317,21 @@ func SyncAutoQuotaPoolGroupingPolicies(ctx context.Context, ruleNames []string) 
 		// 3. 查询现有Casbin分组策略
 		existingSubjectsByRole := make(map[string]map[string]struct{}, len(autoRoles))
 		if len(autoRoles) > 0 {
-			records, err := g.Model("casbin_rule").
-				Ctx(txCtx).
-				Fields("v0", "v1").
-				Where("ptype", "g").
-				WhereIn("v1", autoRoles).
-				All()
-			if err != nil {
-				return gerror.Wrap(err, "查询 Casbin 分组策略失败")
-			}
-			for _, record := range records {
-				subject := record["v0"].String()
-				role := record["v1"].String()
-				if _, ok := existingSubjectsByRole[role]; !ok {
-					existingSubjectsByRole[role] = map[string]struct{}{}
+			for _, role := range autoRoles {
+				users, err := e.GetUsersForRole(role)
+				if err != nil {
+					return gerror.Wrapf(err, "查询角色 %s 的用户失败", role)
 				}
-				existingSubjectsByRole[role][subject] = struct{}{}
+				existingSubjectsByRole[role] = make(map[string]struct{}, len(users))
+				for _, user := range users {
+					existingSubjectsByRole[role][user] = struct{}{}
+				}
 			}
+			totalSubjects := 0
+			for _, subjects := range existingSubjectsByRole {
+				totalSubjects += len(subjects)
+			}
+			g.Log().Info(ctx, "查询到现有分组策略记录数", "count", totalSubjects)
 		}
 
 		var policiesToAdd [][]string
