@@ -141,13 +141,13 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 			cost = cost.Sub(deduction)
 		}
 		// 2. 如果还有剩余费用，则从额外余额中扣除
-		if originalCost.IsPositive() {
+		if cost.IsPositive() {
 			deduction := decimal.Min(extra_quota, cost)
 			extra_quota = extra_quota.Sub(deduction)
 			cost = cost.Sub(deduction)
 		}
 		// 3. 如果费用还未扣完，则计入基本余额的欠款
-		if originalCost.IsPositive() {
+		if cost.IsPositive() {
 			remaining_quota = remaining_quota.Sub(cost)
 		}
 
