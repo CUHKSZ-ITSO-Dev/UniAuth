@@ -61,7 +61,13 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 		if _, syncErr := autoQuotaPool.SyncUpnsCache(ctx, []string{req.RuleName}); syncErr != nil {
 			return gerror.Wrap(syncErr, "编辑后同步 upns_cache 失败")
 		}
+
+		// 同步 upns_cache 成功后，更新所有受影响的个人配额池配置
+		if updateErr := autoQuotaPool.SyncPersonalQuotaPools(ctx, req.RuleName); updateErr != nil {
+			return gerror.Wrap(updateErr, "更新受影响的个人配额池失败")
+		}
 		return nil
+
 	})
 	if err != nil {
 		err = gerror.Wrap(err, "更新自动配额池规则失败")
