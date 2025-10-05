@@ -243,7 +243,10 @@ const UserListPage: React.FC = () => {
             pageSize: initialSearchParams.pageSize,
             defaultPageSize: 10, // 设置默认页面大小，防止reset后变为20
             showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 条数据`,
+            showTotal: (total) => intl.formatMessage({
+              id: "pages.configI18n.pagination.total",
+              defaultMessage: "共 {total} 条数据",
+            }, { total }),
           }}
           request={async (params) => {
             const { current, pageSize, keyword } = params;
