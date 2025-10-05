@@ -1,6 +1,7 @@
 import { EyeOutlined } from "@ant-design/icons";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
+import Editor from "@monaco-editor/react";
 import { getLocale, Link, useIntl, useSearchParams } from "@umijs/max";
 import {
   Button,
@@ -64,6 +65,10 @@ const QuotaPoolListPage: React.FC = () => {
   // userinfosRules 展示相关状态
   const [rulesModalVisible, setRulesModalVisible] = useState(false);
   const [selectedRules, setSelectedRules] = useState<any>(null);
+
+  // userinfosRules 编辑相关状态
+  const [userinfosRulesValue, setUserinfosRulesValue] = useState<string>("");
+  const [userinfosRulesError, setUserinfosRulesError] = useState<string>("");
 
   // 使用 useMemo 确保初始参数响应 URL 变化
   const initialSearchParams = useMemo(() => {
@@ -361,6 +366,30 @@ const QuotaPoolListPage: React.FC = () => {
   const handleRulesClick = (rules: any) => {
     setSelectedRules(rules);
     setRulesModalVisible(true);
+  };
+
+  // 处理userinfosRules编辑器值变化
+  const handleUserinfosRulesChange = (value: string | undefined) => {
+    const jsonValue = value || "";
+    setUserinfosRulesValue(jsonValue);
+
+    // 验证JSON格式
+    if (jsonValue.trim() === "") {
+      setUserinfosRulesError("");
+      return;
+    }
+
+    try {
+      JSON.parse(jsonValue);
+      setUserinfosRulesError("");
+    } catch (error) {
+      setUserinfosRulesError(
+        intl.formatMessage({
+          id: "pages.quotaPoolList.create.userinfosRules.invalidJson",
+          defaultMessage: "JSON格式不正确",
+        }),
+      );
+    }
   };
 
   // 监听URL参数变化，同步更新表单和表格
@@ -831,7 +860,36 @@ const QuotaPoolListPage: React.FC = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+
+      // 验证userinfosRules格式
+      if (userinfosRulesError) {
+        message.error(
+          intl.formatMessage({
+            id: "pages.quotaPoolList.create.userinfosRules.validationError",
+            defaultMessage: "请修正用户规则的JSON格式错误",
+          }),
+        );
+        return;
+      }
+
       setLoading(true);
+
+      // 解析userinfosRules
+      let parsedUserinfosRules = null;
+      if (userinfosRulesValue.trim() !== "") {
+        try {
+          parsedUserinfosRules = JSON.parse(userinfosRulesValue);
+        } catch (error) {
+          message.error(
+            intl.formatMessage({
+              id: "pages.quotaPoolList.create.userinfosRules.parseError",
+              defaultMessage: "用户规则JSON解析失败",
+            }),
+          );
+          setLoading(false);
+          return;
+        }
+      }
 
       const res = await postQuotaPool({
         quotaPoolName: values.quotaPoolName,
@@ -840,6 +898,7 @@ const QuotaPoolListPage: React.FC = () => {
         extraQuota: values.extraQuota || 0,
         personal: values.personal,
         disabled: !values.enabled,
+        userinfosRules: parsedUserinfosRules,
       });
 
       if (res?.ok) {
@@ -853,6 +912,8 @@ const QuotaPoolListPage: React.FC = () => {
         form.resetFields();
         setCronDescription("");
         setCronError("");
+        setUserinfosRulesValue("");
+        setUserinfosRulesError("");
         tableRef.current?.reload();
       } else {
         message.error(
@@ -885,6 +946,8 @@ const QuotaPoolListPage: React.FC = () => {
     form.resetFields();
     setCronDescription("");
     setCronError("");
+    setUserinfosRulesValue("");
+    setUserinfosRulesError("");
   };
 
   // 生成唯一ID的函数
@@ -2054,6 +2117,65 @@ const QuotaPoolListPage: React.FC = () => {
                 })}
               </Radio.Button>
             </Radio.Group>
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({
+              id: "pages.quotaPoolList.create.userinfosRules",
+              defaultMessage: "用户规则",
+            })}
+            validateStatus={userinfosRulesError ? "error" : ""}
+            help={
+              userinfosRulesError ||
+              intl.formatMessage({
+                id: "pages.quotaPoolList.create.userinfosRules.help",
+                defaultMessage:
+                  "请输入用户过滤规则的JSON配置，留空则不设置规则",
+              })
+            }
+            style={{ marginBottom: 24 }}
+          >
+            <div
+              style={{
+                border: "1px solid #d9d9d9",
+                borderRadius: "6px",
+                overflow: "hidden",
+              }}
+            >
+              <Editor
+                height="200px"
+                defaultLanguage="json"
+                theme="light"
+                value={userinfosRulesValue}
+                onChange={handleUserinfosRulesChange}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  lineNumbers: "off",
+                  glyphMargin: false,
+                  folding: false,
+                  lineDecorationsWidth: 0,
+                  lineNumbersMinChars: 0,
+                  overviewRulerLanes: 0,
+                  overviewRulerBorder: false,
+                  hideCursorInOverviewRuler: true,
+                  scrollbar: {
+                    vertical: "visible",
+                    horizontal: "visible",
+                    useShadows: false,
+                    verticalHasArrows: false,
+                    horizontalHasArrows: false,
+                  },
+                  tabSize: 2,
+                  insertSpaces: true,
+                }}
+              />
+            </div>
           </Form.Item>
 
           <Form.Item
