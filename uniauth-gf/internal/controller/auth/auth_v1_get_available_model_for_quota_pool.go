@@ -10,7 +10,7 @@ import (
 )
 
 func (c *ControllerV1) GetAvailableModelForQuotaPool(ctx context.Context, req *v1.GetAvailableModelForQuotaPoolReq) (res *v1.GetAvailableModelForQuotaPoolRes, err error) {
-	policies, err := e.GetPermissionsForUser(req.QuotaPool)
+	policies, err := e.GetImplicitPermissionsForUser(req.QuotaPool)
 	if err != nil {
 		err = gerror.Wrap(err, "Casbin 查询配额池权限时发生内部错误")
 	}
