@@ -38,6 +38,8 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const actionRef = useRef<ActionType>(null);
   // 控制模态框显示状态
   const [isModalVisible, setIsModalVisible] = useState(false);
+  // 模态框保存操作的加载状态
+  const [modalSaving, setModalSaving] = useState(false);
   // 当前编辑的记录
   const [editingRecord, setEditingRecord] =
     useState<API.AutoQuotaPoolItem | null>(null);
@@ -245,6 +247,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+      setModalSaving(true); // 设置保存状态为加载中
 
       // 处理表单数据，转换为API所需的格式
       const processedValues: Partial<API.AutoQuotaPoolItem> = {
@@ -266,6 +269,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
               id: "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup",
             }),
           );
+          setModalSaving(false); // 出错时重置保存状态
           return;
         }
       } else {
@@ -305,6 +309,8 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       message.error(
         intl.formatMessage({ id: "pages.autoQuotaPoolConfig.saveFailed" }),
       );
+    } finally {
+      setModalSaving(false); // 无论成功还是失败都重置保存状态
     }
   };
 
@@ -607,6 +613,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         width={800}
         destroyOnHidden
         forceRender
+        confirmLoading={modalSaving}
+        okButtonProps={{ loading: modalSaving }}
+        cancelButtonProps={{ disabled: modalSaving }}
       >
         <Form form={form} layout="vertical" requiredMark={false}>
           <Form.Item
