@@ -225,7 +225,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		_ = f.SetCellStyle(sheet, "A12", "I12", infoStyle)
 
 		// 表格标题
-		header := g.ArrayStr{"序号", "UPN", "服务", "产品", "计划", "来源", "消费", "记录时间", "记录ID"}
+		header := g.ArrayStr{"序号", "UPN", "服务", "产品", "计划", "来源", "原始消费", "消费", "记录时间", "记录ID"}
 		_ = f.SetSheetRow(sheet, "A14", &header)
 
 		// 表头样式
@@ -251,7 +251,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 				{Type: "bottom", Style: 2, Color: "000000"},
 			},
 		})
-		_ = f.SetCellStyle(sheet, "A14", "I14", headerStyle)
+		_ = f.SetCellStyle(sheet, "A14", "J14", headerStyle)
 		var totalCost = decimal.Zero
 		for idx, record := range records.GetJsons(sheet) {
 			_ = f.SetSheetRow(sheet, fmt.Sprintf("A%d", idx+15), &g.Array{
@@ -261,6 +261,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 				record.Get("product"),
 				record.Get("plan"),
 				record.Get("source"),
+				record.Get("original_cost"),
 				record.Get("cost"),
 				record.Get("created_at"),
 				record.Get("id"),
