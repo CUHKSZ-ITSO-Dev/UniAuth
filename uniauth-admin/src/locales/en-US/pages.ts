@@ -658,8 +658,8 @@ export default {
   "pages.quotaPoolConfigDetail.edit.enabledStatus": "Status",
   "pages.quotaPoolConfigDetail.edit.enabled": "Enabled",
   "pages.quotaPoolConfigDetail.edit.disabled": "Disabled",
-  "pages.quotaPoolConfigDetail.g1Title": "Parent Role",
-  "pages.quotaPoolConfigDetail.g2Title": "Child Role",
+  "pages.quotaPoolConfigDetail.g1Title": "Parent Roles",
+  "pages.quotaPoolConfigDetail.g2Title": "Child Roles",
 
   // BillingDetailTab - only add non-existing keys
   "pages.billingDetail.title": "Billing Details",
