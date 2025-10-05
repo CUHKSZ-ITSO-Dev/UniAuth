@@ -8,6 +8,8 @@ declare namespace API {
     regularQuota: Decimal;
     /** 是否启用该规则 */
     enabled?: boolean;
+    /** 默认Casbin规则配置 */
+    defaultCasbinRules?: DefaultCasbinRule[];
     /** 过滤条件组，满足条件的用户将应用该规则 */
     filterGroup?: FilterGroup;
     /** 规则说明 */
@@ -108,6 +110,8 @@ declare namespace API {
     enabled?: boolean;
     /** 过滤条件组 */
     filterGroup?: Json;
+    /** 默认Casbin规则 */
+    defaultCasbinRules?: Json;
     /** 默认ITTools规则 */
     defaultUserinfosRules?: Json;
     /** UPN缓存列表 */
@@ -299,6 +303,8 @@ declare namespace API {
     regularQuota: Decimal;
     /** 是否启用该配额池 */
     enabled?: boolean;
+    /** 默认Casbin规则配置 */
+    defaultCasbinRules?: DefaultCasbinRule[];
     /** 过滤条件组，满足条件的用户将应用该规则 */
     filterGroup?: FilterGroup;
     /** 规则说明 */
@@ -958,3 +964,12 @@ declare namespace API {
 
   type Var = unknown;
 }
+
+type DefaultCasbinRule = {
+  /** 资源对象 */
+  obj: string;
+  /** 动作 */
+  act: string;
+  /** 效果 */
+  eft: string;
+};

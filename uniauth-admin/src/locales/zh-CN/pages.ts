@@ -139,6 +139,11 @@ export default {
   "pages.autoQuotaPoolConfig.filterGroup": "过滤条件组 (JSON)",
   "pages.autoQuotaPoolConfig.filterGroupPlaceholder": "请输入过滤条件组",
   "pages.autoQuotaPoolConfig.filterGroupRequired": "请输入过滤条件组",
+  "pages.autoQuotaPoolConfig.defaultCasbinRules": "默认Casbin规则 (JSON)",
+  "pages.autoQuotaPoolConfig.defaultCasbinRulesPlaceholder":
+    "请输入默认Casbin规则，格式为包含obj、act、eft字段的对象数组",
+  "pages.autoQuotaPoolConfig.defaultCasbinRulesRequired":
+    "请输入默认Casbin规则",
   "pages.autoQuotaPoolConfig.upnsCache": "UPN缓存",
   "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "请输入UPN缓存",
   "pages.autoQuotaPoolConfig.syncAll": "同步全部UPN缓存",
