@@ -1,5 +1,5 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-18 00:51:49
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
 // =================================================================================
 
 package entity
@@ -12,13 +12,14 @@ import (
 
 // BillingCostRecords is the golang structure for table billing_cost_records.
 type BillingCostRecords struct {
-	Id        int64           `json:"id"        orm:"id"         description:"自增主键"` // 自增主键
-	Upn       string          `json:"upn"       orm:"upn"        description:"UPN"`  // UPN
-	Svc       string          `json:"svc"       orm:"svc"        description:"服务名称"` // 服务名称
-	Product   string          `json:"product"   orm:"product"    description:"产品名称"` // 产品名称
-	Cost      decimal.Decimal `json:"cost"      orm:"cost"       description:"费用"`   // 费用
-	Plan      string          `json:"plan"      orm:"plan"       description:"计费方案"` // 计费方案
-	Source    string          `json:"source"    orm:"source"     description:"来源"`   // 来源
-	Remark    *gjson.Json     `json:"remark"    orm:"remark"     description:"备注信息"` // 备注信息
-	CreatedAt *gtime.Time     `json:"createdAt" orm:"created_at" description:"创建时间"` // 创建时间
+	Id           int64           `json:"id"           orm:"id"            description:"自增主键"` // 自增主键
+	Upn          string          `json:"upn"          orm:"upn"           description:"UPN"`  // UPN
+	Svc          string          `json:"svc"          orm:"svc"           description:"服务名称"` // 服务名称
+	Product      string          `json:"product"      orm:"product"       description:"产品名称"` // 产品名称
+	Cost         decimal.Decimal `json:"cost"         orm:"cost"          description:"费用"`   // 费用
+	Plan         string          `json:"plan"         orm:"plan"          description:"计费方案"` // 计费方案
+	Source       string          `json:"source"       orm:"source"        description:"来源"`   // 来源
+	Remark       *gjson.Json     `json:"remark"       orm:"remark"        description:"备注信息"` // 备注信息
+	CreatedAt    *gtime.Time     `json:"createdAt"    orm:"created_at"    description:"创建时间"` // 创建时间
+	OriginalCost decimal.Decimal `json:"originalCost" orm:"original_cost" description:"原始费用"` // 原始费用
 }

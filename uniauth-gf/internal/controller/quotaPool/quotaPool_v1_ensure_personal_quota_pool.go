@@ -13,6 +13,7 @@ import (
 	"uniauth-gf/api/quotaPool/v1"
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
+	"uniauth-gf/internal/service/casbin"
 	"uniauth-gf/internal/service/quotaPool"
 )
 
@@ -57,6 +58,13 @@ func (c *ControllerV1) EnsurePersonalQuotaPool(ctx context.Context, req *v1.Ensu
 		}
 		if err = quotaPool.Create(ctx, data); err != nil {
 			return gerror.Wrap(err, "新建个人配额池时发生内部错误")
+		}
+
+		// 由于只有个人配额池会有 g, 个人配额池, 自动配额池的情况
+		// 因此在 Ensure 函数里面写添加角色继承规则的逻辑
+		e := casbin.GetEnforcer()
+		if _, err = e.AddGroupingPolicy(data.QuotaPoolName, "auto_qp_"+ autoQPConfig.RuleName); err != nil {
+			return gerror.Wrap(err, "添加 g, 个人配额池, 自动配额池 角色继承规则时发生内部错误")
 		}
 		return nil
 	})

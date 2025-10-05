@@ -22,12 +22,14 @@ import (
 
 func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillRecordReq) (res *v1.ExportBillRecordRes, err error) {
 	recordsPri, err := c.GetBillRecord(ctx, &v1.GetBillRecordReq{
+		Type:       req.Type,
 		Upns:       req.Upns,
 		QuotaPools: req.QuotaPools,
 		Svc:        req.Svc,
 		Product:    req.Product,
 		StartTime:  req.StartTime,
 		EndTime:    req.EndTime,
+		Order:		req.Order,
 	})
 	if err != nil {
 		return nil, gerror.Wrap(err, "复用获取账单记录接口时失败")
@@ -223,7 +225,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		_ = f.SetCellStyle(sheet, "A12", "I12", infoStyle)
 
 		// 表格标题
-		header := g.ArrayStr{"序号", "UPN", "服务", "产品", "计划", "来源", "消费", "记录时间", "记录ID"}
+		header := g.ArrayStr{"序号", "UPN", "服务", "产品", "计划", "来源", "原始消费", "消费", "记录时间", "记录ID"}
 		_ = f.SetSheetRow(sheet, "A14", &header)
 
 		// 表头样式
@@ -249,7 +251,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 				{Type: "bottom", Style: 2, Color: "000000"},
 			},
 		})
-		_ = f.SetCellStyle(sheet, "A14", "I14", headerStyle)
+		_ = f.SetCellStyle(sheet, "A14", "J14", headerStyle)
 		var totalCost = decimal.Zero
 		for idx, record := range records.GetJsons(sheet) {
 			_ = f.SetSheetRow(sheet, fmt.Sprintf("A%d", idx+15), &g.Array{
@@ -259,6 +261,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 				record.Get("product"),
 				record.Get("plan"),
 				record.Get("source"),
+				record.Get("original_cost"),
 				record.Get("cost"),
 				record.Get("created_at"),
 				record.Get("id"),
@@ -404,7 +407,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 	// 收尾工作
 	_ = f.DeleteSheet("Sheet1")
 	var filename string
-	if len(req.Upns) > 0 {
+	if req.Type == "upn" {
 		_ = f.SetDocProps(&excelize.DocProperties{
 			Creator:     "UniAuth Automated System, Billing Module",
 			Description: fmt.Sprintf("GPT 服务账单 - UPNs %v", req.Upns),

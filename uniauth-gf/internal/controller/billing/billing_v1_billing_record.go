@@ -2,7 +2,6 @@ package billing
 
 import (
 	"context"
-	"log"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -50,8 +49,8 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		err = gerror.New("这个配额池被禁用了，不能使用")
 		return
 	}
-	
-	var plan string 
+
+	var plan string
 	if qp.Personal {
 		plan = "Included"
 	} else {
@@ -59,7 +58,7 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 	}
 
 	// 记录
-	var cost decimal.Decimal
+	var originalCost decimal.Decimal
 	var rate decimal.Decimal
 	if !req.USDCost.IsZero() {
 		// 算钱
@@ -71,34 +70,54 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 
 		wrtErr := req.Remark.Set("USD", req.USDCost.String())
 		if wrtErr != nil {
-			log.Printf("计费流程中 USD 信息写入 Remark 失败。原始计费记录：%v", req)
+			g.Log().Infof(ctx, "计费流程中 USD 信息写入 Remark 失败。原始计费记录：%v", req)
 		}
 		wrtErr = req.Remark.Set("USD_CNY_rate", rate.String())
 		if wrtErr != nil {
-			log.Printf("计费流程中 USD->CNY 汇率信息写入 Remark 失败。原始计费记录：%v", req)
+			g.Log().Infof(ctx, "计费流程中 USD->CNY 汇率信息写入 Remark 失败。原始计费记录：%v", req)
 		}
 		if !req.CNYCost.IsZero() {
 			wrtErr = req.Remark.Set("CNY", req.CNYCost.String())
 			if wrtErr != nil {
-				log.Printf("计费流程中 CNY 信息写入 Remark 失败。原始计费记录：%v", req)
+				g.Log().Infof(ctx, "计费流程中 CNY 信息写入 Remark 失败。原始计费记录：%v", req)
 			}
 		}
 
-		cost = req.CNYCost.Add(req.USDCost.Mul(rate))
+		originalCost = req.CNYCost.Add(req.USDCost.Mul(rate))
 	} else {
-		cost = req.CNYCost
+		originalCost = req.CNYCost
 	}
+	cost := originalCost
+
+	// 对话服务特判折扣问题
+	// 如果查不到提交的 product 对应的 approach，或出现查询错误，则忽略错误，并不进行折扣
+	if req.Service == "chat" {
+		var singleModelApproach *entity.ConfigSingleModelApproach
+		if err := dao.ConfigSingleModelApproach.Ctx(ctx).Where("approach_name = ?", req.Product).Scan(&singleModelApproach); err != nil {
+			g.Log().Warningf(ctx, "查询产品 %s 的折扣信息失败，将不应用折扣。错误: %v", req.Product, err)
+		}
+		if singleModelApproach != nil {
+			cost = originalCost.Mul(singleModelApproach.Discount)
+			if wrtErr := req.Remark.Set("discount", singleModelApproach.Discount.String()); wrtErr != nil {
+				g.Log().Infof(ctx, "计费流程中折扣信息写入 Remark 失败。原始计费记录：%v", req)
+			}
+		} else {
+			g.Log().Warningf(ctx, "找不到产品 %s 的折扣信息，将不应用折扣", req.Product)
+		}
+	}
+
 	_, err = dao.BillingCostRecords.Ctx(ctx).Data(g.Map{
-		"upn":     req.Upn,
-		"svc":     req.Service,
-		"product": req.Product,
-		"cost":    cost,
-		"plan":    plan,
-		"source":  req.Source,
-		"remark":  req.Remark.MustToJsonString(),
+		"upn":           req.Upn,
+		"svc":           req.Service,
+		"product":       req.Product,
+		"original_cost": originalCost,
+		"cost":          cost,
+		"plan":          plan,
+		"source":        req.Source,
+		"remark":        req.Remark,
 	}).Insert()
 	if err != nil {
-		return
+		return nil, gerror.Wrapf(err, "计费记录写入失败。终止扣费流程，没有扣费。计费信息：%v", req)
 	}
 
 	// 扣钱流程，使用事务

@@ -15,7 +15,12 @@ import (
 )
 
 func GetExchangeRate(ctx context.Context, f string, t string) (decimal.Decimal, error) {
-	rateRaw, err := g.DB().GetValue(ctx, "SELECT rate FROM config_exchange_rate WHERE f = ? AND t = ? AND date = ?", f, t, gtime.Date())
+	rateRaw, err := dao.ConfigExchangeRate.Ctx(ctx).
+		Fields("rate").
+		Where("f = ?", f).
+		Where("t = ?", t).
+		Where("date = ?", gtime.Date()).
+		Value(); 
 	if err != nil {
 		return decimal.Zero, err
 	}
@@ -30,7 +35,7 @@ func GetExchangeRate(ctx context.Context, f string, t string) (decimal.Decimal, 
 	// 走到这里说明数据库里面没有汇率数据，需要请求API
 	// 使用 singleflight 解决并发竞争问题
 	g := new(singleflight.Group)
-	v, err, _ := g.Do("getRateApi", func() (interface{}, error) {
+	v, err, _ := g.Do("getRateApi", func() (any, error) {
 		rate, err := getRateApi(ctx)
 		if err != nil {
 			return decimal.Zero, err

@@ -26,19 +26,27 @@ func Delete(ctx context.Context, quotaPoolName string) error {
 		// 获取该配额池的所有用户映射关系
 		userUpns, err := e.GetUsersForRole(quotaPoolName)
 		if err != nil {
-			return gerror.Wrap(err, "查询配额池用户组规则失败")
+			return gerror.Wrap(err, "查询配额池用户失败")
+		}
+		autoQPs, err := e.GetRolesForUser(quotaPoolName)
+		if err != nil {
+			return gerror.Wrap(err, "查询配额池角色失败")
 		}
 		// 删除所有用户到该配额池的映射关系
-		if len(userUpns) > 0 {
+		if len(userUpns) + len(autoQPs) > 0 {
 			var policiesToDelete [][]string
 			for _, upn := range userUpns {
 				policiesToDelete = append(policiesToDelete, []string{upn, quotaPoolName})
+			}
+			for _, autoQP := range autoQPs {
+				policiesToDelete = append(policiesToDelete, []string{quotaPoolName, autoQP})
 			}
 
 			if _, err := e.RemoveGroupingPolicies(policiesToDelete); err != nil {
 				return gerror.Wrapf(err, "删除配额池用户组继承关系失败: %v", policiesToDelete)
 			}
 		}
+
 		return nil
 	})
 
