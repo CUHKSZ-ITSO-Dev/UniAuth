@@ -2,7 +2,6 @@ package billing
 
 import (
 	"context"
-	"log"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -71,16 +70,16 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 
 		wrtErr := req.Remark.Set("USD", req.USDCost.String())
 		if wrtErr != nil {
-			log.Printf("计费流程中 USD 信息写入 Remark 失败。原始计费记录：%v", req)
+			g.Log().Infof(ctx, "计费流程中 USD 信息写入 Remark 失败。原始计费记录：%v", req)
 		}
 		wrtErr = req.Remark.Set("USD_CNY_rate", rate.String())
 		if wrtErr != nil {
-			log.Printf("计费流程中 USD->CNY 汇率信息写入 Remark 失败。原始计费记录：%v", req)
+			g.Log().Infof(ctx, "计费流程中 USD->CNY 汇率信息写入 Remark 失败。原始计费记录：%v", req)
 		}
 		if !req.CNYCost.IsZero() {
 			wrtErr = req.Remark.Set("CNY", req.CNYCost.String())
 			if wrtErr != nil {
-				log.Printf("计费流程中 CNY 信息写入 Remark 失败。原始计费记录：%v", req)
+				g.Log().Infof(ctx, "计费流程中 CNY 信息写入 Remark 失败。原始计费记录：%v", req)
 			}
 		}
 
@@ -97,7 +96,9 @@ func (c *ControllerV1) BillingRecord(ctx context.Context, req *v1.BillingRecordR
 		_ = dao.ConfigSingleModelApproach.Ctx(ctx).Where("approach_name = ?", req.Product).Scan(&singleModelApproach)
 		if singleModelApproach != nil {
 			cost = originalCost.Mul(singleModelApproach.Discount)
-			req.Remark.Set("discount", singleModelApproach.Discount.String())
+			if wrtErr := req.Remark.Set("discount", singleModelApproach.Discount.String()); wrtErr != nil {
+				g.Log().Infof(ctx, "计费流程中折扣信息写入 Remark 失败。原始计费记录：%v", req)
+			}
 		}
 	}
 
