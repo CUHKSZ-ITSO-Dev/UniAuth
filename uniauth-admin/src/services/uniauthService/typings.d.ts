@@ -679,6 +679,8 @@ declare namespace API {
   };
 
   type GetBillRecordReq = {
+    /** 类型 */
+    type: "qp" | "upn";
     /** UPN列表 */
     upns?: string[];
     /** 配额池 */
@@ -691,6 +693,8 @@ declare namespace API {
     startTime: string;
     /** 结束时间 */
     endTime: string;
+    /** 排序顺序 */
+    sortOrder: "asc" | "desc";
   };
 
   type GetBillRecordRes = {

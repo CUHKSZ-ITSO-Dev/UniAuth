@@ -37,6 +37,7 @@ interface BillingRecord {
   svc: string;
   product: string;
   cost: number;
+  original_cost?: number; // 折扣前的费用
   plan: string;
   source: string;
   remark?: any;
@@ -210,11 +211,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       tomorrow.setDate(tomorrow.getDate() + 1);
 
       const response = await postBillingAdminGet({
+        type: "qp",
         quotaPools: [quotaPoolName],
         svc: [],
         product: [],
         startTime: startOfYear.toISOString().split("T")[0],
         endTime: tomorrow.toISOString().split("T")[0],
+        sortOrder: "desc",
       });
 
       if (response.records) {
@@ -364,9 +367,27 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       valueType: "money",
       search: false,
 
-      render: (_, record) => (
-        <Text type="danger">￥{Number(record.cost).toFixed(4)}</Text>
-      ),
+      render: (_, record) => {
+        const cost = Number(record.cost);
+        const originalCost = record.original_cost
+          ? Number(record.original_cost)
+          : null;
+
+        // 如果没有 original_cost 或者 cost 和 original_cost 相同，直接显示 cost
+        if (!originalCost || Math.abs(cost - originalCost) < 0.0001) {
+          return <Text type="danger">￥{cost.toFixed(4)}</Text>;
+        }
+
+        // 如果不相同，显示划掉的 original_cost 和正常的 cost
+        return (
+          <Space size={4}>
+            <Text delete type="secondary">
+              ￥{originalCost.toFixed(4)}
+            </Text>
+            <Text type="danger">￥{cost.toFixed(4)}</Text>
+          </Space>
+        );
+      },
     },
     {
       title: intl.formatMessage({
@@ -529,12 +550,14 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
       // 构建API请求参数
       const requestParams = {
+        type: "qp" as const,
         quotaPools: [quotaPoolName],
         svc: params.svc ? [params.svc] : [],
         product: params.product ? [params.product] : [],
         // 优先使用用户选择的时间范围，如果没有则使用默认值
         startTime: params.startTime || defaultStartTime,
         endTime,
+        sortOrder: "desc" as const,
       };
 
       const response = await postBillingAdminGet(requestParams);
