@@ -61,6 +61,10 @@ export default [
     icon: "Setting",
     routes: [
       {
+        path: "/config",
+        redirect: "/config/auto-quota-pool-config",
+      },
+      {
         path: "/config/auto-quota-pool-config",
         name: "auto-quota-pool-config",
         icon: "CloudSync",
