@@ -43,20 +43,11 @@ func (c *ControllerV1) EditAutoQuotaPoolConfig(ctx context.Context, req *v1.Edit
 			"priority":      req.Priority,
 		}
 		// 仅当字段在请求中出现时才处理；显式 null 或空对象 {} 则置为数据库 NULL
-		if _, ok := g.RequestFromCtx(ctx).GetRequestMap()["filterGroup"]; ok {
-			if req.FilterGroup == nil {
-				data["filter_group"] = nil
-			} else {
-				data["filter_group"] = gjson.New(req.FilterGroup)
-			}
+		if req.FilterGroup != nil {
+			data["filter_group"] = gjson.New(req.FilterGroup)
 		}
-
-		if _, ok := g.RequestFromCtx(ctx).GetRequestMap()["defaultCasbinRules"]; ok {
-			if req.DefaultCasbinRules == nil {
-				data["default_casbin_rules"] = nil
-			} else {
-				data["default_casbin_rules"] = gjson.New(req.DefaultCasbinRules)
-			}
+		if req.DefaultCasbinRules != nil {
+			data["default_casbin_rules"] = gjson.New(req.DefaultCasbinRules)
 		}
 
 		if _, err := dao.ConfigAutoQuotaPool.Ctx(ctx).

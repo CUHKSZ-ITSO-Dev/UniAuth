@@ -14,19 +14,13 @@ import (
 
 // SyncPersonalQuotaPools 根据自动配额池规则名称，更新所有个人配额池配置
 func SyncPersonalQuotaPools(ctx context.Context, ruleName string) error {
-	// 1. 先获取自动配额池配置（独立短事务）
+	// 1. 先获取自动配额池配置
 	var autoQuotaPoolConfig *entity.ConfigAutoQuotaPool
-	err := dao.ConfigAutoQuotaPool.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		if err := dao.ConfigAutoQuotaPool.Ctx(ctx).
-			Where("rule_name = ?", ruleName).
-			LockUpdate().
-			Scan(&autoQuotaPoolConfig); err != nil {
-			return gerror.Wrapf(err, "获取自动配额池配置 %v 失败", ruleName)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
+	if err := dao.ConfigAutoQuotaPool.Ctx(ctx).
+		Where("rule_name = ?", ruleName).
+		LockUpdate().
+		Scan(&autoQuotaPoolConfig); err != nil {
+		return gerror.Wrapf(err, "获取自动配额池配置 %v 失败", ruleName)
 	}
 
 	// 2. 检查是否有影响的用户

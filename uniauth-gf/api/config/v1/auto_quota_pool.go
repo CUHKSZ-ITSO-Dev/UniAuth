@@ -36,7 +36,7 @@ type EditAutoQuotaPoolConfigReq struct {
 	// 是否启用该配额池
 	Enabled bool `json:"enabled" dc:"是否启用该配额池" d:"true" example:"true"`
 	// 默认 Casbin 规则配置
-	DefaultCasbinRules []*DefaultCasbinRule `json:"defaultCasbinRules" dc:"默认Casbin规则配置"`
+	DefaultCasbinRules *[]*DefaultCasbinRule `json:"defaultCasbinRules" dc:"默认Casbin规则配置"`
 	// 过滤条件组，满足条件的用户将应用该规则
 	FilterGroup *userinfosv1.FilterGroup `json:"filterGroup" dc:"过滤条件组，满足条件的用户将应用该规则"`
 	// 规则说明
