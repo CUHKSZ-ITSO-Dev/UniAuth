@@ -331,7 +331,6 @@ func SyncAutoQuotaPoolGroupingPolicies(ctx context.Context, ruleNames []string) 
 			for _, subjects := range existingSubjectsByRole {
 				totalSubjects += len(subjects)
 			}
-			g.Log().Info(ctx, "查询到现有分组策略记录数", "count", totalSubjects)
 		}
 
 		var policiesToAdd [][]string
