@@ -12,6 +12,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/gres"
+	"github.com/gogf/gf/v2/util/grand"
 )
 
 var e *casbin.Enforcer
@@ -72,6 +73,7 @@ func init() {
 		ticker := time.NewTicker(10 * time.Minute)
 		defer ticker.Stop()
 		for range ticker.C {
+			time.Sleep(time.Duration(grand.Intn(21)) * time.Second)
 			err := e.LoadPolicy()
 			if err != nil {
 				g.Log().Error(ctx, "定时加载Casbin策略失败: "+err.Error())
