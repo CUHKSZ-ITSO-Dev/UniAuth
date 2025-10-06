@@ -100,7 +100,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
     Record<string, { text: string; status?: string }>
   >({});
   const [productValueEnum, setProductValueEnum] = useState<
-    Record<string, { text: string; status?: string }>
+    Record<string, { text: string }>
   >({});
 
   // 工具函数：格式化JSON对象
@@ -174,15 +174,14 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
         // 设置valueEnum格式
         const svcEnum: Record<string, { text: string; status?: string }> = {};
-        const productEnum: Record<string, { text: string; status?: string }> =
-          {};
+        const productEnum: Record<string, { text: string }> = {};
 
         response.services.forEach((svc) => {
           svcEnum[svc] = { text: svc, status: "Default" };
         });
 
         response.products.forEach((product) => {
-          productEnum[product] = { text: product, status: "Default" };
+          productEnum[product] = { text: product };
         });
 
         setSvcOptions(svcOpts);
@@ -450,56 +449,66 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         const formattedJson = formatJsonObject(record.remark);
 
         return (
-          <Space size="small">
-            <Popover
-              title={intl.formatMessage({
-                id: "pages.billingDetail.remarkDetail",
-                defaultMessage: "备注详情",
-              })}
-              content={
-                <pre
-                  style={{
-                    maxWidth: 400,
-                    maxHeight: 300,
-                    overflow: "auto",
-                    fontSize: "12px",
-                    margin: 0,
-                    background: "#f5f5f5",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    whiteSpace: "pre-wrap",
-                  }}
-                >
-                  {formattedJson}
-                </pre>
-              }
-              trigger="hover"
-              placement="left"
-              overlayStyle={{ maxWidth: 500 }}
-            >
-              <Text
-                ellipsis
-                style={{ cursor: "pointer" }}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0, marginRight: 8 }}>
+              <Popover
                 title={intl.formatMessage({
-                  id: "pages.billingDetail.remarkHover",
-                  defaultMessage: "悬停查看详情，点击查看完整内容",
+                  id: "pages.billingDetail.remarkDetail",
+                  defaultMessage: "备注详情",
                 })}
+                content={
+                  <pre
+                    style={{
+                      maxWidth: 400,
+                      maxHeight: 300,
+                      overflow: "auto",
+                      fontSize: "12px",
+                      margin: 0,
+                      background: "#f5f5f5",
+                      padding: "8px",
+                      borderRadius: "4px",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {formattedJson}
+                  </pre>
+                }
+                trigger="hover"
+                placement="left"
+                overlayStyle={{ maxWidth: 500 }}
               >
-                {summary}
-              </Text>
-            </Popover>
-            <Button
-              type="link"
-              size="small"
-              icon={<EyeOutlined />}
-              onClick={() => handleRemarkClick(record.remark)}
-              style={{ padding: "0 4px", fontSize: "12px" }}
-              title={intl.formatMessage({
-                id: "pages.billingDetail.remarkClick",
-                defaultMessage: "查看完整备注",
-              })}
-            />
-          </Space>
+                <Text
+                  ellipsis
+                  style={{ cursor: "pointer" }}
+                  title={intl.formatMessage({
+                    id: "pages.billingDetail.remarkHover",
+                    defaultMessage: "悬停查看详情，点击查看完整内容",
+                  })}
+                >
+                  {summary}
+                </Text>
+              </Popover>
+            </div>
+            <div style={{ flexShrink: 0 }}>
+              <Button
+                type="link"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => handleRemarkClick(record.remark)}
+                style={{ padding: "0 4px", fontSize: "12px" }}
+                title={intl.formatMessage({
+                  id: "pages.billingDetail.remarkClick",
+                  defaultMessage: "查看完整备注",
+                })}
+              />
+            </div>
+          </div>
         );
       },
     },
@@ -608,8 +617,15 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           );
         }
 
+        // 实现分页逻辑
+        const pageSize = params.pageSize || 20;
+        const current = params.current || 1;
+        const startIndex = (current - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedRecords = filteredRecords.slice(startIndex, endIndex);
+
         return {
-          data: filteredRecords,
+          data: paginatedRecords,
           success: true,
           total: filteredRecords.length,
         };
@@ -740,12 +756,20 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             },
           }}
           pagination={{
-            pageSize: 20,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条记录`,
           }}
-          request={billingRecordsDataRequest}
+          request={async (params) => {
+            // 处理分页参数
+            const pageParams = {
+              ...params,
+              current: params.current || 1,
+              pageSize: params.pageSize || 20,
+            };
+
+            return billingRecordsDataRequest(pageParams);
+          }}
           dateFormatter="string"
           headerTitle={intl.formatMessage({
             id: "pages.billingDetail.billingRecords",
