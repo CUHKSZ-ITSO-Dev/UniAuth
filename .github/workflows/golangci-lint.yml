@@ -29,7 +29,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.1
+          version: latest
           working-directory: uniauth-gf
           only-new-issues: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -47,6 +47,6 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.1
+          version: latest
           working-directory: uniauth-gf
           github-token: ${{ secrets.GITHUB_TOKEN }}

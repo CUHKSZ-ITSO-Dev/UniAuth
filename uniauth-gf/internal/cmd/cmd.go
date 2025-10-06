@@ -29,11 +29,11 @@ var (
 		Brief: "start http server",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
 			fmt.Println(`
-   __  __      _ ___         __  __  
-  ╱ ╱ ╱ ╱___  (_)   │ __  __╱ ╱_╱ ╱_ 
+   __  __      _ ___         __  __
+  ╱ ╱ ╱ ╱___  (_)   │ __  __╱ ╱_╱ ╱_
  ╱ ╱ ╱ ╱ __ ╲╱ ╱ ╱│ │╱ ╱ ╱ ╱ __╱ __ ╲
 ╱ ╱_╱ ╱ ╱ ╱ ╱ ╱ ___ ╱ ╱_╱ ╱ ╱_╱ ╱ ╱ ╱
-╲____╱_╱ ╱_╱_╱_╱  │_╲__,_╱╲__╱_╱ ╱_╱ 
+╲____╱_╱ ╱_╱_╱_╱  │_╲__,_╱╲__╱_╱ ╱_╱
 			`)
 			fmt.Println("UniAuth Automated System")
 			fmt.Println("Copyright 2025 The Chinese University of Hong Kong, Shenzhen")
