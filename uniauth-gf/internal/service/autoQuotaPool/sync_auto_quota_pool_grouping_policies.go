@@ -91,13 +91,29 @@ func SyncAutoQuotaPoolGroupingPolicies(ctx context.Context, ruleNames []string) 
 
 		// 5. 批量更新Casbin策略
 		if len(policiesToAdd) > 0 {
-			if _, err := e.AddGroupingPolicies(policiesToAdd); err != nil {
-				return gerror.Wrap(err, "批量新增 Casbin 分组失败")
+			//分批发送避免 PSQL Watcher 报错
+			batchSize := 100
+			for i := 0; i < len(policiesToAdd); i += batchSize {
+				end := i + batchSize
+				if end > len(policiesToAdd) {
+					end = len(policiesToAdd)
+				}
+				if _, err := e.AddGroupingPolicies(policiesToAdd[i:end]); err != nil {
+					return gerror.Wrapf(err, "批量新增 Casbin 分组失败 (第%d-%d条)", i+1, end)
+				}
 			}
 		}
 		if len(policiesToRemove) > 0 {
-			if _, err := e.RemoveGroupingPolicies(policiesToRemove); err != nil {
-				return gerror.Wrap(err, "批量删除 Casbin 分组失败")
+			//分批发送避免 PSQL Watcher 报错
+			batchSize := 100
+			for i := 0; i < len(policiesToRemove); i += batchSize {
+				end := i + batchSize
+				if end > len(policiesToRemove) {
+					end = len(policiesToRemove)
+				}
+				if _, err := e.RemoveGroupingPolicies(policiesToRemove[i:end]); err != nil {
+					return gerror.Wrapf(err, "批量删除 Casbin 分组失败 (第%d-%d条)", i+1, end)
+				}
 			}
 		}
 		return nil
