@@ -100,7 +100,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
     Record<string, { text: string; status?: string }>
   >({});
   const [productValueEnum, setProductValueEnum] = useState<
-    Record<string, { text: string; status?: string }>
+    Record<string, { text: string }>
   >({});
 
   // 工具函数：格式化JSON对象
@@ -174,15 +174,14 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
         // 设置valueEnum格式
         const svcEnum: Record<string, { text: string; status?: string }> = {};
-        const productEnum: Record<string, { text: string; status?: string }> =
-          {};
+        const productEnum: Record<string, { text: string }> = {};
 
         response.services.forEach((svc) => {
           svcEnum[svc] = { text: svc, status: "Default" };
         });
 
         response.products.forEach((product) => {
-          productEnum[product] = { text: product, status: "Default" };
+          productEnum[product] = { text: product };
         });
 
         setSvcOptions(svcOpts);
