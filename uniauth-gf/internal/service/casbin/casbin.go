@@ -1,7 +1,10 @@
 package casbin
 
 import (
+	"time"
+
 	psqlwatcher "uniauth-gf/internal/service/casbin/psqlwatcher"
+
 	pgadapter "github.com/casbin/casbin-pg-adapter"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
@@ -63,6 +66,18 @@ func init() {
 	if err := e.LoadPolicy(); err != nil {
 		panic("加载Casbin策略失败: " + err.Error())
 	}
+
+	// 每十分钟从数据库中加载一次权限表
+	go func() {
+		ticker := time.NewTicker(10 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			err := e.LoadPolicy()
+			if err != nil {
+				g.Log().Error(ctx, "定时加载Casbin策略失败: "+err.Error())
+			}
+		}
+	}()
 }
 
 func GetEnforcer() *casbin.Enforcer {
