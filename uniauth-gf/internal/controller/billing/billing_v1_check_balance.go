@@ -65,12 +65,16 @@ func (c *ControllerV1) CheckBalance(ctx context.Context, req *v1.CheckBalanceReq
 		} else {
 			res.Ok = false
 		}
-		res.Percentage = quotaPool.RemainingQuota.
-			Add(quotaPool.ExtraQuota).
-			Div(quotaPool.RegularQuota).
-			Mul(decimal.NewFromInt(100)).
-			Round(2).
-			String() + "%"
+		if quotaPool.RegularQuota.IsZero() {
+			res.Percentage = "0%"
+		} else {
+			res.Percentage = quotaPool.RemainingQuota.
+				Add(quotaPool.ExtraQuota).
+				Div(quotaPool.RegularQuota).
+				Mul(decimal.NewFromInt(100)).
+				Round(2).
+				String() + "%"
+		}
 		return nil
 	})
 	if err != nil {
