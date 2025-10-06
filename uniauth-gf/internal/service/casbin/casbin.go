@@ -1,7 +1,7 @@
 package casbin
 
 import (
-	psqlwatcher "github.com/IguteChung/casbin-psql-watcher"
+	psqlwatcher "uniauth-gf/internal/service/casbin/psqlwatcher"
 	pgadapter "github.com/casbin/casbin-pg-adapter"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
