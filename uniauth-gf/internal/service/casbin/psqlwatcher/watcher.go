@@ -392,8 +392,8 @@ func (w *Watcher) notifyMessage(m *MSG) error {
 			log.Printf("[psqlwatcher] error: chunk %d/%d of %s is still too large after final creation (%d bytes)", i+1, totalChunks, chunkID, len(finalPayload))
 			continue
 		}
-		if err := w.sendPayload(finalPayload); err != nil {
-			log.Printf("[psqlwatcher] failed to send chunk %d/%d of %s: %v", i+1, totalChunks, chunkID, err)
+if err := w.sendPayload(finalPayload); err != nil {
+			return fmt.Errorf("[psqlwatcher] failed to send chunk %d/%d of %s: %v", i+1, totalChunks, chunkID, err)
 		}
 	}
 
