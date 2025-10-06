@@ -617,8 +617,15 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           );
         }
 
+        // 实现分页逻辑
+        const pageSize = params.pageSize || 20;
+        const current = params.current || 1;
+        const startIndex = (current - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedRecords = filteredRecords.slice(startIndex, endIndex);
+
         return {
-          data: filteredRecords,
+          data: paginatedRecords,
           success: true,
           total: filteredRecords.length,
         };
@@ -749,12 +756,20 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             },
           }}
           pagination={{
-            pageSize: 20,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条记录`,
           }}
-          request={billingRecordsDataRequest}
+          request={async (params) => {
+            // 处理分页参数
+            const pageParams = {
+              ...params,
+              current: params.current || 1,
+              pageSize: params.pageSize || 20,
+            };
+
+            return billingRecordsDataRequest(pageParams);
+          }}
           dateFormatter="string"
           headerTitle={intl.formatMessage({
             id: "pages.billingDetail.billingRecords",
