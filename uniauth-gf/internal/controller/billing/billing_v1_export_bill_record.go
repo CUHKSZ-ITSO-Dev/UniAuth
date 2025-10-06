@@ -36,7 +36,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 	}
 	records := recordsPri.Records
 	var target []string
-	if len(req.Upns) > 0 {
+	if req.Type == "upn" {
 		target = req.Upns
 	} else {
 		target = req.QuotaPools
@@ -182,12 +182,13 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		_ = f.SetCellValue(sheet, "G9", generateDate)
 		_ = f.SetCellStyle(sheet, "A9", "I9", infoStyle)
 
-		if len(req.Upns) > 0 {
+		if req.Type == "upn" {
 			_ = f.SetCellValue(sheet, "A10", "UPN：")
+			_ = f.SetCellValue(sheet, "B10", sheet + "( " + strings.Join(req.QuotaPools, ", ") + " )")
 		} else {
 			_ = f.SetCellValue(sheet, "A10", "配额池：")
+			_ = f.SetCellValue(sheet, "B10", sheet + "( " + strings.Join(req.Upns, ", ") + " )")
 		}
-		_ = f.SetCellValue(sheet, "B10", sheet)
 		_ = f.SetCellValue(sheet, "F10", "账单状态：")
 		_ = f.SetCellValue(sheet, "G10", "正式账单")
 		_ = f.SetCellStyle(sheet, "A10", "I10", infoStyle)
@@ -225,7 +226,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		_ = f.SetCellStyle(sheet, "A12", "I12", infoStyle)
 
 		// 表格标题
-		header := g.ArrayStr{"序号", "UPN", "服务", "产品", "计划", "来源", "原始消费", "消费", "记录时间", "记录ID"}
+		header := g.ArrayStr{"序号", "UPN", "服务", "产品", "计划", "来源", "消费", "记录时间", "记录ID"}
 		_ = f.SetSheetRow(sheet, "A14", &header)
 
 		// 表头样式
@@ -251,7 +252,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 				{Type: "bottom", Style: 2, Color: "000000"},
 			},
 		})
-		_ = f.SetCellStyle(sheet, "A14", "J14", headerStyle)
+		_ = f.SetCellStyle(sheet, "A14", "I14", headerStyle)
 		var totalCost = decimal.Zero
 		for idx, record := range records.GetJsons(sheet) {
 			_ = f.SetSheetRow(sheet, fmt.Sprintf("A%d", idx+15), &g.Array{
@@ -261,32 +262,36 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 				record.Get("product"),
 				record.Get("plan"),
 				record.Get("source"),
-				record.Get("original_cost"),
 				record.Get("cost"),
 				record.Get("created_at"),
 				record.Get("id"),
 			})
-			if record.Get("plan").String() == "Included" {
+			if record.Get("original_cost").String() != record.Get("cost").String() {
 				_ = f.SetCellRichText(sheet, fmt.Sprintf("G%d", idx+15), []excelize.RichTextRun{
 					{
-						Text: record.Get("cost").String(),
+						Text: record.Get("original_cost").String(),
 						Font: &excelize.Font{
 							Strike: true,
 							Color:  "BFBFBF",
 						},
 					},
 					{
-						Text: " Included",
+						Text: " " + record.Get("cost").String(),
 					},
 				})
 			} else {
-				// 只有非 Included 的项目才计入总计
-				if cost, err := decimal.NewFromString(record.Get("cost").String()); err == nil && cost.IsPositive() {
-					totalCost = totalCost.Add(cost)
-				} else if err != nil {
-					return nil, gerror.Wrap(err, "转换 Decimal 失败")
-				}
+				_ = f.SetCellRichText(sheet, fmt.Sprintf("G%d", idx+15), []excelize.RichTextRun{
+					{
+						Text: record.Get("cost").String(),
+					},
+				})
 			}
+			if cost, err := decimal.NewFromString(record.Get("cost").String()); err == nil && cost.IsPositive() {
+				totalCost = totalCost.Add(cost)
+			} else if err != nil {
+				return nil, gerror.Wrap(err, "转换 Decimal 失败")
+			}
+
 			_ = f.AddComment(sheet, excelize.Comment{
 				Cell:   fmt.Sprintf("G%d", idx+15),
 				Author: "UniAuth.Billing",
