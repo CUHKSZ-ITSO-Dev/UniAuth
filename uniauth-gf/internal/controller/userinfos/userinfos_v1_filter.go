@@ -83,7 +83,7 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 		req.Pagination.Page = 1
 		req.Pagination.PageSize = total
 	}
-	
+
 	// 应用排序
 	if len(req.Sort) > 0 {
 		for _, sort := range req.Sort {
