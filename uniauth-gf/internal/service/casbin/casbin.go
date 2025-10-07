@@ -32,7 +32,7 @@ func init() {
 	ctx := gctx.New()
 
 	// Watcher 配置
-	conn := g.Cfg().MustGetWithEnv(ctx, "casbin.default.watcher").String()
+	conn := g.Cfg().MustGetWithEnv(ctx, "casbin.default.watcher.link").String()
 	w, err := psqlwatcher.NewWatcherWithConnString(ctx, conn,
 		psqlwatcher.Option{Verbose: g.Cfg().MustGet(ctx, "casbin.default.watcher.verbose", false).Bool()})
 	if err != nil {

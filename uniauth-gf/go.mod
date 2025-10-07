@@ -9,6 +9,7 @@ require (
 	github.com/gogf/gf/v2 v2.9.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.1.1
+	github.com/klauspost/compress v1.18.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/xuri/excelize/v2 v2.9.1

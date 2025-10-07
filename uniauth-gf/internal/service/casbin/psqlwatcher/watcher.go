@@ -1,57 +1,21 @@
-/*
-基于 IguteChung/casbin-psql-watcher 的二开版本。
-原项目 MIT 协议，地址：https://github.com/IguteChung/casbin-psql-watcher。
-
-针对 PostgreSQL NOTIFY payload 的大小限制是 8000 字节，
-改造了 notifyMessage() 和 DefaultCallback() 函数，使其能够处理更大的消息。
-核心逻辑是：
-1. 先尝试使用 flate 压缩 + base64 编码二进制，看是否超过 8000 payloadLimit 的限制。
-2. 如果超过了，则把 base64 数据分 chunk 发送。defaultCallback 函数中自动等待所有 chunk 接收完毕后同步 Casbin。
-*/
-
 package psqlwatcher
 
 import (
-	"bytes"
-	"compress/flate"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
+	"runtime"
 	"sync"
-	"time"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/klauspost/compress/zstd"
 )
 
-const (
-	// pg_notify payload limit is 8000 bytes.
-	payloadLimit = 8000
-)
-
-// TransmittedMSG is the envelope for messages sent over pg_notify.
-// It supports chunking for large payloads.
-type TransmittedMSG struct {
-	IsChunked  bool   `json:"is_chunked"`
-	ChunkID    string `json:"chunk_id,omitempty"`    // A unique ID for all chunks of a single message
-	ChunkNum   int    `json:"chunk_num,omitempty"`   // The sequence number of this chunk (e.g., 1, 2, 3...)
-	ChunkTotal int    `json:"chunk_total,omitempty"` // Total number of chunks
-	Data       *MSG   `json:"data"`
-}
-
-// reassemblyBuffer for chunked messages
-type reassemblyBuffer struct {
-	chunks   map[int]*MSG
-	total    int
-	lastSeen time.Time
-}
-
-// Watcher implements casbin Watcher and WatcherEX to sync multiple casbin enforcer.
+// Watcher 实现了 casbin 的 Watcher 和 WatcherEX 接口，用于同步多个 casbin enforcer
 type Watcher struct {
 	sync.RWMutex
 
@@ -59,16 +23,12 @@ type Watcher struct {
 	pool       *pgxpool.Pool
 	callback   func(string)
 	cancelFunc func()
-
-	// for chunking
-	reassemblyCache map[string]*reassemblyBuffer // key is ChunkID
-	cacheLock       sync.Mutex
 }
 
-// UpdateType defines the type of update operation.
+// UpdateType 定义更新操作的类型
 type UpdateType string
 
-// all types of Update.
+// 所有的更新类型
 const (
 	Update                        UpdateType = "Update"
 	UpdateForAddPolicy            UpdateType = "UpdateForAddPolicy"
@@ -79,9 +39,12 @@ const (
 	UpdateForRemovePolicies       UpdateType = "UpdateForRemovePolicies"
 	UpdateForUpdatePolicy         UpdateType = "UpdateForUpdatePolicy"
 	UpdateForUpdatePolicies       UpdateType = "UpdateForUpdatePolicies"
+	UpdateForLoadPolicy           UpdateType = "UpdateForLoadPolicy"
+	payloadLimit                  int        = 8000
+	maxEstimateLimit              int        = 160000 // 按 5% 压缩率估计
 )
 
-// MSG defines the payload for message.
+// MSG 定义消息的载荷结构
 type MSG struct {
 	Method      UpdateType `json:"method"`
 	ID          string     `json:"id"`
@@ -91,11 +54,13 @@ type MSG struct {
 	NewRules    [][]string `json:"new_rules,omitempty"`
 	FieldIndex  int        `json:"field_index,omitempty"`
 	FieldValues []string   `json:"field_values,omitempty"`
+	Compressed  bool       `json:"compressed,omitempty"` // 标识载荷是否已压缩
+	Payload     string     `json:"payload,omitempty"`    // 压缩并 base64 编码后的原始消息
 }
 
-// NewWatcherWithConnString creates a Watcher with pgx connection string.
+// NewWatcherWithConnString 使用 pgx 连接字符串创建一个 Watcher
 func NewWatcherWithConnString(ctx context.Context, connString string, opt Option) (*Watcher, error) {
-	// new the pgx pool by conn string.
+	// 使用连接字符串创建 pgx 连接池
 	pool, err := pgxpool.New(ctx, connString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to new pgx pool with %s: %v", connString, err)
@@ -104,25 +69,21 @@ func NewWatcherWithConnString(ctx context.Context, connString string, opt Option
 	return NewWatcherWithPool(ctx, pool, opt)
 }
 
-// NewWatcherWithPool creates a Watcher with pgx pool.
+// NewWatcherWithPool 使用 pgx 连接池创建一个 Watcher
 func NewWatcherWithPool(ctx context.Context, pool *pgxpool.Pool, opt Option) (*Watcher, error) {
 	if err := pool.Ping(ctx); err != nil {
 		return nil, fmt.Errorf("failed to ping pool: %v", err)
 	}
 
-	// prepare the watcher.
+	// 准备 watcher
 	listenerCtx, cancel := context.WithCancel(context.Background())
 	w := &Watcher{
-		opt:             opt,
-		pool:            pool,
-		cancelFunc:      cancel,
-		reassemblyCache: make(map[string]*reassemblyBuffer),
+		opt:        opt,
+		pool:       pool,
+		cancelFunc: cancel,
 	}
 
-	// start the chunk cleanup goroutine.
-	go w.cleanupExpiredChunks()
-
-	// start listen.
+	// 启动监听协程
 	go func() {
 		if err := w.listenMessage(listenerCtx); err == context.Canceled {
 			log.Println("[psqlwatcher] watcher closed")
@@ -134,20 +95,178 @@ func NewWatcherWithPool(ctx context.Context, pool *pgxpool.Pool, opt Option) (*W
 	return w, nil
 }
 
-// DefaultCallback defines the generic implementation for WatcherEX interface.
+var (
+	// 使用sync.Once确保encoder和decoder只初始化一次，提高性能
+	zstdEncoder     *zstd.Encoder
+	zstdDecoder     *zstd.Decoder
+	zstdInitEncoder sync.Once
+	zstdInitDecoder sync.Once
+
+	// 使用对象池复用buffer，减少内存分配和GC压力
+	bufferPool = sync.Pool{
+		New: func() interface{} {
+			// 预分配16KB的buffer，适合大多数场景
+			buf := make([]byte, 0, 16*1024)
+			return &buf
+		},
+	}
+
+	// JSON编码器对象池
+	msgPool = sync.Pool{
+		New: func() interface{} {
+			return &MSG{}
+		},
+	}
+)
+
+// getOptimalConcurrency 计算最优并发线程数
+func getOptimalConcurrency() int {
+	numCPU := runtime.NumCPU()
+	// 使用CPU核心数，但限制在4-8之间，避免过多线程竞争
+	if numCPU < 4 {
+		return 4
+	}
+	if numCPU > 8 {
+		return 8
+	}
+	return numCPU
+}
+
+// getZstdEncoder 获取或创建zstd encoder（使用默认压缩级别，平衡速度和压缩率）
+func getZstdEncoder() *zstd.Encoder {
+	zstdInitEncoder.Do(func() {
+		var err error
+		concurrency := getOptimalConcurrency()
+		zstdEncoder, err = zstd.NewWriter(nil,
+			zstd.WithEncoderLevel(zstd.SpeedDefault),
+			zstd.WithEncoderConcurrency(concurrency), // 根据CPU核心数动态设置并发线程
+		)
+		if err != nil {
+			log.Printf("[psqlwatcher] failed to create zstd encoder: %v\n", err)
+		} else {
+			log.Printf("[psqlwatcher] zstd encoder initialized with %d concurrent threads\n", concurrency)
+		}
+	})
+	return zstdEncoder
+}
+
+// getZstdDecoder 获取或创建zstd decoder
+func getZstdDecoder() *zstd.Decoder {
+	zstdInitDecoder.Do(func() {
+		var err error
+		concurrency := getOptimalConcurrency()
+		// 使用并发解压，提升解压速度
+		zstdDecoder, err = zstd.NewReader(nil, zstd.WithDecoderConcurrency(concurrency))
+		if err != nil {
+			log.Printf("[psqlwatcher] failed to create zstd decoder: %v\n", err)
+		} else {
+			log.Printf("[psqlwatcher] zstd decoder initialized with %d concurrent threads\n", concurrency)
+		}
+	})
+	return zstdDecoder
+}
+
+// getBuffer 从对象池获取buffer
+func getBuffer() *[]byte {
+	bufPtr := bufferPool.Get().(*[]byte)
+	*bufPtr = (*bufPtr)[:0]
+	return bufPtr
+}
+
+// putBuffer 归还buffer到对象池
+func putBuffer(buf *[]byte) {
+	if cap(*buf) <= 64*1024 { // 只回收不超过64KB的buffer，避免池中积累过大的对象
+		bufferPool.Put(buf)
+	}
+}
+
+// compressPayload 使用 zstd 压缩并 base64 编码载荷
+func compressPayload(data []byte) (string, error) {
+	encoder := getZstdEncoder()
+	if encoder == nil {
+		return "", fmt.Errorf("zstd encoder not available")
+	}
+
+	// 从对象池获取buffer，减少内存分配
+	dstBufPtr := getBuffer()
+	defer putBuffer(dstBufPtr)
+
+	// 预分配足够的容量（压缩后通常是原始大小的20-40%）
+	if cap(*dstBufPtr) < len(data)/2 {
+		newBuf := make([]byte, 0, len(data)/2)
+		*dstBufPtr = newBuf
+	}
+
+	// 使用zstd压缩
+	compressed := encoder.EncodeAll(data, *dstBufPtr)
+
+	// base64编码（直接返回string，避免额外复制）
+	return base64.StdEncoding.EncodeToString(compressed), nil
+}
+
+// decompressPayload 解码 base64 并使用 zstd 解压载荷
+func decompressPayload(encodedData string) ([]byte, error) {
+	// base64解码
+	compressed, err := base64.StdEncoding.DecodeString(encodedData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode base64: %v", err)
+	}
+
+	decoder := getZstdDecoder()
+	if decoder == nil {
+		return nil, fmt.Errorf("zstd decoder not available")
+	}
+
+	// 从对象池获取buffer
+	dstBufPtr := getBuffer()
+
+	// 预分配解压后的空间（通常是压缩大小的3-5倍）
+	if cap(*dstBufPtr) < len(compressed)*4 {
+		newBuf := make([]byte, 0, len(compressed)*4)
+		*dstBufPtr = newBuf
+	}
+
+	// 使用zstd解压
+	decompressed, err := decoder.DecodeAll(compressed, *dstBufPtr)
+	if err != nil {
+		putBuffer(dstBufPtr)
+		return nil, fmt.Errorf("failed to decompress zstd: %v", err)
+	}
+
+	// 注意：不能立即归还buffer，因为decompressed引用了它
+	// 调用者需要复制数据或在使用完后手动归还
+	return decompressed, nil
+}
+
+// DefaultCallback 定义 WatcherEX 接口的通用实现
 func DefaultCallback(e casbin.IEnforcer) func(string) {
 	return func(s string) {
-		// parse the msg.
+		// 解析消息
 		var m MSG
 		if err := json.Unmarshal([]byte(s), &m); err != nil {
 			log.Printf("[psqlwatcher] unable to unmarshal %s: %v\n", s, err)
 			return
 		}
 
+		// 处理压缩的载荷
+		if m.Compressed && m.Payload != "" {
+			decompressed, err := decompressPayload(m.Payload)
+			if err != nil {
+				log.Printf("[psqlwatcher] failed to decompress payload: %v\n", err)
+				return
+			}
+
+			// 解压后再次解析消息
+			if err := json.Unmarshal(decompressed, &m); err != nil {
+				log.Printf("[psqlwatcher] unable to unmarshal decompressed payload: %v\n", err)
+				return
+			}
+		}
+
 		var res bool
 		var err error
 		switch m.Method {
-		case Update, UpdateForSavePolicy:
+		case Update, UpdateForSavePolicy, UpdateForLoadPolicy:
 			err = e.LoadPolicy()
 			res = true
 		case UpdateForAddPolicy:
@@ -176,9 +295,8 @@ func DefaultCallback(e casbin.IEnforcer) func(string) {
 	}
 }
 
-// SetUpdateCallback sets the callback function that the watcher will call
-// when the policy in DB has been changed by other instances.
-// A classic callback is Enforcer.LoadPolicy().
+// SetUpdateCallback 设置回调函数，当其他实例修改了数据库中的策略时会调用该回调
+// 经典的回调是 Enforcer.LoadPolicy()
 func (w *Watcher) SetUpdateCallback(callback func(string)) error {
 	w.Lock()
 	defer w.Unlock()
@@ -186,9 +304,8 @@ func (w *Watcher) SetUpdateCallback(callback func(string)) error {
 	return nil
 }
 
-// Update calls the update callback of other instances to synchronize their policy.
-// It is usually called after changing the policy in DB, like Enforcer.SavePolicy(),
-// Enforcer.AddPolicy(), Enforcer.RemovePolicy(), etc.
+// Update 调用其他实例的更新回调以同步它们的策略
+// 通常在修改数据库中的策略后调用，如 Enforcer.SavePolicy()、Enforcer.AddPolicy()、Enforcer.RemovePolicy() 等
 func (w *Watcher) Update() error {
 	return w.notifyMessage(&MSG{
 		Method: Update,
@@ -196,14 +313,14 @@ func (w *Watcher) Update() error {
 	})
 }
 
-// Close stops and releases the watcher, the callback function will not be called any more.
+// Close 停止并释放 watcher，回调函数将不再被调用
 func (w *Watcher) Close() {
-	// close the listen routine by cancel the context.
+	// 通过取消 context 来关闭监听协程
 	w.cancelFunc()
 }
 
-// UpdateForAddPolicy calls the update callback of other instances to synchronize their policy.
-// It is called after Enforcer.AddPolicy()
+// UpdateForAddPolicy 调用其他实例的更新回调以同步它们的策略
+// 在 Enforcer.AddPolicy() 后调用
 func (w *Watcher) UpdateForAddPolicy(sec, ptype string, params ...string) error {
 	return w.notifyMessage(&MSG{
 		Method:   UpdateForAddPolicy,
@@ -214,8 +331,8 @@ func (w *Watcher) UpdateForAddPolicy(sec, ptype string, params ...string) error 
 	})
 }
 
-// UpdateForRemovePolicy calls the update callback of other instances to synchronize their policy.
-// It is called after Enforcer.RemovePolicy()
+// UpdateForRemovePolicy 调用其他实例的更新回调以同步它们的策略
+// 在 Enforcer.RemovePolicy() 后调用
 func (w *Watcher) UpdateForRemovePolicy(sec, ptype string, params ...string) error {
 	return w.notifyMessage(&MSG{
 		Method:   UpdateForRemovePolicy,
@@ -226,8 +343,8 @@ func (w *Watcher) UpdateForRemovePolicy(sec, ptype string, params ...string) err
 	})
 }
 
-// UpdateForRemoveFilteredPolicy calls the update callback of other instances to synchronize their policy.
-// It is called after Enforcer.RemoveFilteredNamedGroupingPolicy()
+// UpdateForRemoveFilteredPolicy 调用其他实例的更新回调以同步它们的策略
+// 在 Enforcer.RemoveFilteredNamedGroupingPolicy() 后调用
 func (w *Watcher) UpdateForRemoveFilteredPolicy(sec, ptype string, fieldIndex int, fieldValues ...string) error {
 	return w.notifyMessage(&MSG{
 		Method:      UpdateForRemoveFilteredPolicy,
@@ -239,8 +356,8 @@ func (w *Watcher) UpdateForRemoveFilteredPolicy(sec, ptype string, fieldIndex in
 	})
 }
 
-// UpdateForSavePolicy calls the update callback of other instances to synchronize their policy.
-// It is called after Enforcer.RemoveFilteredNamedGroupingPolicy()
+// UpdateForSavePolicy 调用其他实例的更新回调以同步它们的策略
+// 在 Enforcer.SavePolicy() 后调用
 func (w *Watcher) UpdateForSavePolicy(model model.Model) error {
 	return w.notifyMessage(&MSG{
 		Method: UpdateForSavePolicy,
@@ -248,8 +365,8 @@ func (w *Watcher) UpdateForSavePolicy(model model.Model) error {
 	})
 }
 
-// UpdateForAddPolicies calls the update callback of other instances to synchronize their policy.
-// It is called after Enforcer.AddPolicies()
+// UpdateForAddPolicies 调用其他实例的更新回调以同步它们的策略
+// 在 Enforcer.AddPolicies() 后调用
 func (w *Watcher) UpdateForAddPolicies(sec string, ptype string, rules ...[]string) error {
 	return w.notifyMessage(&MSG{
 		Method:   UpdateForAddPolicies,
@@ -260,8 +377,8 @@ func (w *Watcher) UpdateForAddPolicies(sec string, ptype string, rules ...[]stri
 	})
 }
 
-// UpdateForRemovePolicies calls the update callback of other instances to synchronize their policy.
-// It is called after Enforcer.RemovePolicies()
+// UpdateForRemovePolicies 调用其他实例的更新回调以同步它们的策略
+// 在 Enforcer.RemovePolicies() 后调用
 func (w *Watcher) UpdateForRemovePolicies(sec string, ptype string, rules ...[]string) error {
 	return w.notifyMessage(&MSG{
 		Method:   UpdateForRemovePolicies,
@@ -272,8 +389,8 @@ func (w *Watcher) UpdateForRemovePolicies(sec string, ptype string, rules ...[]s
 	})
 }
 
-// UpdateForUpdatePolicy calls the update callback of other instances to synchronize their policy.
-// It is called after Enforcer.UpdatePolicy()
+// UpdateForUpdatePolicy 调用其他实例的更新回调以同步它们的策略
+// 在 Enforcer.UpdatePolicy() 后调用
 func (w *Watcher) UpdateForUpdatePolicy(sec string, ptype string, oldRule, newRule []string) error {
 	return w.notifyMessage(&MSG{
 		Method:   UpdateForUpdatePolicy,
@@ -285,8 +402,8 @@ func (w *Watcher) UpdateForUpdatePolicy(sec string, ptype string, oldRule, newRu
 	})
 }
 
-// UpdateForUpdatePolicies calls the update callback of other instances to synchronize their policy.
-// It is called after Enforcer.UpdatePolicies()
+// UpdateForUpdatePolicies 调用其他实例的更新回调以同步它们的策略
+// 在 Enforcer.UpdatePolicies() 后调用
 func (w *Watcher) UpdateForUpdatePolicies(sec string, ptype string, oldRules, newRules [][]string) error {
 	return w.notifyMessage(&MSG{
 		Method:   UpdateForUpdatePolicies,
@@ -298,161 +415,151 @@ func (w *Watcher) UpdateForUpdatePolicies(sec string, ptype string, oldRules, ne
 	})
 }
 
+// notifyMessage 发送通知消息到 PostgreSQL 通道
+// 采用四级策略处理大载荷（优化版：避免不必要的压缩操作）：
+// 策略1: 原始载荷 < 8000 字节：直接发送（不启动压缩goroutine）
+// 策略0: 原始载荷 > 160000 字节：直接发送 LoadPolicy 命令（不启动压缩goroutine）
+// 策略2: 8000-160000 字节且压缩后 < 8000：发送压缩版本（并发压缩）
+// 策略3: 压缩后仍 >= 8000 字节：发送 LoadPolicy 命令
 func (w *Watcher) notifyMessage(m *MSG) error {
-	// 1. try to send as a single message.
-	payload, err := w.createPayload(&TransmittedMSG{IsChunked: false, Data: m})
+	// 序列化原始消息
+	originalPayload, err := json.Marshal(m)
 	if err != nil {
-		return fmt.Errorf("failed to create payload: %v", err)
+		return fmt.Errorf("failed to marshal %+v: %v", m, err)
 	}
 
-	if len(payload) <= payloadLimit {
-		return w.sendPayload(payload)
-	}
+	payloadSize := len(originalPayload)
+	var payloadToSend []byte
 
-	// 2. if payload is too large, chunk it.
-	numRules := max(len(m.OldRules), len(m.NewRules))
+	// 策略1: 小载荷直接发送，不压缩（最快路径）
+	if payloadSize < payloadLimit {
+		payloadToSend = originalPayload
 
-	if numRules == 0 {
-		return fmt.Errorf("message without rules is too large: %d bytes", len(payload))
-	}
-
-	// For UpdatePolicies, old and new rules should have a 1-to-1 correspondence.
-	hasOldRules := len(m.OldRules) > 0
-	hasNewRules := len(m.NewRules) > 0
-	if hasOldRules && hasNewRules && len(m.OldRules) != len(m.NewRules) {
-		return fmt.Errorf("cannot chunk policies with mismatched old and new rule counts")
-	}
-
-	chunkID := uuid.New().String()
-	var chunks []*TransmittedMSG
-	currentChunkData := *m
-	currentChunkData.OldRules = make([][]string, 0)
-	currentChunkData.NewRules = make([][]string, 0)
-
-	// Iteratively build chunks to ensure each fits within the payload limit.
-	for i := range numRules {
-		// Create a temporary chunk data to test its size.
-		testChunkData := currentChunkData
-		if hasOldRules {
-			testChunkData.OldRules = append(testChunkData.OldRules, m.OldRules[i])
+		if w.GetVerbose() {
+			log.Printf("[psqlwatcher] 策略1: 发送原始载荷 | 大小: %d 字节\n", payloadSize)
 		}
-		if hasNewRules {
-			testChunkData.NewRules = append(testChunkData.NewRules, m.NewRules[i])
+	} else if payloadSize > maxEstimateLimit {
+		// 策略0: 超大载荷直接发送 LoadPolicy，不压缩（避免浪费CPU）
+		if w.GetVerbose() {
+			log.Printf("[psqlwatcher] 策略0: 载荷超大 | 原始: %d 字节 | 直接发送 LoadPolicy 命令\n", payloadSize)
 		}
 
-		// Check if the new rule makes the chunk too large.
-		p, err := w.createPayload(&TransmittedMSG{Data: &testChunkData})
-		if err != nil {
-			return fmt.Errorf("failed to create test payload for chunking: %v", err)
+		// 复用LoadPolicy消息对象
+		loadPolicyMsg := msgPool.Get().(*MSG)
+		loadPolicyMsg.Method = UpdateForLoadPolicy
+		loadPolicyMsg.ID = w.GetLocalID()
+		payloadToSend, _ = json.Marshal(loadPolicyMsg)
+
+		// 清空并归还对象到池
+		*loadPolicyMsg = MSG{}
+		msgPool.Put(loadPolicyMsg)
+	} else {
+		// 策略2/3: 中等大小载荷，并发压缩处理
+		// 定义压缩结果结构
+		type compressResult struct {
+			compressedPayload []byte
+			err               error
 		}
 
-		if len(p) > payloadLimit && (len(currentChunkData.OldRules) > 0 || len(currentChunkData.NewRules) > 0) {
-			// Current chunk is full. Finalize and append it.
-			chunks = append(chunks, &TransmittedMSG{
-				IsChunked: true,
-				ChunkID:   chunkID,
-				Data:      &currentChunkData,
-			})
+		// 并发启动压缩操作
+		compressChan := make(chan compressResult, 1)
+		go func() {
+			compressed, err := compressPayload(originalPayload)
 
-			// Start a new chunk with the current rule.
-			currentChunkData = *m
-			currentChunkData.OldRules = make([][]string, 0)
-			currentChunkData.NewRules = make([][]string, 0)
-			if hasOldRules {
-				currentChunkData.OldRules = append(currentChunkData.OldRules, m.OldRules[i])
+			var compressedPayload []byte
+			if err == nil {
+				// 从对象池获取MSG对象
+				compressedMsg := msgPool.Get().(*MSG)
+				compressedMsg.Method = m.Method
+				compressedMsg.ID = m.ID
+				compressedMsg.Compressed = true
+				compressedMsg.Payload = compressed
+
+				compressedPayload, err = json.Marshal(compressedMsg)
+
+				// 清空并归还对象
+				*compressedMsg = MSG{}
+				msgPool.Put(compressedMsg)
 			}
-			if hasNewRules {
-				currentChunkData.NewRules = append(currentChunkData.NewRules, m.NewRules[i])
+
+			compressChan <- compressResult{
+				compressedPayload: compressedPayload,
+				err:               err,
 			}
+		}()
+
+		// 等待压缩结果
+		result := <-compressChan
+
+		if result.err != nil {
+			// 压缩失败，降级为 LoadPolicy
+			if w.GetVerbose() {
+				log.Printf("[psqlwatcher] 压缩失败: %v, 降级为 LoadPolicy\n", result.err)
+			}
+
+			loadPolicyMsg := msgPool.Get().(*MSG)
+			loadPolicyMsg.Method = UpdateForLoadPolicy
+			loadPolicyMsg.ID = w.GetLocalID()
+			payloadToSend, _ = json.Marshal(loadPolicyMsg)
+			*loadPolicyMsg = MSG{}
+			msgPool.Put(loadPolicyMsg)
 		} else {
-			// The rule fits. Add it to the current chunk.
-			currentChunkData = testChunkData
+			compressedSize := len(result.compressedPayload)
+
+			// 策略2: 压缩后 < 8000 字节，发送压缩版本
+			if compressedSize < payloadLimit {
+				payloadToSend = result.compressedPayload
+
+				if w.GetVerbose() {
+					log.Printf("[psqlwatcher] 策略2: 发送压缩载荷 | 原始: %d 字节 | 压缩: %d 字节 (%.2f%%)\n",
+						payloadSize, compressedSize, float64(compressedSize)*100/float64(payloadSize))
+				}
+			} else {
+				// 策略3: 压缩后仍 >= 8000 字节，发送 LoadPolicy 命令
+				if w.GetVerbose() {
+					log.Printf("[psqlwatcher] 策略3: 载荷过大 | 原始: %d 字节 | 压缩: %d 字节 | 发送 LoadPolicy 命令\n",
+						payloadSize, compressedSize)
+				}
+
+				loadPolicyMsg := msgPool.Get().(*MSG)
+				loadPolicyMsg.Method = UpdateForLoadPolicy
+				loadPolicyMsg.ID = w.GetLocalID()
+				payloadToSend, _ = json.Marshal(loadPolicyMsg)
+				*loadPolicyMsg = MSG{}
+				msgPool.Put(loadPolicyMsg)
+			}
 		}
 	}
 
-	// Add the last chunk.
-	chunks = append(chunks, &TransmittedMSG{
-		IsChunked: true,
-		ChunkID:   chunkID,
-		Data:      &currentChunkData,
-	})
-
-	// Send all chunks with the correct metadata.
-	totalChunks := len(chunks)
-	for i, chunk := range chunks {
-		chunk.ChunkNum = i + 1
-		chunk.ChunkTotal = totalChunks
-
-		finalPayload, err := w.createPayload(chunk)
-		if err != nil {
-			log.Printf("[psqlwatcher] failed to create final payload for chunk %d/%d of %s: %v", i+1, totalChunks, chunkID, err)
-			continue
-		}
-		if len(finalPayload) > payloadLimit {
-			log.Printf("[psqlwatcher] error: chunk %d/%d of %s is still too large after final creation (%d bytes)", i+1, totalChunks, chunkID, len(finalPayload))
-			continue
-		}
-if err := w.sendPayload(finalPayload); err != nil {
-			return fmt.Errorf("[psqlwatcher] failed to send chunk %d/%d of %s: %v", i+1, totalChunks, chunkID, err)
-		}
-	}
-
-	return nil
-}
-
-// createPayload marshals, compresses, and base64-encodes the message.
-func (w *Watcher) createPayload(tm *TransmittedMSG) (string, error) {
-	b, err := json.Marshal(tm)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal %+v: %v", tm, err)
-	}
-
-	// compress with flate.
-	var buf bytes.Buffer
-	writer, err := flate.NewWriter(&buf, flate.BestCompression)
-	if err != nil {
-		return "", fmt.Errorf("failed to new flate writer: %v", err)
-	}
-	if _, err := writer.Write(b); err != nil {
-		return "", fmt.Errorf("failed to write to flate writer: %v", err)
-	}
-	if err := writer.Close(); err != nil {
-		return "", fmt.Errorf("failed to close flate writer: %v", err)
-	}
-	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
-}
-
-// sendPayload sends the payload to the PostgreSQL channel.
-func (w *Watcher) sendPayload(payload string) error {
+	// 发送到 PostgreSQL 通道
 	cmd := fmt.Sprintf("select pg_notify('%s', $1)", w.GetChannel())
-
-	// send to psql channel.
-	if _, err := w.pool.Exec(context.Background(), cmd, payload); err != nil {
-		return fmt.Errorf("failed to notify with payload size %d: %v", len(payload), err)
+	if _, err := w.pool.Exec(context.Background(), cmd, string(payloadToSend)); err != nil {
+		return fmt.Errorf("failed to notify %s: %v", string(payloadToSend), err)
 	}
 
 	if w.GetVerbose() {
-		log.Printf("[psqlwatcher] send message with payload size %d to channel %s\n", len(payload), w.GetChannel())
+		log.Printf("[psqlwatcher] 消息已发送到通道: %s\n", w.GetChannel())
 	}
 
 	return nil
 }
 
+// listenMessage 监听 PostgreSQL 通道并处理接收到的消息
 func (w *Watcher) listenMessage(ctx context.Context) error {
-	// acquire the psql connection for listening.
+	// 获取用于监听的 PostgreSQL 连接
 	conn, err := w.pool.Acquire(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to acquire psql connection: %v", err)
 	}
 	defer conn.Release()
 
-	// listen to the psql channel.
+	// 监听 PostgreSQL 通道
 	cmd := fmt.Sprintf("listen %s", w.GetChannel())
 	if _, err = conn.Exec(ctx, cmd); err != nil {
 		return fmt.Errorf("failed to listen %s: %v", w.GetChannel(), err)
 	}
 
-	// wait for psql notification.
+	// 等待 PostgreSQL 通知
 	for {
 		notification, err := conn.Conn().WaitForNotification(ctx)
 		if err == context.Canceled {
@@ -461,120 +568,25 @@ func (w *Watcher) listenMessage(ctx context.Context) error {
 			return fmt.Errorf("failed to wait for notification: %v", err)
 		}
 
-		// print debug message.
+		// 打印调试信息
 		if w.GetVerbose() {
-			log.Printf("[psqlwatcher] received message: %s from channel %s with local ID %s", notification.Payload, w.GetChannel(), w.GetLocalID())
+			log.Printf("[psqlwatcher] 收到消息: %s | 通道: %s | 本地ID: %s",
+				notification.Payload, w.GetChannel(), w.GetLocalID())
 		}
 
-		// base64 decode the payload.
-		compressedBytes, err := base64.StdEncoding.DecodeString(notification.Payload)
-		if err != nil {
-			log.Printf("failed to base64 decode %s: %v\n", notification.Payload, err)
+		// 反序列化载荷为 MSG
+		var m MSG
+		if err := json.Unmarshal([]byte(notification.Payload), &m); err != nil {
+			log.Printf("[psqlwatcher] 反序列化失败 %s: %v\n", notification.Payload, err)
 			continue
 		}
 
-		// decompress the payload.
-		reader := flate.NewReader(bytes.NewReader(compressedBytes))
-		decompressedBytes, err := io.ReadAll(reader)
-		if err != nil {
-			log.Printf("failed to decompress %s: %v\n", notification.Payload, err)
-			continue
-		}
-		if err := reader.Close(); err != nil {
-			log.Printf("failed to close flate reader: %v\n", err)
-			continue
-		}
-
-		// unmarshal the payload to TransmittedMSG.
-		var tm TransmittedMSG
-		if err := json.Unmarshal(decompressedBytes, &tm); err != nil {
-			log.Printf("failed to unmarshal to transmitted message %s: %v\n", string(decompressedBytes), err)
-			continue
-		}
-
-		// if it is self message, ignore it.
+		// 检查消息 ID 是否是自己发送的
+		// 如果启用了 NotifySelf，即使 ID 相同也会触发回调
 		w.RLock()
-		if tm.Data.ID == w.GetLocalID() && !w.GetNotifySelf() {
-			w.RUnlock()
-			continue
+		if m.ID != w.GetLocalID() || w.GetNotifySelf() {
+			w.callback(notification.Payload)
 		}
 		w.RUnlock()
-
-		if !tm.IsChunked {
-			// Not a chunked message, process directly.
-			finalPayload, err := json.Marshal(tm.Data)
-			if err != nil {
-				log.Printf("failed to marshal final payload: %v", err)
-				continue
-			}
-			w.callback(string(finalPayload))
-			continue
-		}
-
-		// Is a chunked message, process it.
-		w.cacheLock.Lock()
-
-		buffer, exists := w.reassemblyCache[tm.ChunkID]
-		// The first chunk for new ChunkID. Build a buffer to receive it.
-		if !exists {
-			buffer = &reassemblyBuffer{
-				chunks: make(map[int]*MSG),
-				total:  tm.ChunkTotal,
-			}
-			w.reassemblyCache[tm.ChunkID] = buffer
-		}
-
-		buffer.chunks[tm.ChunkNum] = tm.Data
-		buffer.lastSeen = time.Now()
-
-		// check if all chunks are received.
-		if len(buffer.chunks) == buffer.total {
-			// reassemble the message.
-			fullMsg := *buffer.chunks[1]
-			fullMsg.OldRules = make([][]string, 0)
-			fullMsg.NewRules = make([][]string, 0)
-
-			for i := 1; i <= buffer.total; i++ {
-				chunk := buffer.chunks[i]
-				if len(chunk.OldRules) > 0 {
-					fullMsg.OldRules = append(fullMsg.OldRules, chunk.OldRules...)
-				}
-				if len(chunk.NewRules) > 0 {
-					fullMsg.NewRules = append(fullMsg.NewRules, chunk.NewRules...)
-				}
-			}
-
-			// remove from cache.
-			delete(w.reassemblyCache, tm.ChunkID)
-
-			w.cacheLock.Unlock() // unlock before callback.
-
-			finalPayload, err := json.Marshal(&fullMsg)
-			if err != nil {
-				log.Printf("failed to marshal reassembled message: %v", err)
-				continue
-			}
-			w.callback(string(finalPayload))
-		} else {
-			w.cacheLock.Unlock()
-		}
-	}
-}
-
-// cleanupExpiredChunks garbage collects incomplete chunks from the reassembly cache.
-func (w *Watcher) cleanupExpiredChunks() {
-	ticker := time.NewTicker(10 * time.Minute)
-	defer ticker.Stop()
-
-	for {
-		<-ticker.C
-		w.cacheLock.Lock()
-		for chunkID, buffer := range w.reassemblyCache {
-			if time.Since(buffer.lastSeen) > 15*time.Minute {
-				log.Printf("[psqlwatcher] cleaning up expired chunks for chunkID %s", chunkID)
-				delete(w.reassemblyCache, chunkID)
-			}
-		}
-		w.cacheLock.Unlock()
 	}
 }
