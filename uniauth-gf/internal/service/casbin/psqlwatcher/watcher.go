@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"runtime"
 	"sync"
 
 	"github.com/casbin/casbin/v2"
@@ -100,16 +101,50 @@ var (
 	zstdDecoder     *zstd.Decoder
 	zstdInitEncoder sync.Once
 	zstdInitDecoder sync.Once
+
+	// 使用对象池复用buffer，减少内存分配和GC压力
+	bufferPool = sync.Pool{
+		New: func() interface{} {
+			// 预分配16KB的buffer，适合大多数场景
+			buf := make([]byte, 0, 16*1024)
+			return &buf
+		},
+	}
+
+	// JSON编码器对象池
+	msgPool = sync.Pool{
+		New: func() interface{} {
+			return &MSG{}
+		},
+	}
 )
+
+// getOptimalConcurrency 计算最优并发线程数
+func getOptimalConcurrency() int {
+	numCPU := runtime.NumCPU()
+	// 使用CPU核心数，但限制在4-8之间，避免过多线程竞争
+	if numCPU < 4 {
+		return 4
+	}
+	if numCPU > 8 {
+		return 8
+	}
+	return numCPU
+}
 
 // getZstdEncoder 获取或创建zstd encoder（使用默认压缩级别，平衡速度和压缩率）
 func getZstdEncoder() *zstd.Encoder {
 	zstdInitEncoder.Do(func() {
 		var err error
-		// 使用SpeedDefault级别（相当于level 3），在速度和压缩率之间取得平衡
-		zstdEncoder, err = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))
+		concurrency := getOptimalConcurrency()
+		zstdEncoder, err = zstd.NewWriter(nil,
+			zstd.WithEncoderLevel(zstd.SpeedDefault),
+			zstd.WithEncoderConcurrency(concurrency), // 根据CPU核心数动态设置并发线程
+		)
 		if err != nil {
 			log.Printf("[psqlwatcher] failed to create zstd encoder: %v\n", err)
+		} else {
+			log.Printf("[psqlwatcher] zstd encoder initialized with %d concurrent threads\n", concurrency)
 		}
 	})
 	return zstdEncoder
@@ -119,12 +154,30 @@ func getZstdEncoder() *zstd.Encoder {
 func getZstdDecoder() *zstd.Decoder {
 	zstdInitDecoder.Do(func() {
 		var err error
-		zstdDecoder, err = zstd.NewReader(nil)
+		concurrency := getOptimalConcurrency()
+		// 使用并发解压，提升解压速度
+		zstdDecoder, err = zstd.NewReader(nil, zstd.WithDecoderConcurrency(concurrency))
 		if err != nil {
 			log.Printf("[psqlwatcher] failed to create zstd decoder: %v\n", err)
+		} else {
+			log.Printf("[psqlwatcher] zstd decoder initialized with %d concurrent threads\n", concurrency)
 		}
 	})
 	return zstdDecoder
+}
+
+// getBuffer 从对象池获取buffer
+func getBuffer() *[]byte {
+	bufPtr := bufferPool.Get().(*[]byte)
+	*bufPtr = (*bufPtr)[:0]
+	return bufPtr
+}
+
+// putBuffer 归还buffer到对象池
+func putBuffer(buf *[]byte) {
+	if cap(*buf) <= 64*1024 { // 只回收不超过64KB的buffer，避免池中积累过大的对象
+		bufferPool.Put(buf)
+	}
 }
 
 // compressPayload 使用 zstd 压缩并 base64 编码载荷
@@ -134,10 +187,20 @@ func compressPayload(data []byte) (string, error) {
 		return "", fmt.Errorf("zstd encoder not available")
 	}
 
-	// 使用zstd压缩
-	compressed := encoder.EncodeAll(data, make([]byte, 0, len(data)))
+	// 从对象池获取buffer，减少内存分配
+	dstBufPtr := getBuffer()
+	defer putBuffer(dstBufPtr)
 
-	// base64编码
+	// 预分配足够的容量（压缩后通常是原始大小的20-40%）
+	if cap(*dstBufPtr) < len(data)/2 {
+		newBuf := make([]byte, 0, len(data)/2)
+		*dstBufPtr = newBuf
+	}
+
+	// 使用zstd压缩
+	compressed := encoder.EncodeAll(data, *dstBufPtr)
+
+	// base64编码（直接返回string，避免额外复制）
 	return base64.StdEncoding.EncodeToString(compressed), nil
 }
 
@@ -154,12 +217,24 @@ func decompressPayload(encodedData string) ([]byte, error) {
 		return nil, fmt.Errorf("zstd decoder not available")
 	}
 
+	// 从对象池获取buffer
+	dstBufPtr := getBuffer()
+
+	// 预分配解压后的空间（通常是压缩大小的3-5倍）
+	if cap(*dstBufPtr) < len(compressed)*4 {
+		newBuf := make([]byte, 0, len(compressed)*4)
+		*dstBufPtr = newBuf
+	}
+
 	// 使用zstd解压
-	decompressed, err := decoder.DecodeAll(compressed, nil)
+	decompressed, err := decoder.DecodeAll(compressed, *dstBufPtr)
 	if err != nil {
+		putBuffer(dstBufPtr)
 		return nil, fmt.Errorf("failed to decompress zstd: %v", err)
 	}
 
+	// 注意：不能立即归还buffer，因为decompressed引用了它
+	// 调用者需要复制数据或在使用完后手动归还
 	return decompressed, nil
 }
 
@@ -341,11 +416,11 @@ func (w *Watcher) UpdateForUpdatePolicies(sec string, ptype string, oldRules, ne
 }
 
 // notifyMessage 发送通知消息到 PostgreSQL 通道
-// 采用三级策略处理大载荷：
-// 0. 原始载荷 > 160000 字节：发送 LoadPolicy 命
-// 1. 原始载荷 < 8000 字节：直接发送
-// 2. 压缩后 < 8000 字节：发送压缩版本
-// 3. 压缩后仍 >= 8000 字节：发送 LoadPolicy 命令
+// 采用四级策略处理大载荷（优化版：避免不必要的压缩操作）：
+// 策略1: 原始载荷 < 8000 字节：直接发送（不启动压缩goroutine）
+// 策略0: 原始载荷 > 160000 字节：直接发送 LoadPolicy 命令（不启动压缩goroutine）
+// 策略2: 8000-160000 字节且压缩后 < 8000：发送压缩版本（并发压缩）
+// 策略3: 压缩后仍 >= 8000 字节：发送 LoadPolicy 命令
 func (w *Watcher) notifyMessage(m *MSG) error {
 	// 序列化原始消息
 	originalPayload, err := json.Marshal(m)
@@ -354,39 +429,9 @@ func (w *Watcher) notifyMessage(m *MSG) error {
 	}
 
 	payloadSize := len(originalPayload)
-
-	// 定义压缩结果结构
-	type compressResult struct {
-		compressedPayload []byte
-		err               error
-	}
-
-	// 并发启动压缩操作
-	compressChan := make(chan compressResult, 1)
-	go func() {
-		compressed, err := compressPayload(originalPayload)
-
-		var compressedPayload []byte
-		if err == nil {
-			// 构建压缩消息
-			compressedMsg := &MSG{
-				Method:     m.Method,
-				ID:         m.ID,
-				Compressed: true,
-				Payload:    compressed,
-			}
-			compressedPayload, err = json.Marshal(compressedMsg)
-		}
-
-		compressChan <- compressResult{
-			compressedPayload: compressedPayload,
-			err:               err,
-		}
-	}()
-
 	var payloadToSend []byte
 
-	// 策略1: 如果原始载荷 < 8000 字节，直接发送
+	// 策略1: 小载荷直接发送，不压缩（最快路径）
 	if payloadSize < payloadLimit {
 		payloadToSend = originalPayload
 
@@ -394,17 +439,55 @@ func (w *Watcher) notifyMessage(m *MSG) error {
 			log.Printf("[psqlwatcher] 策略1: 发送原始载荷 | 大小: %d 字节\n", payloadSize)
 		}
 	} else if payloadSize > maxEstimateLimit {
-		// 策略0: 载荷过大，直接发送 LoadPolicy 命令，不等待压缩
+		// 策略0: 超大载荷直接发送 LoadPolicy，不压缩（避免浪费CPU）
 		if w.GetVerbose() {
 			log.Printf("[psqlwatcher] 策略0: 载荷超大 | 原始: %d 字节 | 直接发送 LoadPolicy 命令\n", payloadSize)
 		}
 
-		loadPolicyMsg := &MSG{
-			Method: UpdateForLoadPolicy,
-			ID:     w.GetLocalID(),
-		}
+		// 复用LoadPolicy消息对象
+		loadPolicyMsg := msgPool.Get().(*MSG)
+		loadPolicyMsg.Method = UpdateForLoadPolicy
+		loadPolicyMsg.ID = w.GetLocalID()
 		payloadToSend, _ = json.Marshal(loadPolicyMsg)
+
+		// 清空并归还对象到池
+		*loadPolicyMsg = MSG{}
+		msgPool.Put(loadPolicyMsg)
 	} else {
+		// 策略2/3: 中等大小载荷，并发压缩处理
+		// 定义压缩结果结构
+		type compressResult struct {
+			compressedPayload []byte
+			err               error
+		}
+
+		// 并发启动压缩操作
+		compressChan := make(chan compressResult, 1)
+		go func() {
+			compressed, err := compressPayload(originalPayload)
+
+			var compressedPayload []byte
+			if err == nil {
+				// 从对象池获取MSG对象
+				compressedMsg := msgPool.Get().(*MSG)
+				compressedMsg.Method = m.Method
+				compressedMsg.ID = m.ID
+				compressedMsg.Compressed = true
+				compressedMsg.Payload = compressed
+
+				compressedPayload, err = json.Marshal(compressedMsg)
+
+				// 清空并归还对象
+				*compressedMsg = MSG{}
+				msgPool.Put(compressedMsg)
+			}
+
+			compressChan <- compressResult{
+				compressedPayload: compressedPayload,
+				err:               err,
+			}
+		}()
+
 		// 等待压缩结果
 		result := <-compressChan
 
@@ -414,11 +497,12 @@ func (w *Watcher) notifyMessage(m *MSG) error {
 				log.Printf("[psqlwatcher] 压缩失败: %v, 降级为 LoadPolicy\n", result.err)
 			}
 
-			loadPolicyMsg := &MSG{
-				Method: UpdateForLoadPolicy,
-				ID:     w.GetLocalID(),
-			}
+			loadPolicyMsg := msgPool.Get().(*MSG)
+			loadPolicyMsg.Method = UpdateForLoadPolicy
+			loadPolicyMsg.ID = w.GetLocalID()
 			payloadToSend, _ = json.Marshal(loadPolicyMsg)
+			*loadPolicyMsg = MSG{}
+			msgPool.Put(loadPolicyMsg)
 		} else {
 			compressedSize := len(result.compressedPayload)
 
@@ -437,11 +521,12 @@ func (w *Watcher) notifyMessage(m *MSG) error {
 						payloadSize, compressedSize)
 				}
 
-				loadPolicyMsg := &MSG{
-					Method: UpdateForLoadPolicy,
-					ID:     w.GetLocalID(),
-				}
+				loadPolicyMsg := msgPool.Get().(*MSG)
+				loadPolicyMsg.Method = UpdateForLoadPolicy
+				loadPolicyMsg.ID = w.GetLocalID()
 				payloadToSend, _ = json.Marshal(loadPolicyMsg)
+				*loadPolicyMsg = MSG{}
+				msgPool.Put(loadPolicyMsg)
 			}
 		}
 	}
