@@ -1,5 +1,6 @@
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
+import Editor from "@monaco-editor/react";
 import { useIntl } from "@umijs/max";
 import {
   Button,
@@ -12,7 +13,6 @@ import {
   Typography,
 } from "antd";
 import { useRef, useState } from "react";
-import JsonEditor from "@/components/JsonEditor";
 import {
   deleteConfigModel,
   getConfigModelAll,
@@ -47,11 +47,26 @@ const ModelConfigPage: React.FC = () => {
   const handleEdit = (record: API.ModelConfigItem) => {
     setEditingRecord(record);
 
+    // 安全地处理JSON字段的序列化
+    const formatJsonField = (field: any): string => {
+      if (!field) return "";
+      if (typeof field === "string") {
+        return field;
+      }
+      try {
+        return JSON.stringify(field, null, 2);
+      } catch (_e) {
+        return typeof field === "object"
+          ? JSON.stringify(field)
+          : String(field);
+      }
+    };
+
     form.setFieldsValue({
       ...record,
-      pricing: record.pricing,
-      clientArgs: record.clientArgs,
-      requestArgs: record.requestArgs,
+      pricing: formatJsonField(record.pricing),
+      clientArgs: formatJsonField(record.clientArgs),
+      requestArgs: formatJsonField(record.requestArgs),
       servicewares: Array.isArray(record.servicewares)
         ? record.servicewares.join(", ")
         : record.servicewares || "",
@@ -89,6 +104,12 @@ const ModelConfigPage: React.FC = () => {
   const handleNewModelConfig = () => {
     setEditingRecord(null);
     form.resetFields();
+    // 确保JSON字段在新建时为空
+    form.setFieldsValue({
+      pricing: "",
+      clientArgs: "",
+      requestArgs: "",
+    });
     setModalVisible(true);
   };
 
@@ -121,14 +142,24 @@ const ModelConfigPage: React.FC = () => {
         return field || "AsyncOpenAI"; // 如果没有值则使用默认值
       };
 
+      // 处理JSON字段
+      const processJsonField = (field: string): any => {
+        if (!field || field.trim() === "") return undefined;
+        try {
+          return JSON.parse(field);
+        } catch (_e) {
+          throw new Error(`Invalid JSON format in field: ${field}`);
+        }
+      };
+
       // 处理JSON字段和参数格式，确保符合API要求
       // 使用正确的类型断言，因为已经明确设置了approachName必填项
       const processedValues = {
         ...values,
         approachName: values.approachName, // 根据API文档，approachName是必填项
-        pricing: values.pricing || {}, // 确保pricing字段始终有值
-        clientArgs: values.clientArgs,
-        requestArgs: values.requestArgs,
+        pricing: processJsonField(values.pricing) || {}, // 解析JSON并确保pricing字段始终有值
+        clientArgs: processJsonField(values.clientArgs),
+        requestArgs: processJsonField(values.requestArgs),
         servicewares: processServicewares(values.servicewares),
         discount:
           values.discount !== undefined ? processDiscount(values.discount) : 1, // 默认折扣为1
@@ -153,6 +184,7 @@ const ModelConfigPage: React.FC = () => {
       }
 
       setModalVisible(false);
+      setEditingRecord(null); // 清除编辑记录
       actionRef.current?.reload();
     } catch (error: any) {
       // 提供更详细的错误信息
@@ -208,6 +240,7 @@ const ModelConfigPage: React.FC = () => {
    */
   const handleModalCancel = () => {
     setModalVisible(false);
+    setEditingRecord(null); // 清除编辑记录
     form.resetFields();
   };
 
@@ -586,12 +619,49 @@ const ModelConfigPage: React.FC = () => {
               },
             ]}
           >
-            <JsonEditor
-              placeholder={intl.formatMessage({
-                id: "pages.modelConfig.pricingPlaceholder",
-              })}
-              height={200}
-            />
+            <div
+              style={{
+                border: "1px solid #d9d9d9",
+                borderRadius: "6px",
+                overflow: "hidden",
+              }}
+            >
+              <Editor
+                height="200px"
+                defaultLanguage="json"
+                theme="light"
+                value={form.getFieldValue("pricing") || ""}
+                onChange={(value) => {
+                  form.setFieldValue("pricing", value || "");
+                }}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  lineNumbers: "off",
+                  glyphMargin: false,
+                  folding: false,
+                  lineDecorationsWidth: 0,
+                  lineNumbersMinChars: 0,
+                  overviewRulerLanes: 0,
+                  overviewRulerBorder: false,
+                  hideCursorInOverviewRuler: true,
+                  scrollbar: {
+                    vertical: "visible",
+                    horizontal: "visible",
+                    useShadows: false,
+                    verticalHasArrows: false,
+                    horizontalHasArrows: false,
+                  },
+                  tabSize: 2,
+                  insertSpaces: true,
+                }}
+              />
+            </div>
           </Form.Item>
 
           <Form.Item
@@ -600,12 +670,49 @@ const ModelConfigPage: React.FC = () => {
               id: "pages.modelConfig.clientArgs",
             })}
           >
-            <JsonEditor
-              placeholder={intl.formatMessage({
-                id: "pages.modelConfig.clientArgsPlaceholder",
-              })}
-              height={200}
-            />
+            <div
+              style={{
+                border: "1px solid #d9d9d9",
+                borderRadius: "6px",
+                overflow: "hidden",
+              }}
+            >
+              <Editor
+                height="200px"
+                defaultLanguage="json"
+                theme="light"
+                value={form.getFieldValue("clientArgs") || ""}
+                onChange={(value) => {
+                  form.setFieldValue("clientArgs", value || "");
+                }}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  lineNumbers: "off",
+                  glyphMargin: false,
+                  folding: false,
+                  lineDecorationsWidth: 0,
+                  lineNumbersMinChars: 0,
+                  overviewRulerLanes: 0,
+                  overviewRulerBorder: false,
+                  hideCursorInOverviewRuler: true,
+                  scrollbar: {
+                    vertical: "visible",
+                    horizontal: "visible",
+                    useShadows: false,
+                    verticalHasArrows: false,
+                    horizontalHasArrows: false,
+                  },
+                  tabSize: 2,
+                  insertSpaces: true,
+                }}
+              />
+            </div>
           </Form.Item>
 
           <Form.Item
@@ -614,12 +721,49 @@ const ModelConfigPage: React.FC = () => {
               id: "pages.modelConfig.requestArgs",
             })}
           >
-            <JsonEditor
-              placeholder={intl.formatMessage({
-                id: "pages.modelConfig.requestArgsPlaceholder",
-              })}
-              height={200}
-            />
+            <div
+              style={{
+                border: "1px solid #d9d9d9",
+                borderRadius: "6px",
+                overflow: "hidden",
+              }}
+            >
+              <Editor
+                height="200px"
+                defaultLanguage="json"
+                theme="light"
+                value={form.getFieldValue("requestArgs") || ""}
+                onChange={(value) => {
+                  form.setFieldValue("requestArgs", value || "");
+                }}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  lineNumbers: "off",
+                  glyphMargin: false,
+                  folding: false,
+                  lineDecorationsWidth: 0,
+                  lineNumbersMinChars: 0,
+                  overviewRulerLanes: 0,
+                  overviewRulerBorder: false,
+                  hideCursorInOverviewRuler: true,
+                  scrollbar: {
+                    vertical: "visible",
+                    horizontal: "visible",
+                    useShadows: false,
+                    verticalHasArrows: false,
+                    horizontalHasArrows: false,
+                  },
+                  tabSize: 2,
+                  insertSpaces: true,
+                }}
+              />
+            </div>
           </Form.Item>
         </Form>
       </Modal>
