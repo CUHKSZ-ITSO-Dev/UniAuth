@@ -11,7 +11,7 @@ import (
 
 func (c *ControllerV1) GetOne(ctx context.Context, req *v1.GetOneReq) (res *v1.GetOneRes, err error) {
 	res = &v1.GetOneRes{}
-	err = dao.UserinfosUserInfos.Ctx(ctx).WherePri(req.Upn).Scan(&res)
+	err = dao.UserinfosUserInfos.Ctx(ctx).Where("upn = ?", req.Upn).Scan(&res)
 	if err != nil {
 		err = gerror.Wrap(err, "获取指定用户SSO信息失败")
 	}
