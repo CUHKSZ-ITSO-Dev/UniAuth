@@ -12,7 +12,7 @@ import (
 func (c *ControllerV1) ResetBalance(ctx context.Context, req *v1.ResetBalanceReq) (res *v1.ResetBalanceRes, err error) {
 	res = &v1.ResetBalanceRes{}
 
-	err = svc.ResetBalance(ctx, req.QuotaPool)
+	_, err = svc.ResetBalance(ctx, req.QuotaPool, true)
 	if err != nil {
 		err = gerror.Wrap(err, "重置配额池余额失败")
 		return

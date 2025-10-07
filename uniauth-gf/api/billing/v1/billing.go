@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"time"
-
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/shopspring/decimal"
@@ -23,7 +21,7 @@ type BillingRecordReq struct {
 	Remark *gjson.Json `json:"detail"`
 }
 type BillingRecordRes struct {
-	Ok bool `json:"ok"`
+	Ok bool `json:"ok" v:"required"`
 }
 
 type CheckBalanceReq struct {
@@ -31,9 +29,7 @@ type CheckBalanceReq struct {
 	QuotaPool string `json:"quotaPool" v:"required" example:"itso-deep-research-vip"`
 }
 type CheckBalanceRes struct {
-	Ok          bool      `json:"ok" example:"true"`
-	Percentage  string    `json:"percentage" example:"16.67%"`
-	NextResetAt time.Time `json:"nextResetAt" example:"2025-09-11T03:00:00+08:00"`
+	Ok bool `json:"ok" v:"required" example:"true"`
 }
 
 type CheckTokensUsageReq struct {
@@ -45,7 +41,7 @@ type CheckTokensUsageReq struct {
 type CheckTokensUsageRes struct {
 	// 这个是对话前端下面的柱状图，最近7天
 	g.Meta      `resEg:"resource/interface/billing/check_tokens_usage_res.json"`
-	TokensUsage *gjson.Json `json:"tokensUsage"`
+	TokensUsage *gjson.Json `json:"tokensUsage" v:"required"`
 }
 
 type GetBillingOptionsReq struct {
