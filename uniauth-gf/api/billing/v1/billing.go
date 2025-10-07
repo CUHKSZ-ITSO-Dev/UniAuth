@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"time"
-
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/shopspring/decimal"
@@ -31,9 +29,7 @@ type CheckBalanceReq struct {
 	QuotaPool string `json:"quotaPool" v:"required" example:"itso-deep-research-vip"`
 }
 type CheckBalanceRes struct {
-	Ok          bool      `json:"ok" example:"true"`
-	Percentage  string    `json:"percentage" example:"16.67%"`
-	NextResetAt time.Time `json:"nextResetAt" example:"2025-09-11T03:00:00+08:00"`
+	Ok bool `json:"ok" example:"true"`
 }
 
 type CheckTokensUsageReq struct {
