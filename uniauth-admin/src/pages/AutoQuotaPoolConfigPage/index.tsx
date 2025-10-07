@@ -1,5 +1,6 @@
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
+import Editor from "@monaco-editor/react";
 import { getLocale, useIntl } from "@umijs/max";
 import {
   Button,
@@ -14,7 +15,6 @@ import {
 } from "antd";
 import cronstrue from "cronstrue/i18n";
 import { useRef, useState } from "react";
-import JsonEditor from "@/components/JsonEditor";
 import {
   deleteConfigAutoConfig,
   getConfigAutoConfig,
@@ -177,10 +177,12 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     resetCronState();
     setEditingRecord(null);
     form.resetFields();
-    // 设置默认值，新规则默认启用
+    // 设置默认值，新规则默认启用，并确保JSON字段为空
     form.setFieldsValue({
       enabled: true,
       upnsCache: "",
+      filterGroup: "",
+      defaultCasbinRules: "",
     });
     setIsModalVisible(true);
   };
@@ -306,22 +308,32 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
 
       // 根据是否为编辑状态调用不同的API
       if (editingRecord) {
-        // 编辑模式
-        await putConfigAutoConfig({
-          ...values,
-          id: editingRecord.id,
-        });
+        // 编辑模式 - 构建编辑请求的数据结构
+        const editData = {
+          ...processedValues,
+          // 确保包含编辑所需的关键字段
+          ruleName: processedValues.ruleName || editingRecord.ruleName,
+        };
+        await putConfigAutoConfig(editData as any);
         message.success(
           intl.formatMessage({ id: "pages.autoQuotaPoolConfig.updateSuccess" }),
         );
       } else {
-        // 新建模式
-        await postConfigAutoConfig(values);
+        // 新建模式 - 构建新建请求的数据结构
+        const createData = {
+          ...processedValues,
+          // 确保所有必需字段都存在
+          ruleName: processedValues.ruleName!,
+          cronCycle: processedValues.cronCycle!,
+          regularQuota: processedValues.regularQuota!,
+        };
+        await postConfigAutoConfig(createData as any);
         message.success(
           intl.formatMessage({ id: "pages.autoQuotaPoolConfig.createSuccess" }),
         );
       }
       setIsModalVisible(false);
+      setEditingRecord(null); // 清除编辑记录
       resetCronState(); // 重置 cron 状态
       actionRef.current?.reload();
     } catch (_error) {
@@ -339,6 +351,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
     resetCronState(); // 重置 cron 状态
+    setEditingRecord(null); // 清除编辑记录
     form.resetFields();
   };
 
@@ -773,12 +786,49 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
               },
             ]}
           >
-            <JsonEditor
-              placeholder={intl.formatMessage({
-                id: "pages.autoQuotaPoolConfig.filterGroupPlaceholder",
-              })}
-              height={200}
-            />
+            <div
+              style={{
+                border: "1px solid #d9d9d9",
+                borderRadius: "6px",
+                overflow: "hidden",
+              }}
+            >
+              <Editor
+                height="200px"
+                defaultLanguage="json"
+                theme="light"
+                value={form.getFieldValue("filterGroup") || ""}
+                onChange={(value) => {
+                  form.setFieldValue("filterGroup", value || "");
+                }}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  lineNumbers: "off",
+                  glyphMargin: false,
+                  folding: false,
+                  lineDecorationsWidth: 0,
+                  lineNumbersMinChars: 0,
+                  overviewRulerLanes: 0,
+                  overviewRulerBorder: false,
+                  hideCursorInOverviewRuler: true,
+                  scrollbar: {
+                    vertical: "visible",
+                    horizontal: "visible",
+                    useShadows: false,
+                    verticalHasArrows: false,
+                    horizontalHasArrows: false,
+                  },
+                  tabSize: 2,
+                  insertSpaces: true,
+                }}
+              />
+            </div>
           </Form.Item>
           <Form.Item
             name="defaultCasbinRules"
@@ -786,12 +836,49 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
               id: "pages.autoQuotaPoolConfig.defaultCasbinRules",
             })}
           >
-            <JsonEditor
-              placeholder={intl.formatMessage({
-                id: "pages.autoQuotaPoolConfig.defaultCasbinRulesPlaceholder",
-              })}
-              height={200}
-            />
+            <div
+              style={{
+                border: "1px solid #d9d9d9",
+                borderRadius: "6px",
+                overflow: "hidden",
+              }}
+            >
+              <Editor
+                height="200px"
+                defaultLanguage="json"
+                theme="light"
+                value={form.getFieldValue("defaultCasbinRules") || ""}
+                onChange={(value) => {
+                  form.setFieldValue("defaultCasbinRules", value || "");
+                }}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  lineNumbers: "off",
+                  glyphMargin: false,
+                  folding: false,
+                  lineDecorationsWidth: 0,
+                  lineNumbersMinChars: 0,
+                  overviewRulerLanes: 0,
+                  overviewRulerBorder: false,
+                  hideCursorInOverviewRuler: true,
+                  scrollbar: {
+                    vertical: "visible",
+                    horizontal: "visible",
+                    useShadows: false,
+                    verticalHasArrows: false,
+                    horizontalHasArrows: false,
+                  },
+                  tabSize: 2,
+                  insertSpaces: true,
+                }}
+              />
+            </div>
           </Form.Item>
           <Form.Item
             name="upnsCache"
