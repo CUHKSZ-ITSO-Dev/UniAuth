@@ -82,11 +82,6 @@ func (c *ControllerV1) Filter(ctx context.Context, req *v1.FilterReq) (res *v1.F
 		// 重置分页参数为全部数据
 		req.Pagination.Page = 1
 		req.Pagination.PageSize = total
-	} else {
-		// 检查分页参数
-		if req.Pagination.PageSize > 1000 {
-			return nil, gerror.New("分页大小不能超过1000")
-		}
 	}
 
 	// 应用排序
