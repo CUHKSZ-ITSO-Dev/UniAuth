@@ -7,67 +7,94 @@ import (
 	"github.com/shopspring/decimal"
 
 	v1 "uniauth-gf/api/billing/v1"
+	"uniauth-gf/internal/dao"
 )
 
 func (c *ControllerV1) GetBillAmount(ctx context.Context, req *v1.GetBillAmountReq) (res *v1.GetBillAmountRes, err error) {
-	// 调用GetBillRecord接口获取账单数据
-	recordsPri, err := c.GetBillRecord(ctx, &v1.GetBillRecordReq{
-		Type:       req.Type,
-		Upns:       req.Upns,
-		QuotaPools: req.QuotaPools,
-		Svc:        req.Svc,
-		Product:    req.Product,
-		StartTime:  req.StartTime,
-		EndTime:    req.EndTime,
-		Order:      "asc", // 排序对计算总额没有影响
-	})
-	if err != nil {
-		return nil, gerror.Wrap(err, "复用获取账单记录接口时失败")
+	// 初始化响应对象
+	res = &v1.GetBillAmountRes{
+		Amount:         "0",
+		OriginalAmount: "0",
 	}
 
-	// 获取所有记录
-	records := recordsPri.Records
-	records.SetViolenceCheck(true) // 开启冲突检测，避免键名中有.的时候提取错误
+	baseModel := dao.BillingCostRecords.Ctx(ctx).
+		OmitEmpty().
+		WhereIn("svc", req.Svc).
+		WhereIn("product", req.Product).
+		WhereGTE("created_at", req.StartTime).
+		WhereLTE("created_at", req.EndTime)
 
-	// 确定要处理的目标列表
 	var targets []string
 	if req.Type == "upn" {
+		// upn 模式查询
+		if len(req.Upns) == 0 {
+			return nil, gerror.New("UPNs 不能传空")
+		}
 		targets = req.Upns
+
+		for _, upn := range targets {
+			model := baseModel.Clone().
+				Where("upn", upn).
+				WhereIn("source", req.QuotaPools)
+
+			// 总金额（打折后）
+			costValue, err := model.Sum("cost")
+			if err != nil {
+				return nil, gerror.Wrapf(err, "[UPN 模式] 计算 UPN = %s 的总金额失败", upn)
+			}
+
+			// 原始总金额（打折前）
+			originalCostValue, err := model.Sum("original_cost")
+			if err != nil {
+				return nil, gerror.Wrapf(err, "[UPN 模式] 计算 UPN = %s 的原始总金额失败", upn)
+			}
+
+			// 累加每个UPN的金额
+			cost := decimal.NewFromFloat(costValue)
+			totalAmount, _ := decimal.NewFromString(res.Amount)
+			res.Amount = totalAmount.Add(cost).String()
+
+			originalCost := decimal.NewFromFloat(originalCostValue)
+			totalOriginalAmount, _ := decimal.NewFromString(res.OriginalAmount)
+			res.OriginalAmount = totalOriginalAmount.Add(originalCost).String()
+		}
 	} else {
+		// Quota Pool 模式查询
+		if len(req.QuotaPools) == 0 {
+			return nil, gerror.New("QuotaPools 不能传空")
+		}
 		targets = req.QuotaPools
-	}
 
-	// 计算总金额（打折后）和原始总金额（打折前）
-	totalAmount := decimal.Zero
-	totalOriginalAmount := decimal.Zero
+		for _, quotaPool := range targets {
+			model := baseModel.Clone().
+				Where("source", quotaPool)
 
-	for _, target := range targets {
-		for _, record := range records.GetJsons(target) {
-			// 计算打折后总金额
-			if cost, err := decimal.NewFromString(record.Get("cost").String()); err == nil && cost.IsPositive() {
-				totalAmount = totalAmount.Add(cost)
-			} else if err != nil {
-				return nil, gerror.Wrap(err, "转换 cost 为 Decimal 失败")
+			if len(req.Upns) > 0 {
+				model = model.WhereIn("upn", req.Upns)
 			}
 
-			// 计算打折前原始总金额
-			originalCost := record.Get("original_cost").String()
-			if originalCost == "" || originalCost == "0" {
-				// 如果 original_cost 为空或为 0，则使用 cost 作为原始金额
-				originalCost = record.Get("cost").String()
+			// 总金额（打折后）
+			costValue, err := model.Sum("cost")
+			if err != nil {
+				return nil, gerror.Wrapf(err, "[Quota Pool 模式] 计算 Source = %s 的总金额失败", quotaPool)
 			}
 
-			if origCost, err := decimal.NewFromString(originalCost); err == nil && origCost.IsPositive() {
-				totalOriginalAmount = totalOriginalAmount.Add(origCost)
-			} else if err != nil {
-				return nil, gerror.Wrap(err, "转换 original_cost 为 Decimal 失败")
+			// 原始总金额（打折前）
+			originalCostValue, err := model.Sum("original_cost")
+			if err != nil {
+				return nil, gerror.Wrapf(err, "[Quota Pool 模式] 计算 Source = %s 的原始总金额失败", quotaPool)
 			}
+
+			// 累加每个配额池的金额
+			cost := decimal.NewFromFloat(costValue)
+			totalAmount, _ := decimal.NewFromString(res.Amount)
+			res.Amount = totalAmount.Add(cost).String()
+
+			originalCost := decimal.NewFromFloat(originalCostValue)
+			totalOriginalAmount, _ := decimal.NewFromString(res.OriginalAmount)
+			res.OriginalAmount = totalOriginalAmount.Add(originalCost).String()
 		}
 	}
 
-	// 返回结果，包含打折后总金额和原始总金额
-	return &v1.GetBillAmountRes{
-		Amount:         totalAmount.String(),
-		OriginalAmount: totalOriginalAmount.String(),
-	}, nil
+	return res, nil
 }
