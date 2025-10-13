@@ -764,11 +764,6 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             // 移除调试日志，使用正常参数
             return billingRecordsDataRequest(pageParams);
           }}
-          // 当表格数据加载完成时，刷新统计数据
-          onLoad={() => {
-            // 刷新统计信息
-            fetchStatistics();
-          }}
           dateFormatter="string"
           headerTitle={intl.formatMessage({
             id: "pages.billingDetail.billingRecords",
