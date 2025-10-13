@@ -692,24 +692,25 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             <Text strong>
               ￥{statistics.currentMonthOriginalCost.toFixed(4)}
             </Text>
-            {statistics.currentMonthOriginalCost >
-              statistics.currentMonthCost && (
-              <Text type="secondary" style={{ marginLeft: 8 }}>
-                (
-                {intl.formatMessage({
-                  id: "pages.billingDetail.discount",
-                  defaultMessage: "优惠",
-                })}
-                :{" "}
-                {(
-                  (1 -
-                    statistics.currentMonthCost /
-                      statistics.currentMonthOriginalCost) *
-                  100
-                ).toFixed(1)}
-                %)
-              </Text>
-            )}
+            {statistics.currentMonthOriginalCost > 0 &&
+              statistics.currentMonthOriginalCost >
+                statistics.currentMonthCost && (
+                <Text type="secondary" style={{ marginLeft: 8 }}>
+                  (
+                  {intl.formatMessage({
+                    id: "pages.billingDetail.discount",
+                    defaultMessage: "优惠",
+                  })}
+                  :{" "}
+                  {(
+                    (1 -
+                      statistics.currentMonthCost /
+                        statistics.currentMonthOriginalCost) *
+                    100
+                  ).toFixed(1)}
+                  %)
+                </Text>
+              )}
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
