@@ -44,7 +44,7 @@ func ResetBalance(ctx context.Context, quotaPoolName string, resetAnyway bool) (
 				return gerror.Wrap(err, "更新配额池信息失败")
 			}
 		}
-		remainingQuota = quotaPool.RemainingQuota
+		remainingQuota = quotaPool.RemainingQuota.Add(quotaPool.ExtraQuota)
 		return nil
 	})
 	if err != nil {
