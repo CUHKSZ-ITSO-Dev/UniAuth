@@ -1,6 +1,7 @@
 import { useIntl } from "@@/plugin-locale/localeExports";
 import { EyeOutlined } from "@ant-design/icons";
 import {
+  type ActionType,
   GridContent,
   type ProColumns,
   ProTable,
@@ -20,7 +21,7 @@ import {
   Typography,
 } from "antd";
 import dayjs from "dayjs";
-import { type FC, useState } from "react";
+import { type FC, useEffect, useRef, useState } from "react";
 import {
   postBillingAdminAmount,
   postBillingAdminGet,
@@ -72,11 +73,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   quotaPoolName = "itso-deep-research-vip",
 }) => {
   const intl = useIntl();
+  // 创建表格的 actionRef
+  const actionRef = useRef<ActionType>(null);
 
   const [statistics, setStatistics] = useState({
     currentMonthCost: 0, // 本月费用（打折后）
     currentMonthOriginalCost: 0, // 本月原始费用（打折前）
-    recordCount: 0, // 记录数
+    dailyAverageCost: 0, // 当月日均消费金额（打折后）
   });
 
   // 状态管理
@@ -213,28 +216,6 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       const nextDay = new Date(endOfCurrentMonth);
       nextDay.setDate(nextDay.getDate() + 1);
 
-      // 获取记录总数
-      const recordsResponse = await postBillingAdminGet({
-        type: "qp",
-        quotaPools: [quotaPoolName],
-        svc: [],
-        product: [],
-        startTime: startOfCurrentMonth.toISOString().split("T")[0],
-        endTime: nextDay.toISOString().split("T")[0],
-        order: "desc",
-      });
-
-      let recordCount = 0;
-      if (recordsResponse.records) {
-        const recordsData = recordsResponse.records;
-        let allRecords: BillingRecord[] = [];
-        Object.keys(recordsData).forEach((poolName) => {
-          const poolRecords = (recordsData as any)[poolName] || [];
-          allRecords = allRecords.concat(poolRecords);
-        });
-        recordCount = allRecords.length;
-      }
-
       // 获取本月消费金额（包括打折后和原始金额）
       const currentMonthResponse = await postBillingAdminAmount({
         type: "qp",
@@ -253,10 +234,15 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         ? parseFloat(currentMonthResponse.originalAmount)
         : 0;
 
+      // 计算当月日均消费金额
+      const currentDay = now.getDate();
+      const daysToCalculate = currentDay > 1 ? currentDay : 1;
+      const dailyAverageCost = currentMonthCost / daysToCalculate;
+
       setStatistics({
         currentMonthCost,
         currentMonthOriginalCost,
-        recordCount,
+        dailyAverageCost,
       });
     } catch (error) {
       console.error("获取统计数据失败:", error);
@@ -342,12 +328,12 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   };
 
   // 页面加载时获取数据
-  useState(() => {
+  useEffect(() => {
     // 首先获取完整的计费选项
     fetchBillingOptions();
     // 然后获取统计数据
     fetchStatistics();
-  });
+  }, [quotaPoolName]);
   const billingRecordsColumns: ProColumns<BillingRecord>[] = [
     {
       title: intl.formatMessage({
@@ -727,17 +713,11 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
-              id: "pages.billingDetail.recordCount",
-              defaultMessage: "总记录数",
+              id: "pages.billingDetail.dailyAverageCost",
+              defaultMessage: "本月日均消费",
             })}
           >
-            <Text>
-              {statistics.recordCount}{" "}
-              {intl.formatMessage({
-                id: "pages.billingDetail.recordUnit",
-                defaultMessage: "条",
-              })}
-            </Text>
+            <Text>￥{statistics.dailyAverageCost.toFixed(4)}</Text>
           </Descriptions.Item>
         </Descriptions>
       </Card>
@@ -755,6 +735,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         <ProTable<BillingRecord>
           columns={billingRecordsColumns}
           rowKey="id"
+          actionRef={actionRef}
           search={{
             labelWidth: "auto",
             collapsed: false,
@@ -781,6 +762,11 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
 
             // 移除调试日志，使用正常参数
             return billingRecordsDataRequest(pageParams);
+          }}
+          // 当表格数据加载完成时，刷新统计数据
+          onLoad={() => {
+            // 刷新统计信息
+            fetchStatistics();
           }}
           dateFormatter="string"
           headerTitle={intl.formatMessage({

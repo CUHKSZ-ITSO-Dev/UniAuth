@@ -566,6 +566,7 @@ export default {
   "pages.billingDetail.lastMonthCost": "上月费用",
   "pages.billingDetail.totalCost": "总费用",
   "pages.billingDetail.avgDailyCost": "日均费用",
+  "pages.billingDetail.dailyAverageCost": "本月日均消费",
   "pages.billingDetail.recordCount": "记录数",
   "pages.billingDetail.recordUnit": "条",
   "pages.billingDetail.exportBill": "导出账单",
