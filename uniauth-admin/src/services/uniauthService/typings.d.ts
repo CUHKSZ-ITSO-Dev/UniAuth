@@ -705,10 +705,21 @@ declare namespace API {
     endTime: string;
     /** 排序顺序 */
     order: "asc" | "desc";
+    /** 分页信息 */
+    pagination?: {
+      page?: number;
+      pageSize?: number;
+    };
+    /** UPN关键词搜索 */
+    keywords?: string;
   };
 
   type GetBillRecordRes = {
     records?: Json;
+    page?: number;
+    pageSize?: number;
+    totalCount?: number;
+    totalPages?: number;
   };
 
   type getConfigI18nLangParams = {

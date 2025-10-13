@@ -332,8 +332,15 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       }),
       dataIndex: "upn",
       valueType: "text",
-      search: true,
       ellipsis: true,
+      // 直接使用 upn 字段，不做转换，在 request 方法中再处理
+      search: true,
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.billingDetail.userSearchPlaceholder",
+          defaultMessage: "请输入用户名关键字",
+        }),
+      },
     },
     {
       title: intl.formatMessage({
@@ -566,7 +573,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       const thirtyDaysAgo = now.subtract(30, "day");
       const defaultStartTime = thirtyDaysAgo.format("YYYY-MM-DD");
 
-      // 根据 params.endTime 是否存在来确定结束时间（结束时间加一天以包含当天数据）
+      // 使用传入的时间范围，或者使用默认范围
+      const startTime = params.startTime || defaultStartTime;
+
+      // 结束时间加一天以包含当天数据
       const endTime = params.endTime
         ? dayjs(params.endTime).add(1, "day").format("YYYY-MM-DD")
         : now.add(1, "day").format("YYYY-MM-DD");
@@ -585,10 +595,17 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             ? params.product
             : [params.product]
           : [],
-        // 优先使用用户选择的时间范围，如果没有则使用默认值
-        startTime: params.startTime || defaultStartTime,
+        // 使用准备好的开始和结束时间
+        startTime,
         endTime,
         order: "desc" as const,
+        // 添加后端分页参数
+        pagination: {
+          page: params.current || 1,
+          pageSize: params.pageSize || 20,
+        },
+        // 添加upn模糊搜索关键词，直接使用params.upn作为keywords
+        keywords: params.upn || "",
       };
 
       const response = await postBillingAdminGet(requestParams);
@@ -604,30 +621,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           allRecords = allRecords.concat(poolRecords);
         });
 
-        // 过滤数据
-        let filteredRecords = allRecords;
-        if (params.upn) {
-          filteredRecords = filteredRecords.filter((record: BillingRecord) =>
-            record.upn.toLowerCase().includes(params.upn.toLowerCase()),
-          );
-        }
-        if (params.plan) {
-          filteredRecords = filteredRecords.filter((record: BillingRecord) =>
-            record.plan.toLowerCase().includes(params.plan.toLowerCase()),
-          );
-        }
-
-        // 实现分页逻辑
-        const pageSize = params.pageSize || 20;
-        const current = params.current || 1;
-        const startIndex = (current - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedRecords = filteredRecords.slice(startIndex, endIndex);
-
         return {
-          data: paginatedRecords,
+          data: allRecords,
           success: true,
-          total: filteredRecords.length,
+          total: response.totalCount || allRecords.length,
+          // ProTable 期望 current 而不是 page
+          current: response.page || params.current || 1,
+          pageSize: response.pageSize || params.pageSize || 20,
         };
       }
     } catch (error) {
@@ -768,6 +768,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               pageSize: params.pageSize || 20,
             };
 
+            // 移除调试日志，使用正常参数
             return billingRecordsDataRequest(pageParams);
           }}
           dateFormatter="string"
