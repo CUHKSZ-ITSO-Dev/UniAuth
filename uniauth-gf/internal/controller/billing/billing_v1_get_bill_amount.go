@@ -37,20 +37,37 @@ func (c *ControllerV1) GetBillAmount(ctx context.Context, req *v1.GetBillAmountR
 		targets = req.QuotaPools
 	}
 
-	// 计算总金额
+	// 计算总金额（打折后）和原始总金额（打折前）
 	totalAmount := decimal.Zero
+	totalOriginalAmount := decimal.Zero
+
 	for _, target := range targets {
 		for _, record := range records.GetJsons(target) {
+			// 计算打折后总金额
 			if cost, err := decimal.NewFromString(record.Get("cost").String()); err == nil && cost.IsPositive() {
 				totalAmount = totalAmount.Add(cost)
 			} else if err != nil {
-				return nil, gerror.Wrap(err, "转换 Decimal 失败")
+				return nil, gerror.Wrap(err, "转换 cost 为 Decimal 失败")
+			}
+
+			// 计算打折前原始总金额
+			originalCost := record.Get("original_cost").String()
+			if originalCost == "" || originalCost == "0" {
+				// 如果 original_cost 为空或为 0，则使用 cost 作为原始金额
+				originalCost = record.Get("cost").String()
+			}
+
+			if origCost, err := decimal.NewFromString(originalCost); err == nil && origCost.IsPositive() {
+				totalOriginalAmount = totalOriginalAmount.Add(origCost)
+			} else if err != nil {
+				return nil, gerror.Wrap(err, "转换 original_cost 为 Decimal 失败")
 			}
 		}
 	}
 
-	// 返回结果
+	// 返回结果，包含打折后总金额和原始总金额
 	return &v1.GetBillAmountRes{
-		Amount: totalAmount.String(),
+		Amount:         totalAmount.String(),
+		OriginalAmount: totalOriginalAmount.String(),
 	}, nil
 }

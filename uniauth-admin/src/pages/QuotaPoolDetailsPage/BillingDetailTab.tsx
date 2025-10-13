@@ -22,6 +22,7 @@ import {
 import dayjs from "dayjs";
 import { type FC, useState } from "react";
 import {
+  postBillingAdminAmount,
   postBillingAdminGet,
   postBillingAdminOpenApiExport,
 } from "@/services/uniauthService/admin";
@@ -73,11 +74,9 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   const intl = useIntl();
 
   const [statistics, setStatistics] = useState({
-    currentMonthCost: 0,
-    lastMonthCost: 0,
-    totalCost: 0,
-    avgDailyCost: 0,
-    recordCount: 0,
+    currentMonthCost: 0, // 本月费用（打折后）
+    currentMonthOriginalCost: 0, // 本月原始费用（打折前）
+    recordCount: 0, // 记录数
   });
 
   // 状态管理
@@ -204,36 +203,61 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   const fetchStatistics = async () => {
     try {
       const now = new Date();
-      const startOfYear = new Date(now.getFullYear(), 0, 1);
-      // 结束时间加一天，确保包含当天的所有数据
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
 
-      const response = await postBillingAdminGet({
+      // 获取本月的开始和结束日期
+      const startOfCurrentMonth = new Date(currentYear, currentMonth, 1);
+      const endOfCurrentMonth = new Date(currentYear, currentMonth + 1, 0);
+      // 结束时间加一天，确保包含当天的所有数据
+      const nextDay = new Date(endOfCurrentMonth);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      // 获取记录总数
+      const recordsResponse = await postBillingAdminGet({
         type: "qp",
         quotaPools: [quotaPoolName],
         svc: [],
         product: [],
-        startTime: startOfYear.toISOString().split("T")[0],
-        endTime: tomorrow.toISOString().split("T")[0],
+        startTime: startOfCurrentMonth.toISOString().split("T")[0],
+        endTime: nextDay.toISOString().split("T")[0],
         order: "desc",
       });
 
-      if (response.records) {
-        const recordsData = response.records;
+      let recordCount = 0;
+      if (recordsResponse.records) {
+        const recordsData = recordsResponse.records;
         let allRecords: BillingRecord[] = [];
-
         Object.keys(recordsData).forEach((poolName) => {
           const poolRecords = (recordsData as any)[poolName] || [];
           allRecords = allRecords.concat(poolRecords);
         });
-
-        const stats = calculateStatistics(allRecords);
-        setStatistics({
-          ...stats,
-          recordCount: allRecords.length,
-        });
+        recordCount = allRecords.length;
       }
+
+      // 获取本月消费金额（包括打折后和原始金额）
+      const currentMonthResponse = await postBillingAdminAmount({
+        type: "qp",
+        quotaPools: [quotaPoolName],
+        svc: [],
+        product: [],
+        startTime: startOfCurrentMonth.toISOString().split("T")[0],
+        endTime: nextDay.toISOString().split("T")[0],
+      });
+
+      // 获取本月费用
+      const currentMonthCost = currentMonthResponse.amount
+        ? parseFloat(currentMonthResponse.amount)
+        : 0;
+      const currentMonthOriginalCost = currentMonthResponse.originalAmount
+        ? parseFloat(currentMonthResponse.originalAmount)
+        : 0;
+
+      setStatistics({
+        currentMonthCost,
+        currentMonthOriginalCost,
+        recordCount,
+      });
     } catch (error) {
       console.error("获取统计数据失败:", error);
       message.error(
@@ -648,46 +672,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
     };
   };
 
-  // 计算统计数据
-  const calculateStatistics = (records: BillingRecord[]) => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-
-    let currentMonthCost = 0;
-    let lastMonthCost = 0;
-    let totalCost = 0;
-
-    records.forEach((record) => {
-      const recordDate = new Date(record.created_at);
-      const cost = Number(record.cost);
-      totalCost += cost;
-
-      if (
-        recordDate.getFullYear() === currentYear &&
-        recordDate.getMonth() === currentMonth
-      ) {
-        currentMonthCost += cost;
-      }
-      if (
-        recordDate.getFullYear() === lastMonthYear &&
-        recordDate.getMonth() === lastMonth
-      ) {
-        lastMonthCost += cost;
-      }
-    });
-
-    const avgDailyCost = currentMonthCost / now.getDate();
-
-    return {
-      currentMonthCost,
-      lastMonthCost,
-      totalCost,
-      avgDailyCost,
-    };
-  };
+  // 不再需要前端计算统计数据，直接从后端获取
 
   return (
     <GridContent>
@@ -714,11 +699,31 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
-              id: "pages.billingDetail.totalCost",
-              defaultMessage: "累计消费",
+              id: "pages.billingDetail.currentMonthOriginalCost",
+              defaultMessage: "本月原始费用",
             })}
           >
-            <Text strong>￥{statistics.totalCost.toFixed(4)}</Text>
+            <Text strong>
+              ￥{statistics.currentMonthOriginalCost.toFixed(4)}
+            </Text>
+            {statistics.currentMonthOriginalCost >
+              statistics.currentMonthCost && (
+              <Text type="secondary" style={{ marginLeft: 8 }}>
+                (
+                {intl.formatMessage({
+                  id: "pages.billingDetail.discount",
+                  defaultMessage: "优惠",
+                })}
+                :{" "}
+                {(
+                  (1 -
+                    statistics.currentMonthCost /
+                      statistics.currentMonthOriginalCost) *
+                  100
+                ).toFixed(1)}
+                %)
+              </Text>
+            )}
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
@@ -726,7 +731,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               defaultMessage: "总记录数",
             })}
           >
-            <Text>{statistics.recordCount} 条</Text>
+            <Text>
+              {statistics.recordCount}{" "}
+              {intl.formatMessage({
+                id: "pages.billingDetail.recordUnit",
+                defaultMessage: "条",
+              })}
+            </Text>
           </Descriptions.Item>
         </Descriptions>
       </Card>

@@ -58,5 +58,6 @@ type GetBillAmountReq struct {
 	EndTime    string   `json:"endTime" v:"required" dc:"结束时间" example:"2024-01-01"`
 }
 type GetBillAmountRes struct {
-	Amount string `json:"amount" dc:"总金额"`
+	Amount         string `json:"amount" dc:"总金额"`
+	OriginalAmount string `json:"originalAmount" dc:"总原始金额"`
 }

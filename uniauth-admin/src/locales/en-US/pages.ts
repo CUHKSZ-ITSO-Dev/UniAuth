@@ -701,10 +701,13 @@ export default {
   // BillingDetailTab - only add non-existing keys
   "pages.billingDetail.title": "Billing Details",
   "pages.billingDetail.currentMonthCost": "Current Month Cost",
+  "pages.billingDetail.currentMonthOriginalCost": "Original Month Cost",
+  "pages.billingDetail.discount": "Discount",
   "pages.billingDetail.lastMonthCost": "Last Month Cost",
   "pages.billingDetail.totalCost": "Total Cost",
   "pages.billingDetail.avgDailyCost": "Avg Daily Cost",
   "pages.billingDetail.recordCount": "Record Count",
+  "pages.billingDetail.recordUnit": "items",
   "pages.billingDetail.dateRange": "Date Range",
   "pages.billingDetail.startDate": "Start Date",
   "pages.billingDetail.endDate": "End Date",
