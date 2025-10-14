@@ -23,9 +23,9 @@ func (c *ControllerV1) GetAvailableModelForQuotaPool(ctx context.Context, req *v
 		}
 	}
 
-	// 如果 res.AvailableModels 里有 "qwen3-235b-a22b-instruct-2507"，则将其移动到第一个位置
+	// 如果 res.AvailableModels 里有 "qwen3-vl-235b-a22b-instruct"，则将其移动到第一个位置
 	for i, model := range res.AvailableModels {
-		if model == "qwen3-235b-a22b-instruct-2507" {
+		if model == "qwen3-vl-235b-a22b-instruct" {
 			if i != 0 {
 				// 移动到第一个位置
 				res.AvailableModels = append([]string{model}, append(res.AvailableModels[:i], res.AvailableModels[i+1:]...)...)
