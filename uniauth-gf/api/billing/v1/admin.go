@@ -35,7 +35,7 @@ type GetBillRecordReq struct {
 	QuotaPools []string           `json:"quotaPools" dc:"配额池" example:"['students_pool']"`
 	Svc        []string           `json:"svc" dc:"服务" example:"['chat', 'voice']"`
 	Product    []string           `json:"product" dc:"产品" example:"['chat', 'voice']"`
-	Keyword    string             `json:"keyword" dc:"关键字，模糊匹配 upn, source, svc, product"`
+	Keywords   string             `json:"keywords" dc:"关键字，模糊匹配 upn, source, svc, product"`
 	Pagination *BillPaginationReq `json:"pagination" dc:"分页参数，支持分页或查询全部"`
 	StartTime  *gtime.Time        `json:"startTime" v:"required" dc:"开始时间" example:"2024-01-01"`
 	EndTime    *gtime.Time        `json:"endTime" v:"required" dc:"结束时间" example:"2024-01-01"`
@@ -43,10 +43,10 @@ type GetBillRecordReq struct {
 }
 type GetBillRecordRes struct {
 	Records    *gjson.Json `json:"records"`
-	Total      int         `json:"total" dc:"总记录数"`
+	TotalCount int         `json:"totalCount" dc:"总记录数"`
 	Page       int         `json:"page" dc:"当前页码"`
-	PageSize   int         `json:"page_size" dc:"每页条数"`
-	TotalPages int         `json:"total_pages" dc:"总页数"`
+	PageSize   int         `json:"pageSize" dc:"每页条数"`
+	TotalPages int         `json:"totalPages" dc:"总页数"`
 }
 
 type GetBillAmountReq struct {
