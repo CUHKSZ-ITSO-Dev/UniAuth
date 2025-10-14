@@ -23,19 +23,30 @@ type ExportBillRecordReq struct {
 type ExportBillRecordRes struct {
 }
 
+type BillPaginationReq struct {
+	Page     int `json:"page" v:"min:1" dc:"页码，从1开始" default:"1"`
+	PageSize int `json:"pageSize" v:"min:1|max:1000" dc:"每页条数，最大1000" default:"10"`
+}
+
 type GetBillRecordReq struct {
 	g.Meta     `path:"/admin/get" tags:"Billing/Admin" method:"post" summary:"查询账单" dc:"查询账单，根据一定的条件。有两个类型的账单，需要指定 type：<br>1. type = qp，返回每个配额池名下特定upns相关的账单；<br>2. type = upn，返回每个upn名下这些特定qps相关的账单。<br>数组传空时，则忽略对应的限制。"`
-	Type       string      `json:"type" dc:"类型" v:"required|in:qp,upn"`
-	Upns       []string    `json:"upns" dc:"UPN列表" example:"['122020255@link.cuhk.edu.cn']"`
-	QuotaPools []string    `json:"quotaPools" dc:"配额池" example:"['students_pool']"`
-	Svc        []string    `json:"svc" dc:"服务" example:"['chat', 'voice']"`
-	Product    []string    `json:"product" dc:"产品" example:"['chat', 'voice']"`
-	StartTime  *gtime.Time `json:"startTime" v:"required" dc:"开始时间" example:"2024-01-01"`
-	EndTime    *gtime.Time `json:"endTime" v:"required" dc:"结束时间" example:"2024-01-01"`
-	Order      string      `json:"order" dc:"账单返回时按照账单创建时间排序。默认倒序 desc。" v:"required|in:asc,desc" d:"desc"`
+	Type       string             `json:"type" dc:"类型" v:"required|in:qp,upn"`
+	Upns       []string           `json:"upns" dc:"UPN列表" example:"['122020255@link.cuhk.edu.cn']"`
+	QuotaPools []string           `json:"quotaPools" dc:"配额池" example:"['students_pool']"`
+	Svc        []string           `json:"svc" dc:"服务" example:"['chat', 'voice']"`
+	Product    []string           `json:"product" dc:"产品" example:"['chat', 'voice']"`
+	Keyword    string             `json:"keyword" dc:"关键字，模糊匹配 upn, source, svc, product"`
+	Pagination *BillPaginationReq `json:"pagination" dc:"分页参数，支持分页或查询全部"`
+	StartTime  *gtime.Time        `json:"startTime" v:"required" dc:"开始时间" example:"2024-01-01"`
+	EndTime    *gtime.Time        `json:"endTime" v:"required" dc:"结束时间" example:"2024-01-01"`
+	Order      string             `json:"order" dc:"账单返回时按照账单创建时间排序。默认倒序 desc。" v:"required|in:asc,desc" d:"desc"`
 }
 type GetBillRecordRes struct {
-	Records *gjson.Json `json:"records"`
+	Records    *gjson.Json `json:"records"`
+	Total      int         `json:"total" dc:"总记录数"`
+	Page       int         `json:"page" dc:"当前页码"`
+	PageSize   int         `json:"page_size" dc:"每页条数"`
+	TotalPages int         `json:"total_pages" dc:"总页数"`
 }
 
 type GetBillAmountReq struct {
