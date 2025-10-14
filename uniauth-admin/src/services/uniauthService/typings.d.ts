@@ -726,9 +726,9 @@ declare namespace API {
     /** 类型 */
     type: "qp" | "upn";
     /** UPN列表 */
-    upns?: string[];
+    upn?: string;
     /** 配额池 */
-    quotaPools?: string[];
+    quotaPool?: string;
     /** 服务 */
     svc?: string[];
     /** 产品 */

@@ -3,6 +3,7 @@ package billing
 import (
 	"context"
 
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/shopspring/decimal"
 
@@ -11,73 +12,58 @@ import (
 )
 
 func (c *ControllerV1) GetBillAmount(ctx context.Context, req *v1.GetBillAmountReq) (res *v1.GetBillAmountRes, err error) {
-	// 初始化响应对象
-	res = &v1.GetBillAmountRes{}
-
-	baseModel := dao.BillingCostRecords.Ctx(ctx).
-		OmitEmpty().
-		WhereIn("svc", req.Svc).
-		WhereIn("product", req.Product).
-		WhereGTE("created_at", req.StartTime).
-		WhereLTE("created_at", req.EndTime)
+	var cost, originalCost decimal.Decimal
+	var result gdb.Record
 
 	if req.Type == "upn" {
 		// upn 模式查询
-		if len(req.Upns) == 0 {
-			return nil, gerror.New("UPNs 不能传空")
+		if len(req.Upn) == 0 {
+			return nil, gerror.New("UPN 不能传空")
 		}
 
-		model := baseModel.Clone().
-			WhereIn("upn", req.Upns).
-			WhereIn("source", req.QuotaPools)
+		result, err = dao.BillingCostRecords.Ctx(ctx).
+			OmitEmpty().
+			Where("upn", req.Upn).
+			WhereIn("svc", req.Svc).
+			WhereIn("product", req.Product).
+			WhereGTE("created_at", req.StartTime).
+			WhereLTE("created_at", req.EndTime).
+			Fields("SUM(cost) as cost, SUM(original_cost) as original_cost").
+			One()
 
-		// 总金额（打折后）
-		costValue, err := model.Sum("cost")
 		if err != nil {
-			return nil, gerror.Wrapf(err, "[UPN 模式] 计算总金额失败")
+			return nil, gerror.Wrapf(err, "[UPN 模式] 获取 UPN = %s 账单总金额失败", req.Upn)
 		}
 
-		// 原始总金额（打折前）
-		originalCostValue, err := model.Sum("original_cost")
-		if err != nil {
-			return nil, gerror.Wrapf(err, "[UPN 模式] 计算原始总金额失败")
-		}
-
-		cost := decimal.NewFromFloat(costValue)
-		originalCost := decimal.NewFromFloat(originalCostValue)
-
-		res.Amount = cost
-		res.OriginalAmount = originalCost
 	} else {
 		// Quota Pool 模式查询
-		if len(req.QuotaPools) == 0 {
+		if len(req.QuotaPool) == 0 {
 			return nil, gerror.New("QuotaPools 不能传空")
 		}
 
-		model := baseModel.Clone().
-			WhereIn("source", req.QuotaPools)
+		result, err = dao.BillingCostRecords.Ctx(ctx).
+			OmitEmpty().
+			Where("source", req.QuotaPool).
+			WhereIn("svc", req.Svc).
+			WhereIn("product", req.Product).
+			WhereGTE("created_at", req.StartTime).
+			WhereLTE("created_at", req.EndTime).
+			Fields("SUM(cost) as cost, SUM(original_cost) as original_cost").
+			One()
 
-		if len(req.Upns) > 0 {
-			model = model.WhereIn("upn", req.Upns)
-		}
-
-		// 总金额（打折后）
-		costValue, err := model.Sum("cost")
 		if err != nil {
-			return nil, gerror.Wrapf(err, "[Quota Pool 模式] 计算总金额失败")
+			return nil, gerror.Wrapf(err, "[Quota Pool 模式] 获取 Source = %s 账单总金额失败", req.QuotaPool)
 		}
+	}
 
-		// 原始总金额（打折前）
-		originalCostValue, err := model.Sum("original_cost")
-		if err != nil {
-			return nil, gerror.Wrapf(err, "[Quota Pool 模式] 计算原始总金额失败")
-		}
+	costStr := result["cost"].String()
+	originalCostStr := result["original_cost"].String()
+	cost, _ = decimal.NewFromString(costStr)
+	originalCost, _ = decimal.NewFromString(originalCostStr)
 
-		cost := decimal.NewFromFloat(costValue)
-		originalCost := decimal.NewFromFloat(originalCostValue)
-
-		res.Amount = cost
-		res.OriginalAmount = originalCost
+	res = &v1.GetBillAmountRes{
+		Amount:         cost,
+		OriginalAmount: originalCost,
 	}
 
 	return res, nil

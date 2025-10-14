@@ -219,7 +219,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       // 获取本月消费金额（包括打折后和原始金额）
       const currentMonthResponse = await postBillingAdminAmount({
         type: "qp",
-        quotaPools: [quotaPoolName],
+        quotaPool: quotaPoolName,
         svc: [],
         product: [],
         startTime: startOfCurrentMonth.toISOString().split("T")[0],
