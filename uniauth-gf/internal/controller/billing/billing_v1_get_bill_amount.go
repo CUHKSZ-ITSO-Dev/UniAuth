@@ -12,10 +12,7 @@ import (
 
 func (c *ControllerV1) GetBillAmount(ctx context.Context, req *v1.GetBillAmountReq) (res *v1.GetBillAmountRes, err error) {
 	// 初始化响应对象
-	res = &v1.GetBillAmountRes{
-		Amount:         "0",
-		OriginalAmount: "0",
-	}
+	res = &v1.GetBillAmountRes{}
 
 	baseModel := dao.BillingCostRecords.Ctx(ctx).
 		OmitEmpty().
@@ -49,8 +46,8 @@ func (c *ControllerV1) GetBillAmount(ctx context.Context, req *v1.GetBillAmountR
 		cost := decimal.NewFromFloat(costValue)
 		originalCost := decimal.NewFromFloat(originalCostValue)
 
-		res.Amount = cost.String()
-		res.OriginalAmount = originalCost.String()
+		res.Amount = cost
+		res.OriginalAmount = originalCost
 	} else {
 		// Quota Pool 模式查询
 		if len(req.QuotaPools) == 0 {
@@ -79,8 +76,8 @@ func (c *ControllerV1) GetBillAmount(ctx context.Context, req *v1.GetBillAmountR
 		cost := decimal.NewFromFloat(costValue)
 		originalCost := decimal.NewFromFloat(originalCostValue)
 
-		res.Amount = cost.String()
-		res.OriginalAmount = originalCost.String()
+		res.Amount = cost
+		res.OriginalAmount = originalCost
 	}
 
 	return res, nil
