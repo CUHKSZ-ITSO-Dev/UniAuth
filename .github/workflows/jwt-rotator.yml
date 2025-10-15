@@ -104,11 +104,13 @@ jobs:
           git checkout ${{ env.MANIFEST_DEPLOY_BRANCH }}
           # 更新Kubernetes清单
           MANIFEST_FILE="dev/dev-jwt-rotator.yaml"
+          # Extract version from jwt-vX.Y.Z format
+          VERSION_TAG=$(echo "${{ env.TAG }}" | sed 's|jwt/||')
           # Update image tag
-          sed -i "s|image: ghcr.io/cuhksz-itso-dev/uniauth-jwt-rotator:.*|image: ghcr.io/cuhksz-itso-dev/uniauth-jwt-rotator:${{ env.TAG }}|" ${MANIFEST_FILE}
+          sed -i "s|image: ghcr.io/cuhksz-itso-dev/uniauth-jwt-rotator:.*|image: ghcr.io/cuhksz-itso-dev/uniauth-jwt-rotator:${VERSION_TAG}|" ${MANIFEST_FILE}
           
       
           # 提交并推送更改到目标仓库
           git add ${MANIFEST_FILE}
-          git commit -m "Update ${MANIFEST_FILE} to  ${{ env.TAG }}"
+          git commit -m "Update ${MANIFEST_FILE} to ${VERSION_TAG}"
           git push origin ${{ env.MANIFEST_DEPLOY_BRANCH }}
