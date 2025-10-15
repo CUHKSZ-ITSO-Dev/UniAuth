@@ -6,7 +6,7 @@ on:
       - "jwt/v*"
 
 env:
-  IMAGE_NAME: ghcr.io/cuhksz-itso-dev/jwt-rotator
+  IMAGE_NAME: ghcr.io/cuhksz-itso-dev/uniauth-jwt-rotator
   MANIFEST_REPO_OWNER: CUHKSZ-ITSO-Dev
   MANIFEST_REPO_NAME: GPT-Cluster
   MANIFEST_DEPLOY_BRANCH: main
@@ -72,13 +72,14 @@ jobs:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=tag
-            type=semver,pattern=v{{major}}
-            type=semver,pattern=v{{major}}.{{minor}}
+            type=match,pattern=jwt/(v.+),group=1
+            type=match,pattern=jwt/v(\d+),group=1,suffix=.x
+            type=match,pattern=jwt/v(\d+\.\d+),group=1,suffix=.x
           labels: |
             org.opencontainers.image.description=UniAuth Automated System (JWT Rotator, {{sha}}).
             org.opencontainers.image.created={{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
             org.opencontainers.image.revision={{ sha }}
-            org.opencontainers.image.version=v{{major}}.{{minor}}
+            org.opencontainers.image.version={{tag}}
             org.opencontainers.image.title=UniAuth JWT Rotator
 
       - name: Build and push Docker image
