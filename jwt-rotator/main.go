@@ -9,6 +9,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"slices"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -65,7 +67,6 @@ func NewKeyRotator() (*KeyRotator, error) {
 	// 获取Kubernetes配置
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Printf("无法获取集群内配置，尝试本地配置: %v", err)
 		return nil, fmt.Errorf("无法获取Kubernetes配置: %v", err)
 	}
 
@@ -93,13 +94,14 @@ func (kr *KeyRotator) GenerateECCKeyPair() (*JWTKeyPair, error) {
 	}
 
 	// 生成密钥ID（基于时间戳）
-	keyID := fmt.Sprintf("%s%d", keyPrefix, time.Now().Unix())
+	now := time.Now()
+	keyID := fmt.Sprintf("%s%d", keyPrefix, now.Unix())
 
 	return &JWTKeyPair{
 		KeyID:      keyID,
 		PrivateKey: privateKey,
 		PublicKey:  &privateKey.PublicKey,
-		CreatedAt:  time.Now(),
+		CreatedAt:  now,
 	}, nil
 }
 
@@ -145,18 +147,24 @@ func (kr *KeyRotator) UpdateConfigMap(keyPair *JWTKeyPair) error {
 	// 获取现有ConfigMap
 	configMap, err := configMapsClient.Get(kr.ctx, configMapName, metav1.GetOptions{})
 	if err != nil {
-		// 如果ConfigMap不存在，创建新的
-		configMap = &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      configMapName,
-				Namespace: kr.namespace,
-				Labels: map[string]string{
-					"app":       "jwt-rotator",
-					"component": "public-keys",
+		if errors.IsNotFound(err) {
+			// 如果ConfigMap不存在，创建新的
+			configMap = &corev1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      configMapName,
+					Namespace: kr.namespace,
+					Labels: map[string]string{
+						"app":       "jwt-rotator",
+						"component": "public-keys",
+					},
 				},
-			},
-			Data: make(map[string]string),
+				Data: make(map[string]string),
+			}
+		} else {
+			// 其他错误，直接返回
+			return fmt.Errorf("获取ConfigMap失败: %v", err)
 		}
+
 	}
 
 	// 添加新的公钥
@@ -191,18 +199,22 @@ func (kr *KeyRotator) UpdateSecret(keyPair *JWTKeyPair) error {
 	// 获取现有Secret
 	secret, err := secretsClient.Get(kr.ctx, secretName, metav1.GetOptions{})
 	if err != nil {
-		// 如果Secret不存在，创建新的
-		secret = &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      secretName,
-				Namespace: kr.namespace,
-				Labels: map[string]string{
-					"app":       "jwt-rotator",
-					"component": "private-keys",
+		if errors.IsNotFound(err) {
+			// 如果Secret不存在，创建新的
+			secret = &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      secretName,
+					Namespace: kr.namespace,
+					Labels: map[string]string{
+						"app":       "jwt-rotator",
+						"component": "private-keys",
+					},
 				},
-			},
-			Type: corev1.SecretTypeOpaque,
-			Data: make(map[string][]byte),
+				Type: corev1.SecretTypeOpaque,
+				Data: make(map[string][]byte),
+			}
+		} else {
+			return fmt.Errorf("获取Secret失败: %v", err)
 		}
 	}
 
@@ -251,12 +263,18 @@ func (kr *KeyRotator) cleanupConfigMapKeys() error {
 	if len(timestamps) > maxKeysToKeep {
 		// 按时间戳升序排序（最旧的(小的时间戳)在前）
 		slices.SortFunc(timestamps, func(a, b string) int {
-			ai, _ := strconv.ParseInt(a, 10, 64)
-			bi, _ := strconv.ParseInt(b, 10, 64)
+			ai, err := strconv.ParseInt(a, 10, 64)
+			if err != nil {
+				slog.Warn("时间戳转换出错：%s。错误：%v", a, err)
+			}
+			bi, err := strconv.ParseInt(b, 10, 64)
+			if err != nil {
+				slog.Warn("时间戳转换出错：%s。错误：%v", b, err)
+			}
 			return int(ai - bi)
 		})
 		for i := range len(timestamps) - maxKeysToKeep {
-			delete(configMap.Data, timestamps[i])
+			delete(configMap.Data, keyPrefix+timestamps[i])
 		}
 
 		// 更新ConfigMap
@@ -296,12 +314,18 @@ func (kr *KeyRotator) cleanupSecretKeys() error {
 	if len(timestamps) > maxKeysToKeep {
 		// 按时间戳升序排序（最旧的(小的时间戳)在前）
 		slices.SortFunc(timestamps, func(a, b string) int {
-			ai, _ := strconv.ParseInt(a, 10, 64)
-			bi, _ := strconv.ParseInt(b, 10, 64)
+			ai, err := strconv.ParseInt(a, 10, 64)
+			if err != nil {
+				slog.Warn("时间戳转换出错：%s。错误：%v", a, err)
+			}
+			bi, err := strconv.ParseInt(b, 10, 64)
+			if err != nil {
+				slog.Warn("时间戳转换出错：%s。错误：%v", b, err)
+			}
 			return int(ai - bi)
 		})
 		for i := range len(timestamps) - maxKeysToKeep {
-			delete(secret.Data, timestamps[i])
+			delete(secret.Data, keyPrefix+timestamps[i])
 		}
 
 		// 更新Secret
@@ -359,8 +383,14 @@ func (kr *KeyRotator) GetCurrentKeyInfo() error {
 		return fmt.Errorf("获取ConfigMap失败: %v", err)
 	}
 
-	currentKeyID := configMap.Data["current-key-id"]
-	lastRotation := configMap.Data["last-rotation"]
+	currentKeyID, ok := configMap.Data["current-key-id"]
+	if !ok {
+		return fmt.Errorf("获取当前密钥ID失败")
+	}
+	lastRotation, ok := configMap.Data["last-rotation"]
+	if !ok {
+		return fmt.Errorf("获取上次轮换时间失败")
+	}
 
 	log.Printf("当前密钥ID: %s", currentKeyID)
 	log.Printf("上次轮换时间: %s", lastRotation)
