@@ -1,0 +1,116 @@
+name: UniAuth JWT Rotator 服务构建
+
+on:
+  push:
+    tags:
+      - "jwt/v*"
+
+env:
+  IMAGE_NAME: ghcr.io/cuhksz-itso-dev/jwt-rotator
+  MANIFEST_REPO_OWNER: CUHKSZ-ITSO-Dev
+  MANIFEST_REPO_NAME: GPT-Cluster
+  MANIFEST_DEPLOY_BRANCH: main
+  TAG: ${{ github.ref_name }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  # Job1 交叉编译，上传 Artifacts
+  build-binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          cache: true
+          cache-dependency-path: jwt-rotator/go.sum
+          go-version: "1.25.0"
+
+      - name: Build JWT Rotator
+        working-directory: jwt-rotator
+        run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o jwt-rotator .
+
+      - name: Upload Artifacts 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: jwt-rotator
+          path: jwt-rotator/
+
+  # Job2 构建 Docker 镜像
+  build-docker:
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Download binary artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: jwt-rotator
+          path: ./jwt-rotator/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
+          labels: |
+            org.opencontainers.image.description=UniAuth Automated System (JWT Rotator, {{sha}}).
+            org.opencontainers.image.created={{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
+            org.opencontainers.image.revision={{ sha }}
+            org.opencontainers.image.version=v{{major}}.{{minor}}
+            org.opencontainers.image.title=UniAuth JWT Rotator
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          provenance: false
+          context: jwt-rotator
+          file: jwt-rotator/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Update Kubernetes manifest and commit changes
+        run: |
+          # 配置Git
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # 克隆目标仓库（集群部署清单仓库）
+          git clone https://${{ secrets.DEPLOY_REPO_TOKEN }}@github.com/${{ env.MANIFEST_REPO_OWNER }}/${{ env.MANIFEST_REPO_NAME }}.git manifest-repo
+          cd manifest-repo
+
+          # 切换到目标分支
+          git checkout ${{ env.MANIFEST_DEPLOY_BRANCH }}
+          # 更新Kubernetes清单
+          MANIFEST_FILE="dev/dev-jwt-rotator.yaml"
+          # Update image tag
+          sed -i "s|image: ghcr.io/cuhksz-itso-dev/uniauth-jwt-rotator:.*|image: ghcr.io/cuhksz-itso-dev/uniauth-jwt-rotator:${{ env.TAG }}|" ${MANIFEST_FILE}
+          
+      
+          # 提交并推送更改到目标仓库
+          git add ${MANIFEST_FILE}
+          git commit -m "Update ${MANIFEST_FILE} to  ${{ env.TAG }}"
+          git push origin ${{ env.MANIFEST_DEPLOY_BRANCH }}
