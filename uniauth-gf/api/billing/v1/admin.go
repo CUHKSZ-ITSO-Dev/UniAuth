@@ -36,13 +36,13 @@ type GetBillRecordReq struct {
 	Svc        []string           `json:"svc" dc:"服务" example:"['chat', 'voice']"`
 	Product    []string           `json:"product" dc:"产品" example:"['chat', 'voice']"`
 	Keywords   string             `json:"keywords" dc:"关键字，模糊匹配 upn, source, svc, product"`
-	Pagination *BillPaginationReq `json:"pagination" dc:"分页参数，支持分页或查询全部"`
+	Pagination *BillPaginationReq `json:"pagination" dc:"分页参数，支持分页或查询全部" v:"required"`
 	StartTime  *gtime.Time        `json:"startTime" v:"required" dc:"开始时间" example:"2024-01-01"`
 	EndTime    *gtime.Time        `json:"endTime" v:"required" dc:"结束时间" example:"2024-01-01"`
 	Order      string             `json:"order" dc:"账单返回时按照账单创建时间排序。默认倒序 desc。" v:"required|in:asc,desc" d:"desc"`
 }
 type GetBillRecordRes struct {
-	Records    *gjson.Json `json:"records"`
+	Records    *gjson.Json `json:"records" dc:"账单记录。返回记录数组。"`
 	TotalCount int         `json:"totalCount" dc:"总记录数"`
 	Page       int         `json:"page" dc:"当前页码"`
 	PageSize   int         `json:"pageSize" dc:"每页条数"`
