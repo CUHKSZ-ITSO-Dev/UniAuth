@@ -12,7 +12,7 @@ func (c *ControllerV1) GetAllUsersForQuotaPool(ctx context.Context, req *v1.GetA
 	res = &v1.GetAllUsersForQuotaPoolRes{}
 	res.Users, err = e.GetUsersForRole(req.QuotaPool)
 	if err != nil {
-		err = gerror.Wrap(err, "Casbin 查询拥有该 QuotaPool 的用户时发生内部错误")
+		err = gerror.Wrap(err, "Casbin 查询拥有该 QuotaPoolName 的用户时发生内部错误")
 	}
 	return
 }

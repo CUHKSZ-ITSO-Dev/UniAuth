@@ -65,7 +65,7 @@ type GetAllQuotaPoolsRes struct {
 
 type GetAllUsersForQuotaPoolReq struct {
 	g.Meta    `path:"/quotaPools/users" tags:"Auth" method:"get" summary:"获取所属配额池的用户" dc:"动态获取指定配额池的用户。"`
-	QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPool" example:"student_pool"`
+	QuotaPool string `json:"quotaPool" v:"required" dc:"QuotaPoolName" example:"student_pool"`
 }
 type GetAllUsersForQuotaPoolRes struct {
 	g.Meta `resEg:"resource/interface/auth/get_all_users_for_quota_pool_res.json"`
