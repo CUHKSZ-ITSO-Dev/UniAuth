@@ -37,13 +37,13 @@ type PaginationReq struct {
 }
 
 type GetQuotaPoolReq struct {
-	g.Meta        `path:"/" tags:"QuotaPool" method:"get" summary:"获取单个配额池详细配置"`
+	g.Meta        `path:"/" tags:"QuotaPoolName" method:"get" summary:"获取单个配额池详细配置"`
 	QuotaPoolName string `json:"quotaPoolName" v:"required" dc:"配额池名称"`
 }
 type GetQuotaPoolRes = entity.QuotapoolQuotaPool
 
 type FilterQuotaPoolReq struct {
-	g.Meta     `path:"/filter" tags:"QuotaPool" method:"post" summary:"筛选配额池" dc:"根据过滤条件筛选配额池，支持复杂条件查询、排序和分页"`
+	g.Meta     `path:"/filter" tags:"QuotaPoolName" method:"post" summary:"筛选配额池" dc:"根据过滤条件筛选配额池，支持复杂条件查询、排序和分页"`
 	Filter     *FilterGroup     `json:"filter" dc:"过滤条件，支持复杂的逻辑组合查询"`
 	Sort       []*SortCondition `json:"sort" dc:"排序条件，支持多字段排序"`
 	Pagination *PaginationReq   `json:"pagination" dc:"分页参数"`
@@ -59,7 +59,7 @@ type FilterQuotaPoolRes struct {
 }
 
 type NewQuotaPoolReq struct {
-	g.Meta `path:"/" tags:"QuotaPool" method:"post" summary:"新建配额池"`
+	g.Meta `path:"/" tags:"QuotaPoolName" method:"post" summary:"新建配额池"`
 	// 配额池名称（唯一）
 	QuotaPoolName string `json:"quotaPoolName" v:"required" example:"itso-deep-research-vip"`
 	// 刷新周期（标准 Cron 表达式，支持 5 字段）
@@ -80,7 +80,7 @@ type NewQuotaPoolRes struct {
 }
 
 type EditQuotaPoolReq struct {
-	g.Meta         `path:"/" tags:"QuotaPool" method:"put" summary:"编辑配额池" dc:"除了 quotaPoolName 字段必传之外，其他字段可以不传。不传的字段不会更新。"`
+	g.Meta         `path:"/" tags:"QuotaPoolName" method:"put" summary:"编辑配额池" dc:"除了 quotaPoolName 字段必传之外，其他字段可以不传。不传的字段不会更新。"`
 	QuotaPoolName  string           `json:"quotaPoolName" v:"required"`
 	CronCycle      *string          `json:"cronCycle"`
 	RegularQuota   *decimal.Decimal `json:"regularQuota"`
@@ -94,7 +94,7 @@ type EditQuotaPoolRes struct {
 }
 
 type DeleteQuotaPoolReq struct {
-	g.Meta        `path:"/" tags:"QuotaPool" method:"delete" summary:"删除配额池"`
+	g.Meta        `path:"/" tags:"QuotaPoolName" method:"delete" summary:"删除配额池"`
 	QuotaPoolName string `json:"quotaPoolName" v:"required"`
 }
 type DeleteQuotaPoolRes struct {
@@ -102,7 +102,7 @@ type DeleteQuotaPoolRes struct {
 }
 
 type EnsurePersonalQuotaPoolReq struct {
-	g.Meta `path:"/ensure" tags:"QuotaPool" method:"post" summary:"确保个人配额池存在"`
+	g.Meta `path:"/ensure" tags:"QuotaPoolName" method:"post" summary:"确保个人配额池存在"`
 	Upn    string `json:"upn" v:"required" example:"122020255@link.cuhk.edu.cn"`
 }
 type EnsurePersonalQuotaPoolRes struct {
@@ -111,7 +111,7 @@ type EnsurePersonalQuotaPoolRes struct {
 }
 
 type RefreshUsersOfQuotaPoolReq struct {
-	g.Meta     `path:"/refreshUsers" tags:"QuotaPool" method:"post" summary:"刷新配额池的用户" dc:"给定配额池名称列表，根据配额池配置中的 UserInfos Rules，在 Casbin 中刷新组权限继承关系。'不传参数'则刷新所有配额池。如果传空数组，则没有任何操作！"`
+	g.Meta     `path:"/refreshUsers" tags:"QuotaPoolName" method:"post" summary:"刷新配额池的用户" dc:"给定配额池名称列表，根据配额池配置中的 UserInfos Rules，在 Casbin 中刷新组权限继承关系。'不传参数'则刷新所有配额池。如果传空数组，则没有任何操作！"`
 	QPNameList *[]string `json:"qpNameList" example:"['itso-deep-research-vip', 'itso-deep-research-vip-2']"`
 }
 type RefreshUsersOfQuotaPoolRes struct {
