@@ -50,14 +50,14 @@ type GetBillRecordRes struct {
 }
 
 type GetBillAmountReq struct {
-	g.Meta    `path:"/admin/amount" tags:"Billing/Admin" method:"post" summary:"查询账单总金额" dc:"查询账单总金额，根据一定的条件。有两个类型的账单，需要指定 type：<br>1. type = qp，返回每个配额池名下特定upns相关的账单总金额；<br>2. type = upn，返回每个upn名下这些特定qps相关的账单总金额。<br>数组传空时，则忽略对应的限制。"`
-	Type      string      `json:"type" dc:"类型" v:"required|in:qp,upn"`
-	Upn       string      `json:"upn" dc:"UPN" example:"122020255@link.cuhk.edu.cn"`
-	QuotaPool string      `json:"quotaPool" dc:"配额池" example:"students_pool"`
-	Svc       []string    `json:"svc" dc:"服务" example:"['chat', 'voice']"`
-	Product   []string    `json:"product" dc:"产品" example:"['chat', 'voice']"`
-	StartTime *gtime.Time `json:"startTime" v:"required" dc:"开始时间" example:"2024-01-01"`
-	EndTime   *gtime.Time `json:"endTime" v:"required" dc:"结束时间" example:"2024-01-01"`
+	g.Meta     `path:"/admin/amount" tags:"Billing/Admin" method:"post" summary:"查询账单总金额" dc:"查询账单总金额，根据一定的条件。有两个类型的账单，需要指定 type：<br>1. type = qp，返回每个配额池名下特定upns相关的账单总金额；<br>2. type = upn，返回每个upn名下这些特定qps相关的账单总金额。<br>数组传空时，则忽略对应的限制。"`
+	Type       string      `json:"type" dc:"类型" v:"required|in:qp,upn"`
+	Upns       []string    `json:"upns" dc:"UPN" example:"['122020255@link.cuhk.edu.cn']"`
+	QuotaPools []string    `json:"quotaPools" dc:"配额池" example:"['students_pool']"`
+	Svc        []string    `json:"svc" dc:"服务" example:"['chat', 'voice']"`
+	Product    []string    `json:"product" dc:"产品" example:"['chat', 'voice']"`
+	StartTime  *gtime.Time `json:"startTime" v:"required" dc:"开始时间" example:"2024-01-01"`
+	EndTime    *gtime.Time `json:"endTime" v:"required" dc:"结束时间" example:"2024-01-01"`
 }
 type GetBillAmountRes struct {
 	Amount         decimal.Decimal `json:"amount" dc:"总金额"`

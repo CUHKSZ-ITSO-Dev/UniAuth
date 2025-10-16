@@ -14,36 +14,39 @@ import (
 func (c *ControllerV1) GetBillRecord(ctx context.Context, req *v1.GetBillRecordReq) (res *v1.GetBillRecordRes, err error) {
 
 	resultMap := map[string]gdb.Result{}
+	var model *gdb.Model
+	var keyField string          // 记录主键字段名，upn或source
+	var auxiliaryField string    // 辅助字段
+	var keyValues []string       // 记录主键值
+	var auxiliaryValues []string // 辅助字段值
+	var searchField string       // 模糊搜索的字段
+
+	isPagination := req.Pagination != nil && req.Pagination.Page > 0 && req.Pagination.PageSize > 0
+
+	switch req.Type {
+	case "upn":
+		// upn 模式
+		keyField = "upn"
+		auxiliaryField = "source"
+		keyValues = req.Upns
+		auxiliaryValues = req.QuotaPools
+		searchField = "source"
+	case "qp":
+		// Quota Pool 模式
+		keyField = "source"
+		auxiliaryField = "upn"
+		keyValues = req.QuotaPools
+		auxiliaryValues = req.Upns
+		searchField = "upn"
+	}
 
 	// 如果传了分页参数，则进行分页查询
-	if req.Pagination != nil {
-		var model *gdb.Model
-		var keyField string    // 记录主键字段名，upn或source
-		var keyValue string    // 记录主键值
-		var searchField string // 模糊搜索的字段
-
-		switch req.Type {
-		case "upn":
-			// upn 模式
-			if len(req.Upns) != 1 {
-				return nil, gerror.New("分页查询时，UPNs 必须且只能传入一个值")
-			}
-			keyField = "upn"
-			keyValue = req.Upns[0]
-			searchField = "source"
-		case "qp":
-			// Quota Pool 模式
-			if len(req.QuotaPools) != 1 {
-				return nil, gerror.New("分页查询时，QuotaPools 必须且只能传入一个值")
-			}
-			keyField = "source"
-			keyValue = req.QuotaPools[0]
-			searchField = "upn"
-		}
+	if isPagination {
 
 		model = dao.BillingCostRecords.Ctx(ctx).
 			OmitEmpty().
-			Where(keyField, keyValue).
+			WhereIn(keyField, keyValues).
+			WhereIn(auxiliaryField, auxiliaryValues).
 			WhereIn("svc", req.Svc).
 			WhereIn("product", req.Product).
 			WhereGTE("created_at", req.StartTime).
@@ -55,7 +58,7 @@ func (c *ControllerV1) GetBillRecord(ctx context.Context, req *v1.GetBillRecordR
 
 		total, err := model.Count()
 		if err != nil {
-			return nil, gerror.Wrapf(err, "[%s]模式: 获取 %s = %s 账单总数失败", keyField, keyField, keyValue)
+			return nil, gerror.Wrapf(err, "[%s 模式]: 获取 %s = %s 账单总数失败", req.Type, keyField, keyValues)
 		}
 
 		result, err := model.
@@ -63,12 +66,12 @@ func (c *ControllerV1) GetBillRecord(ctx context.Context, req *v1.GetBillRecordR
 			Page(req.Pagination.Page, req.Pagination.PageSize).
 			All()
 		if err != nil {
-			return nil, gerror.Wrapf(err, "[%s]模式: 获取 %s = %s 账单信息失败", keyField, keyField, keyValue)
+			return nil, gerror.Wrapf(err, "[%s 模式]: 获取 %s = %s 账单信息失败", req.Type, keyField, keyValues)
 		}
 
 		totalPages := (total + req.Pagination.PageSize - 1) / req.Pagination.PageSize
 
-		resultMap[keyValue] = result
+		resultMap[keyValues[0]] = result
 
 		return &v1.GetBillRecordRes{
 			Records:    gjson.New(resultMap),
@@ -78,50 +81,26 @@ func (c *ControllerV1) GetBillRecord(ctx context.Context, req *v1.GetBillRecordR
 			TotalPages: totalPages,
 		}, nil
 	} else {
-
 		// 非分页查询，返回所有符合条件的记录
-		if req.Type == "upn" {
-			// upn 模式
-			if len(req.Upns) == 0 {
-				return nil, gerror.New("UPNs 不能传空")
+
+		if len(keyValues) == 0 {
+			return nil, gerror.Wrapf(err, "%s 不能传空", keyValues)
+		}
+		for _, keyFieldItem := range req.Upns {
+			result, err := dao.BillingCostRecords.Ctx(ctx).
+				OmitEmpty().
+				Where(keyField, keyFieldItem).
+				WhereIn(auxiliaryField, auxiliaryValues).
+				WhereIn("svc", req.Svc).
+				WhereIn("product", req.Product).
+				WhereGTE("created_at", req.StartTime).
+				WhereLTE("created_at", req.EndTime).
+				Order("created_at " + req.Order).
+				All()
+			if err != nil {
+				return nil, gerror.Wrapf(err, "[%s 模式] 获取 UPN = %s 账单信息失败", req.Type, keyFieldItem)
 			}
-			for _, upn := range req.Upns {
-				result, err := dao.BillingCostRecords.Ctx(ctx).
-					OmitEmpty().
-					Where("upn", upn).
-					WhereIn("source", req.QuotaPools).
-					WhereIn("svc", req.Svc).
-					WhereIn("product", req.Product).
-					WhereGTE("created_at", req.StartTime).
-					WhereLTE("created_at", req.EndTime).
-					Order("created_at " + req.Order).
-					All()
-				if err != nil {
-					return nil, gerror.Wrapf(err, "[UPN 模式] 获取 UPN = %s 账单信息失败", upn)
-				}
-				resultMap[upn] = result
-			}
-		} else {
-			// Quota Pool 模式
-			if len(req.QuotaPools) == 0 {
-				return nil, gerror.New("QuotaPools 不能传空")
-			}
-			for _, quotaPool := range req.QuotaPools {
-				result, err := dao.BillingCostRecords.Ctx(ctx).
-					OmitEmpty().
-					Where("source", quotaPool).
-					WhereIn("upn", req.Upns).
-					WhereIn("svc", req.Svc).
-					WhereIn("product", req.Product).
-					WhereGTE("created_at", req.StartTime).
-					WhereLTE("created_at", req.EndTime).
-					Order("created_at " + req.Order).
-					All()
-				if err != nil {
-					return nil, gerror.Wrapf(err, "[Quota Pool 模式] 获取 Source = %s 账单信息失败", quotaPool)
-				}
-				resultMap[quotaPool] = result
-			}
+			resultMap[keyFieldItem] = result
 		}
 
 		return &v1.GetBillRecordRes{
