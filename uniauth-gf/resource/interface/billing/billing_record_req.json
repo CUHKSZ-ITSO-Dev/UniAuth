@@ -2,7 +2,7 @@
     "自动配额池": {
         "upn": "sadt@cuhk.edu.cn",
         "service": "chat",
-        "product": "qwen3-235b-a22b-instruct-2507",
+        "product": "qwen3-vl-235b-a22b-instruct",
         "source": "sadt@cuhk.edu.cn",
         "cny_cost": "0.84651",
         "detail": {
@@ -25,7 +25,7 @@
     "混合币种计费": {
         "upn": "helenlv@CUHK.EDU.CN",
         "service": "chat",
-        "product": "qwen3-235b-a22b-instruct-2507",
+        "product": "qwen3-vl-235b-a22b-instruct",
         "source": "helenlv@CUHK.EDU.CN",
         "cny_cost": "0.84651",
         "usd_cost": "1.84111645",
