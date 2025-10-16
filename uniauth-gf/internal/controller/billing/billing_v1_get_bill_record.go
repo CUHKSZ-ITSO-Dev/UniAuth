@@ -98,7 +98,7 @@ func (c *ControllerV1) GetBillRecord(ctx context.Context, req *v1.GetBillRecordR
 				Order("created_at " + req.Order).
 				All()
 			if err != nil {
-				return nil, gerror.Wrapf(err, "[%s 模式] 获取 UPN = %s 账单信息失败", req.Type, keyFieldItem)
+				return nil, gerror.Wrapf(err, "[%s 模式] 获取 %s = %s 账单信息失败", req.Type, keyField, keyFieldItem)
 			}
 			resultMap[keyFieldItem] = result
 		}
