@@ -60,9 +60,7 @@ type GetModelConsumptionReq struct {
 
 	NDays  int    `json:"nDays"     v:"required|integer|min:1|max:90" d:"7" example:"7" dc:"最近N天，默认7天"`
 	Models string `json:"models"   example:"chatGPT" dc:"依据模型查询，默认统计全部"         `
-	//需要按服务查询吗
-	QuotaPool string `json:"quotaPoo
-l" dc:"依据配额池查询，默认统计全部"         example:"student_pool"`
+QuotaPool string `json:"quotaPool" dc:"依据配额池查询，默认统计全部"         example:"student_pool"`
 	GroupBy string `json:"groupBy"   v:"in:date,model" d:"model"             dc:"校验：date(按日期) 或 model(按模型)，默认按模型"`
 }
 
