@@ -17,6 +17,7 @@ import (
 	"uniauth-gf/internal/controller/config"
 	"uniauth-gf/internal/controller/quotaPool"
 	"uniauth-gf/internal/controller/userinfos"
+	mcpSvc "uniauth-gf/internal/service/mcp"
 	quotaPoolSvc "uniauth-gf/internal/service/quotaPool"
 
 	"uniauth-gf/internal/middlewares"
@@ -42,6 +43,13 @@ var (
 			if err := gtime.SetTimeZone("Asia/Shanghai"); err != nil {
 				panic(err)
 			}
+
+			go func() {
+				if err := mcpSvc.StartMCPServer(ctx); err != nil {
+					g.Log().Fatal(ctx, "MCP服务器启动失败:", err)
+				}
+			}()
+
 			// 注册定时任务
 			if _, err = gcron.Add(ctx, "@daily", func(ctx context.Context) {
 				if err := quotaPoolSvc.UpdateQuotaPoolsUsersInCasbin(ctx, nil); err != nil {
