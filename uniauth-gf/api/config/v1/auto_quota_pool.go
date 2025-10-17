@@ -102,7 +102,7 @@ type SyncAutoQuotaPoolUpnsCacheRes struct {
 }
 
 type IsInUpnsCacheReq struct {
-	g.Meta   `path:"/autoConfig/isInUpnsCache" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"判断给定upns是否在自动配额池规则的upns_cache中"`
+	g.Meta   `path:"/autoConfig/isInUpnsCache" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"判断指定 UPN 是否在自动配额池规则的 upns_cache 中"`
 	Upn      string `json:"upn" v:"required" dc:"UPN"`
 	RuleName string `json:"ruleName" v:"required" dc:"规则名称"`
 }
