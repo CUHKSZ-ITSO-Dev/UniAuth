@@ -7,4 +7,5 @@ func init() {
 	registry.RegisterTool("hello_world", RegisterHelloWorld)
 	registry.RegisterTool("calculator", RegisterCalculator)
 	registry.RegisterTool("get_user_info", RegisterGetUserInfo)
+	registry.RegisterTool("add_quota_pool", RegisterAddQuotaPool)
 }
