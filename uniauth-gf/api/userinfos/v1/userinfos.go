@@ -58,3 +58,25 @@ type FilterRes struct {
 	TotalPages int                         `json:"totalPages" dc:"总页数"`
 	IsAll      bool                        `json:"isAll" dc:"是否为全部数据查询"`
 }
+
+// GetActiveUsersReq  获取活跃用户数
+type GetActiveUsersReq struct {
+	g.Meta `path:"/getActive" tags:"UserInfo" method:"get" summary:"查询活跃用户" dc:"查询指定天数内的活跃用户"`
+	Days   int `json:"days" dc:"统计活跃用户的天数，默认30天" d:"30"`
+}
+
+type GetActiveUsersRes struct {
+	ActiveUsers   int     `json:"activeUsers" dc:"当天活跃用户数"`
+	ActiveRateInc float64 `json:"activeRateInc" dc:"活跃率增加"`
+	Date          string  `json:"date" dc:"人数对应的日期" example:"2025-10-01"`
+	TotalUsers    int     `json:"totalUsers" dc:"总统计人数"`
+}
+
+type GetAllUserReq struct {
+	g.Meta `path:"/listAll" tags:"UserInfo" method:"get" summary:"查询所有用户信息" dc:"返回用户的所有信息"`
+}
+
+type GetAllUserRes struct {
+	UserInfos []entity.UserinfosUserNewInfos `json:"userInfo" dc:"返回所有用户信息"`
+	Total     int                            `json:"total" dc:"总用户数"`
+}
