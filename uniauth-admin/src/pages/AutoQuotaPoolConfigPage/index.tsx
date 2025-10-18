@@ -401,12 +401,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       setUpnQueryResults(results);
 
       message.success(
-        intl.formatMessage(
-          {
-            id: "pages.autoQuotaPoolConfig.upnQuerySuccess",
-          },
-          { count: upns.length * ruleNames.length },
-        ),
+        intl.formatMessage({
+          id: "pages.autoQuotaPoolConfig.upnQuerySuccess",
+        }),
       );
     } catch (_error: any) {
       message.error(
