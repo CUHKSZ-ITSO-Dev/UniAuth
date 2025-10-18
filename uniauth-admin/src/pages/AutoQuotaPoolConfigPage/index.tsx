@@ -53,7 +53,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const [isUpnQueryModalVisible, setIsUpnQueryModalVisible] = useState(false);
   const [upnQueryLoading, setUpnQueryLoading] = useState(false);
   const [upnQueryResults, setUpnQueryResults] = useState<
-    Array<{ upn: string; result: boolean }>
+    Array<{ upn: string; ruleName: string; result: boolean }>
   >([]);
   const [upnQueryForm] = Form.useForm();
   const [allRuleNames, setAllRuleNames] = useState<string[]>([]);
@@ -357,6 +357,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       const values = await upnQueryForm.validateFields();
       setUpnQueryLoading(true);
 
+      // 清理之前的查询结果
+      setUpnQueryResults([]);
+
       // 解析多个UPN
       const upns = parseMultipleUpns(values.upn);
       if (upns.length === 0) {
@@ -366,20 +369,33 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         return;
       }
 
-      // 为每个UPN分别查询
-      const queryPromises = upns.map(async (upn) => {
-        try {
-          const response = await getConfigAutoConfigIsInUpnsCache({
-            upn: upn,
-            ruleName: values.ruleName,
-          });
-          return { upn, result: response.isInUpnsCache || false };
-        } catch (error) {
-          // 单个查询失败不影响其他查询
-          console.error(`UPN查询失败: ${upn}`, error);
-          return { upn, result: false };
-        }
-      });
+      // 获取选中的规则名称数组
+      const ruleNames = values.ruleNames || [];
+      if (ruleNames.length === 0) {
+        message.error(
+          intl.formatMessage({
+            id: "pages.autoQuotaPoolConfig.ruleNameRequired",
+          }),
+        );
+        return;
+      }
+
+      // 为每个UPN和每个规则名称的组合分别查询
+      const queryPromises = upns.flatMap((upn) =>
+        ruleNames.map(async (ruleName: string) => {
+          try {
+            const response = await getConfigAutoConfigIsInUpnsCache({
+              upn: upn,
+              ruleName: ruleName,
+            });
+            return { upn, ruleName, result: response.isInUpnsCache || false };
+          } catch (error) {
+            // 单个查询失败不影响其他查询
+            console.error(`UPN查询失败: ${upn}, 规则: ${ruleName}`, error);
+            return { upn, ruleName, result: false };
+          }
+        }),
+      );
 
       const results = await Promise.all(queryPromises);
       setUpnQueryResults(results);
@@ -389,7 +405,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           {
             id: "pages.autoQuotaPoolConfig.upnQuerySuccess",
           },
-          { count: upns.length },
+          { count: upns.length * ruleNames.length },
         ),
       );
     } catch (_error: any) {
@@ -964,7 +980,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            name="ruleName"
+            name="ruleNames"
             label={intl.formatMessage({
               id: "pages.autoQuotaPoolConfig.ruleName",
             })}
@@ -978,6 +994,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             ]}
           >
             <Select
+              mode="multiple"
               showSearch
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.ruleNamePlaceholder",
@@ -1027,28 +1044,20 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                         {item.result
                           ? intl.formatMessage(
                               {
-                                id: "pages.autoQuotaPoolConfig.inCache",
+                                id: "pages.autoQuotaPoolConfig.upnInRule",
                               },
                               {
                                 upn: <strong>{item.upn}</strong>,
-                                ruleName: (
-                                  <strong>
-                                    {upnQueryForm.getFieldValue("ruleName")}
-                                  </strong>
-                                ),
+                                ruleName: <strong>{item.ruleName}</strong>,
                               },
                             )
                           : intl.formatMessage(
                               {
-                                id: "pages.autoQuotaPoolConfig.notInCache",
+                                id: "pages.autoQuotaPoolConfig.upnNotInRule",
                               },
                               {
                                 upn: <strong>{item.upn}</strong>,
-                                ruleName: (
-                                  <strong>
-                                    {upnQueryForm.getFieldValue("ruleName")}
-                                  </strong>
-                                ),
+                                ruleName: <strong>{item.ruleName}</strong>,
                               },
                             )}
                       </Text>

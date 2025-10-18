@@ -199,8 +199,8 @@ export default {
   "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN Query Successful",
   "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN Query Failed",
   "pages.autoQuotaPoolConfig.queryError": "Query failed",
-  "pages.autoQuotaPoolConfig.inCache": "{upn} is in {ruleName}",
-  "pages.autoQuotaPoolConfig.notInCache": "{upn} is not in {ruleName}",
+  "pages.autoQuotaPoolConfig.upnInRule": "{upn} is in {ruleName}",
+  "pages.autoQuotaPoolConfig.upnNotInRule": "{upn} is not in {ruleName}",
 
   // Model Configuration Page Translations
   "pages.modelConfig.title": "Model Configuration List",

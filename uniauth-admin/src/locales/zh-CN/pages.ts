@@ -183,8 +183,8 @@ export default {
   "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN查询成功",
   "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN查询失败",
   "pages.autoQuotaPoolConfig.queryError": "查询失败",
-  "pages.autoQuotaPoolConfig.inCache": "{upn} 在 {ruleName} 中",
-  "pages.autoQuotaPoolConfig.notInCache": "{upn} 不在 {ruleName} 中",
+  "pages.autoQuotaPoolConfig.upnInRule": "{upn} 在 {ruleName} 中",
+  "pages.autoQuotaPoolConfig.upnNotInRule": "{upn} 不在 {ruleName} 中",
 
   // 模型配置页面翻译
   "pages.modelConfig.title": "模型配置列表",
