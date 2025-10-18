@@ -65,13 +65,13 @@ type NewQuotaPoolReq struct {
 	// 刷新周期（标准 Cron 表达式，支持 5 字段）
 	CronCycle string `json:"cronCycle" v:"required" example:"0 3 * * *" jsonschema:"required" jsonschema_description:"刷新周期的 Cron 表达式（5字段格式），例如：0 3 * * * 表示每天凌晨3点"`
 	// 定期配额（每周期重置）
-	RegularQuota decimal.Decimal `json:"regularQuota" v:"required" example:"1000" jsonschema:"required" jsonschema_description:"每周期重置的定期配额，例如：1000"`
+	RegularQuota decimal.Decimal `json:"regularQuota" jsonschema:"required,type=string" v:"required" example:"1000" jsonschema_description:"每周期重置的定期配额，例如：1000"`
 	// 是否个人配额池
 	Personal bool `json:"personal" v:"required" example:"false" jsonschema:"required" jsonschema_description:"是否为个人配额池，true 表示个人配额池，false 表示共享配额池"`
 	// 是否禁用
 	Disabled bool `json:"disabled" d:"false" example:"false" jsonschema_description:"是否禁用配额池，true 表示禁用，false 表示启用，默认为 false"`
 	// 初始加油包
-	ExtraQuota decimal.Decimal `json:"extraQuota" d:"0" example:"0" jsonschema_description:"初始加油包配额，默认为 0"`
+	ExtraQuota decimal.Decimal `json:"extraQuota" d:"0" example:"0" jsonschema:"type=string" jsonschema_description:"初始加油包配额，默认为 0"`
 	// ITTools 规则（可选）
 	UserinfosRules *gjson.Json `json:"userinfosRules" jsonschema_description:"ITTools 用户信息过滤规则（可选），用于动态匹配用户"`
 }
