@@ -844,7 +844,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
               }}
             >
               <Editor
-                height="200px"
+                height="201px"
                 defaultLanguage="json"
                 theme="light"
                 value={form.getFieldValue("defaultCasbinRules") || ""}
