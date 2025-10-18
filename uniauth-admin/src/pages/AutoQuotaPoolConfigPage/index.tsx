@@ -996,6 +996,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             <Select
               mode="multiple"
               showSearch
+              allowClear
               placeholder={intl.formatMessage({
                 id: "pages.autoQuotaPoolConfig.ruleNamePlaceholder",
               })}
