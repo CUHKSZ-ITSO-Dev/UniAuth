@@ -175,6 +175,7 @@ export default {
   "pages.autoQuotaPoolConfig.upn": "UPN",
   "pages.autoQuotaPoolConfig.upnRequired": "请输入UPN",
   "pages.autoQuotaPoolConfig.upnPlaceholder": "请输入用户主体名称",
+  "pages.autoQuotaPoolConfig.query": "查询",
   "pages.autoQuotaPoolConfig.queryResult": "查询结果",
   "pages.autoQuotaPoolConfig.inCache": "用户在UPN缓存中",
   "pages.autoQuotaPoolConfig.notInCache": "用户不在UPN缓存中",

@@ -54,7 +54,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const [upnQueryLoading, setUpnQueryLoading] = useState(false);
   const [upnQueryResult, setUpnQueryResult] = useState<boolean | null>(null);
   const [upnQueryForm] = Form.useForm();
-  // 所有规则名称列表状态
   const [allRuleNames, setAllRuleNames] = useState<string[]>([]);
 
   // 组件加载时获取所有规则名称
@@ -321,10 +320,15 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   /**
    * UPN用户查询处理函数
    */
-  const handleUpnQueryClick = () => {
+  const handleUpnQueryClick = (ruleName?: string) => {
     setIsUpnQueryModalVisible(true);
     setUpnQueryResult(null);
     upnQueryForm.resetFields();
+
+    // 如果传入了规则名称，则预选该规则
+    if (ruleName) {
+      upnQueryForm.setFieldValue("ruleName", ruleName);
+    }
   };
 
   /**
@@ -570,6 +574,10 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.edit" })}
           </a>
           <span style={{ margin: "0 8px" }} />
+          <a key="query" onClick={() => handleUpnQueryClick(record.ruleName)}>
+            {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.query" })}
+          </a>
+          <span style={{ margin: "0 8px" }} />
           <Popconfirm
             key="delete"
             title={intl.formatMessage({
@@ -607,7 +615,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             <Button type="primary" key="new" onClick={handleNewRecordClick}>
               {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.addNew" })}
             </Button>,
-            <Button key="upnQuery" onClick={handleUpnQueryClick}>
+            <Button key="upnQuery" onClick={() => handleUpnQueryClick()}>
               {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.upnQuery" })}
             </Button>,
           ]}

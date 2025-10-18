@@ -191,6 +191,7 @@ export default {
   "pages.autoQuotaPoolConfig.upnRequired": "Please enter UPN",
   "pages.autoQuotaPoolConfig.upnPlaceholder":
     "Please enter user principal name",
+  "pages.autoQuotaPoolConfig.query": "Query",
   "pages.autoQuotaPoolConfig.queryResult": "Query Result",
   "pages.autoQuotaPoolConfig.inCache": "User is in UPN cache",
   "pages.autoQuotaPoolConfig.notInCache": "User is not in UPN cache",
