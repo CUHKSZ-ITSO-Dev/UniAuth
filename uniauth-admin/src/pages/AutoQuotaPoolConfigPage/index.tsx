@@ -965,12 +965,20 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                   style={{ color: upnQueryResult ? "#52c41a" : "#fa8c16" }}
                 >
                   {upnQueryResult
-                    ? intl.formatMessage({
-                        id: "pages.autoQuotaPoolConfig.inCache",
-                      })
-                    : intl.formatMessage({
-                        id: "pages.autoQuotaPoolConfig.notInCache",
-                      })}
+                    ? intl.formatMessage(
+                        { id: "pages.autoQuotaPoolConfig.inCache" },
+                        {
+                          upn: upnQueryForm.getFieldValue("upn"),
+                          ruleName: upnQueryForm.getFieldValue("ruleName"),
+                        },
+                      )
+                    : intl.formatMessage(
+                        { id: "pages.autoQuotaPoolConfig.notInCache" },
+                        {
+                          upn: upnQueryForm.getFieldValue("upn"),
+                          ruleName: upnQueryForm.getFieldValue("ruleName"),
+                        },
+                      )}
                 </Text>
               </div>
             </Form.Item>

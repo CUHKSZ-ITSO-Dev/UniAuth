@@ -193,10 +193,10 @@ export default {
     "Please enter user principal name",
   "pages.autoQuotaPoolConfig.query": "Query",
   "pages.autoQuotaPoolConfig.queryResult": "Query Result",
-  "pages.autoQuotaPoolConfig.inCache": "User is in UPN cache",
-  "pages.autoQuotaPoolConfig.notInCache": "User is not in UPN cache",
   "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN Query Successful",
   "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN Query Failed",
+  "pages.autoQuotaPoolConfig.inCache": "{upn} is in {ruleName}",
+  "pages.autoQuotaPoolConfig.notInCache": "{upn} is not in {ruleName}",
 
   // Model Configuration Page Translations
   "pages.modelConfig.title": "Model Configuration List",
