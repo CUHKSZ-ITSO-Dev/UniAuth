@@ -327,9 +327,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     setUpnQueryResults([]);
     upnQueryForm.resetFields();
 
-    // 如果传入了规则名称，则预选该规则
+    // 如果传入了规则名称，则预选该规则（多选模式）
     if (ruleName) {
-      upnQueryForm.setFieldValue("ruleName", ruleName);
+      upnQueryForm.setFieldValue("ruleNames", [ruleName]);
     }
   };
 
