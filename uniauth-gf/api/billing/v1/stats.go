@@ -33,10 +33,9 @@ type GetProductUsageChartReq struct {
 
 // GetProductUsageChartRes 分类查询模型调用图表生成响应
 type GetProductUsageChartRes struct {
-	LineChartData *gjson.Json `json:"lineChartData" dc:"折线图数据"`
-	BarChartData  *gjson.Json `json:"barChartData" dc:"条形图数据"`
-	TotalCalls    int         `json:"totalCalls" dc:"总调用次数"`
-	DateRange     *gjson.Json `json:"dateRange" dc:"日期范围"`
+	LineChartData *gjson.Json `json:"lineChartData" dc:"折线图数据，dates为日期数组，series为各维度的时间序列" example:"{\"dates\":[\"2025-10-01\",\"2025-10-02\"],\"series\":[{\"name\":\"gpt-4\",\"service\":\"chat\",\"data\":[100,111]}]}"`
+	BarChartData  *gjson.Json `json:"barChartData" dc:"条形图数据，按模型分别总调用次数" example:"{\"labels\":[\"gpt-4\",\"gpt-3.5\"],\"data\":[100,111]}"`
+	TotalCalls    int         `json:"totalCalls" dc:"总调用次数（当前分类下）"`
 }
 
 // GetProductConsumptionReq 分类查询消费总金额
@@ -50,11 +49,12 @@ type GetProductConsumptionReq struct {
 
 // GetProductConsumptionRes 分类查询消费总金额响应
 type GetProductConsumptionRes struct {
-	ProductConsumption *gjson.Json     `json:"productConsumption" dc:"按模型分组"`
-	DateConsumption    *gjson.Json     `json:"dateConsumption" dc:"按日期分组"`
-	TotalCost          decimal.Decimal `json:"totalCost" dc:"总消费"`
-	TotalCalls         int             `json:"totalCalls" dc:"总调用次数"`
-	DateRange          *gjson.Json     `json:"dateRange" dc:"日期范围"`
+	StartDate          string          `json:"startDate" dc:"统计起始日期" example:"2025-10-01"`
+	EndDate            string          `json:"endDate" dc:"统计结束日期" example:"2025-10-07"`
+	ProductConsumption *gjson.Json     `json:"productConsumption" dc:"按模型分组的消费统计" example:"[{\"product\":\"gpt-4\",\"service\":\"chat\",\"quotaPool\":\"student_pool\",\"cost\":1000.00,\"calls\":100}]"`
+	DateConsumption    *gjson.Json     `json:"dateConsumption" dc:"按日期分组的消费统计" example:"[{\"date\":\"2025-10-15\",\"product\":\"gpt-4\",\"service\":\"chat\",\"quotaPool\":\"student_pool\",\"cost\":100.00,\"calls\":100}]"`
+	TotalCalls         int             `json:"totalCalls" dc:"总调用次数(当前分类下)"`
+	TotalCost          decimal.Decimal `json:"totalCost" dc:"总消费（当前条件下）"`
 }
 
 // GetActiveUsersNumReq  按消费记录获取活跃用户数
