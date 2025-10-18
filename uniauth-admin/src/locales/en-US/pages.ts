@@ -184,6 +184,19 @@ export default {
   "pages.autoQuotaPoolConfig.saveFailedCheckInput":
     "Save Failed: Please check your input",
 
+  // UPN Query related translations
+  "pages.autoQuotaPoolConfig.upnQuery": "UPN User Query",
+  "pages.autoQuotaPoolConfig.upnQueryModalTitle": "UPN User Query",
+  "pages.autoQuotaPoolConfig.upn": "UPN",
+  "pages.autoQuotaPoolConfig.upnRequired": "Please enter UPN",
+  "pages.autoQuotaPoolConfig.upnPlaceholder":
+    "Please enter user principal name",
+  "pages.autoQuotaPoolConfig.queryResult": "Query Result",
+  "pages.autoQuotaPoolConfig.inCache": "User is in UPN cache",
+  "pages.autoQuotaPoolConfig.notInCache": "User is not in UPN cache",
+  "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN Query Successful",
+  "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN Query Failed",
+
   // Model Configuration Page Translations
   "pages.modelConfig.title": "Model Configuration List",
   "pages.modelConfig.description":

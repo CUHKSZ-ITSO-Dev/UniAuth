@@ -156,6 +156,8 @@ export default {
   "pages.autoQuotaPoolConfig.formInvalid": "表单验证失败，请检查输入",
   "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup":
     "保存失败：过滤条件组格式不正确",
+  "pages.autoQuotaPoolConfig.saveFailedInvalidDefaultCasbinRules":
+    "保存失败：默认Casbin规则格式不正确",
   "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired":
     "保存失败：规则名称为必填项",
   "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired":
@@ -166,6 +168,18 @@ export default {
   "pages.autoQuotaPoolConfig.saveFailedNetworkError":
     "保存失败：网络错误，请稍后重试",
   "pages.autoQuotaPoolConfig.saveFailedCheckInput": "保存失败：请检查您的输入",
+
+  // UPN查询相关翻译
+  "pages.autoQuotaPoolConfig.upnQuery": "UPN用户查询",
+  "pages.autoQuotaPoolConfig.upnQueryModalTitle": "UPN用户查询",
+  "pages.autoQuotaPoolConfig.upn": "UPN",
+  "pages.autoQuotaPoolConfig.upnRequired": "请输入UPN",
+  "pages.autoQuotaPoolConfig.upnPlaceholder": "请输入用户主体名称",
+  "pages.autoQuotaPoolConfig.queryResult": "查询结果",
+  "pages.autoQuotaPoolConfig.inCache": "用户在UPN缓存中",
+  "pages.autoQuotaPoolConfig.notInCache": "用户不在UPN缓存中",
+  "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN查询成功",
+  "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN查询失败",
 
   // 模型配置页面翻译
   "pages.modelConfig.title": "模型配置列表",

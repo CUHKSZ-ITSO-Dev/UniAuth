@@ -958,6 +958,18 @@ declare namespace API {
   };
 
   type Var = unknown;
+
+  type getConfigAutoConfigIsInUpnsCacheParams = {
+    /** UPN */
+    upn: string;
+    /** 规则名称 */
+    ruleName: string;
+  };
+
+  type IsInUpnsCacheRes = {
+    /** 是否在自动配额池规则的upns_cache中 */
+    isInUpnsCache?: boolean;
+  };
 }
 
 type DefaultCasbinRule = {

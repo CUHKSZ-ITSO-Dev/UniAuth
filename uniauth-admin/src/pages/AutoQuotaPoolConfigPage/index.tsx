@@ -10,14 +10,16 @@ import {
   Modal,
   message,
   Popconfirm,
+  Select,
   Switch,
   Typography,
 } from "antd";
 import cronstrue from "cronstrue/i18n";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   deleteConfigAutoConfig,
   getConfigAutoConfig,
+  getConfigAutoConfigIsInUpnsCache,
   postConfigAutoConfig,
   putConfigAutoConfig,
 } from "@/services/uniauthService/autoQuotaPoolConfig";
@@ -46,6 +48,34 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const [form] = Form.useForm();
   const [cronDescription, setCronDescription] = useState<string>("");
   const [cronError, setCronError] = useState<string>("");
+
+  // UPN用户查询相关状态
+  const [isUpnQueryModalVisible, setIsUpnQueryModalVisible] = useState(false);
+  const [upnQueryLoading, setUpnQueryLoading] = useState(false);
+  const [upnQueryResult, setUpnQueryResult] = useState<boolean | null>(null);
+  const [upnQueryForm] = Form.useForm();
+  // 所有规则名称列表状态
+  const [allRuleNames, setAllRuleNames] = useState<string[]>([]);
+
+  // 组件加载时获取所有规则名称
+  useEffect(() => {
+    const fetchAllRuleNames = async () => {
+      try {
+        const response = await getConfigAutoConfig();
+        if (response.items) {
+          const ruleNames = response.items
+            .map((item: API.AutoQuotaPoolItem) => item.ruleName)
+            .filter((name): name is string => !!name); // 过滤掉undefined和null
+          setAllRuleNames(ruleNames);
+        }
+      } catch (_error) {
+        console.error("获取规则名称列表失败:", _error);
+        // 静默失败，不影响主要功能
+      }
+    };
+
+    fetchAllRuleNames();
+  }, []);
 
   // 处理 cron 表达式校验和解析
   const handleCronChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -286,6 +316,51 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     resetCronState(); // 重置 cron 状态
     setEditingRecord(null); // 清除编辑记录
     form.resetFields();
+  };
+
+  /**
+   * UPN用户查询处理函数
+   */
+  const handleUpnQueryClick = () => {
+    setIsUpnQueryModalVisible(true);
+    setUpnQueryResult(null);
+    upnQueryForm.resetFields();
+  };
+
+  /**
+   * UPN查询确认处理函数
+   */
+  const handleUpnQueryOk = async () => {
+    try {
+      const values = await upnQueryForm.validateFields();
+      setUpnQueryLoading(true);
+
+      const response = await getConfigAutoConfigIsInUpnsCache({
+        upn: values.upn,
+        ruleName: values.ruleName,
+      });
+
+      setUpnQueryResult(response.isInUpnsCache || false);
+      message.success(
+        intl.formatMessage({ id: "pages.autoQuotaPoolConfig.upnQuerySuccess" }),
+      );
+    } catch (_error: any) {
+      message.error(
+        intl.formatMessage({ id: "pages.autoQuotaPoolConfig.upnQueryFailed" }),
+      );
+      setUpnQueryResult(null);
+    } finally {
+      setUpnQueryLoading(false);
+    }
+  };
+
+  /**
+   * UPN查询取消处理函数
+   */
+  const handleUpnQueryCancel = () => {
+    setIsUpnQueryModalVisible(false);
+    setUpnQueryResult(null);
+    upnQueryForm.resetFields();
   };
 
   /**
@@ -531,6 +606,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           toolBarRender={() => [
             <Button type="primary" key="new" onClick={handleNewRecordClick}>
               {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.addNew" })}
+            </Button>,
+            <Button key="upnQuery" onClick={handleUpnQueryClick}>
+              {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.upnQuery" })}
             </Button>,
           ]}
           request={configListRequest}
@@ -789,6 +867,106 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
               />
             </div>
           </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* UPN用户查询弹窗 */}
+      <Modal
+        title={intl.formatMessage({
+          id: "pages.autoQuotaPoolConfig.upnQueryModalTitle",
+        })}
+        open={isUpnQueryModalVisible}
+        onOk={handleUpnQueryOk}
+        onCancel={handleUpnQueryCancel}
+        width={600}
+        destroyOnHidden
+        forceRender
+        confirmLoading={upnQueryLoading}
+        okButtonProps={{ loading: upnQueryLoading }}
+        cancelButtonProps={{ disabled: upnQueryLoading }}
+      >
+        <Form form={upnQueryForm} layout="vertical" requiredMark={false}>
+          <Form.Item
+            name="upn"
+            label={intl.formatMessage({ id: "pages.autoQuotaPoolConfig.upn" })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.autoQuotaPoolConfig.upnRequired",
+                }),
+              },
+            ]}
+          >
+            <Input
+              placeholder={intl.formatMessage({
+                id: "pages.autoQuotaPoolConfig.upnPlaceholder",
+              })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="ruleName"
+            label={intl.formatMessage({
+              id: "pages.autoQuotaPoolConfig.ruleName",
+            })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.autoQuotaPoolConfig.ruleNameRequired",
+                }),
+              },
+            ]}
+          >
+            <Select
+              showSearch
+              placeholder={intl.formatMessage({
+                id: "pages.autoQuotaPoolConfig.ruleNamePlaceholder",
+              })}
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              options={allRuleNames.map((ruleName) => ({
+                value: ruleName,
+                label: ruleName,
+              }))}
+            />
+          </Form.Item>
+
+          {upnQueryResult !== null && (
+            <Form.Item
+              label={intl.formatMessage({
+                id: "pages.autoQuotaPoolConfig.queryResult",
+              })}
+            >
+              <div
+                style={{
+                  padding: "12px",
+                  backgroundColor: upnQueryResult ? "#f6ffed" : "#fff2e8",
+                  border: "1px solid",
+                  borderColor: upnQueryResult ? "#b7eb8f" : "#ffbb96",
+                  borderRadius: "6px",
+                }}
+              >
+                <Text
+                  strong={true}
+                  style={{ color: upnQueryResult ? "#52c41a" : "#fa8c16" }}
+                >
+                  {upnQueryResult
+                    ? intl.formatMessage({
+                        id: "pages.autoQuotaPoolConfig.inCache",
+                      })
+                    : intl.formatMessage({
+                        id: "pages.autoQuotaPoolConfig.notInCache",
+                      })}
+                </Text>
+              </div>
+            </Form.Item>
+          )}
         </Form>
       </Modal>
     </PageContainer>
