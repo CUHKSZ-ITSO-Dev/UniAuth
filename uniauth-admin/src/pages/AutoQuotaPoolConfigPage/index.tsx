@@ -19,7 +19,6 @@ import {
   deleteConfigAutoConfig,
   getConfigAutoConfig,
   postConfigAutoConfig,
-  postConfigAutoConfigSyncUpnsCache,
   putConfigAutoConfig,
 } from "@/services/uniauthService/autoQuotaPoolConfig";
 import { validateFiveFieldCron } from "@/utils/cron";
@@ -93,9 +92,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     setCronError("");
   };
 
-  // 同步操作 loading 状态（含每条与全量）
-  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
-
   /**
    * 编辑记录处理函数
    * @param record 要编辑的记录
@@ -107,10 +103,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     // 安全地处理字段的序列化
     const formatJsonField = (field: any): string => {
       if (!field) return "";
-      // 对于 upnsCache，直接返回字符串值
-      if (typeof field === "string") {
-        return field;
-      }
       // 对于 filterGroup 和 defaultCasbinRules，保持原有的 JSON 处理逻辑
       try {
         return JSON.stringify(field, null, 2);
@@ -125,7 +117,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
       ...record,
       filterGroup: formatJsonField(record.filterGroup),
       defaultCasbinRules: formatJsonField(record.defaultCasbinRules),
-      upnsCache: record.upnsCache || "",
     });
 
     // 如果记录中有 cronCycle，尝试解析并设置描述
@@ -180,59 +171,10 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     // 设置默认值，新规则默认启用，并确保JSON字段为空
     form.setFieldsValue({
       enabled: true,
-      upnsCache: "",
       filterGroup: "",
       defaultCasbinRules: "",
     });
     setIsModalVisible(true);
-  };
-
-  /** 同步指定规则的 UPN 缓存 */
-  const handleSyncOne = async (ruleName?: string) => {
-    if (!ruleName || loading[ruleName] || loading.all) return;
-    setLoading((prev) => ({ ...prev, [ruleName]: true }));
-    try {
-      const res = await postConfigAutoConfigSyncUpnsCache({
-        ruleName: [ruleName],
-      });
-      const count = res.updatedCount;
-      message.success(
-        intl.formatMessage(
-          { id: "pages.autoQuotaPoolConfig.syncOneSuccess" },
-          { count },
-        ),
-      );
-      actionRef.current?.reload?.();
-    } catch (_e) {
-      message.error(
-        intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncFailed" }),
-      );
-    } finally {
-      setLoading((prev) => ({ ...prev, [ruleName]: false }));
-    }
-  };
-
-  /** 同步全部规则的 UPN 缓存 */
-  const handleSyncAll = async () => {
-    if (loading.all) return;
-    setLoading({ all: true });
-    try {
-      const res = await postConfigAutoConfigSyncUpnsCache({});
-      const updated = res.updatedCount;
-      message.success(
-        intl.formatMessage(
-          { id: "pages.autoQuotaPoolConfig.syncAllSuccess" },
-          { count: updated },
-        ),
-      );
-      actionRef.current?.reload?.();
-    } catch (_e) {
-      message.error(
-        intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncFailed" }),
-      );
-    } finally {
-      setLoading({ all: false });
-    }
   };
 
   // 本地定义RequestData类型
@@ -276,15 +218,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         }
       } else {
         // 如果没有提供filterGroup，不设置这个字段，让它保持undefined
-      }
-
-      // 处理upnsCache字段 - 现在作为字符串处理
-      if (values.upnsCache !== undefined) {
-        // 直接使用字符串值，不再解析为JSON
-        processedValues.upnsCache = values.upnsCache;
-      } else {
-        // 如果没有提供upnsCache，确保传递空字符串而不是null
-        processedValues.upnsCache = "";
       }
 
       // 处理defaultCasbinRules字段
@@ -562,16 +495,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.edit" })}
           </a>
           <span style={{ margin: "0 8px" }} />
-          <Button
-            type="link"
-            key="sync"
-            onClick={() => handleSyncOne(record.ruleName)}
-            loading={!!loading[record.ruleName || ""]}
-            disabled={!!loading.all}
-          >
-            {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncOne" })}
-          </Button>
-          <span style={{ margin: "0 8px" }} />
           <Popconfirm
             key="delete"
             title={intl.formatMessage({
@@ -609,20 +532,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             <Button type="primary" key="new" onClick={handleNewRecordClick}>
               {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.addNew" })}
             </Button>,
-            <Popconfirm
-              key="syncAllConfirm"
-              title={intl.formatMessage({
-                id: "pages.autoQuotaPoolConfig.syncAllConfirm",
-              })}
-              onConfirm={handleSyncAll}
-              disabled={!!loading.all}
-            >
-              <Button key="syncAll" loading={!!loading.all}>
-                {intl.formatMessage({
-                  id: "pages.autoQuotaPoolConfig.syncAll",
-                })}
-              </Button>
-            </Popconfirm>,
           ]}
           request={configListRequest}
         />
@@ -879,20 +788,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                 }}
               />
             </div>
-          </Form.Item>
-          <Form.Item
-            name="upnsCache"
-            label={intl.formatMessage({
-              id: "pages.autoQuotaPoolConfig.upnsCache",
-            })}
-          >
-            <Input.TextArea
-              placeholder={intl.formatMessage({
-                id: "pages.autoQuotaPoolConfig.upnsCachePlaceholder",
-              })}
-              autoSize={{ minRows: 4, maxRows: 10 }}
-              disabled={true}
-            />
           </Form.Item>
         </Form>
       </Modal>
