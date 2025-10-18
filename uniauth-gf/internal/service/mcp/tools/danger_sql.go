@@ -50,7 +50,7 @@ COMMENT ON COLUMN billing_cost_records.created_at IS '创建时间';
 
 	s.AddTool(tool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		sql := request.GetString("sql", "")
-		records, err := g.DB().GetAll(ctx, sql)
+		records, err := g.DB("readonly").GetAll(ctx, sql)
 		if err != nil {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
