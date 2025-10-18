@@ -191,10 +191,14 @@ export default {
   "pages.autoQuotaPoolConfig.upnRequired": "Please enter UPN",
   "pages.autoQuotaPoolConfig.upnPlaceholder":
     "Please enter user principal name",
+  "pages.autoQuotaPoolConfig.upnMultipleHint":
+    "Supports multiple UPNs separated by commas, semicolons, or spaces",
+  "pages.autoQuotaPoolConfig.upnMultiplePlaceholder": "Enter UPNs",
   "pages.autoQuotaPoolConfig.query": "Query",
   "pages.autoQuotaPoolConfig.queryResult": "Query Result",
   "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN Query Successful",
   "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN Query Failed",
+  "pages.autoQuotaPoolConfig.queryError": "Query failed",
   "pages.autoQuotaPoolConfig.inCache": "{upn} is in {ruleName}",
   "pages.autoQuotaPoolConfig.notInCache": "{upn} is not in {ruleName}",
 

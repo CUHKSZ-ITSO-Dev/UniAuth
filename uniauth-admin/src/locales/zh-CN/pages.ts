@@ -175,10 +175,14 @@ export default {
   "pages.autoQuotaPoolConfig.upn": "UPN",
   "pages.autoQuotaPoolConfig.upnRequired": "请输入UPN",
   "pages.autoQuotaPoolConfig.upnPlaceholder": "请输入用户主体名称",
+  "pages.autoQuotaPoolConfig.upnMultipleHint":
+    "支持输入多个UPN，以逗号、分号或空格分隔",
+  "pages.autoQuotaPoolConfig.upnMultiplePlaceholder": "请输入UPN",
   "pages.autoQuotaPoolConfig.query": "查询",
   "pages.autoQuotaPoolConfig.queryResult": "查询结果",
   "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN查询成功",
   "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN查询失败",
+  "pages.autoQuotaPoolConfig.queryError": "查询失败",
   "pages.autoQuotaPoolConfig.inCache": "{upn} 在 {ruleName} 中",
   "pages.autoQuotaPoolConfig.notInCache": "{upn} 不在 {ruleName} 中",
 
