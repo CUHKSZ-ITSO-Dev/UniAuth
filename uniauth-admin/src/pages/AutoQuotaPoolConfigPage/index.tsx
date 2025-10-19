@@ -322,10 +322,23 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   /**
    * UPN用户查询处理函数
    */
-  const handleUpnQueryClick = (ruleName?: string) => {
+  const handleUpnQueryClick = async (ruleName?: string) => {
     setIsUpnQueryModalVisible(true);
     setUpnQueryResults([]);
     upnQueryForm.resetFields();
+
+    // 每次打开查询界面时重新获取规则名称列表
+    try {
+      const response = await getConfigAutoConfig();
+      if (response.items) {
+        const ruleNames = response.items
+          .map((item: API.AutoQuotaPoolItem) => item.ruleName)
+          .filter((name): name is string => !!name); // 过滤掉undefined和null
+        setAllRuleNames(ruleNames);
+      }
+    } catch (_error) {
+      console.error("获取规则名称列表失败:", _error);
+    }
 
     // 如果传入了规则名称，则预选该规则（多选模式）
     if (ruleName) {
