@@ -69,10 +69,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             .filter((name): name is string => !!name); // 过滤掉undefined和null
           setAllRuleNames(ruleNames);
         }
-      } catch (_error) {
-        console.error("获取规则名称列表失败:", _error);
-        // 静默失败，不影响主要功能
-      }
+      } catch (_error) {}
     };
 
     fetchAllRuleNames();
@@ -336,9 +333,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
           .filter((name): name is string => !!name); // 过滤掉undefined和null
         setAllRuleNames(ruleNames);
       }
-    } catch (_error) {
-      console.error("获取规则名称列表失败:", _error);
-    }
+    } catch (_error) {}
 
     // 如果传入了规则名称，则预选该规则（多选模式）
     if (ruleName) {
@@ -402,11 +397,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
               ruleName: ruleName,
             });
             return { upn, ruleName, result: response.isInUpnsCache || false };
-          } catch (error) {
-            // 单个查询失败不影响其他查询
-            console.error(`UPN查询失败: ${upn}, 规则: ${ruleName}`, error);
-            return { upn, ruleName, result: false };
-          }
+          } catch (error) {}
         }),
       );
 
