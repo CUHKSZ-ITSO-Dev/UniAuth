@@ -20,6 +20,7 @@ type IBillingV1 interface {
 	DepartmentQuestionCountStats(ctx context.Context, req *v1.DepartmentQuestionCountStatsReq) (res *v1.DepartmentQuestionCountStatsRes, err error)
 	DepartmentUsageStats(ctx context.Context, req *v1.DepartmentUsageStatsReq) (res *v1.DepartmentUsageStatsRes, err error)
 	QuotaPoolQuestionCountStats(ctx context.Context, req *v1.QuotaPoolQuestionCountStatsReq) (res *v1.QuotaPoolQuestionCountStatsRes, err error)
+	QuotaPoolUsageStats(ctx context.Context, req *v1.QuotaPoolUsageStatsReq) (res *v1.QuotaPoolUsageStatsRes, err error)
 	NDaysProductUsageChart(ctx context.Context, req *v1.NDaysProductUsageChartReq) (res *v1.NDaysProductUsageChartRes, err error)
 	NDaysProductUsageGroup(ctx context.Context, req *v1.NDaysProductUsageGroupReq) (res *v1.NDaysProductUsageGroupRes, err error)
 }
