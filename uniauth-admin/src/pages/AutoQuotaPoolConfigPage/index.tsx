@@ -1026,7 +1026,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
               <div style={{ maxHeight: "300px", overflowY: "auto" }}>
                 {upnQueryResults.map((item) => (
                   <div
-                    key={item.upn}
+                    key={`${item.upn}-${item.ruleName}`}
                     style={{
                       padding: "8px 12px",
                       marginBottom: "8px",
