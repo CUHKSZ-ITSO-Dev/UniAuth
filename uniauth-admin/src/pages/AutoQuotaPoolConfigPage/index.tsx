@@ -58,20 +58,25 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const [upnQueryForm] = Form.useForm();
   const [allRuleNames, setAllRuleNames] = useState<string[]>([]);
 
+  /**
+   * 获取所有规则名称的公共函数
+   */
+  const fetchAllRuleNames = async (): Promise<void> => {
+    try {
+      const response = await getConfigAutoConfig();
+      if (response.items) {
+        const ruleNames = response.items
+          .map((item: API.AutoQuotaPoolItem) => item.ruleName)
+          .filter((name): name is string => !!name); // 过滤掉undefined和null
+        setAllRuleNames(ruleNames);
+      }
+    } catch (_error) {
+      // 静默处理错误
+    }
+  };
+
   // 组件加载时获取所有规则名称
   useEffect(() => {
-    const fetchAllRuleNames = async () => {
-      try {
-        const response = await getConfigAutoConfig();
-        if (response.items) {
-          const ruleNames = response.items
-            .map((item: API.AutoQuotaPoolItem) => item.ruleName)
-            .filter((name): name is string => !!name); // 过滤掉undefined和null
-          setAllRuleNames(ruleNames);
-        }
-      } catch (_error) {}
-    };
-
     fetchAllRuleNames();
   }, []);
 
@@ -319,15 +324,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     upnQueryForm.resetFields();
 
     // 每次打开查询界面时重新获取规则名称列表
-    try {
-      const response = await getConfigAutoConfig();
-      if (response.items) {
-        const ruleNames = response.items
-          .map((item: API.AutoQuotaPoolItem) => item.ruleName)
-          .filter((name): name is string => !!name); // 过滤掉undefined和null
-        setAllRuleNames(ruleNames);
-      }
-    } catch (_error) {}
+    await fetchAllRuleNames();
 
     // 如果传入了规则名称，则预选该规则（多选模式）
     if (ruleName) {
