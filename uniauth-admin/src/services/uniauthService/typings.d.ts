@@ -994,16 +994,19 @@ declare namespace API {
   };
 
   type GetActiveUsersNumRes = {
-    /** 当天活跃用户数 */
-    activeUsers?: number;
-    /** 活跃率增加 */
-    activeRateInc?: number;
-    /** 人数对应的日期 */
-    date?: string;
-    /** 总统计人数 */
+    /** 每天活跃用户数列表 */
+    activeUsers?: Array<{
+      /** 当天活跃用户数 */
+      activeUsersNum: number;
+      /** 活跃率增加 */
+      activeRateInc: number;
+      /** 人数对应的日期 */
+      date: string;
+    }>;
+    /** 总用户人数 */
     totalUsers?: number;
-    /** 活跃统计标准(可选) */
-    base?: Decimal;
+    /** 总活跃用户人数 */
+    totalActiveUsers?: number;
   };
 }
 
