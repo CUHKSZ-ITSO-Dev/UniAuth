@@ -391,7 +391,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
               ruleName: ruleName,
             });
             return { upn, ruleName, result: response.isInUpnsCache || false };
-          } catch (error) {}
+          } catch (error) {
+            return { upn, ruleName, result: false };
+          }
         }),
       );
 
