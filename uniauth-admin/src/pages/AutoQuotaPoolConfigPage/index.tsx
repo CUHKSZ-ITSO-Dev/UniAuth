@@ -955,6 +955,13 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         okButtonProps={{ loading: upnQueryLoading }}
         cancelButtonProps={{ disabled: upnQueryLoading }}
       >
+        <div style={{ marginBottom: 16 }}>
+          <Text type="secondary">
+            {intl.formatMessage({
+              id: "pages.autoQuotaPoolConfig.upnQueryDescription",
+            })}
+          </Text>
+        </div>
         <Form form={upnQueryForm} layout="vertical" requiredMark={false}>
           <Form.Item
             name="upn"

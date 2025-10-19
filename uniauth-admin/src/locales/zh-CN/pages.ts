@@ -185,6 +185,8 @@ export default {
   "pages.autoQuotaPoolConfig.queryError": "查询失败",
   "pages.autoQuotaPoolConfig.upnInRule": "{upn} 在 {ruleName} 中",
   "pages.autoQuotaPoolConfig.upnNotInRule": "{upn} 不在 {ruleName} 中",
+  "pages.autoQuotaPoolConfig.upnQueryDescription":
+    "查询指定UPN用户是否在自动配额池规则的缓存中",
 
   // 模型配置页面翻译
   "pages.modelConfig.title": "模型配置列表",

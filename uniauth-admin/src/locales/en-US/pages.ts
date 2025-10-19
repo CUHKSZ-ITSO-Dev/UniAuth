@@ -201,6 +201,8 @@ export default {
   "pages.autoQuotaPoolConfig.queryError": "Query failed",
   "pages.autoQuotaPoolConfig.upnInRule": "{upn} is in {ruleName}",
   "pages.autoQuotaPoolConfig.upnNotInRule": "{upn} is not in {ruleName}",
+  "pages.autoQuotaPoolConfig.upnQueryDescription":
+    "Query whether specified UPN users are in the cache of automatic quota pool rules",
 
   // Model Configuration Page Translations
   "pages.modelConfig.title": "Model Configuration List",
