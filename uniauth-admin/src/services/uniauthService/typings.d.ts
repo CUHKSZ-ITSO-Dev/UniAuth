@@ -971,6 +971,22 @@ declare namespace API {
   };
 
   type Var = unknown;
+
+  type GetTodayTotalConsumptionReq = {
+    /** 依据服务类型查询，默认统计全部 */
+    service?: string;
+  };
+
+  type GetTodayTotalConsumptionRes = {
+    /** 日期,格式:2025-10-01 */
+    date: string;
+    /** 总消费金额(CNY) */
+    totalCostCNY: Decimal;
+    /** 消费增加率 */
+    increaseRate: number;
+    /** 依据服务类型查询，默认统计全部 */
+    serviceName: string;
+  };
 }
 
 type DefaultCasbinRule = {

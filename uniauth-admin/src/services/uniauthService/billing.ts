@@ -60,3 +60,18 @@ export async function postBillingRecord(
     ...(options || {}),
   });
 }
+
+/** 今日总消费 获取今天的总消费金额统计 GET /billing/stats/today/total */
+export async function getBillingStatsTodayTotal(
+  params: API.GetTodayTotalConsumptionReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetTodayTotalConsumptionRes>(
+    "/billing/stats/today/total",
+    {
+      method: "GET",
+      params,
+      ...(options || {}),
+    },
+  );
+}
