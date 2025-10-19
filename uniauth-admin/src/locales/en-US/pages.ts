@@ -160,6 +160,15 @@ export default {
     "Please enter default Casbin rules, format as array of objects with obj, act, eft fields",
   "pages.autoQuotaPoolConfig.defaultCasbinRulesRequired":
     "Please enter default Casbin rules",
+  "pages.autoQuotaPoolConfig.upnsCache": "UPN Cache",
+  "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "Please enter UPN cache",
+  "pages.autoQuotaPoolConfig.syncAll": "Sync All UPN Cache",
+  "pages.autoQuotaPoolConfig.syncAllConfirm":
+    "Are you sure to sync all UPN caches?",
+  "pages.autoQuotaPoolConfig.syncAllSuccess": "Synced {count} rules",
+  "pages.autoQuotaPoolConfig.syncOne": "Sync UPN Cache",
+  "pages.autoQuotaPoolConfig.syncOneSuccess": "Synced. Matched {count} users",
+  "pages.autoQuotaPoolConfig.syncFailed": "Sync failed",
   "pages.autoQuotaPoolConfig.enabledStatus": "Enabled",
   "pages.autoQuotaPoolConfig.disabledStatus": "Disabled",
   "pages.autoQuotaPoolConfig.notSet": "Not Set",
