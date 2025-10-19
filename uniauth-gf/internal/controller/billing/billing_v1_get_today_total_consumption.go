@@ -31,7 +31,7 @@ func (c *ControllerV1) GetTodayTotalConsumption(ctx context.Context, req *v1.Get
 
 	res.TotalCostCNY = todayCost
 
-	// 查询昨天的总消费（用于计算增长率）
+	// 查询昨天的总消费
 	yesterday := time.Now().AddDate(0, 0, -1)
 	yesterdayCost, err := c.getTotalCostByDate(ctx, yesterday, req.Service)
 	if err != nil {

@@ -25,7 +25,7 @@ type GetTodayTotalConsumptionRes struct {
 // GetProductUsageChartReq 分类查询模型调用图表生成
 type GetProductUsageChartReq struct {
 	g.Meta    `path:"/stats/model/usage" tags:"Billing/Status" method:"GET" summary:"模型调用次数图表"`
-	NDays     int    `json:"nDays" v:"integer|min:1|max:90" d:"7" dc:"最近N天，默认7天"`
+	NDays     int    `json:"nDays" v:"integer|min:1|max:90" d:"7" dc:"最近N天,默认7天"`
 	Service   string `json:"service" dc:"按服务过滤"`
 	QuotaPool string `json:"quotaPool" dc:"按配额池过滤"`
 	Product   string `json:"product" dc:"按模型过滤"`
@@ -33,7 +33,7 @@ type GetProductUsageChartReq struct {
 
 // GetProductUsageChartRes 分类查询模型调用图表生成响应
 type GetProductUsageChartRes struct {
-	LineChartData *gjson.Json `json:"lineChartData" dc:"折线图数据，dates为日期数组，series为各维度的时间序列" example:"{\"dates\":[\"2025-10-01\",\"2025-10-02\"],\"series\":[{\"name\":\"gpt-4\",\"service\":\"chat\",\"data\":[100,111]}]}"`
+	LineChartData *gjson.Json `json:"lineChartData" dc:"折线图数据,dates为日期数组,series为各维度的时间序列" example:"{\"dates\":[\"2025-10-01\",\"2025-10-02\"],\"series\":[{\"name\":\"gpt-4\",\"service\":\"chat\",\"data\":[100,111]}]}"`
 	BarChartData  *gjson.Json `json:"barChartData" dc:"条形图数据，按模型分别总调用次数" example:"{\"labels\":[\"gpt-4\",\"gpt-3.5\"],\"data\":[100,111]}"`
 	TotalCalls    int         `json:"totalCalls" dc:"总调用次数（当前分类下）"`
 }
@@ -41,7 +41,7 @@ type GetProductUsageChartRes struct {
 // GetProductConsumptionReq 分类查询消费总金额
 type GetProductConsumptionReq struct {
 	g.Meta    `path:"/stats/model/consumption" tags:"Billing/Status" method:"GET" summary:"模型消费金额"`
-	NDays     int    `json:"nDays" v:"integer|min:1|max:90" d:"7" dc:"最近N天，默认7天"`
+	NDays     int    `json:"nDays" v:"integer|min:1|max:90" d:"7" dc:"最近N天,默认7天"`
 	Service   string `json:"service" dc:"按服务过滤" example:"chat"`
 	QuotaPool string `json:"quotaPool" dc:"按配额池过滤" example:"student_pool"`
 	Product   string `json:"product" dc:"按模型过滤"`
@@ -60,16 +60,20 @@ type GetProductConsumptionRes struct {
 // GetActiveUsersNumReq  按消费记录获取活跃用户数
 type GetActiveUsersNumReq struct {
 	g.Meta `path:"/stats/active-users/summary" tags:"Billing/Status" method:"GET" summary:"按消费记录查询活跃用户" dc:"查询指定天数内的活跃用户"`
-	Days   int `json:"days" v:"min:1|max:365" dc:"统计活跃用户的天数，默认30天" d:"30"`
+	Days   int `json:"days" v:"min:1|max:365" dc:"统计活跃用户的天数,默认30天" d:"30"`
+}
+
+type ActiveUserList struct {
+	ActiveUsersNum int     `json:"activeUsers" dc:"当天活跃用户数"`
+	ActiveRateInc  float64 `json:"activeRateInc" dc:"活跃率增加"`
+	Date           string  `json:"date" dc:"人数对应的日期" example:"2025-10-01"`
 }
 
 // GetActiveUsersNumRes 按消费记录获取活跃用户数响应
 type GetActiveUsersNumRes struct {
-	ActiveUsers   int             `json:"activeUsers" dc:"当天活跃用户数"`
-	ActiveRateInc float64         `json:"activeRateInc" dc:"活跃率增加"`
-	Date          string          `json:"date" dc:"人数对应的日期" example:"2025-10-01"`
-	TotalUsers    int             `json:"totalUsers" dc:"总统计人数"`
-	Base          decimal.Decimal `json:"base" dc:"活跃统计标准(可选)"`
+	ActiveUsers      []ActiveUserList `json:"activeUsers" dc:"每天活跃用户数列表,格式{\"activeUsersNum\":100,\"ActiveRateInc\":50.00,\"Date\":\"2025-10-01\"}"`
+	TotalUsers       int              `json:"totalUsers" dc:"总用户人数"`
+	TotalActiveUsers int              `json:"totalActiveUsers" dc:"总活跃用户人数"`
 }
 
 // ActiveUserDetail 活跃用户详细信息结构体适配查询
@@ -85,7 +89,7 @@ type GetAllActiveUsersReq struct {
 	g.Meta    `path:"/stats/active-users/list" tags:"Billing/Status" method:"GET" summary:"返回指定天数内活跃用户的所有信息"`
 	Days      int    `json:"days" v:"min:1|max:365" dc:"返回指定天数的活跃用户信息,默认七天" d:"7"`
 	Page      int    `json:"page" v:"min:1" d:"1" dc:"分页页码,从1开始"`
-	PageSize  int    `json:"pageSize" v:"min:1|max:30" d:"10" dc:"每页条数，默认10，最大30"`
+	PageSize  int    `json:"pageSize" v:"min:1|max:30" d:"10" dc:"每页条数,默认10,最大30"`
 	SortBy    string `json:"sortBy" v:"in:cost,calls,upn,last_active" d:"cost" dc:"排序条件:cost(花费),calls(调用次数),upn(用户名),last_active(最后活跃时间)"`
 	SortOrder string `json:"sortOrder" v:"in:asc,desc" d:"desc" dc:"按升序(asc)还是降序(desc)排列"`
 }
