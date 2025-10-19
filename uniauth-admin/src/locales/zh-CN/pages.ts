@@ -145,6 +145,14 @@ export default {
     "请输入默认Casbin规则，格式为包含obj、act、eft字段的对象数组",
   "pages.autoQuotaPoolConfig.defaultCasbinRulesRequired":
     "请输入默认Casbin规则",
+  "pages.autoQuotaPoolConfig.upnsCache": "UPN缓存",
+  "pages.autoQuotaPoolConfig.upnsCachePlaceholder": "请输入UPN缓存",
+  "pages.autoQuotaPoolConfig.syncAll": "同步全部UPN缓存",
+  "pages.autoQuotaPoolConfig.syncAllConfirm": "确定要同步全部规则的UPN缓存吗？",
+  "pages.autoQuotaPoolConfig.syncAllSuccess": "已同步 {count} 条规则",
+  "pages.autoQuotaPoolConfig.syncOne": "同步UPN缓存",
+  "pages.autoQuotaPoolConfig.syncOneSuccess": "已同步，匹配到 {count} 个用户",
+  "pages.autoQuotaPoolConfig.syncFailed": "同步失败",
   "pages.autoQuotaPoolConfig.enabledStatus": "启用",
   "pages.autoQuotaPoolConfig.disabledStatus": "禁用",
   "pages.autoQuotaPoolConfig.notSet": "未设置",
@@ -156,8 +164,6 @@ export default {
   "pages.autoQuotaPoolConfig.formInvalid": "表单验证失败，请检查输入",
   "pages.autoQuotaPoolConfig.saveFailedInvalidFilterGroup":
     "保存失败：过滤条件组格式不正确",
-  "pages.autoQuotaPoolConfig.saveFailedInvalidDefaultCasbinRules":
-    "保存失败：默认Casbin规则格式不正确",
   "pages.autoQuotaPoolConfig.saveFailedRuleNameRequired":
     "保存失败：规则名称为必填项",
   "pages.autoQuotaPoolConfig.saveFailedCronCycleRequired":
@@ -168,23 +174,6 @@ export default {
   "pages.autoQuotaPoolConfig.saveFailedNetworkError":
     "保存失败：网络错误，请稍后重试",
   "pages.autoQuotaPoolConfig.saveFailedCheckInput": "保存失败：请检查您的输入",
-
-  // UPN查询相关翻译
-  "pages.autoQuotaPoolConfig.upnQuery": "UPN用户查询",
-  "pages.autoQuotaPoolConfig.upnQueryModalTitle": "UPN用户查询",
-  "pages.autoQuotaPoolConfig.upn": "UPN",
-  "pages.autoQuotaPoolConfig.upnRequired": "请输入UPN",
-  "pages.autoQuotaPoolConfig.upnPlaceholder": "请输入用户主体名称",
-  "pages.autoQuotaPoolConfig.upnMultipleHint":
-    "支持输入多个UPN，以逗号、分号或空格分隔",
-  "pages.autoQuotaPoolConfig.upnMultiplePlaceholder": "请输入UPN",
-  "pages.autoQuotaPoolConfig.query": "查询",
-  "pages.autoQuotaPoolConfig.queryResult": "查询结果",
-  "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN查询成功",
-  "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN查询失败",
-  "pages.autoQuotaPoolConfig.queryError": "查询失败",
-  "pages.autoQuotaPoolConfig.upnInRule": "{upn} 在 {ruleName} 中",
-  "pages.autoQuotaPoolConfig.upnNotInRule": "{upn} 不在 {ruleName} 中",
 
   // 模型配置页面翻译
   "pages.modelConfig.title": "模型配置列表",
