@@ -69,10 +69,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             .filter((name): name is string => !!name); // 过滤掉undefined和null
           setAllRuleNames(ruleNames);
         }
-      } catch (_error) {
-        console.error("获取规则名称列表失败:", _error);
-        // 静默失败，不影响主要功能
-      }
+      } catch (_error) {}
     };
 
     fetchAllRuleNames();
@@ -275,8 +272,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         // 编辑模式 - 构建编辑请求的数据结构
         const editData = {
           ...processedValues,
-          // 确保包含编辑所需的关键字段
-          ruleName: processedValues.ruleName || editingRecord.ruleName,
         };
         await putConfigAutoConfig(editData as any);
         message.success(
@@ -286,10 +281,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         // 新建模式 - 构建新建请求的数据结构
         const createData = {
           ...processedValues,
-          // 确保所有必需字段都存在
-          ruleName: processedValues.ruleName,
-          cronCycle: processedValues.cronCycle,
-          regularQuota: processedValues.regularQuota,
         };
         await postConfigAutoConfig(createData as any);
         message.success(
@@ -322,10 +313,21 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   /**
    * UPN用户查询处理函数
    */
-  const handleUpnQueryClick = (ruleName?: string) => {
+  const handleUpnQueryClick = async (ruleName?: string) => {
     setIsUpnQueryModalVisible(true);
     setUpnQueryResults([]);
     upnQueryForm.resetFields();
+
+    // 每次打开查询界面时重新获取规则名称列表
+    try {
+      const response = await getConfigAutoConfig();
+      if (response.items) {
+        const ruleNames = response.items
+          .map((item: API.AutoQuotaPoolItem) => item.ruleName)
+          .filter((name): name is string => !!name); // 过滤掉undefined和null
+        setAllRuleNames(ruleNames);
+      }
+    } catch (_error) {}
 
     // 如果传入了规则名称，则预选该规则（多选模式）
     if (ruleName) {
@@ -390,8 +392,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             });
             return { upn, ruleName, result: response.isInUpnsCache || false };
           } catch (error) {
-            // 单个查询失败不影响其他查询
-            console.error(`UPN查询失败: ${upn}, 规则: ${ruleName}`, error);
             return { upn, ruleName, result: false };
           }
         }),
@@ -951,6 +951,13 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         okButtonProps={{ loading: upnQueryLoading }}
         cancelButtonProps={{ disabled: upnQueryLoading }}
       >
+        <div style={{ marginBottom: 16 }}>
+          <Text type="secondary">
+            {intl.formatMessage({
+              id: "pages.autoQuotaPoolConfig.upnQueryDescription",
+            })}
+          </Text>
+        </div>
         <Form form={upnQueryForm} layout="vertical" requiredMark={false}>
           <Form.Item
             name="upn"
