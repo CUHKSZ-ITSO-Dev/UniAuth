@@ -12,6 +12,23 @@
  */
 export default [
   {
+    path: "/dashboard",
+    name: "dashboard",
+    icon: "dashboard",
+    routes: [
+      {
+        path: "/dashboard",
+        redirect: "/dashboard/billing-graph",
+      },
+      {
+        path: "/dashboard/billing-graph",
+        name: "billing-graph",
+        icon: "User",
+        component: "@/pages/BillingGraphPage",
+      },
+    ],
+  },
+  {
     path: "/resource",
     name: "resource",
     icon: "Appstore",
