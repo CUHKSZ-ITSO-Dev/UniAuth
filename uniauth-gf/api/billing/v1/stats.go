@@ -14,7 +14,7 @@ type GetTodayTotalConsumptionReq struct {
 	Service string `json:"service"   dc:"依据服务类型查询，默认统计全部" example:"chat"`
 }
 
-// GetTodayTotalConsumptionRes 当天总消费(分配额池和服务查询)响应
+// GetTodayTotalConsumptionRes 当天总消费(分服务查询)响应
 type GetTodayTotalConsumptionRes struct {
 	Date         string          `json:"date"             dc:"日期,格式:2025-10-01"`
 	TotalCostCNY decimal.Decimal `json:"totalCostCNY"     dc:"总消费金额(CNY)"`

@@ -29,7 +29,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 		Product:    req.Product,
 		StartTime:  req.StartTime,
 		EndTime:    req.EndTime,
-		Order:		req.Order,
+		Order:      req.Order,
 	})
 	if err != nil {
 		return nil, gerror.Wrap(err, "复用获取账单记录接口时失败")
@@ -85,7 +85,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 			return nil, gerror.Wrap(err, "无法加载校徽图像")
 		}
 
-		// 设置第一行高度以容纳校徽
+		// 设置第一行高度以容j纳校徽
 		_ = f.SetRowHeight(sheet, 1, 120)
 
 		// Header - 机构信息
@@ -184,10 +184,10 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 
 		if req.Type == "upn" {
 			_ = f.SetCellValue(sheet, "A10", "UPN：")
-			_ = f.SetCellValue(sheet, "B10", sheet + "( " + strings.Join(req.QuotaPools, ", ") + " )")
+			_ = f.SetCellValue(sheet, "B10", sheet+"( "+strings.Join(req.QuotaPools, ", ")+" )")
 		} else {
 			_ = f.SetCellValue(sheet, "A10", "配额池：")
-			_ = f.SetCellValue(sheet, "B10", sheet + "( " + strings.Join(req.Upns, ", ") + " )")
+			_ = f.SetCellValue(sheet, "B10", sheet+"( "+strings.Join(req.Upns, ", ")+" )")
 		}
 		_ = f.SetCellValue(sheet, "F10", "账单状态：")
 		_ = f.SetCellValue(sheet, "G10", "正式账单")
