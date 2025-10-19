@@ -75,3 +75,18 @@ export async function getBillingStatsTodayTotal(
     },
   );
 }
+
+/** 活跃用户统计 按消费记录查询活跃用户 GET /billing/stats/active-users/summary */
+export async function getBillingStatsActiveUsersSummary(
+  params: API.GetActiveUsersNumReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetActiveUsersNumRes>(
+    "/billing/stats/active-users/summary",
+    {
+      method: "GET",
+      params,
+      ...(options || {}),
+    },
+  );
+}

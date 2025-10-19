@@ -987,6 +987,24 @@ declare namespace API {
     /** 依据服务类型查询，默认统计全部 */
     serviceName: string;
   };
+
+  type GetActiveUsersNumReq = {
+    /** 统计活跃用户的天数，默认30天 */
+    days?: number;
+  };
+
+  type GetActiveUsersNumRes = {
+    /** 当天活跃用户数 */
+    activeUsers?: number;
+    /** 活跃率增加 */
+    activeRateInc?: number;
+    /** 人数对应的日期 */
+    date?: string;
+    /** 总统计人数 */
+    totalUsers?: number;
+    /** 活跃统计标准(可选) */
+    base?: Decimal;
+  };
 }
 
 type DefaultCasbinRule = {
