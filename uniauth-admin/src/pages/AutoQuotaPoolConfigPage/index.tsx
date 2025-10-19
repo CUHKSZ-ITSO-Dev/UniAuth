@@ -19,7 +19,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   deleteConfigAutoConfig,
   getConfigAutoConfig,
-  getConfigAutoConfigIsInUpnsCache,
+  getConfigAutoConfigQueryUpnsCache,
   postConfigAutoConfig,
   putConfigAutoConfig,
 } from "@/services/uniauthService/autoQuotaPoolConfig";
@@ -379,23 +379,26 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         return;
       }
 
-      // 为每个UPN和每个规则名称的组合分别查询
-      const queryPromises = upns.flatMap((upn) =>
-        ruleNames.map(async (ruleName: string) => {
-          try {
-            const response = await getConfigAutoConfigIsInUpnsCache({
-              upn: upn,
-              ruleName: ruleName,
-            });
-            return { upn, ruleName, result: response.isInUpnsCache || false };
-          } catch (error) {
-            return { upn, ruleName, result: false };
-          }
-        }),
-      );
+      // 使用批量查询接口一次性查询所有UPN和规则名称的组合
+      try {
+        const response = await getConfigAutoConfigQueryUpnsCache({
+          upns: upns,
+          ruleNames: ruleNames,
+        });
 
-      const results = await Promise.all(queryPromises);
-      setUpnQueryResults(results);
+        // 将批量查询结果转换为前端需要的格式
+        const results =
+          response.items?.map((item) => ({
+            upn: item.upn,
+            ruleName: item.ruleName,
+            result: item.isInUpnsCache || false,
+          })) || [];
+
+        setUpnQueryResults(results);
+      } catch (error) {
+        // 如果批量查询失败，返回空结果
+        setUpnQueryResults([]);
+      }
 
       message.success(
         intl.formatMessage({

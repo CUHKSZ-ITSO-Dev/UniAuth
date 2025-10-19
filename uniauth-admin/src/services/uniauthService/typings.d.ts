@@ -959,16 +959,25 @@ declare namespace API {
 
   type Var = unknown;
 
-  type getConfigAutoConfigIsInUpnsCacheParams = {
-    /** UPN */
-    upn: string;
+  type QueryUpnsCacheItem = {
     /** 规则名称 */
     ruleName: string;
+    /** UPN */
+    upn: string;
+    /** 是否在自动配额池规则的upns_cache中 */
+    isInUpnsCache: boolean;
   };
 
-  type IsInUpnsCacheRes = {
-    /** 是否在自动配额池规则的upns_cache中 */
-    isInUpnsCache?: boolean;
+  type getConfigAutoConfigQueryUpnsCacheParams = {
+    /** UPN列表 */
+    upns: string[];
+    /** 规则名称列表 */
+    ruleNames: string[];
+  };
+
+  type QueryUpnsCacheRes = {
+    /** 查询结果列表 */
+    items: QueryUpnsCacheItem[];
   };
 }
 
