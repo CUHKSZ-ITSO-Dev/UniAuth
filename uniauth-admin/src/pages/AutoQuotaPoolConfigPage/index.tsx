@@ -272,8 +272,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         // 编辑模式 - 构建编辑请求的数据结构
         const editData = {
           ...processedValues,
-          // 确保包含编辑所需的关键字段
-          ruleName: processedValues.ruleName || editingRecord.ruleName,
         };
         await putConfigAutoConfig(editData as any);
         message.success(
@@ -283,10 +281,6 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         // 新建模式 - 构建新建请求的数据结构
         const createData = {
           ...processedValues,
-          // 确保所有必需字段都存在
-          ruleName: processedValues.ruleName,
-          cronCycle: processedValues.cronCycle,
-          regularQuota: processedValues.regularQuota,
         };
         await postConfigAutoConfig(createData as any);
         message.success(
