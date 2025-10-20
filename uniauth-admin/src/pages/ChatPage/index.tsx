@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons";
 import { PageContainer } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
-import { Avatar, Button, Card, Input, message, Space, Spin } from "antd";
+import { Avatar, Button, Card, Input, Modal, message, Space, Spin } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
@@ -17,9 +17,12 @@ import "./style.less";
 const { TextArea } = Input;
 
 interface Message {
-  role: "user" | "assistant" | "system";
+  role: "user" | "assistant" | "system" | "tool_call" | "tool_result";
   content: string;
   id: string;
+  toolName?: string; // 工具名称
+  toolArgs?: string; // 工具参数
+  reasoning?: string; // 思考链内容（用于o1等思考模型）
 }
 
 const ChatPage: React.FC = () => {
@@ -29,9 +32,16 @@ const ChatPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [streamingContent, setStreamingContent] = useState("");
-  const [toolCalls, setToolCalls] = useState<
-    Array<{ tool: string; args: string }>
-  >([]);
+  const [streamingReasoning, setStreamingReasoning] = useState(""); // 思考链内容
+  const [pendingConfirm, setPendingConfirm] = useState<{
+    toolName: string;
+    arguments: string;
+    toolId: string; // 保存原始的 tool_id
+    userMessage: string;
+  } | null>(null);
+  const [allowedTools, setAllowedTools] = useState<string[]>([]);
+  // 使用 ref 跟踪已添加的工具调用，避免状态更新时序问题
+  const addedToolCallsRef = useRef<Set<string>>(new Set());
 
   // 自动滚动到底部
   const scrollToBottom = () => {
@@ -40,28 +50,65 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, streamingContent]);
+  }, [messages, streamingContent, streamingReasoning]);
+
+  // 监控消息数组变化，检测重复
+  useEffect(() => {
+    console.log("====== 消息数组更新 ======");
+    console.log("消息总数:", messages.length);
+    const toolCallMessages = messages.filter((m) => m.role === "tool_call");
+    console.log("工具调用消息数量:", toolCallMessages.length);
+    toolCallMessages.forEach((msg, index) => {
+      console.log(`  [${index}] 工具: ${msg.toolName}, ID: ${msg.id}`);
+    });
+    console.log("========================");
+  }, [messages]);
 
   // 流式对话请求（MCP工具支持）
-  const sendStreamMessage = async (userMessage: string) => {
+  const sendStreamMessage = async (
+    userMessage: string,
+    isRetry = false,
+    customAllowedTools?: string[],
+    pendingToolCall?: { tool_id: string; tool_name: string; arguments: string },
+  ) => {
     try {
-      // 先添加用户消息
-      setMessages((prev) => [
-        ...prev,
-        { role: "user", content: userMessage, id: `user-${Date.now()}` },
-      ]);
+      // 先添加用户消息（非重试时）
+      if (!isRetry) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "user", content: userMessage, id: `user-${Date.now()}` },
+        ]);
+        // 每次新请求清空允许列表和工具调用追踪（重试时不清空）
+        setAllowedTools([]);
+        addedToolCallsRef.current.clear();
+      }
       setStreamingContent("");
-      setToolCalls([]); // 清空工具调用记录
 
       // 使用MCP流式接口
+      const requestBody: any = {
+        messages: isRetry
+          ? messages
+          : [...messages, { role: "user", content: userMessage }],
+      };
+
+      // 如果有待执行的工具调用，直接发送（不重新让AI决策）
+      if (pendingToolCall) {
+        console.log("[发送请求] 包含待执行的工具调用:", pendingToolCall);
+        requestBody.pending_tool_call = pendingToolCall;
+      } else {
+        // 使用传入的allowedTools或当前状态的allowedTools
+        const toolsToSend = customAllowedTools || allowedTools;
+        if (toolsToSend.length > 0) {
+          requestBody.allowed_tools = toolsToSend;
+        }
+      }
+
       const response = await fetch("/api/chat/mcp/stream", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          messages: [...messages, { role: "user", content: userMessage }],
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -73,6 +120,7 @@ const ChatPage: React.FC = () => {
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let accumulatedContent = "";
+      let accumulatedReasoning = ""; // 累积的思考链内容
       let buffer = ""; // 添加缓冲区处理不完整的数据
 
       if (reader) {
@@ -100,18 +148,22 @@ const ChatPage: React.FC = () => {
 
               if (data === "[DONE]") {
                 // 流式结束，将累积的内容添加到消息列表
-                if (accumulatedContent) {
+                if (accumulatedContent || accumulatedReasoning) {
                   setMessages((prev) => [
                     ...prev,
                     {
                       role: "assistant",
                       content: accumulatedContent,
                       id: `assistant-${Date.now()}`,
-                    },
+                      ...(accumulatedReasoning && {
+                        reasoning: accumulatedReasoning,
+                      }),
+                    } as Message,
                   ]);
                 }
                 setStreamingContent("");
-                continue;
+                setStreamingReasoning("");
+                break; // [DONE]表示流真正结束，跳出while循环
               }
 
               try {
@@ -119,49 +171,159 @@ const ChatPage: React.FC = () => {
 
                 // 处理MCP工具调用信息
                 if (parsed.type === "tool_call") {
-                  setToolCalls((prev) => [
-                    ...prev,
-                    { tool: parsed.tool_name, args: parsed.arguments },
-                  ]);
-                  message.info(
-                    intl.formatMessage(
-                      { id: "pages.chat.tool.calling" },
-                      { tool: parsed.tool_name },
-                    ),
-                  );
+                  // 使用 tool_id 作为唯一标识，每个工具调用都有独立的ID
+                  const toolKey = parsed.tool_id;
+
+                  if (!toolKey) {
+                    console.error("[tool_call] 缺少 tool_id:", parsed);
+                    return;
+                  }
+
+                  // 使用 ref 检查是否已添加，避免状态更新时序问题
+                  if (!addedToolCallsRef.current.has(toolKey)) {
+                    addedToolCallsRef.current.add(toolKey);
+                    console.log(
+                      "[tool_call] 添加工具:",
+                      parsed.tool_name,
+                      "tool_id:",
+                      parsed.tool_id,
+                    );
+                    console.log("[tool_call] 参数:", parsed.arguments);
+                    console.log(
+                      "[tool_call] 当前已添加的工具ID数量:",
+                      addedToolCallsRef.current.size,
+                    );
+
+                    setMessages((prev) => [
+                      ...prev,
+                      {
+                        role: "tool_call",
+                        content: parsed.tool_name,
+                        toolName: parsed.tool_name,
+                        toolArgs: parsed.arguments,
+                        id: `tool-call-${parsed.tool_id}`,
+                      },
+                    ]);
+                  } else {
+                    console.log(
+                      "[tool_call] 工具ID已存在，跳过:",
+                      parsed.tool_name,
+                      "tool_id:",
+                      parsed.tool_id,
+                    );
+                    console.log("[tool_call] 本次参数:", parsed.arguments);
+                  }
+                } else if (parsed.type === "tool_confirm_required") {
+                  // 需要用户确认工具执行
+                  const toolKey = parsed.tool_id;
+
+                  if (!toolKey) {
+                    console.error(
+                      "[tool_confirm_required] 缺少 tool_id:",
+                      parsed,
+                    );
+                    return;
+                  }
+
+                  // 使用 ref 检查是否已添加
+                  if (!addedToolCallsRef.current.has(toolKey)) {
+                    addedToolCallsRef.current.add(toolKey);
+                    console.log(
+                      "[tool_confirm_required] 添加工具:",
+                      parsed.tool_name,
+                      "tool_id:",
+                      parsed.tool_id,
+                    );
+                    console.log(
+                      "[tool_confirm_required] 参数:",
+                      parsed.arguments,
+                    );
+                    console.log(
+                      "[tool_confirm_required] 当前已添加的工具ID数量:",
+                      addedToolCallsRef.current.size,
+                    );
+
+                    setMessages((prev) => [
+                      ...prev,
+                      {
+                        role: "tool_call",
+                        content: parsed.tool_name,
+                        toolName: parsed.tool_name,
+                        toolArgs: parsed.arguments,
+                        id: `tool-call-${parsed.tool_id}`,
+                      },
+                    ]);
+                  } else {
+                    console.log(
+                      "[tool_confirm_required] 工具ID已存在，跳过:",
+                      parsed.tool_name,
+                      "tool_id:",
+                      parsed.tool_id,
+                    );
+                  }
+
+                  setLoading(false); // 停止loading状态
+                  setPendingConfirm({
+                    toolName: parsed.tool_name,
+                    arguments: parsed.arguments,
+                    toolId: parsed.tool_id, // 保存第一次的 tool_id
+                    userMessage: userMessage,
+                  });
+                  // 流应该结束了（后端发送了[DONE]），等待用户确认
+                  break; // 跳出循环，停止处理后续事件
                 } else if (parsed.type === "tool_result") {
-                  message.success(
-                    intl.formatMessage(
-                      { id: "pages.chat.tool.completed" },
-                      { tool: parsed.tool },
-                    ),
-                  );
-                } else if (parsed.content) {
+                  const toolId = `tool-result-${parsed.tool_id}`;
+
+                  setMessages((prev) => {
+                    // 检查是否已存在（处理React严格模式的重复渲染）
+                    if (prev.some((msg) => msg.id === toolId)) {
+                      return prev;
+                    }
+                    return [
+                      ...prev,
+                      {
+                        role: "tool_result",
+                        content: parsed.result,
+                        toolName: parsed.tool,
+                        id: toolId,
+                      },
+                    ];
+                  });
+                } else if (parsed.content || parsed.reasoning) {
                   // 正常的对话内容
-                  accumulatedContent += parsed.content;
-                  setStreamingContent(accumulatedContent);
+                  if (parsed.content) {
+                    accumulatedContent += parsed.content;
+                    setStreamingContent(accumulatedContent);
+                  }
+                  // 思考链内容（o1等思考模型）
+                  if (parsed.reasoning) {
+                    accumulatedReasoning += parsed.reasoning;
+                    setStreamingReasoning(accumulatedReasoning);
+                  }
                 } else if (parsed.error) {
                   message.error(parsed.error);
                   break;
                 }
               } catch (e) {
-                console.error("解析SSE数据失败:", e);
+                // 忽略解析失败的事件
               }
             }
           }
         }
 
         // 如果流结束时还有内容但没收到[DONE]，也要添加到消息
-        if (accumulatedContent && streamingContent) {
+        if ((accumulatedContent && streamingContent) || accumulatedReasoning) {
           setMessages((prev) => [
             ...prev,
             {
               role: "assistant",
               content: accumulatedContent,
               id: `assistant-${Date.now()}`,
-            },
+              ...(accumulatedReasoning && { reasoning: accumulatedReasoning }),
+            } as Message,
           ]);
           setStreamingContent("");
+          setStreamingReasoning("");
         }
       }
     } catch (_error) {
@@ -189,8 +351,54 @@ const ChatPage: React.FC = () => {
   const handleClear = () => {
     setMessages([]);
     setStreamingContent("");
-    setToolCalls([]);
+    setAllowedTools([]);
+    setPendingConfirm(null);
+    addedToolCallsRef.current.clear(); // 清空工具调用追踪
     message.success(intl.formatMessage({ id: "pages.chat.cleared" }));
+  };
+
+  // 处理工具确认
+  const handleToolConfirm = async (allow: boolean) => {
+    if (!pendingConfirm) return;
+
+    if (allow) {
+      // 用户允许，发送待执行的工具调用信息（不重新让AI决策）
+      console.log("[用户确认] 准备执行工具:", pendingConfirm.toolName);
+      console.log("[用户确认] 工具ID:", pendingConfirm.toolId);
+      console.log("[用户确认] 参数:", pendingConfirm.arguments);
+
+      const toolCallInfo = {
+        tool_id: pendingConfirm.toolId,
+        tool_name: pendingConfirm.toolName,
+        arguments: pendingConfirm.arguments,
+      };
+
+      setPendingConfirm(null);
+      setLoading(true);
+
+      // 重新发起请求，带上待执行的工具调用信息
+      await sendStreamMessage(
+        pendingConfirm.userMessage,
+        true,
+        undefined,
+        toolCallInfo,
+      );
+    } else {
+      // 用户拒绝，显示拒绝消息
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: intl.formatMessage(
+            { id: "pages.chat.tool.rejected" },
+            { tool: pendingConfirm.toolName },
+          ),
+          id: `assistant-${Date.now()}`,
+        },
+      ]);
+      setPendingConfirm(null);
+      setLoading(false);
+    }
   };
 
   // 按Enter发送，Shift+Enter换行
@@ -216,71 +424,128 @@ const ChatPage: React.FC = () => {
       ]}
     >
       <Card className="chat-container">
-        {/* MCP工具调用信息 */}
-        {toolCalls.length > 0 && (
-          <div
-            style={{
-              padding: "8px 16px",
-              background: "#f0f0f0",
-              borderBottom: "1px solid #d9d9d9",
-            }}
-          >
-            <Space size="small">
-              <span style={{ fontSize: "12px", color: "#666" }}>
-                {intl.formatMessage({ id: "pages.chat.tool.label" })}:
-              </span>
-              {toolCalls.map((tc, idx) => (
-                <span
-                  key={`${tc.tool}-${idx}`}
-                  style={{
-                    fontSize: "12px",
-                    background: "#1890ff",
-                    color: "white",
-                    padding: "2px 8px",
-                    borderRadius: "4px",
-                  }}
-                >
-                  {tc.tool}
-                </span>
-              ))}
-            </Space>
-          </div>
-        )}
-
         <div className="chat-messages">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`message-item ${msg.role === "user" ? "user-message" : "assistant-message"}`}
-            >
-              <Avatar
-                icon={
-                  msg.role === "user" ? <UserOutlined /> : <RobotOutlined />
-                }
-                className="message-avatar"
-                style={{
-                  backgroundColor: msg.role === "user" ? "#1890ff" : "#52c41a",
-                }}
-              />
-              <div className="message-content">
-                <div className="message-text">
-                  {msg.role === "user" ? (
-                    msg.content
-                  ) : (
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeHighlight]}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
+          {messages.map((msg) => {
+            // 工具调用消息
+            if (msg.role === "tool_call") {
+              return (
+                <div key={msg.id} className="message-item tool-call-message">
+                  <div className="tool-call-content">
+                    <Space>
+                      <span className="tool-icon">🔧</span>
+                      <span>
+                        {intl.formatMessage(
+                          { id: "pages.chat.tool.calling" },
+                          { tool: msg.toolName },
+                        )}
+                      </span>
+                    </Space>
+                  </div>
+                </div>
+              );
+            }
+
+            // 工具结果消息
+            if (msg.role === "tool_result") {
+              return (
+                <div key={msg.id} className="message-item tool-result-message">
+                  <div className="tool-result-content">
+                    <Space direction="vertical" style={{ width: "100%" }}>
+                      <Space>
+                        <span className="tool-icon">✅</span>
+                        <span>
+                          {intl.formatMessage(
+                            { id: "pages.chat.tool.completed" },
+                            { tool: msg.toolName },
+                          )}
+                        </span>
+                      </Space>
+                      <details>
+                        <summary style={{ cursor: "pointer", color: "#666" }}>
+                          {intl.formatMessage({
+                            id: "pages.chat.tool.result.view",
+                          })}
+                        </summary>
+                        <pre
+                          style={{
+                            background: "#f5f5f5",
+                            padding: "8px",
+                            borderRadius: "4px",
+                            maxHeight: "200px",
+                            overflow: "auto",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {msg.content}
+                        </pre>
+                      </details>
+                    </Space>
+                  </div>
+                </div>
+              );
+            }
+
+            // 普通用户/助手消息
+            return (
+              <div
+                key={msg.id}
+                className={`message-item ${msg.role === "user" ? "user-message" : "assistant-message"}`}
+              >
+                <Avatar
+                  icon={
+                    msg.role === "user" ? <UserOutlined /> : <RobotOutlined />
+                  }
+                  className="message-avatar"
+                  style={{
+                    backgroundColor:
+                      msg.role === "user" ? "#1890ff" : "#52c41a",
+                  }}
+                />
+                <div className="message-content">
+                  {/* 显示思考链（如果有） */}
+                  {msg.role === "assistant" && msg.reasoning && (
+                    <details className="reasoning-section">
+                      <summary
+                        style={{
+                          cursor: "pointer",
+                          color: "#666",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        💭{" "}
+                        {intl.formatMessage({
+                          id: "pages.chat.reasoning.view",
+                        })}
+                      </summary>
+                      <div className="reasoning-content">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          rehypePlugins={[rehypeHighlight]}
+                        >
+                          {msg.reasoning}
+                        </ReactMarkdown>
+                      </div>
+                    </details>
                   )}
+                  <div className="message-text">
+                    {msg.role === "user" ? (
+                      msg.content
+                    ) : (
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeHighlight]}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* 流式返回时显示正在输入的内容 */}
-          {loading && streamingContent && (
+          {loading && (streamingContent || streamingReasoning) && (
             <div className="message-item assistant-message">
               <Avatar
                 icon={<RobotOutlined />}
@@ -288,20 +553,48 @@ const ChatPage: React.FC = () => {
                 style={{ backgroundColor: "#52c41a" }}
               />
               <div className="message-content">
-                <div className="message-text">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeHighlight]}
-                  >
-                    {streamingContent}
-                  </ReactMarkdown>
-                </div>
+                {/* 思考链（流式） */}
+                {streamingReasoning && (
+                  <details className="reasoning-section" open>
+                    <summary
+                      style={{
+                        cursor: "pointer",
+                        color: "#666",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      💭{" "}
+                      {intl.formatMessage({
+                        id: "pages.chat.reasoning.thinking",
+                      })}
+                    </summary>
+                    <div className="reasoning-content">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeHighlight]}
+                      >
+                        {streamingReasoning}
+                      </ReactMarkdown>
+                    </div>
+                  </details>
+                )}
+                {/* 正常内容 */}
+                {streamingContent && (
+                  <div className="message-text">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeHighlight]}
+                    >
+                      {streamingContent}
+                    </ReactMarkdown>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* 普通模式加载状态 */}
-          {loading && !streamingContent && (
+          {loading && !streamingContent && !streamingReasoning && (
             <div className="message-item assistant-message">
               <Avatar
                 icon={<RobotOutlined />}
@@ -343,6 +636,46 @@ const ChatPage: React.FC = () => {
           </Button>
         </div>
       </Card>
+
+      {/* 工具确认对话框 */}
+      <Modal
+        title={intl.formatMessage({ id: "pages.chat.tool.confirm.title" })}
+        open={!!pendingConfirm}
+        onOk={() => handleToolConfirm(true)}
+        onCancel={() => handleToolConfirm(false)}
+        okText={intl.formatMessage({ id: "pages.chat.tool.confirm.allow" })}
+        cancelText={intl.formatMessage({ id: "pages.chat.tool.confirm.deny" })}
+        okButtonProps={{ danger: true }}
+      >
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <p>
+            {intl.formatMessage(
+              { id: "pages.chat.tool.confirm.message" },
+              { tool: pendingConfirm?.toolName },
+            )}
+          </p>
+          <div
+            style={{
+              background: "#f5f5f5",
+              padding: "12px",
+              borderRadius: "4px",
+            }}
+          >
+            <strong>
+              {intl.formatMessage({ id: "pages.chat.tool.confirm.params" })}:
+            </strong>
+            <pre
+              style={{
+                margin: "8px 0 0 0",
+                fontSize: "12px",
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {pendingConfirm?.arguments}
+            </pre>
+          </div>
+        </Space>
+      </Modal>
     </PageContainer>
   );
 };
