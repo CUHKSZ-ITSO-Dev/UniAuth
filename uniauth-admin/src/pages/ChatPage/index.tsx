@@ -5,16 +5,8 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { PageContainer } from "@ant-design/pro-components";
-import {
-  Avatar,
-  Button,
-  Card,
-  Input,
-  message,
-  Space,
-  Spin,
-  Switch,
-} from "antd";
+import { useIntl } from "@umijs/max";
+import { Avatar, Button, Card, Input, message, Space, Spin } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
@@ -31,11 +23,10 @@ interface Message {
 }
 
 const ChatPage: React.FC = () => {
+  const intl = useIntl();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
-  const [useStream, setUseStream] = useState(true); // 默认使用流式
-  const [useMCP, setUseMCP] = useState(false); // 是否使用MCP工具
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [streamingContent, setStreamingContent] = useState("");
   const [toolCalls, setToolCalls] = useState<
@@ -51,47 +42,7 @@ const ChatPage: React.FC = () => {
     scrollToBottom();
   }, [messages, streamingContent]);
 
-  // 普通对话请求
-  const sendNormalMessage = async (userMessage: string) => {
-    try {
-      const apiPath = useMCP ? "/api/chat/mcp" : "/api/chat/";
-      const response = await fetch(apiPath, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [...messages, { role: "user", content: userMessage }],
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("请求失败");
-      }
-
-      const data = await response.json();
-
-      if (data.code === 0 && data.data) {
-        setMessages((prev) => [
-          ...prev,
-          { role: "user", content: userMessage, id: `user-${Date.now()}` },
-          {
-            role: "assistant",
-            content: data.data.content,
-            id: `assistant-${Date.now()}`,
-          },
-        ]);
-      } else {
-        message.error(data.message || "请求失败");
-      }
-    } catch (_error) {
-      message.error("发送消息失败，请重试");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 流式对话请求
+  // 流式对话请求（MCP工具支持）
   const sendStreamMessage = async (userMessage: string) => {
     try {
       // 先添加用户消息
@@ -102,8 +53,8 @@ const ChatPage: React.FC = () => {
       setStreamingContent("");
       setToolCalls([]); // 清空工具调用记录
 
-      const apiPath = useMCP ? "/api/chat/mcp/stream" : "/api/chat/stream";
-      const response = await fetch(apiPath, {
+      // 使用MCP流式接口
+      const response = await fetch("/api/chat/mcp/stream", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -114,7 +65,9 @@ const ChatPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("请求失败");
+        throw new Error(
+          intl.formatMessage({ id: "pages.chat.error.requestFailed" }),
+        );
       }
 
       const reader = response.body?.getReader();
@@ -170,9 +123,19 @@ const ChatPage: React.FC = () => {
                     ...prev,
                     { tool: parsed.tool_name, args: parsed.arguments },
                   ]);
-                  message.info(`正在调用工具: ${parsed.tool_name}`);
+                  message.info(
+                    intl.formatMessage(
+                      { id: "pages.chat.tool.calling" },
+                      { tool: parsed.tool_name },
+                    ),
+                  );
                 } else if (parsed.type === "tool_result") {
-                  message.success(`工具 ${parsed.tool} 执行完成`);
+                  message.success(
+                    intl.formatMessage(
+                      { id: "pages.chat.tool.completed" },
+                      { tool: parsed.tool },
+                    ),
+                  );
                 } else if (parsed.content) {
                   // 正常的对话内容
                   accumulatedContent += parsed.content;
@@ -202,7 +165,7 @@ const ChatPage: React.FC = () => {
         }
       }
     } catch (_error) {
-      message.error("发送消息失败，请重试");
+      message.error(intl.formatMessage({ id: "pages.chat.error.sendFailed" }));
     } finally {
       setLoading(false);
     }
@@ -211,7 +174,7 @@ const ChatPage: React.FC = () => {
   // 发送消息
   const handleSend = async () => {
     if (!inputValue.trim()) {
-      message.warning("请输入消息内容");
+      message.warning(intl.formatMessage({ id: "pages.chat.input.required" }));
       return;
     }
 
@@ -219,11 +182,7 @@ const ChatPage: React.FC = () => {
     setInputValue("");
     setLoading(true);
 
-    if (useStream) {
-      await sendStreamMessage(userMessage);
-    } else {
-      await sendNormalMessage(userMessage);
-    }
+    await sendStreamMessage(userMessage);
   };
 
   // 清空对话
@@ -231,7 +190,7 @@ const ChatPage: React.FC = () => {
     setMessages([]);
     setStreamingContent("");
     setToolCalls([]);
-    message.success("对话已清空");
+    message.success(intl.formatMessage({ id: "pages.chat.cleared" }));
   };
 
   // 按Enter发送，Shift+Enter换行
@@ -244,26 +203,21 @@ const ChatPage: React.FC = () => {
 
   return (
     <PageContainer
-      title="AI 对话助手"
+      title={intl.formatMessage({ id: "pages.chat.title" })}
       extra={[
-        <Space key="actions" size="large">
-          <Space>
-            <span>流式返回:</span>
-            <Switch checked={useStream} onChange={setUseStream} />
-          </Space>
-          <Space>
-            <span>MCP工具:</span>
-            <Switch checked={useMCP} onChange={setUseMCP} />
-          </Space>
-          <Button danger icon={<DeleteOutlined />} onClick={handleClear}>
-            清空对话
-          </Button>
-        </Space>,
+        <Button
+          key="clear"
+          danger
+          icon={<DeleteOutlined />}
+          onClick={handleClear}
+        >
+          {intl.formatMessage({ id: "pages.chat.button.clear" })}
+        </Button>,
       ]}
     >
       <Card className="chat-container">
         {/* MCP工具调用信息 */}
-        {useMCP && toolCalls.length > 0 && (
+        {toolCalls.length > 0 && (
           <div
             style={{
               padding: "8px 16px",
@@ -272,7 +226,9 @@ const ChatPage: React.FC = () => {
             }}
           >
             <Space size="small">
-              <span style={{ fontSize: "12px", color: "#666" }}>工具调用:</span>
+              <span style={{ fontSize: "12px", color: "#666" }}>
+                {intl.formatMessage({ id: "pages.chat.tool.label" })}:
+              </span>
               {toolCalls.map((tc, idx) => (
                 <span
                   key={`${tc.tool}-${idx}`}
@@ -354,7 +310,9 @@ const ChatPage: React.FC = () => {
               />
               <div className="message-content">
                 <Spin size="small" />
-                <span style={{ marginLeft: 8 }}>正在思考...</span>
+                <span style={{ marginLeft: 8 }}>
+                  {intl.formatMessage({ id: "pages.chat.thinking" })}
+                </span>
               </div>
             </div>
           )}
@@ -367,7 +325,9 @@ const ChatPage: React.FC = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="输入消息... (Enter发送, Shift+Enter换行)"
+            placeholder={intl.formatMessage({
+              id: "pages.chat.input.placeholder",
+            })}
             autoSize={{ minRows: 1, maxRows: 4 }}
             disabled={loading}
           />
@@ -379,7 +339,7 @@ const ChatPage: React.FC = () => {
             disabled={!inputValue.trim()}
             style={{ marginLeft: 8 }}
           >
-            发送
+            {intl.formatMessage({ id: "pages.chat.button.send" })}
           </Button>
         </div>
       </Card>

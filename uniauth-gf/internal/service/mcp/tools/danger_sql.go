@@ -10,7 +10,7 @@ import (
 
 func RegisterDangerSql(s *server.MCPServer) error {
 	tool := mcp.NewTool("get_arbitrary_billing_records_with_sql",
-		mcp.WithDescription("查询任意账单记录，支持SQL语句。"),
+		mcp.WithDescription("查询任意账单记录，支持SQL语句。数据库为 Postgres SQL 17。"),
 		mcp.WithString("sql",
 			mcp.Required(),
 			mcp.Description("The arithmetic SQL to perform。 Here is the table structure:"+

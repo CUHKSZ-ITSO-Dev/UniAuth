@@ -1,4 +1,6 @@
 export default {
+  "menu.dashboard": "仪表盘",
+  "menu.dashboard.chat": "AI 对话",
   "menu.resource": "资源管理",
   "menu.resource.user-list": "用户列表",
   "menu.resource.user-detail": "用户详情",
@@ -9,5 +11,4 @@ export default {
   "menu.config.auto-quota-pool-config": "自动配额池配置",
   "menu.config.model-config": "模型配置",
   "menu.config.config-i18n": "多语言配置",
-  "menu.chat": "AI 对话",
 };

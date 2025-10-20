@@ -733,4 +733,19 @@ export default {
     "Failed to fetch service and product options, please refresh page",
   "pages.billingDetail.fetchStatisticsFailed": "Failed to fetch statistics",
   "pages.billingDetail.fetchRecordsFailed": "Failed to fetch billing records",
+
+  // ChatPage
+  "pages.chat.title": "AI Chat Assistant",
+  "pages.chat.button.clear": "Clear Chat",
+  "pages.chat.button.send": "Send",
+  "pages.chat.input.placeholder":
+    "Enter message... (Press Enter to send, Shift+Enter for new line)",
+  "pages.chat.input.required": "Please enter a message",
+  "pages.chat.thinking": "Thinking...",
+  "pages.chat.tool.label": "Tool Calls",
+  "pages.chat.tool.calling": "Calling tool: {tool}",
+  "pages.chat.tool.completed": "Tool {tool} completed",
+  "pages.chat.cleared": "Chat cleared",
+  "pages.chat.error.requestFailed": "Request failed",
+  "pages.chat.error.sendFailed": "Failed to send message, please try again",
 };

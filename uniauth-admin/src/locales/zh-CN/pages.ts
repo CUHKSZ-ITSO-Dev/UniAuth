@@ -602,4 +602,18 @@ export default {
     "获取服务和产品选项失败，请刷新页面重试",
   "pages.billingDetail.fetchStatisticsFailed": "获取统计数据失败",
   "pages.billingDetail.fetchRecordsFailed": "获取账单数据失败",
+
+  // ChatPage
+  "pages.chat.title": "AI 对话助手",
+  "pages.chat.button.clear": "清空对话",
+  "pages.chat.button.send": "发送",
+  "pages.chat.input.placeholder": "输入消息... (Enter发送, Shift+Enter换行)",
+  "pages.chat.input.required": "请输入消息内容",
+  "pages.chat.thinking": "正在思考...",
+  "pages.chat.tool.label": "工具调用",
+  "pages.chat.tool.calling": "正在调用工具: {tool}",
+  "pages.chat.tool.completed": "工具 {tool} 执行完成",
+  "pages.chat.cleared": "对话已清空",
+  "pages.chat.error.requestFailed": "请求失败",
+  "pages.chat.error.sendFailed": "发送消息失败，请重试",
 };

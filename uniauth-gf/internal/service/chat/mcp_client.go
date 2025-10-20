@@ -98,28 +98,19 @@ func (c *MCPClient) CallTool(ctx context.Context, name string, arguments map[str
 
 	// 提取结果（支持多种Content类型）
 	var textResult string
-	g.Log().Infof(ctx, "MCP工具返回Content数量: %d", len(result.Content))
-
-	for i, content := range result.Content {
-		g.Log().Infof(ctx, "Content[%d] 类型: %T", i, content)
+	for _, content := range result.Content {
 		switch c := content.(type) {
 		case *mcp.TextContent:
 			textResult += c.Text
-			g.Log().Infof(ctx, "  TextContent: %s", c.Text)
 		case mcp.TextContent:
 			textResult += c.Text
-			g.Log().Infof(ctx, "  TextContent (非指针): %s", c.Text)
 		default:
 			// 尝试JSON序列化其他类型
 			if jsonBytes, err := json.Marshal(content); err == nil {
 				textResult += string(jsonBytes)
-				g.Log().Infof(ctx, "  其他类型JSON化: %s", string(jsonBytes))
-			} else {
-				g.Log().Warningf(ctx, "  无法处理的Content类型: %T", content)
 			}
 		}
 	}
 
-	g.Log().Infof(ctx, "MCP工具 %s 执行成功，结果长度: %d", name, len(textResult))
 	return textResult, nil
 }

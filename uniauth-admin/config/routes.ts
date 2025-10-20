@@ -12,6 +12,24 @@
  */
 export default [
   {
+    path: "/dashboard",
+    name: "dashboard",
+    icon: "DashboardOutlined",
+    routes: [
+      {
+        path: "/dashboard",
+        redirect: "/dashboard/chat",
+      },
+      {
+        path: "/dashboard/chat",
+        name: "chat",
+        icon: "MessageOutlined",
+        component: "@/pages/ChatPage",
+      },
+    ],
+  },
+
+  {
     path: "/resource",
     name: "resource",
     icon: "Appstore",
@@ -86,15 +104,8 @@ export default [
   },
 
   {
-    path: "/chat",
-    name: "chat",
-    icon: "MessageOutlined",
-    component: "@/pages/ChatPage",
-  },
-
-  {
     path: "/",
-    redirect: "/resource",
+    redirect: "/dashboard/chat",
   },
   {
     path: "*",

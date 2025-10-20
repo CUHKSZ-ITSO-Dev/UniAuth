@@ -1,4 +1,6 @@
 export default {
+  "menu.dashboard": "Dashboard",
+  "menu.dashboard.chat": "AI Chat",
   "menu.resource": "Resource Management",
   "menu.resource.user-list": "User List",
   "menu.resource.user-detail": "User Details",
@@ -9,5 +11,4 @@ export default {
   "menu.config.auto-quota-pool-config": "Auto Quota Pool Configuration",
   "menu.config.model-config": "Model Configuration",
   "menu.config.config-i18n": "Internationalization Configuration",
-  "menu.chat": "AI Chat",
 };
