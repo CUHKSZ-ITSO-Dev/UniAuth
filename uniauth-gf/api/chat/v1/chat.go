@@ -19,11 +19,12 @@ type PendingToolCall struct {
 
 // ChatWithMCPStreamReq 带MCP工具的流式对话请求
 type ChatWithMCPStreamReq struct {
-	g.Meta          `path:"/mcp/stream" tags:"Chat" method:"post" summary:"AI流式对话接口（支持MCP工具）"`
-	Messages        []Message        `json:"messages" v:"required" dc:"对话消息列表"`
-	Model           string           `json:"model" dc:"模型名称，不填使用默认模型"`
-	PendingToolCall *PendingToolCall `json:"pending_tool_call" dc:"待执行的工具调用（用户确认后直接执行）"`
-	SavedContext    string           `json:"saved_context" dc:"保存的上下文（JSON序列化的完整消息历史）"`
+	g.Meta              `path:"/mcp/stream" tags:"Chat" method:"post" summary:"AI流式对话接口（支持MCP工具）"`
+	Messages            []Message        `json:"messages" v:"required" dc:"对话消息列表"`
+	Model               string           `json:"model" dc:"模型名称，不填使用默认模型"`
+	PendingToolCall     *PendingToolCall `json:"pending_tool_call" dc:"待执行的工具调用（用户确认后直接执行）"`
+	SavedContext        string           `json:"saved_context" dc:"保存的上下文（JSON序列化的完整消息历史）"`
+	SessionAllowedTools []string         `json:"session_allowed_tools" dc:"单次提问中已允许的工具列表"`
 }
 
 // ChatWithMCPStreamRes 带MCP工具的流式对话响应

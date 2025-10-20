@@ -614,6 +614,7 @@ export default {
   "pages.chat.tool.calling": "正在调用工具: {tool}",
   "pages.chat.tool.completed": "工具 {tool} 执行完成",
   "pages.chat.tool.result.view": "查看结果详情",
+  "pages.chat.tool.params.view": "查看调用参数",
   "pages.chat.reasoning.view": "查看思考过程",
   "pages.chat.reasoning.thinking": "AI正在思考...",
   "pages.chat.tool.confirm.title": "工具执行确认",

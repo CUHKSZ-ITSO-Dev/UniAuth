@@ -42,6 +42,8 @@ const ChatPage: React.FC = () => {
   } | null>(null);
   // 使用 ref 跟踪已添加的工具调用，避免状态更新时序问题
   const addedToolCallsRef = useRef<Set<string>>(new Set());
+  // 单次提问中已允许的工具列表（每次新提问清空）
+  const [sessionAllowedTools, setSessionAllowedTools] = useState<string[]>([]);
 
   // 自动滚动到底部
   const scrollToBottom = () => {
@@ -70,8 +72,9 @@ const ChatPage: React.FC = () => {
           ...prev,
           { role: "user", content: userMessage, id: `user-${Date.now()}` },
         ]);
-        // 每次新请求清空工具调用追踪（重试时不清空）
+        // 每次新请求清空工具调用追踪和单次会话允许列表（重试时不清空）
         addedToolCallsRef.current.clear();
+        setSessionAllowedTools([]);
       }
       setStreamingContent("");
 
@@ -81,6 +84,11 @@ const ChatPage: React.FC = () => {
           ? messages
           : [...messages, { role: "user", content: userMessage }],
       };
+
+      // 发送单次会话已允许的工具列表
+      if (sessionAllowedTools.length > 0) {
+        requestBody.session_allowed_tools = sessionAllowedTools;
+      }
 
       // 如果有待执行的工具调用，直接发送（不重新让AI决策）
       if (pendingToolCall) {
@@ -308,7 +316,15 @@ const ChatPage: React.FC = () => {
     if (!pendingConfirm) return;
 
     if (allow) {
-      // 用户允许，发送待执行的工具调用信息（不重新让AI决策）
+      // 用户允许，将工具添加到单次会话允许列表
+      setSessionAllowedTools((prev) => {
+        if (!prev.includes(pendingConfirm.toolName)) {
+          return [...prev, pendingConfirm.toolName];
+        }
+        return prev;
+      });
+
+      // 发送待执行的工具调用信息（不重新让AI决策）
       const toolCallInfo = {
         tool_id: pendingConfirm.toolId,
         tool_name: pendingConfirm.toolName,
@@ -369,14 +385,44 @@ const ChatPage: React.FC = () => {
               return (
                 <div key={msg.id} className="message-item tool-call-message">
                   <div className="tool-call-content">
-                    <Space>
-                      <span className="tool-icon">🔧</span>
-                      <span>
-                        {intl.formatMessage(
-                          { id: "pages.chat.tool.calling" },
-                          { tool: msg.toolName },
-                        )}
-                      </span>
+                    <Space direction="vertical" style={{ width: "100%" }}>
+                      <Space>
+                        <span className="tool-icon">🔧</span>
+                        <span>
+                          {intl.formatMessage(
+                            { id: "pages.chat.tool.calling" },
+                            { tool: msg.toolName },
+                          )}
+                        </span>
+                      </Space>
+                      {msg.toolArgs && (
+                        <details style={{ marginLeft: "24px" }}>
+                          <summary
+                            style={{
+                              cursor: "pointer",
+                              color: "#666",
+                              fontSize: "12px",
+                            }}
+                          >
+                            {intl.formatMessage({
+                              id: "pages.chat.tool.params.view",
+                            })}
+                          </summary>
+                          <pre
+                            style={{
+                              background: "#f5f5f5",
+                              padding: "8px",
+                              borderRadius: "4px",
+                              marginTop: "4px",
+                              fontSize: "12px",
+                              maxHeight: "150px",
+                              overflow: "auto",
+                            }}
+                          >
+                            {msg.toolArgs}
+                          </pre>
+                        </details>
+                      )}
                     </Space>
                   </div>
                 </div>

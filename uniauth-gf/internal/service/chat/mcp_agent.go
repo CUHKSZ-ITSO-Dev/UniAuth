@@ -168,29 +168,42 @@ func (a *MCPAgent) ChatStream(ctx context.Context, req *v1.ChatWithMCPStreamReq,
 		for _, toolCall := range choice.Message.ToolCalls {
 			g.Log().Infof(ctx, "工具调用: %s (ID: %s)", toolCall.Function.Name, toolCall.ID)
 
-			// 检查是否需要用户确认（每次都需要确认，不使用允许列表）
+			// 检查是否需要用户确认
 			if a.needsConfirmation(toolCall.Function.Name) {
-				// 需要确认，发送确认请求（包含当前的消息历史供前端保存）
-				g.Log().Infof(ctx, "工具 %s 需要用户确认，等待用户响应", toolCall.Function.Name)
-
-				// 序列化当前的消息历史
-				contextBytes, err := json.Marshal(messages)
-				if err != nil {
-					g.Log().Errorf(ctx, "序列化消息历史失败: %v", err)
-					return gerror.Wrap(err, "序列化消息历史失败")
+				// 检查是否在单次会话允许列表中
+				alreadyAllowed := false
+				for _, allowedTool := range req.SessionAllowedTools {
+					if allowedTool == toolCall.Function.Name {
+						alreadyAllowed = true
+						break
+					}
 				}
 
-				confirmInfo := map[string]interface{}{
-					"type":          "tool_confirm_required",
-					"tool_name":     toolCall.Function.Name,
-					"arguments":     toolCall.Function.Arguments,
-					"tool_id":       toolCall.ID,
-					"saved_context": string(contextBytes), // 发送完整的消息历史
+				if alreadyAllowed {
+					g.Log().Infof(ctx, "工具 %s 已在单次会话中被允许，跳过确认", toolCall.Function.Name)
+				} else {
+					// 需要确认，发送确认请求（包含当前的消息历史供前端保存）
+					g.Log().Infof(ctx, "工具 %s 需要用户确认，等待用户响应", toolCall.Function.Name)
+
+					// 序列化当前的消息历史
+					contextBytes, err := json.Marshal(messages)
+					if err != nil {
+						g.Log().Errorf(ctx, "序列化消息历史失败: %v", err)
+						return gerror.Wrap(err, "序列化消息历史失败")
+					}
+
+					confirmInfo := map[string]interface{}{
+						"type":          "tool_confirm_required",
+						"tool_name":     toolCall.Function.Name,
+						"arguments":     toolCall.Function.Arguments,
+						"tool_id":       toolCall.ID,
+						"saved_context": string(contextBytes), // 发送完整的消息历史
+					}
+					a.sendSSE(response, confirmInfo)
+					response.Writefln("data: [DONE]\n")
+					response.Flush()
+					return nil // 等待用户确认后重新发起请求
 				}
-				a.sendSSE(response, confirmInfo)
-				response.Writefln("data: [DONE]\n")
-				response.Flush()
-				return nil // 等待用户确认后重新发起请求
 			}
 
 			// 发送工具调用信息（已确认或不需要确认的工具）

@@ -746,6 +746,7 @@ export default {
   "pages.chat.tool.calling": "Calling tool: {tool}",
   "pages.chat.tool.completed": "Tool {tool} completed",
   "pages.chat.tool.result.view": "View result details",
+  "pages.chat.tool.params.view": "View parameters",
   "pages.chat.reasoning.view": "View reasoning process",
   "pages.chat.reasoning.thinking": "AI is thinking...",
   "pages.chat.tool.confirm.title": "Tool Execution Confirmation",
