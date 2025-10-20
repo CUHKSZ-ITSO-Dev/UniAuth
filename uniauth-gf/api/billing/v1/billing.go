@@ -72,25 +72,3 @@ type DepartmentUsageStatsRes struct {
 	g.Meta    `resEg:"resource/interface/billing/department_usage_stats_res.json"`
 	StatsData *gjson.Json `json:"statsData" dc:"统计数据，按日期和部门分组"`
 }
-
-type QuotaPoolQuestionCountStatsReq struct {
-	g.Meta    `path:"/stats/quotaPool/questionCount" tags:"Billing" method:"GET" summary:"配额池提问次数统计" dc:"按日期和配额池统计提问次数"`
-	NDays     int    `d:"7" example:"7" dc:"数据跨度天数"`
-	QuotaPool string `d:"" example:"itso-deep-research-vip" dc:"配额池名称，为空则统计所有配额池"`
-}
-
-type QuotaPoolQuestionCountStatsRes struct {
-	g.Meta             `resEg:"resource/interface/billing/quota_pool_question_count_stats_res.json"`
-	QuestionCountStats *gjson.Json `json:"questionCountStats" dc:"统计数据，按日期和配额池分组"`
-}
-
-type QuotaPoolUsageStatsReq struct {
-	g.Meta    `path:"/stats/quotaPool/usage" tags:"Billing" method:"GET" summary:"配额池消费统计" dc:"按日期和配额池统计消费情况"`
-	NDays     int    `d:"7" example:"7" dc:"数据跨度天数"`
-	QuotaPool string `d:"" example:"itso-deep-research-vip" dc:"配额池名称，为空则统计所有配额池"`
-}
-
-type QuotaPoolUsageStatsRes struct {
-	g.Meta    `resEg:"resource/interface/billing/quota_pool_usage_stats_res.json"`
-	StatsData *gjson.Json `json:"statsData" dc:"统计数据，按日期和配额池分组"`
-}

@@ -20,5 +20,4 @@ type IQuotaPoolV1 interface {
 	DeleteQuotaPool(ctx context.Context, req *v1.DeleteQuotaPoolReq) (res *v1.DeleteQuotaPoolRes, err error)
 	EnsurePersonalQuotaPool(ctx context.Context, req *v1.EnsurePersonalQuotaPoolReq) (res *v1.EnsurePersonalQuotaPoolRes, err error)
 	RefreshUsersOfQuotaPool(ctx context.Context, req *v1.RefreshUsersOfQuotaPoolReq) (res *v1.RefreshUsersOfQuotaPoolRes, err error)
-	QuotaPoolUserCountStats(ctx context.Context, req *v1.QuotaPoolUserCountStatsReq) (res *v1.QuotaPoolUserCountStatsRes, err error)
 }

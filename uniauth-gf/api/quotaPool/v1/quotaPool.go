@@ -117,13 +117,3 @@ type RefreshUsersOfQuotaPoolReq struct {
 type RefreshUsersOfQuotaPoolRes struct {
 	OK bool `json:"ok" v:"required" dc:"是否成功"`
 }
-
-// ==================== Quota Pool User Count Stats ====================
-type QuotaPoolUserCountStatsReq struct {
-	g.Meta `path:"/stats/userCount" tags:"QuotaPool" method:"GET" summary:"配额池用户数统计" dc:"按配额池统计用户总数"`
-}
-
-type QuotaPoolUserCountStatsRes struct {
-	g.Meta         `resEg:"resource/interface/quotaPool/quota_pool_user_count_stats_res.json"`
-	QuotaPoolStats *gjson.Json `json:"quotaPoolStats" dc:"统计数据，按配额池分组显示用户数量"`
-}
