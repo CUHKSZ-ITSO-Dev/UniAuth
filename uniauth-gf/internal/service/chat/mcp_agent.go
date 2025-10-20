@@ -3,7 +3,6 @@ package chat
 import (
 	"context"
 	"encoding/json"
-	"slices"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -113,34 +112,25 @@ func (a *MCPAgent) ChatStream(ctx context.Context, req *v1.ChatWithMCPStreamReq,
 
 		// 执行所有工具调用
 		for _, toolCall := range choice.Message.ToolCalls {
-			g.Log().Infof(ctx, "[工具调用] 工具名称: %s, ID: %s", toolCall.Function.Name, toolCall.ID)
+			g.Log().Infof(ctx, "工具调用: %s (ID: %s)", toolCall.Function.Name, toolCall.ID)
 
-			// 检查是否需要用户确认
+			// 检查是否需要用户确认（每次都需要确认，不使用允许列表）
 			if a.needsConfirmation(toolCall.Function.Name) {
-				// 检查是否已被用户允许
-				allowed := req.AllowedTools != nil && slices.Contains(req.AllowedTools, toolCall.Function.Name)
-				g.Log().Infof(ctx, "[工具确认检查] 工具: %s, 是否已允许: %v, 允许列表: %v",
-					toolCall.Function.Name, allowed, req.AllowedTools)
-
-				if !allowed {
-					// 需要确认但未被允许，只发送确认请求（不发送tool_call，避免重复显示）
-					g.Log().Infof(ctx, "[发送SSE] tool_confirm_required - %s", toolCall.Function.Name)
-					confirmInfo := map[string]interface{}{
-						"type":      "tool_confirm_required",
-						"tool_name": toolCall.Function.Name,
-						"arguments": toolCall.Function.Arguments,
-						"tool_id":   toolCall.ID,
-					}
-					a.sendSSE(response, confirmInfo)
-					response.Writefln("data: [DONE]\n")
-					response.Flush()
-					g.Log().Infof(ctx, "工具 %s 需要用户确认，等待用户响应", toolCall.Function.Name)
-					return nil // 等待用户确认后重新发起请求
+				// 需要确认，发送确认请求（不发送tool_call，避免重复显示）
+				g.Log().Infof(ctx, "工具 %s 需要用户确认，等待用户响应", toolCall.Function.Name)
+				confirmInfo := map[string]interface{}{
+					"type":      "tool_confirm_required",
+					"tool_name": toolCall.Function.Name,
+					"arguments": toolCall.Function.Arguments,
+					"tool_id":   toolCall.ID,
 				}
+				a.sendSSE(response, confirmInfo)
+				response.Writefln("data: [DONE]\n")
+				response.Flush()
+				return nil // 等待用户确认后重新发起请求
 			}
 
 			// 发送工具调用信息（已确认或不需要确认的工具）
-			g.Log().Infof(ctx, "[发送SSE] tool_call - %s", toolCall.Function.Name)
 			toolInfo := map[string]interface{}{
 				"type":      "tool_call",
 				"tool_name": toolCall.Function.Name,

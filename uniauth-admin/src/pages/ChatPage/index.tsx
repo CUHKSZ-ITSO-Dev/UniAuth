@@ -39,7 +39,6 @@ const ChatPage: React.FC = () => {
     toolId: string; // 保存原始的 tool_id
     userMessage: string;
   } | null>(null);
-  const [allowedTools, setAllowedTools] = useState<string[]>([]);
   // 使用 ref 跟踪已添加的工具调用，避免状态更新时序问题
   const addedToolCallsRef = useRef<Set<string>>(new Set());
 
@@ -52,23 +51,10 @@ const ChatPage: React.FC = () => {
     scrollToBottom();
   }, [messages, streamingContent, streamingReasoning]);
 
-  // 监控消息数组变化，检测重复
-  useEffect(() => {
-    console.log("====== 消息数组更新 ======");
-    console.log("消息总数:", messages.length);
-    const toolCallMessages = messages.filter((m) => m.role === "tool_call");
-    console.log("工具调用消息数量:", toolCallMessages.length);
-    toolCallMessages.forEach((msg, index) => {
-      console.log(`  [${index}] 工具: ${msg.toolName}, ID: ${msg.id}`);
-    });
-    console.log("========================");
-  }, [messages]);
-
   // 流式对话请求（MCP工具支持）
   const sendStreamMessage = async (
     userMessage: string,
     isRetry = false,
-    customAllowedTools?: string[],
     pendingToolCall?: { tool_id: string; tool_name: string; arguments: string },
   ) => {
     try {
@@ -78,8 +64,7 @@ const ChatPage: React.FC = () => {
           ...prev,
           { role: "user", content: userMessage, id: `user-${Date.now()}` },
         ]);
-        // 每次新请求清空允许列表和工具调用追踪（重试时不清空）
-        setAllowedTools([]);
+        // 每次新请求清空工具调用追踪（重试时不清空）
         addedToolCallsRef.current.clear();
       }
       setStreamingContent("");
@@ -93,14 +78,7 @@ const ChatPage: React.FC = () => {
 
       // 如果有待执行的工具调用，直接发送（不重新让AI决策）
       if (pendingToolCall) {
-        console.log("[发送请求] 包含待执行的工具调用:", pendingToolCall);
         requestBody.pending_tool_call = pendingToolCall;
-      } else {
-        // 使用传入的allowedTools或当前状态的allowedTools
-        const toolsToSend = customAllowedTools || allowedTools;
-        if (toolsToSend.length > 0) {
-          requestBody.allowed_tools = toolsToSend;
-        }
       }
 
       const response = await fetch("/api/chat/mcp/stream", {
@@ -182,18 +160,6 @@ const ChatPage: React.FC = () => {
                   // 使用 ref 检查是否已添加，避免状态更新时序问题
                   if (!addedToolCallsRef.current.has(toolKey)) {
                     addedToolCallsRef.current.add(toolKey);
-                    console.log(
-                      "[tool_call] 添加工具:",
-                      parsed.tool_name,
-                      "tool_id:",
-                      parsed.tool_id,
-                    );
-                    console.log("[tool_call] 参数:", parsed.arguments);
-                    console.log(
-                      "[tool_call] 当前已添加的工具ID数量:",
-                      addedToolCallsRef.current.size,
-                    );
-
                     setMessages((prev) => [
                       ...prev,
                       {
@@ -204,14 +170,6 @@ const ChatPage: React.FC = () => {
                         id: `tool-call-${parsed.tool_id}`,
                       },
                     ]);
-                  } else {
-                    console.log(
-                      "[tool_call] 工具ID已存在，跳过:",
-                      parsed.tool_name,
-                      "tool_id:",
-                      parsed.tool_id,
-                    );
-                    console.log("[tool_call] 本次参数:", parsed.arguments);
                   }
                 } else if (parsed.type === "tool_confirm_required") {
                   // 需要用户确认工具执行
@@ -228,21 +186,6 @@ const ChatPage: React.FC = () => {
                   // 使用 ref 检查是否已添加
                   if (!addedToolCallsRef.current.has(toolKey)) {
                     addedToolCallsRef.current.add(toolKey);
-                    console.log(
-                      "[tool_confirm_required] 添加工具:",
-                      parsed.tool_name,
-                      "tool_id:",
-                      parsed.tool_id,
-                    );
-                    console.log(
-                      "[tool_confirm_required] 参数:",
-                      parsed.arguments,
-                    );
-                    console.log(
-                      "[tool_confirm_required] 当前已添加的工具ID数量:",
-                      addedToolCallsRef.current.size,
-                    );
-
                     setMessages((prev) => [
                       ...prev,
                       {
@@ -253,13 +196,6 @@ const ChatPage: React.FC = () => {
                         id: `tool-call-${parsed.tool_id}`,
                       },
                     ]);
-                  } else {
-                    console.log(
-                      "[tool_confirm_required] 工具ID已存在，跳过:",
-                      parsed.tool_name,
-                      "tool_id:",
-                      parsed.tool_id,
-                    );
                   }
 
                   setLoading(false); // 停止loading状态
@@ -351,7 +287,6 @@ const ChatPage: React.FC = () => {
   const handleClear = () => {
     setMessages([]);
     setStreamingContent("");
-    setAllowedTools([]);
     setPendingConfirm(null);
     addedToolCallsRef.current.clear(); // 清空工具调用追踪
     message.success(intl.formatMessage({ id: "pages.chat.cleared" }));
@@ -363,10 +298,6 @@ const ChatPage: React.FC = () => {
 
     if (allow) {
       // 用户允许，发送待执行的工具调用信息（不重新让AI决策）
-      console.log("[用户确认] 准备执行工具:", pendingConfirm.toolName);
-      console.log("[用户确认] 工具ID:", pendingConfirm.toolId);
-      console.log("[用户确认] 参数:", pendingConfirm.arguments);
-
       const toolCallInfo = {
         tool_id: pendingConfirm.toolId,
         tool_name: pendingConfirm.toolName,
@@ -377,12 +308,7 @@ const ChatPage: React.FC = () => {
       setLoading(true);
 
       // 重新发起请求，带上待执行的工具调用信息
-      await sendStreamMessage(
-        pendingConfirm.userMessage,
-        true,
-        undefined,
-        toolCallInfo,
-      );
+      await sendStreamMessage(pendingConfirm.userMessage, true, toolCallInfo);
     } else {
       // 用户拒绝，显示拒绝消息
       setMessages((prev) => [
