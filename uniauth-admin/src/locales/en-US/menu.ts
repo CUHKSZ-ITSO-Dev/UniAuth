@@ -9,4 +9,5 @@ export default {
   "menu.config.auto-quota-pool-config": "Auto Quota Pool Configuration",
   "menu.config.model-config": "Model Configuration",
   "menu.config.config-i18n": "Internationalization Configuration",
+  "menu.chat": "AI Chat",
 };

@@ -17,6 +17,7 @@ import (
 	"uniauth-gf/internal/controller/config"
 	"uniauth-gf/internal/controller/quotaPool"
 	"uniauth-gf/internal/controller/userinfos"
+	"uniauth-gf/internal/controller/chat"
 	mcpSvc "uniauth-gf/internal/service/mcp"
 	quotaPoolSvc "uniauth-gf/internal/service/quotaPool"
 
@@ -85,6 +86,11 @@ var (
 			s.Group("/quotaPool", func(group *ghttp.RouterGroup) {
 				group.Bind(
 					quotaPool.NewV1(),
+				)
+			})
+			s.Group("/chat", func(group *ghttp.RouterGroup) {
+				group.Bind(
+					chat.NewV1(),
 				)
 			})
 			s.SetOpenApiPath(g.Cfg().MustGetWithEnv(ctx, "server.openapiPath").String())

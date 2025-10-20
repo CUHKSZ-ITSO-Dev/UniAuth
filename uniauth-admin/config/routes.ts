@@ -86,6 +86,13 @@ export default [
   },
 
   {
+    path: "/chat",
+    name: "chat",
+    icon: "MessageOutlined",
+    component: "@/pages/ChatPage",
+  },
+
+  {
     path: "/",
     redirect: "/resource",
   },
