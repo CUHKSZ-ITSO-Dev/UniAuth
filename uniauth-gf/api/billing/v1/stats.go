@@ -64,7 +64,7 @@ type GetActiveUsersNumReq struct {
 }
 
 type ActiveUserList struct {
-	ActiveUsersNum int     `json:"activeUsers" dc:"当天活跃用户数"`
+	ActiveUsersNum int     `json:"activeUsersNum" dc:"当天活跃用户数"`
 	ActiveRateInc  float64 `json:"activeRateInc" dc:"活跃率增加"`
 	Date           string  `json:"date" dc:"人数对应的日期" example:"2025-10-01"`
 }

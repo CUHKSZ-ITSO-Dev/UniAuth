@@ -46,11 +46,12 @@ func (c *ControllerV1) GetTodayTotalConsumption(ctx context.Context, req *v1.Get
 
 // getTotalCostByDate 查询指定日期的总消费
 func (c *ControllerV1) getTotalCostByDate(ctx context.Context, date time.Time, service string) (decimal.Decimal, error) {
-	dateStr := date.Format("2006-01-02")
 
+	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.Local)
+	endOfDay := startOfDay.AddDate(0, 0, 1)
 	// 构建查询
 	model := dao.BillingCostRecords.Ctx(ctx).
-		Where("DATE(created_at) = ?", dateStr)
+		Where("created_at >= ?", startOfDay).Where("created_at < ?", endOfDay)
 
 	// 如果指定了服务类型，添加过滤条件
 	if service != "" {

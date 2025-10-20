@@ -2,10 +2,10 @@ package billing
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 	v1 "uniauth-gf/api/billing/v1"
+	"uniauth-gf/internal/dao"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -18,12 +18,14 @@ func (c *ControllerV1) GetActiveUsersNum(ctx context.Context, req *v1.GetActiveU
 		req.Days = 30
 	}
 
-	// 对输入参数进行校验
-	if req.Days > 365 || req.Days < 1 {
-		return nil, fmt.Errorf("days must be between 1 and 365, got: %d", req.Days)
-	}
+	/*//AI建议如果需要：记录审计日志
+	g.Log().Info(ctx, "GetActiveUsersNum called", g.Map{
+		"days":      req.Days,
+		"client_ip": g.RequestFromCtx(ctx).GetClientIp(),
+		"timestamp": time.Now(),
+	})*/
 
-	// 并发查询
+	//尝试进行并发查询
 	var (
 		activeUsersMap   map[string]int
 		totalActiveUsers int
@@ -65,14 +67,14 @@ func (c *ControllerV1) GetActiveUsersNum(ctx context.Context, req *v1.GetActiveU
 		prevDateStr := date.AddDate(0, 0, -1).Format("2006-01-02")
 
 		// 从 map 中获取数据
-		activeUsers := activeUsersMap[dateStr]
-		prevActiveUsers := activeUsersMap[prevDateStr]
+		activeUsersNum := activeUsersMap[dateStr]
+		prevActiveUsersNum := activeUsersMap[prevDateStr]
 
 		// 计算活跃率增长
-		activeRateInc := c.calculateActiveRateIncrease(activeUsers, prevActiveUsers)
+		activeRateInc := c.calculateActiveRateIncrease(activeUsersNum, prevActiveUsersNum)
 
 		activeUsersList = append(activeUsersList, v1.ActiveUserList{
-			ActiveUsersNum: activeUsers,
+			ActiveUsersNum: activeUsersNum,
 			ActiveRateInc:  activeRateInc,
 			Date:           dateStr,
 		})
@@ -88,66 +90,89 @@ func (c *ControllerV1) GetActiveUsersNum(ctx context.Context, req *v1.GetActiveU
 	return res, nil
 }
 
-// 查询返回每天的活跃用户数和总活跃用户数（分两次查询）
+// 查询返回每天的活跃用户数和总活跃用户数（并发查询优化）
 func (c *ControllerV1) getActiveUsersData(ctx context.Context, day int) (map[string]int, int, error) {
 	// 计算日期范围
 	startDate := time.Now().AddDate(0, 0, -(day + 1))
 	totalStartDate := time.Now().AddDate(0, 0, -day)
 
-	// 查询每天的活跃用户数
-	dailySql := `
-        SELECT 
-            DATE(created_at) as date,
-            COUNT(DISTINCT upn) as daily_total
-        FROM billing_cost_records
-        WHERE created_at >= $1
-        GROUP BY DATE(created_at)
-        ORDER BY date DESC
-    `
+	var (
+		activeUsersMap   map[string]int
+		totalActiveUsers int
+		err1, err2       error
+		wg               sync.WaitGroup
+	)
 
-	dailyResult, err := g.DB().GetAll(ctx, dailySql, startDate)
-	if err != nil {
-		return nil, 0, gerror.Wrap(err, "查询每日活跃用户失败")
+	wg.Add(2)
+
+	// 并发查询:每天的活跃用户数
+	go func() {
+		defer wg.Done()
+
+		dailySql := `
+			SELECT 
+				DATE(created_at) as date,
+				COUNT(DISTINCT upn) as daily_total
+			FROM billing_cost_records
+			WHERE created_at >= $1
+			GROUP BY DATE(created_at)
+			ORDER BY date DESC
+		`
+
+		dailyResult, err := g.DB().GetAll(ctx, dailySql, startDate)
+		if err != nil {
+			err1 = gerror.Wrap(err, "查询每日活跃用户失败")
+			return
+		}
+
+		activeUsersMap = make(map[string]int, len(dailyResult))
+		for _, record := range dailyResult {
+			date := record["date"].String()
+			dailyTotal := record["daily_total"].Int()
+			activeUsersMap[date] = dailyTotal
+		}
+	}()
+
+	// 并发查询:总活跃用户数
+	go func() {
+		defer wg.Done()
+
+		totalSql := `
+			SELECT COUNT(DISTINCT upn) as total_active
+			FROM billing_cost_records
+			WHERE created_at >= $1
+		`
+
+		totalResult, err := g.DB().GetOne(ctx, totalSql, totalStartDate)
+		if err != nil {
+			err2 = gerror.Wrap(err, "查询总活跃用户失败")
+			return
+		}
+
+		totalActiveUsers = totalResult["total_active"].Int()
+	}()
+
+	// 等待所有goroutine完成
+	wg.Wait()
+
+	// 检查错误
+	if err1 != nil {
+		return nil, 0, err1
 	}
-
-	// 将结果转换为 map
-	activeUsersMap := make(map[string]int, len(dailyResult))
-	for _, record := range dailyResult {
-		date := record["date"].String()
-		dailyTotal := record["daily_total"].Int()
-		activeUsersMap[date] = dailyTotal
+	if err2 != nil {
+		return nil, 0, err2
 	}
-
-	// 查询总活跃用户数
-	totalSql := `
-        SELECT COUNT(DISTINCT upn) as total_active
-        FROM billing_cost_records
-        WHERE created_at >= $1
-    `
-
-	totalResult, err := g.DB().GetOne(ctx, totalSql, totalStartDate)
-	if err != nil {
-		return nil, 0, gerror.Wrap(err, "查询总活跃用户失败")
-	}
-
-	totalActiveUsers := totalResult["total_active"].Int()
 
 	return activeUsersMap, totalActiveUsers, nil
 }
 
 // getTotalUsersCount 查询系统总用户数
 func (c *ControllerV1) getTotalUsersCount(ctx context.Context) (int, error) {
-	countSql := `
-        SELECT COUNT(*) as total
-        FROM userinfos_user_infos
-    `
-
-	result, err := g.DB().GetOne(ctx, countSql)
+	count, err := dao.UserinfosUserInfos.Ctx(ctx).Count()
 	if err != nil {
 		return 0, err
 	}
-
-	return result["total"].Int(), nil
+	return count, nil
 }
 
 // calculateActiveRateIncrease 计算活跃率增长
