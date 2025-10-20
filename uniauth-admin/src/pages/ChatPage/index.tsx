@@ -110,47 +110,85 @@ const ChatPage: React.FC = () => {
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let accumulatedContent = "";
+      let buffer = ""; // 添加缓冲区处理不完整的数据
 
       if (reader) {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            console.log("流式传输完成");
+            break;
+          }
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n\n");
+          // 解码新数据并添加到缓冲区
+          buffer += decoder.decode(value, { stream: true });
+          console.log("接收到数据块:", buffer);
+
+          // 处理缓冲区中的完整消息
+          const lines = buffer.split("\n");
+          // 保留最后一个不完整的行
+          buffer = lines.pop() || "";
 
           for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const data = line.slice(6);
+            const trimmedLine = line.trim();
+            if (trimmedLine === "") continue;
+
+            // 忽略SSE注释行（以冒号开头）
+            if (trimmedLine.startsWith(":")) {
+              console.log("收到连接确认:", trimmedLine);
+              continue;
+            }
+
+            if (trimmedLine.startsWith("data: ")) {
+              const data = trimmedLine.slice(6).trim();
+              console.log("解析数据:", data);
 
               if (data === "[DONE]") {
                 // 流式结束，将累积的内容添加到消息列表
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    role: "assistant",
-                    content: accumulatedContent,
-                    id: `assistant-${Date.now()}`,
-                  },
-                ]);
+                console.log("收到结束标志，累积内容:", accumulatedContent);
+                if (accumulatedContent) {
+                  setMessages((prev) => [
+                    ...prev,
+                    {
+                      role: "assistant",
+                      content: accumulatedContent,
+                      id: `assistant-${Date.now()}`,
+                    },
+                  ]);
+                }
                 setStreamingContent("");
                 continue;
               }
 
               try {
                 const parsed = JSON.parse(data);
+                console.log("解析结果:", parsed);
                 if (parsed.content) {
                   accumulatedContent += parsed.content;
                   setStreamingContent(accumulatedContent);
                 } else if (parsed.error) {
+                  console.error("服务器返回错误:", parsed.error);
                   message.error(parsed.error);
                   break;
                 }
               } catch (e) {
-                console.error("解析SSE数据失败:", e);
+                console.error("解析SSE数据失败:", e, "原始数据:", data);
               }
             }
           }
+        }
+
+        // 如果流结束时还有内容但没收到[DONE]，也要添加到消息
+        if (accumulatedContent && streamingContent) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: accumulatedContent,
+              id: `assistant-${Date.now()}`,
+            },
+          ]);
+          setStreamingContent("");
         }
       }
     } catch (error) {

@@ -36,15 +36,29 @@ func (c *ControllerV1) ChatStream(ctx context.Context, req *v1.ChatStreamReq) (r
 		return nil, err
 	}
 
-	// 获取Response对象
-	response := g.RequestFromCtx(ctx).Response
+	// 获取Request和Response对象
+	request := g.RequestFromCtx(ctx)
+	response := request.Response
+
+	// 设置响应头
+	response.Header().Set("Content-Type", "text/event-stream")
+	response.Header().Set("Cache-Control", "no-cache")
+	response.Header().Set("Connection", "keep-alive")
+	response.Header().Set("X-Accel-Buffering", "no")
+
+	// 立即发送一个空的SSE注释行以建立连接
+	response.Writeln(": connected")
+	response.Flush()
 
 	// 调用服务层处理流式对话
 	err = chatService.ChatStream(ctx, req, response)
 	if err != nil {
 		g.Log().Errorf(ctx, "ChatStream error: %v", err)
-		return nil, gerror.Wrap(err, "流式对话请求失败")
+		// 流式响应出错时，发送错误事件
+		response.Writefln("data: {\"error\":\"%s\"}\n", err.Error())
+		response.Flush()
 	}
 
+	// 不返回错误，因为响应已经发送了
 	return &v1.ChatStreamRes{}, nil
 }

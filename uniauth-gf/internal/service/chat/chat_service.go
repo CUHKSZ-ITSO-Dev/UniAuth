@@ -3,7 +3,6 @@ package chat
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -132,11 +131,7 @@ func (s *ChatService) ChatStream(ctx context.Context, req *v1.ChatStreamReq, res
 		model = s.model
 	}
 
-	// 设置SSE响应头
-	response.Header().Set("Content-Type", "text/event-stream")
-	response.Header().Set("Cache-Control", "no-cache")
-	response.Header().Set("Connection", "keep-alive")
-	response.Header().Set("X-Accel-Buffering", "no")
+	g.Log().Infof(ctx, "开始流式对话，模型: %s", model)
 
 	// 调用OpenAI流式API
 	params := openai.ChatCompletionNewParams{
@@ -146,6 +141,7 @@ func (s *ChatService) ChatStream(ctx context.Context, req *v1.ChatStreamReq, res
 
 	stream := s.client.Chat.Completions.NewStreaming(ctx, params)
 
+	chunkCount := 0
 	// 处理流式响应
 	for stream.Next() {
 		chunk := stream.Current()
@@ -153,6 +149,7 @@ func (s *ChatService) ChatStream(ctx context.Context, req *v1.ChatStreamReq, res
 		// 如果有内容，发送SSE事件
 		if len(chunk.Choices) > 0 && chunk.Choices[0].Delta.Content != "" {
 			content := chunk.Choices[0].Delta.Content
+			chunkCount++
 
 			// 将数据转换为JSON
 			jsonData := map[string]interface{}{
@@ -161,28 +158,29 @@ func (s *ChatService) ChatStream(ctx context.Context, req *v1.ChatStreamReq, res
 			}
 			jsonBytes, _ := json.Marshal(jsonData)
 
-			// SSE格式：data: {json}\n\n
-			sseData := fmt.Sprintf("data: %s\n\n", string(jsonBytes))
-
-			response.Write([]byte(sseData))
+			// 使用 Writefln 写入SSE数据（GoFrame推荐方式）
+			response.Writefln("data: %s\n", string(jsonBytes))
 			response.Flush()
 		}
 	}
 
+	g.Log().Infof(ctx, "流式响应完成，共发送 %d 个数据块", chunkCount)
+
 	if err := stream.Err(); err != nil {
+		g.Log().Errorf(ctx, "OpenAI流式API错误: %v", err)
 		// 发送错误事件
 		jsonData := map[string]interface{}{
 			"error": err.Error(),
 		}
 		jsonBytes, _ := json.Marshal(jsonData)
-		sseError := fmt.Sprintf("data: %s\n\n", string(jsonBytes))
-		response.Write([]byte(sseError))
+		response.Writefln("data: %s\n", string(jsonBytes))
 		response.Flush()
 		return gerror.Wrapf(err, "流式调用OpenAI API失败")
 	}
 
 	// 发送结束事件
-	response.Write([]byte("data: [DONE]\n\n"))
+	g.Log().Info(ctx, "发送流式结束标志")
+	response.Writefln("data: [DONE]\n")
 	response.Flush()
 
 	return nil
