@@ -23,6 +23,7 @@ type ChatWithMCPStreamReq struct {
 	Messages        []Message        `json:"messages" v:"required" dc:"对话消息列表"`
 	Model           string           `json:"model" dc:"模型名称，不填使用默认模型"`
 	PendingToolCall *PendingToolCall `json:"pending_tool_call" dc:"待执行的工具调用（用户确认后直接执行）"`
+	SavedContext    string           `json:"saved_context" dc:"保存的上下文（JSON序列化的完整消息历史）"`
 }
 
 // ChatWithMCPStreamRes 带MCP工具的流式对话响应

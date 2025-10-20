@@ -37,6 +37,7 @@ const ChatPage: React.FC = () => {
     toolName: string;
     arguments: string;
     toolId: string; // 保存原始的 tool_id
+    savedContext: string; // 保存的完整消息历史
     userMessage: string;
   } | null>(null);
   // 使用 ref 跟踪已添加的工具调用，避免状态更新时序问题
@@ -55,7 +56,12 @@ const ChatPage: React.FC = () => {
   const sendStreamMessage = async (
     userMessage: string,
     isRetry = false,
-    pendingToolCall?: { tool_id: string; tool_name: string; arguments: string },
+    pendingToolCall?: {
+      tool_id: string;
+      tool_name: string;
+      arguments: string;
+      saved_context?: string;
+    },
   ) => {
     try {
       // 先添加用户消息（非重试时）
@@ -79,6 +85,10 @@ const ChatPage: React.FC = () => {
       // 如果有待执行的工具调用，直接发送（不重新让AI决策）
       if (pendingToolCall) {
         requestBody.pending_tool_call = pendingToolCall;
+        // 如果有保存的上下文，也一起发送（恢复完整的消息历史）
+        if (pendingToolCall.saved_context) {
+          requestBody.saved_context = pendingToolCall.saved_context;
+        }
       }
 
       const response = await fetch("/api/chat/mcp/stream", {
@@ -203,6 +213,7 @@ const ChatPage: React.FC = () => {
                     toolName: parsed.tool_name,
                     arguments: parsed.arguments,
                     toolId: parsed.tool_id, // 保存第一次的 tool_id
+                    savedContext: parsed.saved_context || "", // 保存完整的消息历史
                     userMessage: userMessage,
                   });
                   // 流应该结束了（后端发送了[DONE]），等待用户确认
@@ -302,12 +313,13 @@ const ChatPage: React.FC = () => {
         tool_id: pendingConfirm.toolId,
         tool_name: pendingConfirm.toolName,
         arguments: pendingConfirm.arguments,
+        saved_context: pendingConfirm.savedContext, // 包含保存的上下文
       };
 
       setPendingConfirm(null);
       setLoading(true);
 
-      // 重新发起请求，带上待执行的工具调用信息
+      // 重新发起请求，带上待执行的工具调用信息和保存的上下文
       await sendStreamMessage(pendingConfirm.userMessage, true, toolCallInfo);
     } else {
       // 用户拒绝，显示拒绝消息
