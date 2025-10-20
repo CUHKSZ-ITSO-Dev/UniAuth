@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -55,11 +56,11 @@ func RegisterGetUserInfo(s *server.MCPServer) error {
 		if res == nil {
 			return UserinfosUserInfos{}, gerror.New("找不到用户")
 		}
-
 		var userInfo UserinfosUserInfos
 		if gconv.Struct(res, &userInfo) != nil {
 			return UserinfosUserInfos{}, gerror.New("转换用户信息失败")
 		}
+		g.Dump(userInfo)
 		return userInfo, nil
 	}
 
