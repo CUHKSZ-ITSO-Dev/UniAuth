@@ -490,21 +490,24 @@ const BillingGraphPage: React.FC = () => {
                   }}
                   tooltip={{
                     showMarkers: true,
-                    formatter: (datum: any) => {
-                      return {
+                    items: [
+                      {
+                        channel: "x",
+                        name: "日期",
+                        valueFormatter: (v: any) => v,
+                      },
+                      {
+                        channel: "y",
                         name: "活跃用户数",
-                        value: `${datum.activeUsersNum} 人`,
-                      };
-                    },
-                    customContent: (_title: any, items: any[]) => {
-                      if (!items || items.length === 0) return null;
-                      const data = items[0].data;
-                      return `<div style="padding: 8px;">
-                        <div style="font-weight: bold; margin-bottom: 8px;">${data.date}</div>
-                        <div style="color: #1890ff;">活跃用户数: ${data.activeUsersNum} 人</div>
-                        <div style="color: #52c41a;">活跃率增长: ${data.activeRateInc}%</div>
-                      </div>`;
-                    },
+                        valueFormatter: (v: any) => `${v} 人`,
+                      },
+                      {
+                        channel: "y",
+                        name: "活跃率增长",
+                        field: "activeRateInc",
+                        valueFormatter: (v: any) => `${v}%`,
+                      },
+                    ],
                   }}
                   state={{
                     active: {
