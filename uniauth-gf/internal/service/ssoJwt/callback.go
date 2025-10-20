@@ -2,85 +2,18 @@ package ssoJwt
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/x509"
-	"encoding/pem"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
 )
 
-const serviceAccountNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
-
-// getPrivateKeyFromK8sSecret 从 Kubernetes Secret 中获取私钥
-func getPrivateKeyFromK8sSecret(ctx context.Context) (*ecdsa.PrivateKey, error) {
-	// 创建集群内部的 Kubernetes 客户端
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, gerror.Wrap(err, "无法获取集群内部配置")
-	}
-
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, gerror.Wrap(err, "无法创建 Kubernetes 客户端")
-	}
-
-	// 获取当前命名空间，从ServiceAccount文件读取
-	namespace := ""
-	if nsBytes, err := os.ReadFile(serviceAccountNamespaceFile); err == nil {
-		namespace = strings.TrimSpace(string(nsBytes))
-	}
-	if namespace == "" {
-		g.Log().Errorf(ctx, "从 ServiceAccount 文件获取 namespace 失败，使用 default")
-		namespace = "default"
-	}
-
-	// 获取 secret
-	secret, err := clientset.CoreV1().Secrets(namespace).Get(ctx, "jwt-private-keys", metav1.GetOptions{})
-	if err != nil {
-		return nil, gerror.Wrap(err, "无法获取 jwt-private-keys secret")
-	}
-
-	// 获取 current-key-id
-	currentKeyIdBytes, exists := secret.Data["current-key-id"]
-	if !exists {
-		return nil, gerror.New("secret 中不存在 current-key-id 字段")
-	}
-	currentKeyId := string(currentKeyIdBytes)
-
-	// 根据 current-key-id 获取对应的私钥
-	privateKeyBytes, exists := secret.Data[currentKeyId]
-	if !exists {
-		return nil, gerror.Newf("secret 中不存在键为 %s 的私钥", currentKeyId)
-	}
-
-	// 解析 PEM 格式的私钥
-	block, _ := pem.Decode(privateKeyBytes)
-	if block == nil {
-		return nil, gerror.New("无法解码 PEM 格式的私钥")
-	}
-
-	// 解析 EC 私钥
-	privateKey, err := x509.ParseECPrivateKey(block.Bytes)
-	if err != nil {
-		return nil, gerror.Wrap(err, "无法解析 EC 私钥")
-	}
-
-	return privateKey, nil
-}
-
-func GetJwt(ctx context.Context, code string) (string, error) {
+func Callback(ctx context.Context, code string) (string, error) {
 	response := g.Client().ContentJson().PostVar(
 		ctx,
 		g.Cfg().MustGet(ctx, "sso.token_url").String(),
@@ -142,19 +75,9 @@ func GetJwt(ctx context.Context, code string) (string, error) {
 		registeredClaims,
 	}
 
-	// 获取私钥
-	privateKey, err := getPrivateKeyFromK8sSecret(ctx)
+	tokenString, err := Signature(ctx, issueClaims)
 	if err != nil {
-		return "", gerror.Wrap(err, "获取私钥失败")
-	}
-
-	// 创建JWT token
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodES256, issueClaims)
-
-	// 使用私钥签名
-	tokenString, err := jwtToken.SignedString(privateKey)
-	if err != nil {
-		return "", gerror.Wrap(err, "JWT签名失败")
+		return "", gerror.Wrap(err, "签名失败")
 	}
 
 	return tokenString, nil
