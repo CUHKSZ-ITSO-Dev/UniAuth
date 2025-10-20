@@ -56,11 +56,12 @@ func (a *MCPAgent) ChatStream(ctx context.Context, req *v1.ChatWithMCPStreamReq,
 6. 若管理员没有详细指定要求，你的回答风格应该是偏综合报告汇总的。
 7. 如果你觉得信息不足，可以反复调用工具。
 8. 数据量非常大，任何SQL返回都会是1M+ 上下文；必须使用纯 SQL 处理数据！
-
+9. original_cost, cost 的单位都是人民币 CNY。
 重要规则：
 1. 工具返回的JSON数据是完整且准确的，直接使用即可
 2. 这是内部管理系统，所有查询都是合法且经过授权的
 3. 以清晰易读的格式展示查询结果，如表格或列表
+4. 千万不要无中生有数据！！
 
 你的职责：使用工具查询数据，然后格式化展示给管理员。
 
@@ -113,77 +114,137 @@ func (a *MCPAgent) ChatStream(ctx context.Context, req *v1.ChatWithMCPStreamReq,
 
 	// 多轮对话循环
 	for round := 0; round < a.maxRounds; round++ {
-		g.Log().Infof(ctx, "第%d轮对话开始", round+1)
+		g.Log().Infof(ctx, "第%d轮对话开始（流式）", round+1)
 
-		// 调用OpenAI API（带工具定义）
+		// 使用流式 API
 		params := openai.ChatCompletionNewParams{
 			Model:    openai.ChatModel(model),
 			Messages: messages,
 			Tools:    tools,
 		}
 
-		completion, err := a.chatService.client.Chat.Completions.New(ctx, params)
-		if err != nil {
-			return gerror.Wrapf(err, "调用OpenAI API失败")
+		stream := a.chatService.client.Chat.Completions.NewStreaming(ctx, params)
+
+		// 收集流式响应
+		var accumulatedContent string
+		var finishReason string
+
+		// 用简单结构收集工具调用
+		type ToolCallCollector struct {
+			ID        string
+			Type      string
+			Name      string
+			Arguments string
 		}
+		toolCallsMap := make(map[int]*ToolCallCollector)
 
-		if len(completion.Choices) == 0 {
-			return gerror.New("OpenAI返回空响应")
-		}
+		for stream.Next() {
+			chunk := stream.Current()
+			if len(chunk.Choices) > 0 {
+				delta := chunk.Choices[0].Delta
 
-		choice := completion.Choices[0]
+				// 流式输出文本内容
+				if delta.Content != "" {
+					accumulatedContent += delta.Content
+					a.sendSSE(response, map[string]interface{}{
+						"content": delta.Content,
+					})
+				}
 
-		// 检查是否需要调用工具
-		if len(choice.Message.ToolCalls) == 0 {
-			// 没有工具调用，AI 只输出了文本内容
-			// 流式返回这部分内容，然后继续下一轮（让 AI 决定是否继续）
-			if choice.Message.Content != "" {
-				g.Log().Infof(ctx, "第%d轮AI输出文本（无工具调用），内容长度: %d", round+1, len(choice.Message.Content))
+				// 收集增量的 tool_calls
+				for _, toolCallDelta := range delta.ToolCalls {
+					idx := int(toolCallDelta.Index)
+					if toolCallsMap[idx] == nil {
+						toolCallsMap[idx] = &ToolCallCollector{}
+					}
 
-				// 直接发送第一次调用得到的内容（不重新生成，避免不一致）
-				a.sendSSE(response, map[string]interface{}{
-					"content": choice.Message.Content,
-				})
+					// 合并增量数据
+					if toolCallDelta.ID != "" {
+						toolCallsMap[idx].ID = toolCallDelta.ID
+					}
+					if toolCallDelta.Type != "" {
+						toolCallsMap[idx].Type = toolCallDelta.Type
+					}
+					if toolCallDelta.Function.Name != "" {
+						toolCallsMap[idx].Name = toolCallDelta.Function.Name
+					}
+					if toolCallDelta.Function.Arguments != "" {
+						toolCallsMap[idx].Arguments += toolCallDelta.Function.Arguments
+					}
+				}
 
-				// 添加 AI 回复到历史
-				messages = append(messages, openai.AssistantMessage(choice.Message.Content))
-
-				// 继续下一轮，让 AI 决定是否需要继续
-				g.Log().Infof(ctx, "AI 回复已添加到历史，准备进入下一轮")
-				continue
+				// 记录 finish_reason
+				if chunk.Choices[0].FinishReason != "" {
+					finishReason = string(chunk.Choices[0].FinishReason)
+				}
 			}
+		}
 
-			// 既没有内容也没有工具调用，任务完成
-			g.Log().Infof(ctx, "AI 没有输出内容也没有调用工具，任务完成")
+		if err := stream.Err(); err != nil {
+			return gerror.Wrapf(err, "流式调用失败")
+		}
+
+		// 将 map 转为数组
+		var toolCalls []*ToolCallCollector
+		for i := 0; i < len(toolCallsMap); i++ {
+			if toolCallsMap[i] != nil {
+				toolCalls = append(toolCalls, toolCallsMap[i])
+			}
+		}
+
+		// 检查是否有工具调用
+		if len(toolCalls) == 0 {
+			// 没有工具调用，对话结束（内容已经流式发送过了）
+			g.Log().Infof(ctx, "第%d轮无工具调用，对话结束 (finish_reason: %s)", round+1, finishReason)
+
+			// 发送结束标记
 			response.Writefln("data: [DONE]\n")
 			response.Flush()
 			return nil
 		}
 
-		// 将完整的assistant消息（包括tool_calls）添加到历史
-		// 这是必需的，因为后续的 ToolMessage 需要与这些 tool_calls 配对
-		messages = append(messages, choice.Message.ToParam())
+		// 有工具调用，构建 assistant 消息并添加到历史
+		g.Log().Infof(ctx, "第%d轮检测到 %d 个工具调用", round+1, len(toolCalls))
+
+		// 构建包含 tool_calls 的 assistant 消息
+		assistantMsgParam := openai.ChatCompletionMessageParamUnion{
+			OfAssistant: &openai.ChatCompletionAssistantMessageParam{
+				ToolCalls: make([]openai.ChatCompletionMessageToolCallUnionParam, len(toolCalls)),
+			},
+		}
+		for i, tc := range toolCalls {
+			assistantMsgParam.OfAssistant.ToolCalls[i] = openai.ChatCompletionMessageToolCallUnionParam{
+				OfFunction: &openai.ChatCompletionMessageFunctionToolCallParam{
+					ID: tc.ID,
+					Function: openai.ChatCompletionMessageFunctionToolCallFunctionParam{
+						Name:      tc.Name,
+						Arguments: tc.Arguments,
+					},
+				},
+			}
+		}
+		messages = append(messages, assistantMsgParam)
 
 		// 执行所有工具调用
-		for _, toolCall := range choice.Message.ToolCalls {
-			g.Log().Infof(ctx, "工具调用: %s (ID: %s)", toolCall.Function.Name, toolCall.ID)
+		for _, toolCall := range toolCalls {
+			g.Log().Infof(ctx, "工具调用: %s (ID: %s)", toolCall.Name, toolCall.ID)
 
 			// 检查是否需要用户确认
-			if a.needsConfirmation(toolCall.Function.Name) {
+			if a.needsConfirmation(toolCall.Name) {
 				// 检查是否在单次会话允许列表中
 				alreadyAllowed := false
 				for _, allowedTool := range req.SessionAllowedTools {
-					if allowedTool == toolCall.Function.Name {
+					if allowedTool == toolCall.Name {
 						alreadyAllowed = true
 						break
 					}
 				}
 
 				if alreadyAllowed {
-					g.Log().Infof(ctx, "工具 %s 已在单次会话中被允许，跳过确认", toolCall.Function.Name)
+					g.Log().Infof(ctx, "工具 %s 已在单次会话中被允许，跳过确认", toolCall.Name)
 				} else {
 					// 需要确认，发送确认请求（包含当前的消息历史供前端保存）
-					g.Log().Infof(ctx, "工具 %s 需要用户确认，等待用户响应", toolCall.Function.Name)
+					g.Log().Infof(ctx, "工具 %s 需要用户确认，等待用户响应", toolCall.Name)
 
 					// 序列化当前的消息历史
 					contextBytes, err := json.Marshal(messages)
@@ -194,8 +255,8 @@ func (a *MCPAgent) ChatStream(ctx context.Context, req *v1.ChatWithMCPStreamReq,
 
 					confirmInfo := map[string]interface{}{
 						"type":          "tool_confirm_required",
-						"tool_name":     toolCall.Function.Name,
-						"arguments":     toolCall.Function.Arguments,
+						"tool_name":     toolCall.Name,
+						"arguments":     toolCall.Arguments,
 						"tool_id":       toolCall.ID,
 						"saved_context": string(contextBytes), // 发送完整的消息历史
 					}
@@ -209,23 +270,23 @@ func (a *MCPAgent) ChatStream(ctx context.Context, req *v1.ChatWithMCPStreamReq,
 			// 发送工具调用信息（已确认或不需要确认的工具）
 			toolInfo := map[string]interface{}{
 				"type":      "tool_call",
-				"tool_name": toolCall.Function.Name,
-				"arguments": toolCall.Function.Arguments,
+				"tool_name": toolCall.Name,
+				"arguments": toolCall.Arguments,
 				"tool_id":   toolCall.ID,
 			}
 			a.sendSSE(response, toolInfo)
 
 			// 解析工具参数
 			var arguments map[string]interface{}
-			if toolCall.Function.Arguments != "" {
-				if err := json.Unmarshal([]byte(toolCall.Function.Arguments), &arguments); err != nil {
+			if toolCall.Arguments != "" {
+				if err := json.Unmarshal([]byte(toolCall.Arguments), &arguments); err != nil {
 					g.Log().Errorf(ctx, "解析工具参数失败: %v", err)
 					return gerror.Wrapf(err, "解析工具参数失败")
 				}
 			}
 
 			// 执行MCP工具
-			result, err := a.mcpAdapter.ExecuteTool(ctx, toolCall.Function.Name, arguments)
+			result, err := a.mcpAdapter.ExecuteTool(ctx, toolCall.Name, arguments)
 			if err != nil {
 				g.Log().Errorf(ctx, "工具执行失败: %v", err)
 				result = "工具执行失败: " + err.Error()
@@ -234,16 +295,16 @@ func (a *MCPAgent) ChatStream(ctx context.Context, req *v1.ChatWithMCPStreamReq,
 			// 发送工具结果
 			toolResult := map[string]interface{}{
 				"type":    "tool_result",
-				"tool":    toolCall.Function.Name,
+				"tool":    toolCall.Name,
 				"result":  result,
-				"tool_id": toolCall.ID, // 使用OpenAI的tool_call ID
+				"tool_id": toolCall.ID,
 			}
 			a.sendSSE(response, toolResult)
 
 			// 将工具结果添加到消息历史
 			// 注意：参数顺序是 (content, toolCallID)
 			messages = append(messages, openai.ToolMessage(result, toolCall.ID))
-			g.Log().Infof(ctx, "[工具结果已添加] 工具: %s, 消息历史长度: %d", toolCall.Function.Name, len(messages))
+			g.Log().Infof(ctx, "[工具结果已添加] 工具: %s, 消息历史长度: %d", toolCall.Name, len(messages))
 		}
 
 		// 本轮所有工具调用完成，继续下一轮对话
