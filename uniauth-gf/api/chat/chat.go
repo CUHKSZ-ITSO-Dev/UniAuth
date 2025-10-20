@@ -13,4 +13,6 @@ import (
 type IChatV1 interface {
 	Chat(ctx context.Context, req *v1.ChatReq) (res *v1.ChatRes, err error)
 	ChatStream(ctx context.Context, req *v1.ChatStreamReq) (res *v1.ChatStreamRes, err error)
+	ChatWithMCP(ctx context.Context, req *v1.ChatWithMCPReq) (res *v1.ChatWithMCPRes, err error)
+	ChatWithMCPStream(ctx context.Context, req *v1.ChatWithMCPStreamReq) (res *v1.ChatWithMCPStreamRes, err error)
 }

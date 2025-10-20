@@ -131,8 +131,6 @@ func (s *ChatService) ChatStream(ctx context.Context, req *v1.ChatStreamReq, res
 		model = s.model
 	}
 
-	g.Log().Infof(ctx, "开始流式对话，模型: %s", model)
-
 	// 调用OpenAI流式API
 	params := openai.ChatCompletionNewParams{
 		Model:    openai.ChatModel(model),
@@ -141,7 +139,6 @@ func (s *ChatService) ChatStream(ctx context.Context, req *v1.ChatStreamReq, res
 
 	stream := s.client.Chat.Completions.NewStreaming(ctx, params)
 
-	chunkCount := 0
 	// 处理流式响应
 	for stream.Next() {
 		chunk := stream.Current()
@@ -149,7 +146,6 @@ func (s *ChatService) ChatStream(ctx context.Context, req *v1.ChatStreamReq, res
 		// 如果有内容，发送SSE事件
 		if len(chunk.Choices) > 0 && chunk.Choices[0].Delta.Content != "" {
 			content := chunk.Choices[0].Delta.Content
-			chunkCount++
 
 			// 将数据转换为JSON
 			jsonData := map[string]interface{}{
@@ -160,15 +156,11 @@ func (s *ChatService) ChatStream(ctx context.Context, req *v1.ChatStreamReq, res
 
 			// 使用 Writefln 写入SSE数据（GoFrame推荐方式）
 			response.Writefln("data: %s\n", string(jsonBytes))
-			g.Log().Infof(ctx, "发送数据块: %s", string(jsonBytes))
 			response.Flush()
 		}
 	}
 
-	g.Log().Infof(ctx, "流式响应完成，共发送 %d 个数据块", chunkCount)
-
 	if err := stream.Err(); err != nil {
-		g.Log().Errorf(ctx, "OpenAI流式API错误: %v", err)
 		// 发送错误事件
 		jsonData := map[string]interface{}{
 			"error": err.Error(),
@@ -180,7 +172,6 @@ func (s *ChatService) ChatStream(ctx context.Context, req *v1.ChatStreamReq, res
 	}
 
 	// 发送结束事件
-	g.Log().Info(ctx, "发送流式结束标志")
 	response.Writefln("data: [DONE]\n")
 	response.Flush()
 

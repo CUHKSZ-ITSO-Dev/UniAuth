@@ -11,6 +11,16 @@ import (
 	_ "uniauth-gf/internal/service/mcp/tools"
 )
 
+var (
+	// globalMCPServer 全局MCP服务器实例
+	globalMCPServer *server.MCPServer
+)
+
+// GetMCPServer 获取全局MCP服务器实例
+func GetMCPServer() *server.MCPServer {
+	return globalMCPServer
+}
+
 // StartMCPServer 启动MCP服务器
 func StartMCPServer(ctx context.Context) error {
 	// Create a new MCP server
@@ -24,6 +34,9 @@ func StartMCPServer(ctx context.Context) error {
 	if err := registry.RegisterAll(s); err != nil {
 		return fmt.Errorf("failed to register tools: %w", err)
 	}
+
+	// 保存全局实例
+	globalMCPServer = s
 
 	// 输出已注册的工具信息
 	tools := registry.ListTools()

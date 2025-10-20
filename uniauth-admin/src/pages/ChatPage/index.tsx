@@ -16,6 +16,10 @@ import {
   Switch,
 } from "antd";
 import React, { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import remarkGfm from "remark-gfm";
+import "highlight.js/styles/github-dark.css";
 import "./style.less";
 
 const { TextArea } = Input;
@@ -31,8 +35,12 @@ const ChatPage: React.FC = () => {
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [useStream, setUseStream] = useState(true); // 默认使用流式
+  const [useMCP, setUseMCP] = useState(false); // 是否使用MCP工具
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [streamingContent, setStreamingContent] = useState("");
+  const [toolCalls, setToolCalls] = useState<
+    Array<{ tool: string; args: string }>
+  >([]);
 
   // 自动滚动到底部
   const scrollToBottom = () => {
@@ -46,7 +54,8 @@ const ChatPage: React.FC = () => {
   // 普通对话请求
   const sendNormalMessage = async (userMessage: string) => {
     try {
-      const response = await fetch("/api/chat/", {
+      const apiPath = useMCP ? "/api/chat/mcp" : "/api/chat/";
+      const response = await fetch(apiPath, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -75,8 +84,7 @@ const ChatPage: React.FC = () => {
       } else {
         message.error(data.message || "请求失败");
       }
-    } catch (error) {
-      console.error("发送消息失败:", error);
+    } catch (_error) {
       message.error("发送消息失败，请重试");
     } finally {
       setLoading(false);
@@ -92,8 +100,10 @@ const ChatPage: React.FC = () => {
         { role: "user", content: userMessage, id: `user-${Date.now()}` },
       ]);
       setStreamingContent("");
+      setToolCalls([]); // 清空工具调用记录
 
-      const response = await fetch("/api/chat/stream", {
+      const apiPath = useMCP ? "/api/chat/mcp/stream" : "/api/chat/stream";
+      const response = await fetch(apiPath, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,14 +125,10 @@ const ChatPage: React.FC = () => {
       if (reader) {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) {
-            console.log("流式传输完成");
-            break;
-          }
+          if (done) break;
 
           // 解码新数据并添加到缓冲区
           buffer += decoder.decode(value, { stream: true });
-          console.log("接收到数据块:", buffer);
 
           // 处理缓冲区中的完整消息
           const lines = buffer.split("\n");
@@ -134,18 +140,13 @@ const ChatPage: React.FC = () => {
             if (trimmedLine === "") continue;
 
             // 忽略SSE注释行（以冒号开头）
-            if (trimmedLine.startsWith(":")) {
-              console.log("收到连接确认:", trimmedLine);
-              continue;
-            }
+            if (trimmedLine.startsWith(":")) continue;
 
             if (trimmedLine.startsWith("data: ")) {
               const data = trimmedLine.slice(6).trim();
-              console.log("解析数据:", data);
 
               if (data === "[DONE]") {
                 // 流式结束，将累积的内容添加到消息列表
-                console.log("收到结束标志，累积内容:", accumulatedContent);
                 if (accumulatedContent) {
                   setMessages((prev) => [
                     ...prev,
@@ -162,17 +163,26 @@ const ChatPage: React.FC = () => {
 
               try {
                 const parsed = JSON.parse(data);
-                console.log("解析结果:", parsed);
-                if (parsed.content) {
+
+                // 处理MCP工具调用信息
+                if (parsed.type === "tool_call") {
+                  setToolCalls((prev) => [
+                    ...prev,
+                    { tool: parsed.tool_name, args: parsed.arguments },
+                  ]);
+                  message.info(`正在调用工具: ${parsed.tool_name}`);
+                } else if (parsed.type === "tool_result") {
+                  message.success(`工具 ${parsed.tool} 执行完成`);
+                } else if (parsed.content) {
+                  // 正常的对话内容
                   accumulatedContent += parsed.content;
                   setStreamingContent(accumulatedContent);
                 } else if (parsed.error) {
-                  console.error("服务器返回错误:", parsed.error);
                   message.error(parsed.error);
                   break;
                 }
               } catch (e) {
-                console.error("解析SSE数据失败:", e, "原始数据:", data);
+                console.error("解析SSE数据失败:", e);
               }
             }
           }
@@ -191,8 +201,7 @@ const ChatPage: React.FC = () => {
           setStreamingContent("");
         }
       }
-    } catch (error) {
-      console.error("发送流式消息失败:", error);
+    } catch (_error) {
       message.error("发送消息失败，请重试");
     } finally {
       setLoading(false);
@@ -221,6 +230,7 @@ const ChatPage: React.FC = () => {
   const handleClear = () => {
     setMessages([]);
     setStreamingContent("");
+    setToolCalls([]);
     message.success("对话已清空");
   };
 
@@ -236,9 +246,15 @@ const ChatPage: React.FC = () => {
     <PageContainer
       title="AI 对话助手"
       extra={[
-        <Space key="actions">
-          <span>流式返回:</span>
-          <Switch checked={useStream} onChange={setUseStream} />
+        <Space key="actions" size="large">
+          <Space>
+            <span>流式返回:</span>
+            <Switch checked={useStream} onChange={setUseStream} />
+          </Space>
+          <Space>
+            <span>MCP工具:</span>
+            <Switch checked={useMCP} onChange={setUseMCP} />
+          </Space>
           <Button danger icon={<DeleteOutlined />} onClick={handleClear}>
             清空对话
           </Button>
@@ -246,6 +262,35 @@ const ChatPage: React.FC = () => {
       ]}
     >
       <Card className="chat-container">
+        {/* MCP工具调用信息 */}
+        {useMCP && toolCalls.length > 0 && (
+          <div
+            style={{
+              padding: "8px 16px",
+              background: "#f0f0f0",
+              borderBottom: "1px solid #d9d9d9",
+            }}
+          >
+            <Space size="small">
+              <span style={{ fontSize: "12px", color: "#666" }}>工具调用:</span>
+              {toolCalls.map((tc, idx) => (
+                <span
+                  key={`${tc.tool}-${idx}`}
+                  style={{
+                    fontSize: "12px",
+                    background: "#1890ff",
+                    color: "white",
+                    padding: "2px 8px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  {tc.tool}
+                </span>
+              ))}
+            </Space>
+          </div>
+        )}
+
         <div className="chat-messages">
           {messages.map((msg) => (
             <div
@@ -262,7 +307,18 @@ const ChatPage: React.FC = () => {
                 }}
               />
               <div className="message-content">
-                <div className="message-text">{msg.content}</div>
+                <div className="message-text">
+                  {msg.role === "user" ? (
+                    msg.content
+                  ) : (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeHighlight]}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -276,7 +332,14 @@ const ChatPage: React.FC = () => {
                 style={{ backgroundColor: "#52c41a" }}
               />
               <div className="message-content">
-                <div className="message-text">{streamingContent}</div>
+                <div className="message-text">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeHighlight]}
+                  >
+                    {streamingContent}
+                  </ReactMarkdown>
+                </div>
               </div>
             </div>
           )}
