@@ -466,7 +466,8 @@ const BillingGraphPage: React.FC = () => {
                   }}
                   label={{
                     style: {
-                      fill: "#aaa",
+                      textAlign: "center",
+                      textBaseline: "alphabetic",
                     },
                   }}
                   meta={{
