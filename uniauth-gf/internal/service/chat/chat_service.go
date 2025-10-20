@@ -160,6 +160,7 @@ func (s *ChatService) ChatStream(ctx context.Context, req *v1.ChatStreamReq, res
 
 			// 使用 Writefln 写入SSE数据（GoFrame推荐方式）
 			response.Writefln("data: %s\n", string(jsonBytes))
+			g.Log().Infof(ctx, "发送数据块: %s", string(jsonBytes))
 			response.Flush()
 		}
 	}

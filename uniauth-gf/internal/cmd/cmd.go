@@ -14,10 +14,10 @@ import (
 
 	"uniauth-gf/internal/controller/auth"
 	"uniauth-gf/internal/controller/billing"
+	"uniauth-gf/internal/controller/chat"
 	"uniauth-gf/internal/controller/config"
 	"uniauth-gf/internal/controller/quotaPool"
 	"uniauth-gf/internal/controller/userinfos"
-	"uniauth-gf/internal/controller/chat"
 	mcpSvc "uniauth-gf/internal/service/mcp"
 	quotaPoolSvc "uniauth-gf/internal/service/quotaPool"
 
@@ -62,6 +62,10 @@ var (
 			}
 
 			s := g.Server()
+
+			// 配置CORS中间件（开发环境使用，生产环境应该配置具体的域名）
+			s.Use(ghttp.MiddlewareCORS)
+
 			s.Use(middlewares.UniResMiddleware)
 			s.Group("/userinfos", func(group *ghttp.RouterGroup) {
 				group.Bind(
