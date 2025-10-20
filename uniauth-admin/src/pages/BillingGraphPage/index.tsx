@@ -489,7 +489,7 @@ const BillingGraphPage: React.FC = () => {
                     },
                   }}
                   tooltip={{
-                    showMarkers: true,
+                    title: false,
                     items: [
                       {
                         channel: "x",
@@ -502,8 +502,7 @@ const BillingGraphPage: React.FC = () => {
                         valueFormatter: (v: any) => `${v} 人`,
                       },
                       {
-                        channel: "y",
-                        name: "活跃率增长",
+                        name: "活跃率变化",
                         field: "activeRateInc",
                         valueFormatter: (v: any) => `${v}%`,
                       },
