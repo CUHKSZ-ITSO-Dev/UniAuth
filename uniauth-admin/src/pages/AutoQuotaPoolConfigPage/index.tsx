@@ -711,9 +711,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                     { description: cronDescription },
                   )}
                 </span>
-              ) : (
-                ""
-              )
+              ) : undefined
             }
           >
             <Input
