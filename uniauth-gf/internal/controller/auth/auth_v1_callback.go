@@ -2,12 +2,10 @@ package auth
 
 import (
 	"context"
-	// "net/http"
 	"time"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	// "github.com/gogf/gf/v2/net/ghttp"
 
 	v1 "uniauth-gf/api/auth/v1"
 	"uniauth-gf/internal/service/ssoJwt"
@@ -15,15 +13,16 @@ import (
 
 func (c *ControllerV1) Callback(ctx context.Context, req *v1.CallbackReq) (res *v1.CallbackRes, err error) {
 	defer g.RequestFromCtx(ctx).Cookie.Remove("jwt-login")
-	
-	// 校验jwt-login
+
+	// 校验并解析jwt-login
 	jwtLogin := g.RequestFromCtx(ctx).Cookie.Get("jwt-login").String()
-	valid, err := ssoJwt.VerifySignature(ctx, jwtLogin)
+	claims, err := ssoJwt.VerifyAndParseClaims(ctx, jwtLogin)
 	if err != nil {
 		return nil, gerror.Wrapf(err, "校验jwt-login失败")
 	}
-	if !valid {
-		return nil, gerror.New("jwt-login无效，登录流程终止")
+	// 校验state（state存储在Subject字段）
+	if claims.Subject != req.State {
+		return nil, gerror.New("state 校验失败，登录流程终止")
 	}
 
 	jwtStr, err := ssoJwt.Callback(ctx, req.Code)

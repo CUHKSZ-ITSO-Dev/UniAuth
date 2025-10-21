@@ -12,7 +12,8 @@ type LoginRes struct {
 
 type CallbackReq struct {
 	g.Meta `path:"/callback" tags:"Auth/JWT" method:"Get" summary:"SSO回调"`
-	Code   string `json:"token" v:"required" dc:"Token" example:"abcdefg"`
+	Code   string `v:"required" dc:"Token" example:"abcdefg"`
+	State  string `v:"required" dc:"State" example:"123456"`
 }
 type CallbackRes struct {
 }

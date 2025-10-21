@@ -7,16 +7,23 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func VerifySignature(ctx context.Context, jwtStr string) (bool, error) {
+// VerifyAndParseClaims 验证JWT签名并解析claims（一步完成）
+func VerifyAndParseClaims(ctx context.Context, jwtStr string) (*jwt.RegisteredClaims, error) {
 	publicKey, err := getPublicKey(ctx)
 	if err != nil {
-		return false, gerror.Wrap(err, "获取公钥失败")
+		return nil, gerror.Wrap(err, "获取公钥失败")
 	}
-	token, err := jwt.Parse(jwtStr, func(token *jwt.Token) (interface{}, error) {
+
+	claims := &jwt.RegisteredClaims{}
+	token, err := jwt.ParseWithClaims(jwtStr, claims, func(token *jwt.Token) (interface{}, error) {
 		return publicKey, nil
 	})
 	if err != nil {
-		return false, gerror.Wrap(err, "解析 JWT 失败")
+		return nil, gerror.Wrap(err, "解析或验证 JWT 失败")
 	}
-	return token.Valid, nil
+	if !token.Valid {
+		return nil, gerror.New("JWT 无效")
+	}
+
+	return claims, nil
 }

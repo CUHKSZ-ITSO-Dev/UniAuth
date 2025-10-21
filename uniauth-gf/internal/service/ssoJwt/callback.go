@@ -14,11 +14,10 @@ import (
 )
 
 func Callback(ctx context.Context, code string) (string, error) {
-	response := g.Client().ContentJson().PostVar(
+	response := g.Client().ContentType("application/x-www-form-urlencoded; charset=utf-8").PostVar(
 		ctx,
 		g.Cfg().MustGet(ctx, "sso.token_url").String(),
 		g.Map{
-			"Content-Type":  "application/x-www-form-urlencoded",
 			"client_id":     g.Cfg().MustGet(ctx, "sso.client_id").String(),
 			"code":          code,
 			"redirect_uri":  g.Cfg().MustGet(ctx, "sso.redirect_url").String(),
