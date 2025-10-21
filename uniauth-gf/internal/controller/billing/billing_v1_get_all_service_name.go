@@ -6,7 +6,7 @@ import (
 
 	"github.com/gogf/gf/v2/errors/gerror"
 
-	"uniauth-gf/api/billing/v1"
+	v1 "uniauth-gf/api/billing/v1"
 )
 
 // GetAllServiceName 独立实现返回所有服务名称
@@ -23,7 +23,7 @@ func (c *ControllerV1) GetAllServiceName(ctx context.Context, req *v1.GetAllServ
 		return nil, gerror.Wrap(err, "查询服务名称失败")
 	}
 
-	if serviceNames == nil || len(serviceNames) == 0 {
+	if len(serviceNames) == 0 {
 		serviceNames = []string{}
 	}
 
