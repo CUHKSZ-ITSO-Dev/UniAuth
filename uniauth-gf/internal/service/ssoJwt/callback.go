@@ -47,7 +47,7 @@ func Callback(ctx context.Context, code string) (string, error) {
 	if err != nil {
 		return "", gerror.Wrap(err, "JWT 解析失败")
 	}
-	upn, ok := token.Claims.(jwt.MapClaims)["upn"]
+	upn, ok := (*(token.Claims.(*jwt.MapClaims)))["upn"]
 	if !ok {
 		return "", gerror.New("JWT 中没有 upn 字段")
 	}
