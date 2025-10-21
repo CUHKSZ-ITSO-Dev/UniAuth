@@ -71,7 +71,7 @@ type ActiveUserList struct {
 
 // GetActiveUsersNumRes 按消费记录获取活跃用户数响应
 type GetActiveUsersNumRes struct {
-	ActiveUsers      []ActiveUserList `json:"activeUsers" dc:"每天活跃用户数列表,格式{\"activeUsersNum\":100,\"ActiveRateInc\":50.00,\"Date\":\"2025-10-01\"}"`
+	ActiveUsers      []ActiveUserList `json:"activeUsers" dc:"每天活跃用户数列表" example:"[{\"activeUsersNum\":100,\"activeRateInc\":50.00,\"date\":\"2025-10-01\"},{\"activeUsersNum\":95,\"activeRateInc\":-5.00,\"date\":\"2025-10-02\"}]"`
 	TotalUsers       int              `json:"totalUsers" dc:"总用户人数"`
 	TotalActiveUsers int              `json:"totalActiveUsers" dc:"总活跃用户人数"`
 }
