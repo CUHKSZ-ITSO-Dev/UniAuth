@@ -22,9 +22,13 @@ type CallbackRes struct {
 type VerifyJwtReq struct {
 	g.Meta `path:"/verify" method:"get" summary:"验证JWT并设置响应头" tags:"Auth"`
 }
-
-// VerifyJwtRes JWT验证响应
 type VerifyJwtRes struct {
 	// 响应头会通过 r.Response.Header() 设置
 	// X-External-Request: {jti}
+}
+
+type LogoutReq struct {
+	g.Meta `path:"/logout" method:"get" summary:"退出登录" tags:"Auth"`
+}
+type LogoutRes struct {
 }

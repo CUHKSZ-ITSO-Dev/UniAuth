@@ -14,7 +14,7 @@ import (
 //
 // 该接口用于Nginx Ingress的外部鉴权功能：
 // 1. 从cookie中读取jwt
-// 2. 验证JWT签名和有效期m
+// 2. 验证JWT签名和有效期
 // 3. 验证成功：返回200，设置X-External-Request头为jti
 // 4. 验证失败：返回401，Nginx会重定向到登录页
 func (c *ControllerV1) VerifyJwt(ctx context.Context, req *v1.VerifyJwtReq) (res *v1.VerifyJwtRes, err error) {

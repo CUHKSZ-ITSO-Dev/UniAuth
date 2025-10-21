@@ -31,5 +31,7 @@ type IAuthV1 interface {
 	GetAvailableModelForQuotaPool(ctx context.Context, req *v1.GetAvailableModelForQuotaPoolReq) (res *v1.GetAvailableModelForQuotaPoolRes, err error)
 	Login(ctx context.Context, req *v1.LoginReq) (res *v1.LoginRes, err error)
 	Callback(ctx context.Context, req *v1.CallbackReq) (res *v1.CallbackRes, err error)
+	VerifyJwt(ctx context.Context, req *v1.VerifyJwtReq) (res *v1.VerifyJwtRes, err error)
+	Logout(ctx context.Context, req *v1.LogoutReq) (res *v1.LogoutRes, err error)
 	UniauthLogin(ctx context.Context, req *v1.UniauthLoginReq) (res *v1.UniauthLoginRes, err error)
 }
