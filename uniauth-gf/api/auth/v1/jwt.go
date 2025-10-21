@@ -17,3 +17,14 @@ type CallbackReq struct {
 }
 type CallbackRes struct {
 }
+
+// VerifyJwtReq JWT验证请求（用于Nginx Ingress鉴权）
+type VerifyJwtReq struct {
+	g.Meta `path:"/verify" method:"get" summary:"验证JWT并设置响应头" tags:"Auth"`
+}
+
+// VerifyJwtRes JWT验证响应
+type VerifyJwtRes struct {
+	// 响应头会通过 r.Response.Header() 设置
+	// X-External-Request: {jti}
+}
