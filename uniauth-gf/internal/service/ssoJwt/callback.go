@@ -20,7 +20,7 @@ func Callback(ctx context.Context, code string) (string, error) {
 		g.Map{
 			"client_id":     g.Cfg().MustGet(ctx, "sso.client_id").String(),
 			"code":          code,
-			"redirect_uri":  g.Cfg().MustGet(ctx, "sso.redirect_url").String(),
+			"redirect_uri":  g.Cfg().MustGet(ctx, "sso.redirect_uri").String(),
 			"grant_type":    "authorization_code",
 			"client_secret": g.Cfg().MustGet(ctx, "sso.client_secret").String(),
 		},
