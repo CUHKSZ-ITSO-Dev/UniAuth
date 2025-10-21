@@ -104,7 +104,7 @@ type GetAllActiveUsersRes struct {
 
 // GetAllServiceNameReq 返回所有服务的名称
 type GetAllServiceNameReq struct {
-	g.Meta `path:"/stats/service/list" tags:"Billing/Status" method:"GET"  summary:"返回所有服务名称	" `
+	g.Meta `path:"/stats/service/list" tags:"Billing/Status" method:"GET"  summary:"返回所有服务名称" `
 }
 
 // GetAllServiceNameRes 返回所有服务的名称查询响应

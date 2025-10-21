@@ -24,9 +24,7 @@ func (c *ControllerV1) GetAllServiceName(ctx context.Context, req *v1.GetAllServ
 	// 转换为字符串数组
 	res.ServiceName = make([]string, 0, len(serviceNames))
 	for _, name := range serviceNames {
-		if str := name.String(); str != "" {
-			res.ServiceName = append(res.ServiceName, str)
-		}
+		res.ServiceName = append(res.ServiceName, name.String())
 	}
 	return res, nil
 }

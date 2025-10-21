@@ -8,15 +8,14 @@ import (
 	"uniauth-gf/internal/dao"
 
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/frame/g"
 )
 
 func (c *ControllerV1) GetActiveUsersNum(ctx context.Context, req *v1.GetActiveUsersNumReq) (res *v1.GetActiveUsersNumRes, err error) {
 
-	// 默认返回30天内的活跃用户数
+	/*// 默认返回30天内的活跃用户数
 	if req.Days == 0 {
 		req.Days = 30
-	}
+	}*/
 
 	/*//AI建议如果需要：记录审计日志
 	g.Log().Info(ctx, "GetActiveUsersNum called", g.Map{
@@ -109,17 +108,19 @@ func (c *ControllerV1) getActiveUsersData(ctx context.Context, day int) (map[str
 	go func() {
 		defer wg.Done()
 
-		dailySql := `
-			SELECT 
-				DATE(created_at) as date,
-				COUNT(DISTINCT upn) as daily_total
-			FROM billing_cost_records
-			WHERE created_at >= $1
-			GROUP BY DATE(created_at)
-			ORDER BY date DESC
-		`
+		type DailyActiveUser struct {
+			Date       string `json:"date"`
+			DailyTotal int    `json:"daily_total"`
+		}
 
-		dailyResult, err := g.DB().GetAll(ctx, dailySql, startDate)
+		var dailyResult []DailyActiveUser
+		err := dao.BillingCostRecords.Ctx(ctx).
+			Fields("DATE(created_at) as date, COUNT(DISTINCT upn) as daily_total").
+			Where("created_at >= ?", startDate).
+			Group("DATE(created_at)").
+			Order("date DESC").
+			Scan(&dailyResult)
+
 		if err != nil {
 			err1 = gerror.Wrap(err, "查询每日活跃用户失败")
 			return
@@ -127,9 +128,7 @@ func (c *ControllerV1) getActiveUsersData(ctx context.Context, day int) (map[str
 
 		activeUsersMap = make(map[string]int, len(dailyResult))
 		for _, record := range dailyResult {
-			date := record["date"].String()
-			dailyTotal := record["daily_total"].Int()
-			activeUsersMap[date] = dailyTotal
+			activeUsersMap[record.Date] = record.DailyTotal
 		}
 	}()
 
@@ -137,19 +136,22 @@ func (c *ControllerV1) getActiveUsersData(ctx context.Context, day int) (map[str
 	go func() {
 		defer wg.Done()
 
-		totalSql := `
-			SELECT COUNT(DISTINCT upn) as total_active
-			FROM billing_cost_records
-			WHERE created_at >= $1
-		`
+		type TotalActiveUser struct {
+			TotalActive int `json:"total_active"`
+		}
 
-		totalResult, err := g.DB().GetOne(ctx, totalSql, totalStartDate)
+		var totalResult TotalActiveUser
+		err := dao.BillingCostRecords.Ctx(ctx).
+			Fields("COUNT(DISTINCT upn) as total_active").
+			Where("created_at >= ?", totalStartDate).
+			Scan(&totalResult)
+
 		if err != nil {
 			err2 = gerror.Wrap(err, "查询总活跃用户失败")
 			return
 		}
 
-		totalActiveUsers = totalResult["total_active"].Int()
+		totalActiveUsers = totalResult.TotalActive
 	}()
 
 	// 等待所有goroutine完成

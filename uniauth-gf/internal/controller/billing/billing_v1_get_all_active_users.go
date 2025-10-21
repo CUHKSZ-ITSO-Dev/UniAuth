@@ -8,7 +8,6 @@ import (
 
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/frame/g"
 
 	v1 "uniauth-gf/api/billing/v1"
 )
@@ -73,22 +72,17 @@ func (c *ControllerV1) GetAllActiveUsers(ctx context.Context, req *v1.GetAllActi
 	//分页计算偏移量计算
 	offset := (req.Page - 1) * req.PageSize
 
-	// 参数化查询
-	dataSql := fmt.Sprintf(`
-		SELECT 
-			upn,
-			SUM(cost) as total_cost,
-			COUNT(*) as total_calls,
-			MAX(created_at) as last_active
-		FROM billing_cost_records
-		WHERE created_at >= $1
-		GROUP BY upn
-		ORDER BY %s %s
-		LIMIT $2 OFFSET $3
-	`, dbSortBy, dbSortOrder)
+	// 优化查询
+	query := dao.BillingCostRecords.Ctx(ctx).
+		Fields("upn, SUM(cost) as total_cost, COUNT(*) as total_calls, MAX(created_at) as last_active").
+		Where("created_at >= ?", startOfDay).
+		Group("upn").
+		Order(fmt.Sprintf("%s %s", dbSortBy, dbSortOrder)).
+		Limit(req.PageSize).
+		Offset(offset)
 
 	var activeUsers []*v1.ActiveUserSummary
-	err = g.DB().GetScan(ctx, &activeUsers, dataSql, startOfDay, req.PageSize, offset)
+	err = query.Scan(&activeUsers)
 
 	if err != nil {
 		return nil, gerror.Wrap(err, "查询活跃用户详情失败")
