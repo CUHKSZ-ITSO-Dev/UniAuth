@@ -84,7 +84,7 @@ type ActiveUserDetail struct {
 	LastActive string                    `json:"lastActive" dc:"个人最后活跃时间"`
 }
 
-// GetAllActiveUsersReq 获取活跃用户信息
+// GetAllActiveUsersReq 获取活跃用户信息(概览）,点击详情返回具体值
 type GetAllActiveUsersReq struct {
 	g.Meta    `path:"/stats/active-users/list" tags:"Billing/Status" method:"GET" summary:"返回指定天数内活跃用户的所有信息"`
 	Days      int    `json:"days" v:"min:1|max:365" dc:"返回指定天数的活跃用户信息,默认七天" d:"7"`
@@ -94,11 +94,18 @@ type GetAllActiveUsersReq struct {
 	SortOrder string `json:"sortOrder" v:"in:asc,desc" d:"desc" dc:"按升序(asc)还是降序(desc)排列"`
 }
 
+type ActiveUserSummary struct {
+	Upn        string          `json:"upn" dc:"用户标识"`
+	TotalCost  decimal.Decimal `json:"totalCost" dc:"总消费金额"`
+	TotalCalls int             `json:"totalCalls" dc:"总调用次数"`
+	LastActive string          `json:"lastActive" dc:"最后活跃时间"`
+}
+
 // GetAllActiveUsersRes 获取活跃用户信息响应
 type GetAllActiveUsersRes struct {
-	ActiveUsers []*ActiveUserDetail `json:"activeUsers" dc:"返回活跃用户信息列表"`
-	Total       int                 `json:"total" dc:"活跃用户总数"`
-	Page        int                 `json:"page" dc:"当前页码"`
-	PageSize    int                 `json:"pageSize" dc:"每页条数"`
-	TotalPages  int                 `json:"totalPages" dc:"总页数"`
+	ActiveUsers []*ActiveUserSummary `json:"activeUsers" dc:"返回活跃用户信息列表"`
+	Total       int                  `json:"total" dc:"活跃用户总数"`
+	Page        int                  `json:"page" dc:"当前页码(用户想访问第几页的数据)"`
+	PageSize    int                  `json:"pageSize" dc:"每页条数"`
+	TotalPages  int                  `json:"totalPages" dc:"总页数"`
 }

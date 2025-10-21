@@ -11,6 +11,7 @@ import (
 	v1 "uniauth-gf/api/billing/v1"
 )
 
+// noinspection GoUnusedExportedFunction
 func (c *ControllerV1) GetTodayTotalConsumption(ctx context.Context, req *v1.GetTodayTotalConsumptionReq) (res *v1.GetTodayTotalConsumptionRes, err error) {
 	// 初始化响应
 	res = &v1.GetTodayTotalConsumptionRes{
@@ -49,7 +50,7 @@ func (c *ControllerV1) getTotalCostByDate(ctx context.Context, date time.Time, s
 
 	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.Local)
 	endOfDay := startOfDay.AddDate(0, 0, 1)
-	// 构建查询
+	// 构建查询(修改)
 	model := dao.BillingCostRecords.Ctx(ctx).
 		Where("created_at >= ?", startOfDay).Where("created_at < ?", endOfDay)
 
