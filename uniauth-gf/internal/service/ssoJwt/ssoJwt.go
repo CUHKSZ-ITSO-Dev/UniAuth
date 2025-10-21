@@ -16,7 +16,11 @@ import (
 	"github.com/gogf/gf/v2/errors/gerror"
 )
 
-const serviceAccountNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+const (
+	serviceAccountNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+	configMapName               = "jwt-public-keys"
+	secretName                  = "jwt-private-keys"
+)
 
 var clientset *kubernetes.Clientset
 var namespace string = ""
@@ -44,9 +48,9 @@ func init() {
 
 func getPrivateKey(ctx context.Context) (*ecdsa.PrivateKey, error) {
 	// 获取 secret
-	secret, err := clientset.CoreV1().Secrets(namespace).Get(ctx, "jwt-private-keys", metav1.GetOptions{})
+	secret, err := clientset.CoreV1().Secrets(namespace).Get(ctx, secretName, metav1.GetOptions{})
 	if err != nil {
-		return nil, gerror.Wrap(err, "无法获取 jwt-private-keys secret")
+		return nil, gerror.Wrapf(err, "无法获取 %s secret", secretName)
 	}
 
 	// 获取 current-key-id
@@ -78,9 +82,9 @@ func getPrivateKey(ctx context.Context) (*ecdsa.PrivateKey, error) {
 
 func getPublicKey(ctx context.Context) (*ecdsa.PublicKey, error) {
 	// 获取 configmap
-	configMap, err := clientset.CoreV1().ConfigMaps(namespace).Get(ctx, "jwt-private-keys", metav1.GetOptions{})
+	configMap, err := clientset.CoreV1().ConfigMaps(namespace).Get(ctx, configMapName, metav1.GetOptions{})
 	if err != nil {
-		return nil, gerror.Wrapf(err, "无法获取 jwt-private-keys configmap: %v", err)
+		return nil, gerror.Wrapf(err, "无法获取 %s configmap", configMapName)
 	}
 
 	// 获取 current-key-id
