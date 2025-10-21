@@ -19,7 +19,7 @@ import (
 const serviceAccountNamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 
 var clientset *kubernetes.Clientset
-var namespace string
+var namespace string = ""
 
 func init() {
 	// 创建集群内部的 Kubernetes 客户端
@@ -34,7 +34,6 @@ func init() {
 	}
 
 	// 获取当前命名空间，从ServiceAccount文件读取
-	namespace := ""
 	if nsBytes, err := os.ReadFile(serviceAccountNamespaceFile); err == nil {
 		namespace = strings.TrimSpace(string(nsBytes))
 	}
