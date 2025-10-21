@@ -72,16 +72,8 @@ type ActiveUserList struct {
 // GetActiveUsersNumRes 按消费记录获取活跃用户数响应
 type GetActiveUsersNumRes struct {
 	ActiveUsers      []ActiveUserList `json:"activeUsers" dc:"每天活跃用户数列表,格式{\"activeUsersNum\":100,\"ActiveRateInc\":50.00,\"Date\":\"2025-10-01\"}"`
-	TotalUsers       int              `json:"totalUsers" dc:"总用户人数"`
+	TotalUsers       int              `json:"totalUsrs" dc:"总用户人数"`
 	TotalActiveUsers int              `json:"totalActiveUsers" dc:"总活跃用户人数"`
-}
-
-// ActiveUserDetail 活跃用户详细信息结构体适配查询
-type ActiveUserDetail struct {
-	UserInfo   entity.UserinfosUserInfos `json:"userInfo" dc:"用户基本信息"`
-	TotalCost  decimal.Decimal           `json:"totalCost" dc:"个人总消费金额(CNY)"`
-	TotalCalls int                       `json:"totalCalls" dc:"个人总调用次数"`
-	LastActive string                    `json:"lastActive" dc:"个人最后活跃时间"`
 }
 
 // GetAllActiveUsersReq 获取活跃用户信息(概览）,点击详情返回具体值
@@ -110,9 +102,27 @@ type GetAllActiveUsersRes struct {
 	TotalPages  int                  `json:"totalPages" dc:"总页数"`
 }
 
+// GetAllServiceNameReq 返回所有服务的名称
 type GetAllServiceNameReq struct {
 	g.Meta `path:"/stats/service/list" tags:"Billing/Status" method:"GET"  summary:"返回所有服务名称	" `
 }
+
+// GetAllServiceNameRes 返回所有服务的名称查询响应
 type GetAllServiceNameRes struct {
 	ServiceName []string `json:"serviceName" dc:"返回所有服务名称"`
+}
+
+// GetActiveUserDetailReq 点击详情查询某个活跃用户详细信息
+type GetActiveUserDetailReq struct {
+	g.Meta `path:"/stats/active-users/detail" tags:"Billing/Status" method:"GET" summary:"查询某用户具体信息"`
+	Upn    string `json:"upn" v:"required" dc:"用户唯一标识"`
+	NDays  int    `json:"nDays" v:"required" dc:"当前查询的指定天数"`
+}
+
+// GetActiveUserDetailRes 查询某个活跃用户详细信息响应
+type GetActiveUserDetailRes struct {
+	UserInfo   entity.UserinfosUserInfos `json:"userInfo" dc:"用户基本信息"`
+	TotalCost  decimal.Decimal           `json:"totalCost" dc:"个人总消费金额(CNY)"`
+	TotalCalls int                       `json:"totalCalls" dc:"个人总调用次数"`
+	LastActive string                    `json:"lastActive" dc:"最后活跃时间"`
 }
