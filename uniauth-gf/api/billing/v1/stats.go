@@ -109,3 +109,10 @@ type GetAllActiveUsersRes struct {
 	PageSize    int                  `json:"pageSize" dc:"每页条数"`
 	TotalPages  int                  `json:"totalPages" dc:"总页数"`
 }
+
+type GetAllServiceNameReq struct {
+	g.Meta `path:"/stats/service/list" tags:"Billing/Status" method:"GET"  summary:"返回所有服务名称	" `
+}
+type GetAllServiceNameRes struct {
+	ServiceName []string `json:"serviceName" dc:"返回所有服务名称"`
+}
