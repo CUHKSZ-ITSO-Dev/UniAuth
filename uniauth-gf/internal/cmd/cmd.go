@@ -54,6 +54,8 @@ var (
 
 			s := g.Server()
 			s.Use(middlewares.UniResMiddleware)
+			s.Use(middlewares.CSRFMiddleware)
+			
 			s.Group("/userinfos", func(group *ghttp.RouterGroup) {
 				group.Bind(
 					userinfos.NewV1(),
