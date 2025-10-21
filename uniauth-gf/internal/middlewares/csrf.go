@@ -6,14 +6,16 @@ import (
 	"net/http"
 	"slices"
 	"time"
+	"context"
 
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
-const (
-	csrfTokenCookieName = "uniauth-csrf-token"
-	csrfTokenHeaderName = "X-Csrf-Token"
-	csrfTokenLength     = 32
+var (
+	csrfTokenCookieName = g.Cfg().MustGet(context.TODO(), "uniauth.csrf_token_cookie_name").String()
+	csrfTokenHeaderName = g.Cfg().MustGet(context.TODO(), "uniauth.csrf_token_header_name").String()
+	csrfTokenLength     = g.Cfg().MustGet(context.TODO(), "uniauth.csrf_token_length").Int()
 )
 
 // CSRF豁免路径列表
