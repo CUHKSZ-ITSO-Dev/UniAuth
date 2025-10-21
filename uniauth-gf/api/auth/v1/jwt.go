@@ -32,3 +32,9 @@ type LogoutReq struct {
 }
 type LogoutRes struct {
 }
+
+type RefreshReq struct {
+	g.Meta `path:"/refresh" method:"get" summary:"刷新Token" tags:"Auth"`
+}
+type RefreshRes struct {
+}

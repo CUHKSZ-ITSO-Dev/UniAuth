@@ -33,5 +33,6 @@ type IAuthV1 interface {
 	Callback(ctx context.Context, req *v1.CallbackReq) (res *v1.CallbackRes, err error)
 	VerifyJwt(ctx context.Context, req *v1.VerifyJwtReq) (res *v1.VerifyJwtRes, err error)
 	Logout(ctx context.Context, req *v1.LogoutReq) (res *v1.LogoutRes, err error)
+	Refresh(ctx context.Context, req *v1.RefreshReq) (res *v1.RefreshRes, err error)
 	UniauthLogin(ctx context.Context, req *v1.UniauthLoginReq) (res *v1.UniauthLoginRes, err error)
 }

@@ -3,9 +3,11 @@ package auth
 import (
 	"context"
 	"time"
+	"net/http"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gres"
 	"github.com/gogf/gf/v2/util/grand"
 	"github.com/golang-jwt/jwt/v5"
@@ -33,7 +35,18 @@ func (c *ControllerV1) Login(ctx context.Context, req *v1.LoginReq) (res *v1.Log
 		return nil, gerror.Wrap(err, "JWT签名失败")
 	}
 
-	g.RequestFromCtx(ctx).Cookie.SetCookie("jwt-login", tokenString, "localhost:8000", "/", time.Minute*3)
+	g.RequestFromCtx(ctx).Cookie.SetCookie(
+		"jwt-login",
+		tokenString,
+		g.Cfg().MustGet(ctx, "sso.resource").String(),
+		"/auth", // 设置为 /auth，使得 /auth 下所有路径都可访问（包括 callback 和 logout）
+		time.Minute*3,
+		ghttp.CookieOptions{
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteStrictMode,
+		},
+	)
 
 	// 从 gres 打包资源中读取模板内容
 	tplContent := gres.GetContent("resource/template/login.html")

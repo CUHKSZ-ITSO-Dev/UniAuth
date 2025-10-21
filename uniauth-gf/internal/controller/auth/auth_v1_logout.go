@@ -5,7 +5,7 @@ import (
 
 	"github.com/gogf/gf/v2/frame/g"
 
-	"uniauth-gf/api/auth/v1"
+	v1 "uniauth-gf/api/auth/v1"
 )
 
 func (c *ControllerV1) Logout(ctx context.Context, req *v1.LogoutReq) (res *v1.LogoutRes, err error) {
@@ -17,7 +17,7 @@ func (c *ControllerV1) Logout(ctx context.Context, req *v1.LogoutReq) (res *v1.L
 	// 跳转到 oauth/logout
 	r.Cookie.Remove("jwt")
 	r.Cookie.Remove("jwt-login")
-	r.Cookie.Remove("refresh_token")
+	r.Cookie.Remove("refresh-token")
 	r.Response.RedirectTo(g.Cfg().MustGetWithEnv(ctx, "sso.logout_url").String())
 	return
 }

@@ -3,9 +3,11 @@ package auth
 import (
 	"context"
 	"time"
+	"net/http"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 
 	v1 "uniauth-gf/api/auth/v1"
 	"uniauth-gf/internal/service/ssoJwt"
@@ -34,14 +36,14 @@ func (c *ControllerV1) Callback(ctx context.Context, req *v1.CallbackReq) (res *
 	r.Cookie.SetCookie(
 		"jwt",
 		jwtStr,
-		"localhost:8000",
+		".cuhk.edu.cn",
 		"/",
-		time.Hour*7,
-		// ghttp.CookieOptions{
-		// 	HttpOnly: true,
-		// 	Secure:   true,
-		// 	SameSite: http.SameSiteLaxMode,
-		// },
+		time.Hour,
+		ghttp.CookieOptions{
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteNoneMode,
+		},
 	)
 	r.Response.RedirectTo("/")
 	return nil, nil

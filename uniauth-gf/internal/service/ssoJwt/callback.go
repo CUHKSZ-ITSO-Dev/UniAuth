@@ -3,9 +3,11 @@ package ssoJwt
 import (
 	"context"
 	"time"
+	"net/http"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
@@ -42,6 +44,21 @@ func Callback(ctx context.Context, code string) (string, error) {
 		)
 	}
 
+	r := g.RequestFromCtx(ctx)
+	r.Cookie.Remove("refresh-token")
+	r.Cookie.SetCookie(
+		"refresh-token", 
+		response["refresh_token"].(string), 
+		g.Cfg().MustGet(ctx, "sso.resource").String(), 
+		"/auth", 
+		time.Hour * 7, 
+		ghttp.CookieOptions{
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteStrictMode,
+		},
+	)
+
 	parser := jwt.NewParser()
 	token, _, err := parser.ParseUnverified(accessToken.(string), &jwt.MapClaims{})
 	if err != nil {
@@ -64,7 +81,7 @@ func Callback(ctx context.Context, code string) (string, error) {
 	registeredClaims := jwt.RegisteredClaims{
 		Issuer:    "UniAuth Automated System",
 		Subject:   upn.(string),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		NotBefore: jwt.NewNumericDate(time.Now()),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		ID:        uuid.New().String(),
