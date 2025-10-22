@@ -261,7 +261,7 @@ const ChatPage: React.FC = () => {
                   message.error(parsed.error);
                   break;
                 }
-              } catch (e) {
+              } catch (_e) {
                 // 忽略解析失败的事件
               }
             }
