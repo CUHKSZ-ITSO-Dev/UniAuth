@@ -49,7 +49,24 @@ func (c *ControllerV1) GetProductConsumption(ctx context.Context, req *v1.GetPro
 		TotalCalls int             `json:"totalCalls"`
 		TotalCost  decimal.Decimal `json:"totalCost"`
 	}
-	err = query.Fields("COUNT(*) as totalCalls, SUM(cost) as totalCost").
+
+	// 构建查询条件
+	totalQuery := dao.BillingCostRecords.Ctx(ctx).
+		Where("created_at >= ?", startDate).
+		Where("created_at <= ?", endDate)
+
+	// 添加相同的过滤条件
+	if req.Service != "" {
+		totalQuery = totalQuery.Where("svc = ?", req.Service)
+	}
+	if req.QuotaPool != "" {
+		totalQuery = totalQuery.Where("source = ?", req.QuotaPool)
+	}
+	if req.Product != "" {
+		totalQuery = totalQuery.Where("product = ?", req.Product)
+	}
+
+	err = totalQuery.Fields("COUNT(*) as totalCalls, SUM(cost) as totalCost").
 		Scan(&totalStats)
 
 	if err != nil {

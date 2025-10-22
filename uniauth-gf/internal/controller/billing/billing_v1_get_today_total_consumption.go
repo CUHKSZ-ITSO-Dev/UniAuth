@@ -73,7 +73,7 @@ func (c *ControllerV1) getTodayAndYesterdayCost(ctx context.Context, today, yest
 		query = query.Where("svc = ?", service)
 	}
 
-	// 使用CASE WHEN分别计算今天和昨天的消费
+	//分别计算今天和昨天的消费
 	type CostResult struct {
 		TodayCost     decimal.Decimal `json:"today_cost"`
 		YesterdayCost decimal.Decimal `json:"yesterday_cost"`
@@ -91,36 +91,6 @@ func (c *ControllerV1) getTodayAndYesterdayCost(ctx context.Context, today, yest
 	}
 
 	return result.TodayCost, result.YesterdayCost, nil
-}
-
-// getTotalCostByDate 查询指定日期的总消费
-func (c *ControllerV1) getTotalCostByDate(ctx context.Context, date time.Time, service string) (decimal.Decimal, error) {
-	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
-	endOfDay := startOfDay.AddDate(0, 0, 1)
-
-	// 构建查询
-	model := dao.BillingCostRecords.Ctx(ctx).
-		Where("created_at >= ?", startOfDay).Where("created_at < ?", endOfDay)
-
-	// 如果指定了服务类型，添加过滤条件
-	if service != "" {
-		model = model.Where("svc = ?", service)
-	}
-
-	// 查询总金额
-	result, err := model.Fields("COALESCE(SUM(cost), 0) as total").One()
-	if err != nil {
-		return decimal.Zero, err
-	}
-
-	// 提取总金额
-	totalStr := result["total"].String()
-	total, err := decimal.NewFromString(totalStr)
-	if err != nil {
-		return decimal.Zero, gerror.Wrap(err, "无法获取总金额")
-	}
-
-	return total, nil
 }
 
 // calculateIncreaseRate 计算增长率
