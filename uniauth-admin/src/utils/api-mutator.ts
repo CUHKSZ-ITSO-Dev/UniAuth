@@ -7,44 +7,46 @@ interface ResponseStructure<T> {
 }
 
 /**
- * 统一的请求函数
- * 支持两种调用方式：
- * 1. 旧业务代码: request<T>(url, options?)
- * 2. orval 生成的代码: request<T>({ method, url, ... }, options?)
+ * 适配 orval 生成的 API 调用
+ * 该函数由 orval 自动调用，签名为：
+ * <T>(config: RequestConfig, options?: any): Promise<T>
  */
-export async function request<T>(
-  urlOrConfig: string | { method?: string; url: string; [key: string]: any },
+export const customApiMutator = async <T>(
+  config: {
+    method: string;
+    url: string;
+    params?: any;
+    data?: any;
+    responseType?: string;
+    signal?: AbortSignal;
+    headers?: Record<string, string>;
+  },
   options?: any,
-): Promise<T> {
-  let url: string;
-  let requestOptions: any = { getResponse: true, ...options };
+): Promise<T> => {
+  const { method, url, params, data, responseType, signal, headers } = config;
 
-  // 判断是否为 orval 风格的调用（第一个参数是对象且包含 method 字段）
-  if (typeof urlOrConfig === "object") {
-    const {
-      method,
-      url: configUrl,
-      params,
-      data,
-      headers,
-      signal,
-      ...rest
-    } = urlOrConfig;
-    url = configUrl;
-    requestOptions = {
-      ...requestOptions,
-      method: method?.toUpperCase(),
-      params,
-      data,
-      signal,
-      ...rest,
-    };
-    if (headers) {
-      requestOptions.headers = headers;
-    }
-  } else {
-    // 旧风格的调用
-    url = urlOrConfig;
+  // 构建 umi request 的选项
+  const requestOptions: any = {
+    method: method.toUpperCase(),
+    getResponse: true,
+    params,
+    signal,
+    ...options,
+  };
+
+  // 如果有请求头，添加到 headers
+  if (headers) {
+    requestOptions.headers = headers;
+  }
+
+  // 如果有请求体（POST/PUT/PATCH），设置 data
+  if (data) {
+    requestOptions.data = data;
+  }
+
+  // 处理 responseType
+  if (responseType === "blob" || responseType === "arraybuffer") {
+    requestOptions.responseType = responseType;
   }
 
   const res = await umiRequest<ResponseStructure<T>>(url, requestOptions);
@@ -54,10 +56,7 @@ export async function request<T>(
   const isJsonResponse = contentType.includes("application/json");
 
   // 对于文件下载请求（明确指定了 responseType），直接返回原始响应数据
-  if (
-    requestOptions.responseType === "arraybuffer" ||
-    requestOptions.responseType === "blob"
-  ) {
+  if (responseType === "arraybuffer" || responseType === "blob") {
     return res.data as T;
   }
 
@@ -83,4 +82,8 @@ export async function request<T>(
 
   // 如果是 JSON 但不符合标准结构，直接返回原始数据中的 data 字段（业务数据）
   return res.data.data as T;
-}
+};
+
+export default customApiMutator;
+
+export type ErrorType<Error> = Error;

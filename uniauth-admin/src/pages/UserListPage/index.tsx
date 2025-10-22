@@ -3,7 +3,7 @@ import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import { Link, useIntl, useSearchParams } from "@umijs/max";
 import { message, Space, Typography } from "antd";
 import React, { useEffect, useMemo, useRef } from "react";
-import { postUserinfosFilter } from "@/services/uniauthService/userInfo";
+import { getUserInfo } from "@/apis/user-info";
 
 const { Title, Text } = Typography;
 
@@ -18,6 +18,7 @@ interface DataType {
 }
 
 const UserListPage: React.FC = () => {
+  const { postUserinfosFilter } = getUserInfo();
   const intl = useIntl();
   const [searchParams, setSearchParams] = useSearchParams();
   const tableRef = useRef<any>(null);
@@ -243,10 +244,14 @@ const UserListPage: React.FC = () => {
             pageSize: initialSearchParams.pageSize,
             defaultPageSize: 10, // 设置默认页面大小，防止reset后变为20
             showSizeChanger: true,
-            showTotal: (total) => intl.formatMessage({
-              id: "pages.userList.pagination.total",
-              defaultMessage: "共 {total} 条数据",
-            }, { total }),
+            showTotal: (total) =>
+              intl.formatMessage(
+                {
+                  id: "pages.userList.pagination.total",
+                  defaultMessage: "共 {total} 条数据",
+                },
+                { total },
+              ),
           }}
           request={async (params) => {
             const { current, pageSize, keyword } = params;
