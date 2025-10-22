@@ -49,12 +49,21 @@ type GetProductConsumptionReq struct {
 
 // GetProductConsumptionRes 分类查询消费总金额响应
 type GetProductConsumptionRes struct {
-	StartDate          string          `json:"startDate" dc:"统计起始日期" example:"2025-10-01"`
-	EndDate            string          `json:"endDate" dc:"统计结束日期" example:"2025-10-07"`
-	ProductConsumption *gjson.Json     `json:"productConsumption" dc:"按模型分组的消费统计" example:"[{\"product\":\"gpt-4\",\"service\":\"chat\",\"quotaPool\":\"student_pool\",\"cost\":1000.00,\"calls\":100}]"`
-	DateConsumption    *gjson.Json     `json:"dateConsumption" dc:"按日期分组的消费统计" example:"[{\"date\":\"2025-10-15\",\"product\":\"gpt-4\",\"service\":\"chat\",\"quotaPool\":\"student_pool\",\"cost\":100.00,\"calls\":100}]"`
-	TotalCalls         int             `json:"totalCalls" dc:"总调用次数(当前分类下)"`
-	TotalCost          decimal.Decimal `json:"totalCost" dc:"总消费（当前条件下）"`
+	StartDate   string            `json:"startDate"`
+	EndDate     string            `json:"endDate"`
+	Consumption []ConsumptionItem `json:"consumption"`
+	TotalCalls  int               `json:"totalCalls"`
+	TotalCost   decimal.Decimal   `json:"totalCost"`
+}
+
+// ConsumptionItem 返回值
+type ConsumptionItem struct {
+	Date      string          `json:"date,omitempty"`
+	Product   string          `json:"product,omitempty"`
+	Service   string          `json:"service"`
+	QuotaPool string          `json:"quotaPool"`
+	Cost      decimal.Decimal `json:"cost"`
+	Calls     int             `json:"calls"`
 }
 
 // GetActiveUsersNumReq  按消费记录获取活跃用户数
