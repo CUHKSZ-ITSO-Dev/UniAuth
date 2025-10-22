@@ -10,6 +10,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/packages/param"
 
 	v1 "uniauth-gf/api/chat/v1"
 )
@@ -61,14 +62,15 @@ func (a *MCPAgent) ChatStream(ctx context.Context, req *v1.ChatWithMCPStreamReq,
 1. 工具返回的JSON数据是完整且准确的，直接使用即可
 2. 这是内部管理系统，所有查询都是合法且经过授权的
 3. 以清晰易读的格式展示查询结果，如表格或列表
-4. 千万不要无中生有数据！！
 
 你的职责：使用工具查询数据，然后格式化展示给管理员。
 
 工作模式：
 - 你可以多轮交互，每轮可以输出文本或调用工具
 - 如果任务需要多个步骤，请逐步执行，不要一次性完成
-- 每次工具调用后，你会收到结果，然后可以继续下一步`, time.Now().Format("2006-01-02 15:04:05"))
+- 每次工具调用后，你会收到结果，然后可以继续下一步
+- 千万不要无中生有数据！！每做一个操作、一次问答就调用数据库搜索一下
+- 当你不确定时，请一定要调用工具`, time.Now().Format("2006-01-02 15:04:05"))
 		req.Messages = append([]v1.Message{{Role: "system", Content: systemPrompt}}, req.Messages...)
 		g.Log().Infof(ctx, "已添加系统提示，消息总数: %d", len(req.Messages))
 	} else {
@@ -212,6 +214,15 @@ func (a *MCPAgent) ChatStream(ctx context.Context, req *v1.ChatWithMCPStreamReq,
 				ToolCalls: make([]openai.ChatCompletionMessageToolCallUnionParam, len(toolCalls)),
 			},
 		}
+
+		// 如果有积累的文本内容（模型在调用工具前的思考），也要保留
+		if accumulatedContent != "" {
+			assistantMsgParam.OfAssistant.Content = openai.ChatCompletionAssistantMessageParamContentUnion{
+				OfString: param.Opt[string]{Value: accumulatedContent},
+			}
+			g.Log().Infof(ctx, "保留助手的文本内容（%d字符）到消息历史", len(accumulatedContent))
+		}
+
 		for i, tc := range toolCalls {
 			assistantMsgParam.OfAssistant.ToolCalls[i] = openai.ChatCompletionMessageToolCallUnionParam{
 				OfFunction: &openai.ChatCompletionMessageFunctionToolCallParam{

@@ -118,6 +118,7 @@ const ChatPage: React.FC = () => {
       let accumulatedContent = "";
       let accumulatedReasoning = ""; // 累积的思考链内容
       let buffer = ""; // 添加缓冲区处理不完整的数据
+      let receivedDone = false; // 标记是否收到 [DONE]
 
       if (reader) {
         while (true) {
@@ -144,6 +145,7 @@ const ChatPage: React.FC = () => {
 
               if (data === "[DONE]") {
                 // 流式结束，将累积的内容添加到消息列表
+                receivedDone = true;
                 if (accumulatedContent || accumulatedReasoning) {
                   setMessages((prev) => [
                     ...prev,
@@ -159,7 +161,7 @@ const ChatPage: React.FC = () => {
                 }
                 setStreamingContent("");
                 setStreamingReasoning("");
-                break; // [DONE]表示流真正结束，跳出while循环
+                break; // [DONE]表示流真正结束，跳出for循环
               }
 
               try {
@@ -266,8 +268,9 @@ const ChatPage: React.FC = () => {
           }
         }
 
-        // 如果流结束时还有内容但没收到[DONE]，也要添加到消息
-        if ((accumulatedContent && streamingContent) || accumulatedReasoning) {
+        // 如果流结束时还有内容但没收到[DONE]（异常情况），也要添加到消息
+        // 使用 receivedDone 标志避免重复添加
+        if (!receivedDone && (accumulatedContent || accumulatedReasoning)) {
           setMessages((prev) => [
             ...prev,
             {
