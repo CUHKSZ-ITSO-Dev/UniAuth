@@ -5,7 +5,6 @@
   "description": "An out-of-box UI solution for enterprise applications",
   "repository": "git@github.com:uniauth/uniauth-umi.git",
   "scripts": {
-    "analyze": "cross-env ANALYZE=1 max build",
     "biome:lint": "pnpm exec biome lint",
     "biome:staged": "pnpm exec biome check --write",
     "build": "max build",
