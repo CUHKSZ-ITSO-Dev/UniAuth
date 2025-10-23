@@ -23,8 +23,6 @@ import {
   getBillingStatsActiveUsersList,
   getBillingStatsActiveUsersSummary,
   getBillingStatsAllName,
-  getBillingStatsChatUsageChart,
-  getBillingStatsChatUsageGroup,
   getBillingStatsModelConsumption,
   getBillingStatsModelUsage,
   getBillingStatsTodayTotal,
@@ -175,23 +173,6 @@ const BillingGraphPage: React.FC = () => {
     }
   };
 
-  // 获取对话服务使用次数统计
-  const fetchChatUsageData = async (days?: number) => {
-    setError("");
-
-    try {
-      const params: API.NDaysProductUsageChartReq = {
-        N: days || 7,
-      };
-      // 获取数据但不存储，因为当前页面未使用这些数据
-      await getBillingStatsChatUsageChart(params);
-      await getBillingStatsChatUsageGroup(params);
-    } catch (err) {
-      setError("获取对话服务使用次数统计失败，请稍后重试");
-      console.error("获取对话服务使用次数统计失败:", err);
-    }
-  };
-
   // 获取动态选项
   const fetchDynamicOptions = async () => {
     try {
@@ -293,7 +274,6 @@ const BillingGraphPage: React.FC = () => {
     fetchStatsData();
     fetchActiveUsersData();
     fetchAllUsersData();
-    fetchChatUsageData();
     fetchModelConsumptionData();
     fetchModelUsageData();
   }, []);
