@@ -1067,6 +1067,21 @@ declare namespace API {
     productConsumption?: Json;
     /** 按日期分组的消费统计 */
     dateConsumption?: Json;
+    /** 消费明细数据 */
+    consumption?: Array<{
+      /** 日期 */
+      date?: string;
+      /** 模型 */
+      product?: string;
+      /** 服务类型 */
+      service?: string;
+      /** 配额池 */
+      quotaPool?: string;
+      /** 消费金额 */
+      cost?: Decimal;
+      /** 调用次数 */
+      calls?: number;
+    }>;
     /** 总调用次数(当前分类下) */
     totalCalls?: number;
     /** 总消费（当前条件下） */

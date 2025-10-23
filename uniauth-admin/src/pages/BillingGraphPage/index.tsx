@@ -1,4 +1,4 @@
-import { Bar, Column, Line } from "@ant-design/charts";
+import { Bar, Line } from "@ant-design/charts";
 import {
   BarChartOutlined,
   CalendarOutlined,
@@ -85,9 +85,7 @@ const BillingGraphPage: React.FC = () => {
   const [serviceOptions, setServiceOptions] = useState<
     { value: string; label: string }[]
   >([{ value: "all", label: "all" }]);
-  const [quotaPoolOptions, setQuotaPoolOptions] = useState<
-    { value: string; label: string }[]
-  >([{ value: "all", label: "all" }]);
+
   const [productOptions, setProductOptions] = useState<
     { value: string; label: string }[]
   >([{ value: "all", label: "all" }]);
@@ -216,14 +214,6 @@ const BillingGraphPage: React.FC = () => {
         label: service,
       }));
       setServiceOptions(serviceOptions);
-
-      // 获取配额池选项 - getAllName直接返回string[]
-      const quotaPools = await getAllName("quotaPool");
-      const quotaPoolOptions = quotaPools.map((pool) => ({
-        value: pool,
-        label: pool,
-      }));
-      setQuotaPoolOptions(quotaPoolOptions);
 
       // 获取产品选项 - getAllName直接返回string[]
       const products = await getAllName("product");
@@ -638,9 +628,24 @@ const BillingGraphPage: React.FC = () => {
                   columns={[
                     {
                       title: "UPN",
-                      dataIndex: "upn",
+                      dataIndex: "userInfo",
                       key: "upn",
-                      render: (text: string) => <Text strong>{text}</Text>,
+                      render: (userInfo: API.UserinfosUserInfos) => (
+                        <Text strong>{userInfo?.upn || ""}</Text>
+                      ),
+                      filters: Array.from(
+                        new Set(
+                          allUsersData.activeUsers
+                            ?.map((item) => item.userInfo?.upn)
+                            .filter(Boolean) || [],
+                        ),
+                      ).map((upn) => ({
+                        text: upn as string,
+                        value: upn as string,
+                      })),
+                      onFilter: (value, record) =>
+                        record.userInfo?.upn === value,
+                      filterSearch: true,
                     },
                     {
                       title: "总消费(CNY)",
@@ -649,6 +654,15 @@ const BillingGraphPage: React.FC = () => {
                       render: (value: API.Decimal) => (
                         <Text type="danger">¥{value}</Text>
                       ),
+                      sorter: (a, b) => {
+                        const costA = a.totalCost
+                          ? parseFloat(a.totalCost.toString())
+                          : 0;
+                        const costB = b.totalCost
+                          ? parseFloat(b.totalCost.toString())
+                          : 0;
+                        return costA - costB;
+                      },
                     },
                     {
                       title: "总调用次数",
@@ -657,11 +671,15 @@ const BillingGraphPage: React.FC = () => {
                       render: (value: number) => (
                         <Tag color="blue">{value}</Tag>
                       ),
+                      sorter: (a, b) =>
+                        (a.totalCalls || 0) - (b.totalCalls || 0),
                     },
                     {
                       title: "最后活跃时间",
                       dataIndex: "lastActive",
                       key: "lastActive",
+                      sorter: (a, b) =>
+                        (a.lastActive || "").localeCompare(b.lastActive || ""),
                     },
                   ]}
                   pagination={{
@@ -931,77 +949,155 @@ const BillingGraphPage: React.FC = () => {
                     />
                   </Card>
                 </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Card>
-                    <Statistic
-                      title="统计周期"
-                      value={`${modelConsumptionData.startDate} ~ ${modelConsumptionData.endDate}`}
-                      valueStyle={{ color: "#52c41a" }}
-                      prefix={<CalendarOutlined />}
-                    />
-                  </Card>
-                </Col>
               </Row>
 
-              {/* 模型消费图表 */}
-              <Row gutter={16}>
-                <Col xs={24} lg={12}>
-                  <Card title="按日期消费趋势">
-                    <div style={{ height: "300px" }}>
-                      {modelConsumptionData.dateConsumption ? (
-                        <Line
-                          data={modelConsumptionData.dateConsumption as any}
-                          height={300}
-                          xField="date"
-                          yField="cost"
-                          meta={{
-                            date: { alias: "日期" },
-                            cost: { alias: "消费金额(CNY)" },
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            textAlign: "center",
-                            padding: "50px",
-                            color: "#999",
-                          }}
-                        >
-                          暂无消费趋势数据
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                </Col>
-                <Col xs={24} lg={12}>
-                  <Card title="按模型消费分布">
-                    <div style={{ height: "300px" }}>
-                      {modelConsumptionData.productConsumption ? (
-                        <Column
-                          data={modelConsumptionData.productConsumption as any}
-                          height={300}
-                          xField="product"
-                          yField="cost"
-                          meta={{
-                            product: { alias: "模型" },
-                            cost: { alias: "消费金额(CNY)" },
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            textAlign: "center",
-                            padding: "50px",
-                            color: "#999",
-                          }}
-                        >
-                          暂无消费分布数据
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                </Col>
-              </Row>
+              {/* 消费数据表格 */}
+              <Card title="消费明细" style={{ marginTop: "16px" }}>
+                {modelConsumptionData.consumption &&
+                Array.isArray(modelConsumptionData.consumption) &&
+                modelConsumptionData.consumption.length > 0 ? (
+                  <Table
+                    dataSource={modelConsumptionData.consumption}
+                    rowKey={(record: any, index) =>
+                      `${record.date}-${record.product}-${record.service}-${index}`
+                    }
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      showQuickJumper: true,
+                      showTotal: (total) => `共 ${total} 条记录`,
+                    }}
+                    scroll={{ x: 800 }}
+                    columns={[
+                      {
+                        title: "日期",
+                        dataIndex: "date",
+                        key: "date",
+                        width: 120,
+                        sorter: (a, b) =>
+                          (a.date || "").localeCompare(b.date || ""),
+                        filters: Array.from(
+                          new Set(
+                            modelConsumptionData.consumption
+                              .map((item: any) => item.date)
+                              .filter(Boolean),
+                          ),
+                        ).map((date) => ({
+                          text: date as string,
+                          value: date as string,
+                        })),
+                        onFilter: (value, record) => record.date === value,
+                        filterSearch: true,
+                      },
+                      {
+                        title: "模型",
+                        dataIndex: "product",
+                        key: "product",
+                        width: 150,
+                        sorter: (a, b) =>
+                          (a.product || "").localeCompare(b.product || ""),
+                        filters: Array.from(
+                          new Set(
+                            modelConsumptionData.consumption
+                              .map((item: any) => item.product)
+                              .filter(Boolean),
+                          ),
+                        ).map((product) => ({
+                          text: product as string,
+                          value: product as string,
+                        })),
+                        onFilter: (value, record) => record.product === value,
+                        filterSearch: true,
+                      },
+                      {
+                        title: "服务类型",
+                        dataIndex: "service",
+                        key: "service",
+                        width: 120,
+                        sorter: (a, b) =>
+                          (a.service || "").localeCompare(b.service || ""),
+                        filters: Array.from(
+                          new Set(
+                            modelConsumptionData.consumption
+                              .map((item: any) => item.service)
+                              .filter(Boolean),
+                          ),
+                        ).map((service) => ({
+                          text: service as string,
+                          value: service as string,
+                        })),
+                        onFilter: (value, record) => record.service === value,
+                        filterSearch: true,
+                      },
+                      {
+                        title: "配额池",
+                        dataIndex: "quotaPool",
+                        key: "quotaPool",
+                        width: 150,
+                        sorter: (a, b) =>
+                          (a.quotaPool || "").localeCompare(b.quotaPool || ""),
+                        filters: Array.from(
+                          new Set(
+                            modelConsumptionData.consumption
+                              .map((item: any) => item.quotaPool)
+                              .filter(Boolean),
+                          ),
+                        ).map((quotaPool) => ({
+                          text: quotaPool as string,
+                          value: quotaPool as string,
+                        })),
+                        onFilter: (value, record) => record.quotaPool === value,
+                        filterSearch: true,
+                      },
+                      {
+                        title: "消费金额(CNY)",
+                        dataIndex: "cost",
+                        key: "cost",
+                        width: 120,
+                        sorter: (a, b) => {
+                          const costA = a.cost
+                            ? parseFloat(a.cost.toString())
+                            : 0;
+                          const costB = b.cost
+                            ? parseFloat(b.cost.toString())
+                            : 0;
+                          return costA - costB;
+                        },
+                        render: (cost) => (
+                          <span
+                            style={{ color: "#cf1322", fontWeight: "bold" }}
+                          >
+                            ¥
+                            {cost
+                              ? parseFloat(cost.toString()).toFixed(2)
+                              : "0.00"}
+                          </span>
+                        ),
+                      },
+                      {
+                        title: "调用次数",
+                        dataIndex: "calls",
+                        key: "calls",
+                        width: 100,
+                        sorter: (a, b) => (a.calls || 0) - (b.calls || 0),
+                        render: (calls) => (
+                          <span style={{ color: "#1890ff" }}>{calls || 0}</span>
+                        ),
+                      },
+                    ]}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "50px",
+                      color: "#999",
+                    }}
+                  >
+                    暂无消费明细数据
+                  </div>
+                )}
+              </Card>
             </>
           ) : (
             <Card>
