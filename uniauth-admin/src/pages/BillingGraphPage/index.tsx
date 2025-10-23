@@ -619,6 +619,11 @@ const BillingGraphPage: React.FC = () => {
                     onChange: handlePageChange,
                     showSizeChanger: true,
                     pageSizeOptions: ["10", "20", "30"],
+                    showTotal: (total, range) => {
+                      const totalPages = allUsersData.totalPages || 0;
+                      return `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录，共 ${totalPages} 页`;
+                    },
+                    showQuickJumper: true,
                   }}
                   rowKey={(record) => record.userInfo?.upn || ""}
                 />
