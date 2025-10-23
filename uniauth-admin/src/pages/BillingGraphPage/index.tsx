@@ -3,7 +3,6 @@ import {
   BarChartOutlined,
   CalendarOutlined,
   RiseOutlined,
-  TableOutlined,
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -60,7 +59,7 @@ const BillingGraphPage: React.FC = () => {
     useState<API.GetProductUsageChartRes | null>(null);
 
   const [selectedService, setSelectedService] = useState<string>("");
-  const [selectedDays, setSelectedDays] = useState<number>(30);
+  const [selectedDays, setSelectedDays] = useState<number>(7);
   const [selectedModelDays, setSelectedModelDays] = useState<number>(7);
   const [selectedModelService, setSelectedModelService] = useState<string>("");
   const [selectedModelProduct, setSelectedModelProduct] = useState<string>("");
@@ -398,9 +397,9 @@ const BillingGraphPage: React.FC = () => {
                   style={{ width: 120 }}
                   placeholder="选择天数"
                 >
-                  <Option value={7}>7天</Option>
-                  <Option value={30}>30天</Option>
-                  <Option value={90}>90天</Option>
+                  <Option value={7}>7</Option>
+                  <Option value={30}>30</Option>
+                  <Option value={90}>90</Option>
                 </Select>
               </Col>
             </Row>
@@ -568,33 +567,13 @@ const BillingGraphPage: React.FC = () => {
           ) : allUsersData ? (
             <>
               <Row gutter={16} style={{ marginBottom: "24px" }}>
-                <Col xs={24} sm={12} md={8}>
+                <Col xs={24} sm={24} md={24}>
                   <Card>
                     <Statistic
                       title="活跃用户总数"
                       value={allUsersData.total || 0}
                       valueStyle={{ color: "#52c41a" }}
                       prefix={<TeamOutlined />}
-                    />
-                  </Card>
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Card>
-                    <Statistic
-                      title="当前页码"
-                      value={allUsersData.page || 1}
-                      valueStyle={{ color: "#1890ff" }}
-                      prefix={<TableOutlined />}
-                    />
-                  </Card>
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Card>
-                    <Statistic
-                      title="总页数"
-                      value={allUsersData.totalPages || 1}
-                      valueStyle={{ color: "#faad14" }}
-                      prefix={<BarChartOutlined />}
                     />
                   </Card>
                 </Col>
@@ -606,15 +585,10 @@ const BillingGraphPage: React.FC = () => {
                   dataSource={allUsersData.activeUsers || []}
                   columns={[
                     {
-                      title: "用户名",
-                      dataIndex: ["userInfo", "upn"],
+                      title: "UPN",
+                      dataIndex: "upn",
                       key: "upn",
                       render: (text: string) => <Text strong>{text}</Text>,
-                    },
-                    {
-                      title: "显示名",
-                      dataIndex: ["userInfo", "displayName"],
-                      key: "displayName",
                     },
                     {
                       title: "总消费(CNY)",
@@ -644,7 +618,7 @@ const BillingGraphPage: React.FC = () => {
                     total: allUsersData.total || 0,
                     onChange: handlePageChange,
                     showSizeChanger: true,
-                    showQuickJumper: true,
+                    pageSizeOptions: ["10", "20", "30"],
                   }}
                   rowKey={(record) => record.userInfo?.upn || ""}
                 />
