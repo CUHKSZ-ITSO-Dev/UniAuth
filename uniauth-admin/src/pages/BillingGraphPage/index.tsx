@@ -23,12 +23,25 @@ import React, { useEffect, useState } from "react";
 import {
   getBillingStatsActiveUsersList,
   getBillingStatsActiveUsersSummary,
+  getBillingStatsAllName,
   getBillingStatsChatUsageChart,
   getBillingStatsChatUsageGroup,
   getBillingStatsModelConsumption,
   getBillingStatsModelUsage,
   getBillingStatsTodayTotal,
 } from "@/services/uniauthService/billing";
+
+// 动态获取选项的API函数
+const getAllName = async (name: string): Promise<string[]> => {
+  try {
+    const response = await getBillingStatsAllName({ name });
+    console.log(`API响应数据 for ${name}:`, response);
+    return response?.allName || [];
+  } catch (error) {
+    console.error(`获取${name}列表失败:`, error);
+    return [];
+  }
+};
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -58,30 +71,28 @@ const BillingGraphPage: React.FC = () => {
   const [modelUsageData, setModelUsageData] =
     useState<API.GetProductUsageChartRes | null>(null);
 
-  const [selectedService, setSelectedService] = useState<string>("");
+  const [selectedService, setSelectedService] = useState<string>("all");
   const [selectedDays, setSelectedDays] = useState<number>(7);
   const [selectedModelDays, setSelectedModelDays] = useState<number>(7);
-  const [selectedModelService, setSelectedModelService] = useState<string>("");
-  const [selectedModelProduct, setSelectedModelProduct] = useState<string>("");
+  const [selectedModelService, setSelectedModelService] =
+    useState<string>("all");
+  const [selectedModelProduct, setSelectedModelProduct] =
+    useState<string>("all");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
 
-  // 服务选项
-  const serviceOptions = [
-    { value: "", label: "全部服务" },
-    { value: "chat", label: "聊天服务" },
-    { value: "image", label: "图像服务" },
-  ];
+  // 动态选项状态
+  const [serviceOptions, setServiceOptions] = useState<
+    { value: string; label: string }[]
+  >([{ value: "all", label: "all" }]);
+  const [quotaPoolOptions, setQuotaPoolOptions] = useState<
+    { value: string; label: string }[]
+  >([{ value: "all", label: "all" }]);
+  const [productOptions, setProductOptions] = useState<
+    { value: string; label: string }[]
+  >([{ value: "all", label: "all" }]);
 
-  // 模型选项
-  const modelOptions = [
-    { value: "", label: "全部模型" },
-    { value: "gpt-4", label: "GPT-4" },
-    { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo" },
-    { value: "dall-e", label: "DALL-E" },
-  ];
-
-  // 天数选项
+  // 天数选项（保持不变）
   const daysOptions = [
     { value: 7, label: "7" },
     { value: 30, label: "30" },
@@ -195,6 +206,37 @@ const BillingGraphPage: React.FC = () => {
     }
   };
 
+  // 获取动态选项
+  const fetchDynamicOptions = async () => {
+    try {
+      // 获取服务选项 - getAllName直接返回string[]
+      const services = await getAllName("service");
+      const serviceOptions = services.map((service) => ({
+        value: service,
+        label: service,
+      }));
+      setServiceOptions(serviceOptions);
+
+      // 获取配额池选项 - getAllName直接返回string[]
+      const quotaPools = await getAllName("quotaPool");
+      const quotaPoolOptions = quotaPools.map((pool) => ({
+        value: pool,
+        label: pool,
+      }));
+      setQuotaPoolOptions(quotaPoolOptions);
+
+      // 获取产品选项 - getAllName直接返回string[]
+      const products = await getAllName("product");
+      const productOptions = products.map((product) => ({
+        value: product,
+        label: product,
+      }));
+      setProductOptions(productOptions);
+    } catch (error) {
+      console.error("获取动态选项失败:", error);
+    }
+  };
+
   // 获取模型消费金额统计
   const fetchModelConsumptionData = async (
     days?: number,
@@ -269,6 +311,7 @@ const BillingGraphPage: React.FC = () => {
   };
 
   useEffect(() => {
+    fetchDynamicOptions();
     fetchStatsData();
     fetchActiveUsersData();
     fetchAllUsersData();
@@ -297,6 +340,15 @@ const BillingGraphPage: React.FC = () => {
                   onChange={handleServiceChange}
                   style={{ width: 200 }}
                   placeholder="选择服务类型"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) => {
+                    const children = option?.children;
+                    const text = Array.isArray(children)
+                      ? children.join("")
+                      : String(children || "");
+                    return text.toLowerCase().includes(input.toLowerCase());
+                  }}
                 >
                   {serviceOptions.map((option) => (
                     <Option key={option.value} value={option.value}>
@@ -775,6 +827,15 @@ const BillingGraphPage: React.FC = () => {
                   }
                   style={{ width: 200 }}
                   placeholder="选择服务类型"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) => {
+                    const children = option?.children;
+                    const text = Array.isArray(children)
+                      ? children.join("")
+                      : String(children || "");
+                    return text.toLowerCase().includes(input.toLowerCase());
+                  }}
                 >
                   {serviceOptions.map((option) => (
                     <Option key={option.value} value={option.value}>
@@ -798,8 +859,17 @@ const BillingGraphPage: React.FC = () => {
                   }
                   style={{ width: 200 }}
                   placeholder="选择模型"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) => {
+                    const children = option?.children;
+                    const text = Array.isArray(children)
+                      ? children.join("")
+                      : String(children || "");
+                    return text.toLowerCase().includes(input.toLowerCase());
+                  }}
                 >
-                  {modelOptions.map((option) => (
+                  {productOptions.map((option) => (
                     <Option key={option.value} value={option.value}>
                       {option.label}
                     </Option>
@@ -969,6 +1039,15 @@ const BillingGraphPage: React.FC = () => {
                   }
                   style={{ width: 200 }}
                   placeholder="选择服务类型"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) => {
+                    const children = option?.children;
+                    const text = Array.isArray(children)
+                      ? children.join("")
+                      : String(children || "");
+                    return text.toLowerCase().includes(input.toLowerCase());
+                  }}
                 >
                   {serviceOptions.map((option) => (
                     <Option key={option.value} value={option.value}>
@@ -992,8 +1071,17 @@ const BillingGraphPage: React.FC = () => {
                   }
                   style={{ width: 200 }}
                   placeholder="选择模型"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) => {
+                    const children = option?.children;
+                    const text = Array.isArray(children)
+                      ? children.join("")
+                      : String(children || "");
+                    return text.toLowerCase().includes(input.toLowerCase());
+                  }}
                 >
-                  {modelOptions.map((option) => (
+                  {productOptions.map((option) => (
                     <Option key={option.value} value={option.value}>
                       {option.label}
                     </Option>

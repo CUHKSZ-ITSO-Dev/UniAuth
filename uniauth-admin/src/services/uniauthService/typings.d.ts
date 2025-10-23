@@ -1094,6 +1094,18 @@ declare namespace API {
     /** 总调用次数（当前分类下） */
     totalCalls?: number;
   };
+
+  // 获取所有名称请求参数
+  type GetAllNameReq = {
+    /** 要查询的名称类型：service/quotaPool/product */
+    name: string;
+  };
+
+  // 获取所有名称响应
+  type GetAllNameRes = {
+    /** 返回指定服务名称 */
+    allName: string[];
+  };
 }
 
 type DefaultCasbinRule = {

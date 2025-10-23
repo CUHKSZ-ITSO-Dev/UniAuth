@@ -159,3 +159,15 @@ export async function getBillingStatsModelUsage(
     ...(options || {}),
   });
 }
+
+/** 获取所有名称 获取指定类型的名称列表 GET /billing/stats/service/list */
+export async function getBillingStatsAllName(
+  params: API.GetAllNameReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetAllNameRes>("/billing/stats/service/list", {
+    method: "GET",
+    params,
+    ...(options || {}),
+  });
+}
