@@ -344,7 +344,7 @@ const BillingGraphPage: React.FC = () => {
                   <Statistic
                     title="消费增长率"
                     value={statsData.increaseRate}
-                    precision={1}
+                    precision={2}
                     valueStyle={{
                       color: statsData.increaseRate > 0 ? "#cf1322" : "#3f8600",
                     }}
