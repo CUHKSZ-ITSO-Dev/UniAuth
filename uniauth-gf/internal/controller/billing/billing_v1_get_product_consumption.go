@@ -84,3 +84,22 @@ func (c *ControllerV1) GetProductConsumption(ctx context.Context, req *v1.GetPro
 
 	return res, nil
 }
+
+type ConsumptionItem struct {
+	Service   string
+	QuotaPool string
+	Product   string
+}
+
+func (c *ControllerV1) validateAndFilterName(service string, quotaPool string, product string) (ConsumptionItem, error) {
+	if service == "all" {
+		service = ""
+	}
+	if quotaPool == "all" {
+		quotaPool = ""
+	}
+	if product == "all" {
+		product = ""
+	}
+	return ConsumptionItem{service, quotaPool, product}, nil
+}
