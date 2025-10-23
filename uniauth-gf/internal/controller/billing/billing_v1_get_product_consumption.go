@@ -44,13 +44,13 @@ func (c *ControllerV1) GetProductConsumption(ctx context.Context, req *v1.GetPro
 		return nil, gerror.Wrap(err, "查询消费数据失败")
 	}
 
-	// 查询总统计
+	//在同一个查询中获取详细数据和总统计
 	var totalStats struct {
 		TotalCalls int             `json:"totalCalls"`
 		TotalCost  decimal.Decimal `json:"totalCost"`
 	}
 
-	// 构建查询条件
+	// 使用相同的查询条件获取总统计
 	totalQuery := dao.BillingCostRecords.Ctx(ctx).
 		Where("created_at >= ?", startDate).
 		Where("created_at <= ?", endDate)

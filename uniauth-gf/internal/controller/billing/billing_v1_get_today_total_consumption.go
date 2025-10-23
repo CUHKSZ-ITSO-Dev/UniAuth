@@ -63,7 +63,7 @@ func (c *ControllerV1) GetTodayTotalConsumption(ctx context.Context, req *v1.Get
 
 // getTodayAndYesterdayCost 查询获取今天和昨天的消费数据
 func (c *ControllerV1) getTodayAndYesterdayCost(ctx context.Context, today, yesterday time.Time, service string) (todayCost, yesterdayCost decimal.Decimal, err error) {
-	// 构建查询条件
+	// 查询获取今天和昨天的数据
 	query := dao.BillingCostRecords.Ctx(ctx).
 		Where("created_at >= ?", yesterday).
 		Where("created_at < ?", today.AddDate(0, 0, 1))
@@ -73,7 +73,7 @@ func (c *ControllerV1) getTodayAndYesterdayCost(ctx context.Context, today, yest
 		query = query.Where("svc = ?", service)
 	}
 
-	//分别计算今天和昨天的消费
+	// 使用 CASE WHEN 在单次查询中计算今天和昨天的消费
 	type CostResult struct {
 		TodayCost     decimal.Decimal `json:"today_cost"`
 		YesterdayCost decimal.Decimal `json:"yesterday_cost"`
@@ -83,14 +83,35 @@ func (c *ControllerV1) getTodayAndYesterdayCost(ctx context.Context, today, yest
 	err = query.Fields(`
 		COALESCE(SUM(CASE WHEN DATE(created_at) = ? THEN cost ELSE 0 END), 0) as today_cost,
 		COALESCE(SUM(CASE WHEN DATE(created_at) = ? THEN cost ELSE 0 END), 0) as yesterday_cost
-	`, today.Format("2006-01-02"), yesterday.Format("2006-01-02")).
-		Scan(&result)
+	`).
+		Scan(&result, today.Format("2006-01-02"), yesterday.Format("2006-01-02"))
 
 	if err != nil {
 		return decimal.Zero, decimal.Zero, gerror.Wrap(err, "查询消费数据失败")
 	}
 
 	return result.TodayCost, result.YesterdayCost, nil
+}
+
+// getCostByDate 查询指定日期的消费数据
+func (c *ControllerV1) getCostByDate(ctx context.Context, date time.Time, service string) (cost decimal.Decimal, err error) {
+	query := dao.BillingCostRecords.Ctx(ctx).
+		Where("DATE(created_at) = ?", date.Format("2006-01-02"))
+
+	// 如果指定了服务类型，添加过滤条件
+	if service != "" {
+		query = query.Where("svc = ?", service)
+	}
+
+	var result decimal.Decimal
+	err = query.Fields("COALESCE(SUM(cost), 0)").
+		Scan(&result)
+
+	if err != nil {
+		return decimal.Zero, gerror.Wrap(err, "查询消费数据失败")
+	}
+
+	return result, nil
 }
 
 // calculateIncreaseRate 计算增长率
