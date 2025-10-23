@@ -1011,7 +1011,7 @@ declare namespace API {
 
   // 活跃用户详情
   type ActiveUserDetail = {
-    userInfo?: UserinfosUserInfos;
+    upn?: string;
     totalCost?: Decimal;
     totalCalls?: number;
     lastActive?: string;

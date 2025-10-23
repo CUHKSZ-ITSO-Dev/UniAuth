@@ -628,23 +628,20 @@ const BillingGraphPage: React.FC = () => {
                   columns={[
                     {
                       title: "UPN",
-                      dataIndex: "userInfo",
+                      dataIndex: "upn",
                       key: "upn",
-                      render: (userInfo: API.UserinfosUserInfos) => (
-                        <Text strong>{userInfo?.upn || ""}</Text>
-                      ),
+                      render: (upn: string) => <Text strong>{upn || ""}</Text>,
                       filters: Array.from(
                         new Set(
                           allUsersData.activeUsers
-                            ?.map((item) => item.userInfo?.upn)
+                            ?.map((item) => item.upn)
                             .filter(Boolean) || [],
                         ),
                       ).map((upn) => ({
                         text: upn as string,
                         value: upn as string,
                       })),
-                      onFilter: (value, record) =>
-                        record.userInfo?.upn === value,
+                      onFilter: (value, record) => record.upn === value,
                       filterSearch: true,
                     },
                     {
@@ -695,7 +692,7 @@ const BillingGraphPage: React.FC = () => {
                     },
                     showQuickJumper: true,
                   }}
-                  rowKey={(record) => record.userInfo?.upn || ""}
+                  rowKey={(record) => record.upn || ""}
                 />
               </Card>
             </>
