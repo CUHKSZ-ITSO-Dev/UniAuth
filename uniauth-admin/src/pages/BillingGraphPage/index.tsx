@@ -6,7 +6,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { PageContainer, ProCard } from "@ant-design/pro-components";
+import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import {
   Alert,
   Card,
@@ -15,7 +15,6 @@ import {
   Select,
   Spin,
   Statistic,
-  Table,
   Tag,
   Typography,
 } from "antd";
@@ -50,7 +49,7 @@ const BillingGraphPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [activeUsersLoading, setActiveUsersLoading] = useState<boolean>(false);
   const [allUsersLoading, setAllUsersLoading] = useState<boolean>(false);
-  const [chatUsageLoading, setChatUsageLoading] = useState<boolean>(false);
+
   const [modelConsumptionLoading, setModelConsumptionLoading] =
     useState<boolean>(false);
   const [modelUsageLoading, setModelUsageLoading] = useState<boolean>(false);
@@ -62,10 +61,7 @@ const BillingGraphPage: React.FC = () => {
     useState<API.GetActiveUsersNumRes | null>(null);
   const [allUsersData, setAllUsersData] =
     useState<API.GetAllActiveUsersRes | null>(null);
-  const [chatUsageChartData, setChatUsageChartData] =
-    useState<API.NDaysProductUsageChartRes | null>(null);
-  const [chatUsageGroupData, setChatUsageGroupData] =
-    useState<API.NDaysProductUsageGroupRes | null>(null);
+
   const [modelConsumptionData, setModelConsumptionData] =
     useState<API.GetProductConsumptionRes | null>(null);
   const [modelUsageData, setModelUsageData] =
@@ -181,26 +177,18 @@ const BillingGraphPage: React.FC = () => {
 
   // 获取对话服务使用次数统计
   const fetchChatUsageData = async (days?: number) => {
-    setChatUsageLoading(true);
     setError("");
 
     try {
       const params: API.NDaysProductUsageChartReq = {
         N: days || 7,
       };
-      const chartResponse = await getBillingStatsChatUsageChart(params);
-      const groupResponse = await getBillingStatsChatUsageGroup(params);
-      if (chartResponse) {
-        setChatUsageChartData(chartResponse);
-      }
-      if (groupResponse) {
-        setChatUsageGroupData(groupResponse);
-      }
+      // 获取数据但不存储，因为当前页面未使用这些数据
+      await getBillingStatsChatUsageChart(params);
+      await getBillingStatsChatUsageGroup(params);
     } catch (err) {
       setError("获取对话服务使用次数统计失败，请稍后重试");
       console.error("获取对话服务使用次数统计失败:", err);
-    } finally {
-      setChatUsageLoading(false);
     }
   };
 
@@ -623,14 +611,16 @@ const BillingGraphPage: React.FC = () => {
 
               {/* 用户数据表格 */}
               <Card title="用户详细信息" style={{ marginTop: "16px" }}>
-                <Table
+                <ProTable
                   dataSource={allUsersData.activeUsers || []}
                   columns={[
                     {
                       title: "UPN",
                       dataIndex: "upn",
                       key: "upn",
-                      render: (upn: string) => <Text strong>{upn || ""}</Text>,
+                      render: (_, record: any) => (
+                        <Text strong>{record.upn || ""}</Text>
+                      ),
                       filters: Array.from(
                         new Set(
                           allUsersData.activeUsers
@@ -641,17 +631,18 @@ const BillingGraphPage: React.FC = () => {
                         text: upn as string,
                         value: upn as string,
                       })),
-                      onFilter: (value, record) => record.upn === value,
+                      onFilter: (value: any, record: any) =>
+                        record.upn === value,
                       filterSearch: true,
                     },
                     {
                       title: "总消费(CNY)",
                       dataIndex: "totalCost",
                       key: "totalCost",
-                      render: (value: API.Decimal) => (
-                        <Text type="danger">¥{value}</Text>
+                      render: (_, record: any) => (
+                        <Text type="danger">¥{record.totalCost}</Text>
                       ),
-                      sorter: (a, b) => {
+                      sorter: (a: any, b: any) => {
                         const costA = a.totalCost
                           ? parseFloat(a.totalCost.toString())
                           : 0;
@@ -665,17 +656,17 @@ const BillingGraphPage: React.FC = () => {
                       title: "总调用次数",
                       dataIndex: "totalCalls",
                       key: "totalCalls",
-                      render: (value: number) => (
-                        <Tag color="blue">{value}</Tag>
+                      render: (_, record: any) => (
+                        <Tag color="blue">{record.totalCalls || 0}</Tag>
                       ),
-                      sorter: (a, b) =>
+                      sorter: (a: any, b: any) =>
                         (a.totalCalls || 0) - (b.totalCalls || 0),
                     },
                     {
                       title: "最后活跃时间",
                       dataIndex: "lastActive",
                       key: "lastActive",
-                      sorter: (a, b) =>
+                      sorter: (a: any, b: any) =>
                         (a.lastActive || "").localeCompare(b.lastActive || ""),
                     },
                   ]}
@@ -686,13 +677,13 @@ const BillingGraphPage: React.FC = () => {
                     onChange: handlePageChange,
                     showSizeChanger: true,
                     pageSizeOptions: ["10", "20", "30"],
-                    showTotal: (total, range) => {
+                    showTotal: (total: number, range: number[]) => {
                       const totalPages = allUsersData.totalPages || 0;
                       return `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录，共 ${totalPages} 页`;
                     },
                     showQuickJumper: true,
                   }}
-                  rowKey={(record) => record.upn || ""}
+                  rowKey={(record: any) => record.upn || ""}
                 />
               </Card>
             </>
@@ -702,116 +693,6 @@ const BillingGraphPage: React.FC = () => {
                 style={{ textAlign: "center", padding: "50px", color: "#999" }}
               >
                 暂无用户数据
-              </div>
-            </Card>
-          )}
-        </Card>
-
-        {/* 对话服务使用次数统计 */}
-        <Card style={{ marginTop: "24px" }}>
-          <Title level={4}>对话服务使用次数统计</Title>
-          <Text type="secondary">
-            查看最近{selectedModelDays}天对话服务使用情况
-          </Text>
-
-          {/* 筛选器区域 */}
-          <Card style={{ marginBottom: "24px", marginTop: "16px" }}>
-            <Row gutter={16} align="middle">
-              <Col>
-                <span style={{ marginRight: "8px" }}>统计天数:</span>
-              </Col>
-              <Col>
-                <Select
-                  value={selectedModelDays}
-                  onChange={(value) =>
-                    handleModelFilterChange(
-                      value,
-                      selectedModelService,
-                      selectedModelProduct,
-                    )
-                  }
-                  style={{ width: 120 }}
-                  placeholder="选择天数"
-                >
-                  {daysOptions.map((option) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Col>
-            </Row>
-          </Card>
-
-          {chatUsageLoading ? (
-            <div style={{ textAlign: "center", padding: "50px" }}>
-              <Spin size="large" />
-            </div>
-          ) : chatUsageChartData || chatUsageGroupData ? (
-            <Row gutter={16}>
-              <Col xs={24} lg={12}>
-                <Card title="使用次数趋势图">
-                  <div style={{ height: "300px" }}>
-                    {chatUsageChartData?.chartData ? (
-                      <Line
-                        data={chatUsageChartData.chartData as any}
-                        height={300}
-                        xField="date"
-                        yField="count"
-                        meta={{
-                          date: { alias: "日期" },
-                          count: { alias: "使用次数" },
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          textAlign: "center",
-                          padding: "50px",
-                          color: "#999",
-                        }}
-                      >
-                        暂无图表数据
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              </Col>
-              <Col xs={24} lg={12}>
-                <Card title="使用次数聚合统计">
-                  <div style={{ height: "300px" }}>
-                    {chatUsageGroupData?.groupData ? (
-                      <Bar
-                        data={chatUsageGroupData.groupData as any}
-                        height={300}
-                        xField="product"
-                        yField="total"
-                        meta={{
-                          product: { alias: "产品" },
-                          total: { alias: "总使用次数" },
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          textAlign: "center",
-                          padding: "50px",
-                          color: "#999",
-                        }}
-                      >
-                        暂无聚合数据
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              </Col>
-            </Row>
-          ) : (
-            <Card>
-              <div
-                style={{ textAlign: "center", padding: "50px", color: "#999" }}
-              >
-                暂无对话服务使用数据
               </div>
             </Card>
           )}
@@ -953,16 +834,21 @@ const BillingGraphPage: React.FC = () => {
                 {modelConsumptionData.consumption &&
                 Array.isArray(modelConsumptionData.consumption) &&
                 modelConsumptionData.consumption.length > 0 ? (
-                  <Table
+                  <ProTable
                     dataSource={modelConsumptionData.consumption}
                     rowKey={(record: any, index) =>
                       `${record.date}-${record.product}-${record.service}-${index}`
                     }
                     pagination={{
-                      pageSize: 10,
                       showSizeChanger: true,
-                      showQuickJumper: true,
-                      showTotal: (total) => `共 ${total} 条记录`,
+                      showTotal: (total: number) => `共 ${total} 条记录`,
+                      pageSizeOptions: ["10", "20", "30"],
+                      onChange: (page: number, pageSize: number) => {
+                        console.log(`切换到第${page}页，每页${pageSize}条`);
+                      },
+                      onShowSizeChange: (_: number, size: number) => {
+                        console.log(`每页条数改为${size}条`);
+                      },
                     }}
                     scroll={{ x: 800 }}
                     columns={[
@@ -971,7 +857,7 @@ const BillingGraphPage: React.FC = () => {
                         dataIndex: "date",
                         key: "date",
                         width: 120,
-                        sorter: (a, b) =>
+                        sorter: (a: any, b: any) =>
                           (a.date || "").localeCompare(b.date || ""),
                         filters: Array.from(
                           new Set(
@@ -983,7 +869,8 @@ const BillingGraphPage: React.FC = () => {
                           text: date as string,
                           value: date as string,
                         })),
-                        onFilter: (value, record) => record.date === value,
+                        onFilter: (value: any, record: any) =>
+                          record.date === value,
                         filterSearch: true,
                       },
                       {
@@ -991,7 +878,7 @@ const BillingGraphPage: React.FC = () => {
                         dataIndex: "product",
                         key: "product",
                         width: 150,
-                        sorter: (a, b) =>
+                        sorter: (a: any, b: any) =>
                           (a.product || "").localeCompare(b.product || ""),
                         filters: Array.from(
                           new Set(
@@ -1003,7 +890,8 @@ const BillingGraphPage: React.FC = () => {
                           text: product as string,
                           value: product as string,
                         })),
-                        onFilter: (value, record) => record.product === value,
+                        onFilter: (value: any, record: any) =>
+                          record.product === value,
                         filterSearch: true,
                       },
                       {
@@ -1011,7 +899,7 @@ const BillingGraphPage: React.FC = () => {
                         dataIndex: "service",
                         key: "service",
                         width: 120,
-                        sorter: (a, b) =>
+                        sorter: (a: any, b: any) =>
                           (a.service || "").localeCompare(b.service || ""),
                         filters: Array.from(
                           new Set(
@@ -1023,7 +911,8 @@ const BillingGraphPage: React.FC = () => {
                           text: service as string,
                           value: service as string,
                         })),
-                        onFilter: (value, record) => record.service === value,
+                        onFilter: (value: any, record: any) =>
+                          record.service === value,
                         filterSearch: true,
                       },
                       {
@@ -1031,7 +920,7 @@ const BillingGraphPage: React.FC = () => {
                         dataIndex: "quotaPool",
                         key: "quotaPool",
                         width: 150,
-                        sorter: (a, b) =>
+                        sorter: (a: any, b: any) =>
                           (a.quotaPool || "").localeCompare(b.quotaPool || ""),
                         filters: Array.from(
                           new Set(
@@ -1043,7 +932,8 @@ const BillingGraphPage: React.FC = () => {
                           text: quotaPool as string,
                           value: quotaPool as string,
                         })),
-                        onFilter: (value, record) => record.quotaPool === value,
+                        onFilter: (value: any, record: any) =>
+                          record.quotaPool === value,
                         filterSearch: true,
                       },
                       {
@@ -1051,7 +941,7 @@ const BillingGraphPage: React.FC = () => {
                         dataIndex: "cost",
                         key: "cost",
                         width: 120,
-                        sorter: (a, b) => {
+                        sorter: (a: any, b: any) => {
                           const costA = a.cost
                             ? parseFloat(a.cost.toString())
                             : 0;
@@ -1060,13 +950,13 @@ const BillingGraphPage: React.FC = () => {
                             : 0;
                           return costA - costB;
                         },
-                        render: (cost) => (
+                        render: (_, record: any) => (
                           <span
                             style={{ color: "#cf1322", fontWeight: "bold" }}
                           >
                             ¥
-                            {cost
-                              ? parseFloat(cost.toString()).toFixed(2)
+                            {record.cost
+                              ? parseFloat(record.cost.toString()).toFixed(2)
                               : "0.00"}
                           </span>
                         ),
@@ -1076,9 +966,12 @@ const BillingGraphPage: React.FC = () => {
                         dataIndex: "calls",
                         key: "calls",
                         width: 100,
-                        sorter: (a, b) => (a.calls || 0) - (b.calls || 0),
-                        render: (calls) => (
-                          <span style={{ color: "#1890ff" }}>{calls || 0}</span>
+                        sorter: (a: any, b: any) =>
+                          (a.calls || 0) - (b.calls || 0),
+                        render: (_, record: any) => (
+                          <span style={{ color: "#1890ff" }}>
+                            {record.calls || 0}
+                          </span>
                         ),
                       },
                     ]}
