@@ -15,8 +15,8 @@ func (c *ControllerV1) NDaysProductUsageChart(ctx context.Context, req *v1.NDays
 	result, err := dao.BillingCostRecords.Ctx(ctx).
 		Where("svc = ?", "chat").
 		Where(fmt.Sprintf("created_at >= NOW() - INTERVAL '%d' DAY", req.N)).
-		Group("DATE(created_at), product").
-		Fields("DATE(created_at) as date, product, SUM(cost) as cost").
+		Group("created_at::date, product").
+		Fields("created_at::date as date, product, SUM(cost) as cost").
 		All()
 	if err != nil {
 		return nil, gerror.Wrap(err, "账单筛选数据失败")
