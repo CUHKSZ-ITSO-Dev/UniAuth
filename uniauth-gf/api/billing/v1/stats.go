@@ -111,14 +111,15 @@ type GetAllActiveUsersRes struct {
 	TotalPages  int                  `json:"totalPages" dc:"总页数"`
 }
 
-// GetAllServiceNameReq 返回所有服务的名称
-type GetAllServiceNameReq struct {
+// GetAllNameReq 返回所有前端需要的名称
+type GetAllNameReq struct {
 	g.Meta `path:"/stats/service/list" tags:"Billing/Status" method:"GET"  summary:"返回所有服务名称" `
+	Name   string `json:"name" dc:"要查询的名称" example:"service/quotaPool/product"`
 }
 
-// GetAllServiceNameRes 返回所有服务的名称查询响应
-type GetAllServiceNameRes struct {
-	ServiceName []string `json:"serviceName" dc:"返回所有服务名称"`
+// GetAllNameRes 返回所有服务的名称查询响应
+type GetAllNameRes struct {
+	Name []string `json:"allName" dc:"返回指定服务名称"`
 }
 
 // GetActiveUserDetailReq 点击详情查询某个活跃用户详细信息
