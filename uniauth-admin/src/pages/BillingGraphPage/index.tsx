@@ -263,14 +263,12 @@ const BillingGraphPage: React.FC = () => {
     fetchModelUsageData(days, service, product);
   };
 
-  // 分页变化处理
   const handlePageChange = (page: number, pageSize?: number) => {
     setCurrentPage(page);
     setPageSize(pageSize || 10);
     fetchAllUsersData(selectedDays, page, pageSize);
   };
 
-  // 组件挂载时获取数据
   useEffect(() => {
     fetchStatsData();
     fetchActiveUsersData();
@@ -279,8 +277,6 @@ const BillingGraphPage: React.FC = () => {
     fetchModelConsumptionData();
     fetchModelUsageData();
   }, []);
-
-  // 准备折线图数据（已废弃，现在直接在组件中使用）
 
   return (
     <PageContainer>
@@ -421,7 +417,7 @@ const BillingGraphPage: React.FC = () => {
                   <Card>
                     <Statistic
                       title="总用户数"
-                      value={activeUsersData.totalUsers || 0}
+                      value={activeUsersData.totalUsrs || 0}
                       valueStyle={{ color: "#52c41a" }}
                       prefix={<TeamOutlined />}
                     />
@@ -446,7 +442,7 @@ const BillingGraphPage: React.FC = () => {
                     activeUsersData.activeUsers
                       ?.map((item) => ({
                         date: item.date || "",
-                        activeUsersNum: item.activeUsers || 0, // 修复字段名：activeUsersNum → activeUsers
+                        activeUsersNum: item.activeUsersNum || 0,
                         activeRateInc: item.activeRateInc || 0,
                       }))
                       ?.sort((a, b) => {
