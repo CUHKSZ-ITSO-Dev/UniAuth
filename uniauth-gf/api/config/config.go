@@ -26,4 +26,5 @@ type IConfigV1 interface {
 	DeleteI18Config(ctx context.Context, req *v1.DeleteI18ConfigReq) (res *v1.DeleteI18ConfigRes, err error)
 	GetAllLangs(ctx context.Context, req *v1.GetAllLangsReq) (res *v1.GetAllLangsRes, err error)
 	FilterI18n(ctx context.Context, req *v1.FilterI18nReq) (res *v1.FilterI18nRes, err error)
+	BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI18nReq) (res *v1.BatchUploadI18nRes, err error)
 }

@@ -970,6 +970,13 @@ declare namespace API {
     updatedAt?: string;
   };
 
+  type BatchUploadI18nRes = {
+    /** 是否成功 */
+    ok?: boolean;
+    /** 识别到的新i18n键数量 */
+    count: number;
+  };
+
   type Var = unknown;
 }
 

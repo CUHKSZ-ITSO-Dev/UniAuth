@@ -1,4 +1,9 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  InboxOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import type { ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
@@ -9,15 +14,19 @@ import {
   Modal,
   message,
   Popconfirm,
+  Radio,
   Space,
+  Spin,
   Table,
   Tag,
   Typography,
+  Upload,
 } from "antd";
 import React, { useRef, useState } from "react";
 import {
   deleteConfigI18N,
   postConfigI18N,
+  postConfigI18NBatchUpload,
   postConfigI18NFilter,
   putConfigI18N,
 } from "@/services/uniauthService/i18N";
@@ -40,6 +49,10 @@ const ConfigI18nPage: React.FC = () => {
   const intl = useIntl();
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [uploadModalVisible, setUploadModalVisible] = useState(false);
+  const [uploadForm] = Form.useForm();
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
   const [form] = Form.useForm();
   const actionRef = useRef<any>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -223,6 +236,13 @@ const ConfigI18nPage: React.FC = () => {
     setModalVisible(true);
   };
 
+  // 批量添加翻译配置
+  const handleBatchAdd = () => {
+    uploadForm.resetFields();
+    setUploadFile(null);
+    setUploadModalVisible(true);
+  };
+
   // 批量删除翻译配置
   const handleBatchDeleteClick = () => {
     if (selectedRowKeys.length === 0) {
@@ -326,6 +346,67 @@ const ConfigI18nPage: React.FC = () => {
       message.error(
         intl.formatMessage({
           id: "pages.configI18n.operation.error",
+        }),
+      );
+    }
+  };
+
+  // 处理文件上传模态框的确认操作
+  const handleUploadModalOk = async () => {
+    try {
+      const values = await uploadForm.validateFields();
+
+      if (!uploadFile) {
+        message.warning(
+          intl.formatMessage({
+            id: "pages.configI18n.upload.fileRequired",
+            defaultMessage: "请选择要上传的文件",
+          }),
+        );
+        return;
+      }
+
+      setUploadLoading(true);
+
+      // 发送批量上传请求
+      const response = await postConfigI18NBatchUpload(
+        uploadFile,
+        values.language,
+      );
+
+      setUploadLoading(false);
+      setUploadModalVisible(false);
+
+      // 根据返回结果提示成功信息
+      if (response && response.count !== undefined) {
+        message.success(
+          intl.formatMessage(
+            {
+              id: "pages.configI18n.upload.success",
+              defaultMessage: "批量上传成功，共添加 {count} 项翻译",
+            },
+            { count: response.count },
+          ),
+        );
+      } else {
+        message.success(
+          intl.formatMessage({
+            id: "pages.configI18n.upload.successGeneric",
+            defaultMessage: "批量上传成功",
+          }),
+        );
+      }
+
+      // 刷新表格数据
+      actionRef.current?.reload();
+    } catch (error) {
+      setUploadLoading(false);
+      console.error("批量上传失败:", error);
+
+      message.error(
+        intl.formatMessage({
+          id: "pages.configI18n.upload.error",
+          defaultMessage: "批量上传失败，请检查文件格式是否正确",
         }),
       );
     }
@@ -457,6 +538,17 @@ const ConfigI18nPage: React.FC = () => {
           rowKey={(record) => record.keyValue}
           actionRef={actionRef}
           toolBarRender={() => [
+            <Button
+              key="batchAdd"
+              type="default"
+              icon={<PlusOutlined />}
+              onClick={handleBatchAdd}
+            >
+              {intl.formatMessage({
+                id: "pages.configI18n.batchAdd",
+                defaultMessage: "批量添加",
+              })}
+            </Button>,
             <Button
               key="add"
               type="primary"
@@ -650,6 +742,109 @@ const ConfigI18nPage: React.FC = () => {
             </div>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 批量上传模态框 */}
+      <Modal
+        title={intl.formatMessage({
+          id: "pages.configI18n.uploadModal.title",
+          defaultMessage: "批量上传翻译",
+        })}
+        open={uploadModalVisible}
+        onOk={handleUploadModalOk}
+        onCancel={() => {
+          setUploadModalVisible(false);
+          setUploadFile(null);
+        }}
+        confirmLoading={uploadLoading}
+        width={600}
+      >
+        <Spin spinning={uploadLoading}>
+          <Form form={uploadForm} layout="vertical">
+            <Form.Item
+              name="language"
+              label={intl.formatMessage({
+                id: "pages.configI18n.uploadModal.language",
+                defaultMessage: "选择语言",
+              })}
+              initialValue="zh-CN"
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({
+                    id: "pages.configI18n.uploadModal.language.required",
+                    defaultMessage: "请选择上传的语言",
+                  }),
+                },
+              ]}
+            >
+              <Radio.Group>
+                <Radio value="zh-CN">
+                  {intl.formatMessage({
+                    id: "pages.configI18n.uploadModal.language.zhCN",
+                    defaultMessage: "简体中文",
+                  })}
+                </Radio>
+                <Radio value="en-US">
+                  {intl.formatMessage({
+                    id: "pages.configI18n.uploadModal.language.enUS",
+                    defaultMessage: "英文",
+                  })}
+                </Radio>
+              </Radio.Group>
+            </Form.Item>
+
+            <Form.Item
+              label={intl.formatMessage({
+                id: "pages.configI18n.uploadModal.file",
+                defaultMessage: "上传文件",
+              })}
+              required
+              extra={intl.formatMessage({
+                id: "pages.configI18n.uploadModal.file.description",
+                defaultMessage:
+                  '请上传JSON格式的翻译文件，支持JSON文件，格式为 {"key": "value"} 的键值对',
+              })}
+            >
+              <Upload.Dragger
+                name="file"
+                accept=".json"
+                maxCount={1}
+                beforeUpload={(file) => {
+                  const isJSON =
+                    file.type === "application/json" ||
+                    file.name.endsWith(".json");
+                  if (!isJSON) {
+                    message.error(
+                      intl.formatMessage({
+                        id: "pages.configI18n.uploadModal.file.typeError",
+                        defaultMessage: "只能上传JSON文件!",
+                      }),
+                    );
+                    return Upload.LIST_IGNORE;
+                  }
+
+                  // 保存文件对象以便后续上传
+                  setUploadFile(file);
+                  return false; // 阻止自动上传
+                }}
+                onRemove={() => {
+                  setUploadFile(null);
+                }}
+              >
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">
+                  {intl.formatMessage({
+                    id: "pages.configI18n.uploadModal.file.clickOrDrag",
+                    defaultMessage: "点击或拖拽文件到此区域上传",
+                  })}
+                </p>
+              </Upload.Dragger>
+            </Form.Item>
+          </Form>
+        </Spin>
       </Modal>
     </PageContainer>
   );

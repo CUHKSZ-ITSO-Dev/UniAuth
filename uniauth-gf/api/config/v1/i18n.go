@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type GetI18nConfigReq struct {
@@ -94,4 +95,16 @@ type FilterI18nRes struct {
 	Page       int        `json:"page" dc:"当前页码"`
 	PageSize   int        `json:"page_size" dc:"每页条数"`
 	TotalPages int        `json:"total_pages" dc:"总页数"`
+}
+
+// ==================== I18n Batch Upload ====================
+type BatchUploadI18nReq struct {
+	g.Meta `path:"/i18n/batch" tags:"Config/I18n" method:"post" summary:"批量上传i18n文件" dc:"上传i18n翻译JSON文件，批量处理多个翻译键值对"`
+	File   *ghttp.UploadFile `json:"file" v:"required" type:"file" dc:"翻译的JSON文件，格式为键值对对象"`
+	Lang   string            `json:"lang" v:"required|in:zh-CN,en-US" dc:"翻译文件的语言代码" example:"zh-CN"`
+}
+
+type BatchUploadI18nRes struct {
+	OK    bool `json:"ok" dc:"是否解析成功"`
+	Count int  `json:"count" dc:"成功解析的翻译键值对数量"`
 }
