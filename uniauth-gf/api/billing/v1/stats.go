@@ -49,12 +49,21 @@ type GetProductConsumptionReq struct {
 
 // GetProductConsumptionRes 分类查询消费总金额响应
 type GetProductConsumptionRes struct {
-	StartDate          string          `json:"startDate" dc:"统计起始日期" example:"2025-10-01"`
-	EndDate            string          `json:"endDate" dc:"统计结束日期" example:"2025-10-07"`
-	ProductConsumption *gjson.Json     `json:"productConsumption" dc:"按模型分组的消费统计" example:"[{\"product\":\"gpt-4\",\"service\":\"chat\",\"quotaPool\":\"student_pool\",\"cost\":1000.00,\"calls\":100}]"`
-	DateConsumption    *gjson.Json     `json:"dateConsumption" dc:"按日期分组的消费统计" example:"[{\"date\":\"2025-10-15\",\"product\":\"gpt-4\",\"service\":\"chat\",\"quotaPool\":\"student_pool\",\"cost\":100.00,\"calls\":100}]"`
-	TotalCalls         int             `json:"totalCalls" dc:"总调用次数(当前分类下)"`
-	TotalCost          decimal.Decimal `json:"totalCost" dc:"总消费（当前条件下）"`
+	StartDate   string            `json:"startDate"`
+	EndDate     string            `json:"endDate"`
+	Consumption []ConsumptionItem `json:"consumption"`
+	TotalCalls  int               `json:"totalCalls"`
+	TotalCost   decimal.Decimal   `json:"totalCost"`
+}
+
+// ConsumptionItem 返回值
+type ConsumptionItem struct {
+	Date      string          `json:"date,omitempty"`
+	Product   string          `json:"product,omitempty"`
+	Service   string          `json:"service"`
+	QuotaPool string          `json:"quotaPool"`
+	Cost      decimal.Decimal `json:"cost"`
+	Calls     int             `json:"calls"`
 }
 
 // GetActiveUsersNumReq  按消费记录获取活跃用户数
@@ -64,27 +73,19 @@ type GetActiveUsersNumReq struct {
 }
 
 type ActiveUserList struct {
-	ActiveUsersNum int     `json:"activeUsers" dc:"当天活跃用户数"`
+	ActiveUsersNum int     `json:"activeUsersNum" dc:"当天活跃用户数"`
 	ActiveRateInc  float64 `json:"activeRateInc" dc:"活跃率增加"`
 	Date           string  `json:"date" dc:"人数对应的日期" example:"2025-10-01"`
 }
 
 // GetActiveUsersNumRes 按消费记录获取活跃用户数响应
 type GetActiveUsersNumRes struct {
-	ActiveUsers      []ActiveUserList `json:"activeUsers" dc:"每天活跃用户数列表,格式{\"activeUsersNum\":100,\"ActiveRateInc\":50.00,\"Date\":\"2025-10-01\"}"`
+	ActiveUsers      []ActiveUserList `json:"activeUsers" dc:"每天活跃用户数列表" example:"[{\"activeUsersNum\":100,\"activeRateInc\":50.00,\"date\":\"2025-10-01\"},{\"activeUsersNum\":95,\"activeRateInc\":-5.00,\"date\":\"2025-10-02\"}]"`
 	TotalUsers       int              `json:"totalUsers" dc:"总用户人数"`
 	TotalActiveUsers int              `json:"totalActiveUsers" dc:"总活跃用户人数"`
 }
 
-// ActiveUserDetail 活跃用户详细信息结构体适配查询
-type ActiveUserDetail struct {
-	UserInfo   entity.UserinfosUserInfos `json:"userInfo" dc:"用户基本信息"`
-	TotalCost  decimal.Decimal           `json:"totalCost" dc:"个人总消费金额(CNY)"`
-	TotalCalls int                       `json:"totalCalls" dc:"个人总调用次数"`
-	LastActive string                    `json:"lastActive" dc:"个人最后活跃时间"`
-}
-
-// GetAllActiveUsersReq 获取活跃用户信息
+// GetAllActiveUsersReq 获取活跃用户信息(概览）,点击详情返回具体值
 type GetAllActiveUsersReq struct {
 	g.Meta    `path:"/stats/active-users/list" tags:"Billing/Status" method:"GET" summary:"返回指定天数内活跃用户的所有信息"`
 	Days      int    `json:"days" v:"min:1|max:365" dc:"返回指定天数的活跃用户信息,默认七天" d:"7"`
@@ -94,11 +95,43 @@ type GetAllActiveUsersReq struct {
 	SortOrder string `json:"sortOrder" v:"in:asc,desc" d:"desc" dc:"按升序(asc)还是降序(desc)排列"`
 }
 
+type ActiveUserSummary struct {
+	Upn        string          `json:"upn" dc:"用户标识"`
+	TotalCost  decimal.Decimal `json:"totalCost" dc:"总消费金额"`
+	TotalCalls int             `json:"totalCalls" dc:"总调用次数"`
+	LastActive string          `json:"lastActive" dc:"最后活跃时间"`
+}
+
 // GetAllActiveUsersRes 获取活跃用户信息响应
 type GetAllActiveUsersRes struct {
-	ActiveUsers []*ActiveUserDetail `json:"activeUsers" dc:"返回活跃用户信息列表"`
-	Total       int                 `json:"total" dc:"活跃用户总数"`
-	Page        int                 `json:"page" dc:"当前页码"`
-	PageSize    int                 `json:"pageSize" dc:"每页条数"`
-	TotalPages  int                 `json:"totalPages" dc:"总页数"`
+	ActiveUsers []*ActiveUserSummary `json:"activeUsers" dc:"返回活跃用户信息列表"`
+	Total       int                  `json:"total" dc:"活跃用户总数"`
+	Page        int                  `json:"page" dc:"当前页码(用户想访问第几页的数据)"`
+	PageSize    int                  `json:"pageSize" dc:"每页条数"`
+	TotalPages  int                  `json:"totalPages" dc:"总页数"`
+}
+
+// GetAllServiceNameReq 返回所有服务的名称
+type GetAllServiceNameReq struct {
+	g.Meta `path:"/stats/service/list" tags:"Billing/Status" method:"GET"  summary:"返回所有服务名称" `
+}
+
+// GetAllServiceNameRes 返回所有服务的名称查询响应
+type GetAllServiceNameRes struct {
+	ServiceName []string `json:"serviceName" dc:"返回所有服务名称"`
+}
+
+// GetActiveUserDetailReq 点击详情查询某个活跃用户详细信息
+type GetActiveUserDetailReq struct {
+	g.Meta `path:"/stats/active-users/detail" tags:"Billing/Status" method:"GET" summary:"查询某用户具体信息"`
+	Upn    string `json:"upn" v:"required" dc:"用户唯一标识"`
+	NDays  int    `json:"nDays" v:"required" dc:"当前查询的指定天数"`
+}
+
+// GetActiveUserDetailRes 查询某个活跃用户详细信息响应
+type GetActiveUserDetailRes struct {
+	UserInfo   entity.UserinfosUserInfos `json:"userInfo" dc:"用户基本信息"`
+	TotalCost  decimal.Decimal           `json:"totalCost" dc:"个人总消费金额(CNY)"`
+	TotalCalls int                       `json:"totalCalls" dc:"个人总调用次数"`
+	LastActive string                    `json:"lastActive" dc:"最后活跃时间"`
 }
