@@ -54,13 +54,13 @@ export async function deleteConfigAutoConfig(
   });
 }
 
-/** 判断指定UPN是否在自动配额池规则的upns_cache中 GET /config/autoConfig/isInUpnsCache */
-export async function getConfigAutoConfigIsInUpnsCache(
+/** 查询指定UPN列表是否在指定自动配额池规则的upns_cache中 GET /config/autoConfig/queryUpnsCache */
+export async function getConfigAutoConfigQueryUpnsCache(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getConfigAutoConfigIsInUpnsCacheParams,
+  params: API.getConfigAutoConfigQueryUpnsCacheParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.IsInUpnsCacheRes>("/config/autoConfig/isInUpnsCache", {
+  return request<API.QueryUpnsCacheRes>("/config/autoConfig/queryUpnsCache", {
     method: "GET",
     params: {
       ...params,

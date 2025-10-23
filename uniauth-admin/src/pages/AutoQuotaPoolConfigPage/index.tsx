@@ -19,7 +19,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   deleteConfigAutoConfig,
   getConfigAutoConfig,
-  getConfigAutoConfigIsInUpnsCache,
+  getConfigAutoConfigQueryUpnsCache,
   postConfigAutoConfig,
   putConfigAutoConfig,
 } from "@/services/uniauthService/autoQuotaPoolConfig";
@@ -58,20 +58,25 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   const [upnQueryForm] = Form.useForm();
   const [allRuleNames, setAllRuleNames] = useState<string[]>([]);
 
+  /**
+   * 获取所有规则名称的公共函数
+   */
+  const fetchAllRuleNames = async (): Promise<void> => {
+    try {
+      const response = await getConfigAutoConfig();
+      if (response.items) {
+        const ruleNames = response.items
+          .map((item: API.AutoQuotaPoolItem) => item.ruleName)
+          .filter((name): name is string => !!name); // 过滤掉undefined和null
+        setAllRuleNames(ruleNames);
+      }
+    } catch (_error) {
+      // 静默处理错误
+    }
+  };
+
   // 组件加载时获取所有规则名称
   useEffect(() => {
-    const fetchAllRuleNames = async () => {
-      try {
-        const response = await getConfigAutoConfig();
-        if (response.items) {
-          const ruleNames = response.items
-            .map((item: API.AutoQuotaPoolItem) => item.ruleName)
-            .filter((name): name is string => !!name); // 过滤掉undefined和null
-          setAllRuleNames(ruleNames);
-        }
-      } catch (_error) {}
-    };
-
     fetchAllRuleNames();
   }, []);
 
@@ -319,15 +324,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
     upnQueryForm.resetFields();
 
     // 每次打开查询界面时重新获取规则名称列表
-    try {
-      const response = await getConfigAutoConfig();
-      if (response.items) {
-        const ruleNames = response.items
-          .map((item: API.AutoQuotaPoolItem) => item.ruleName)
-          .filter((name): name is string => !!name); // 过滤掉undefined和null
-        setAllRuleNames(ruleNames);
-      }
-    } catch (_error) {}
+    await fetchAllRuleNames();
 
     // 如果传入了规则名称，则预选该规则（多选模式）
     if (ruleName) {
@@ -382,23 +379,26 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         return;
       }
 
-      // 为每个UPN和每个规则名称的组合分别查询
-      const queryPromises = upns.flatMap((upn) =>
-        ruleNames.map(async (ruleName: string) => {
-          try {
-            const response = await getConfigAutoConfigIsInUpnsCache({
-              upn: upn,
-              ruleName: ruleName,
-            });
-            return { upn, ruleName, result: response.isInUpnsCache || false };
-          } catch (error) {
-            return { upn, ruleName, result: false };
-          }
-        }),
-      );
+      // 使用批量查询接口一次性查询所有UPN和规则名称的组合
+      try {
+        const response = await getConfigAutoConfigQueryUpnsCache({
+          upns: upns,
+          ruleNames: ruleNames,
+        });
 
-      const results = await Promise.all(queryPromises);
-      setUpnQueryResults(results);
+        // 将批量查询结果转换为前端需要的格式
+        const results =
+          response.items?.map((item) => ({
+            upn: item.upn,
+            ruleName: item.ruleName,
+            result: item.isInUpnsCache || false,
+          })) || [];
+
+        setUpnQueryResults(results);
+      } catch (error) {
+        // 如果批量查询失败，返回空结果
+        setUpnQueryResults([]);
+      }
 
       message.success(
         intl.formatMessage({
@@ -763,9 +763,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
                     { description: cronDescription },
                   )}
                 </span>
-              ) : (
-                ""
-              )
+              ) : undefined
             }
           >
             <Input
@@ -1026,7 +1024,7 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
               <div style={{ maxHeight: "300px", overflowY: "auto" }}>
                 {upnQueryResults.map((item) => (
                   <div
-                    key={item.upn}
+                    key={`${item.upn}-${item.ruleName}`}
                     style={{
                       padding: "8px 12px",
                       marginBottom: "8px",

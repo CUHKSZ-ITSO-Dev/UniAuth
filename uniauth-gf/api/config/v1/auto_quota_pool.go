@@ -101,12 +101,18 @@ type SyncAutoQuotaPoolUpnsCacheRes struct {
 	UpdatedCount int  `json:"updatedCount" v:"required" dc:"批量刷新时，这个值是一共更改了多少个自动配额池的缓存；指定配额池刷新时，这个值是这个配额池有多少个用户"`
 }
 
-type IsInUpnsCacheReq struct {
-	g.Meta   `path:"/autoConfig/isInUpnsCache" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"判断指定 UPN 是否在自动配额池规则的 upns_cache 中"`
-	Upn      string `json:"upn" v:"required" dc:"UPN"`
-	RuleName string `json:"ruleName" v:"required" dc:"规则名称"`
+type QueryUpnsCacheItem struct {
+	RuleName      string `json:"ruleName" dc:"规则名称"`
+	Upn           string `json:"upn" dc:"UPN"`
+	IsInUpnsCache bool   `json:"isInUpnsCache" dc:"是否在自动配额池规则的upns_cache中"`
 }
 
-type IsInUpnsCacheRes struct {
-	IsInUpnsCache bool `json:"isInUpnsCache" dc:"是否在自动配额池规则的upns_cache中"`
+type QueryUpnsCacheReq struct {
+	g.Meta    `path:"/autoConfig/queryUpnsCache" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"查询指定 UPN 列表是否在指定自动配额池规则的 upns_cache 中"`
+	Upns      []string `json:"upns" v:"required" dc:"UPN列表"`
+	RuleNames []string `json:"ruleNames" v:"required" dc:"规则名称列表"`
+}
+
+type QueryUpnsCacheRes struct {
+	Items []QueryUpnsCacheItem `json:"items" dc:"查询结果列表"`
 }
