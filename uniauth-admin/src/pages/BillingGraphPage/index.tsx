@@ -1145,7 +1145,7 @@ const BillingGraphPage: React.FC = () => {
 
               {/* 模型调用次数图表 */}
               <Row gutter={16}>
-                <Col xs={24} lg={12}>
+                <Col xs={24}>
                   <Card title="调用次数趋势图（折线图）">
                     <div style={{ height: "300px" }}>
                       {modelUsageData.lineChartData ? (
@@ -1186,7 +1186,9 @@ const BillingGraphPage: React.FC = () => {
                     </div>
                   </Card>
                 </Col>
-                <Col xs={24} lg={12}>
+              </Row>
+              <Row gutter={16} style={{ marginTop: "16px" }}>
+                <Col xs={24}>
                   <Card title="模型调用分布（条形图）">
                     <div style={{ height: "300px" }}>
                       {modelUsageData.barChartData ? (
