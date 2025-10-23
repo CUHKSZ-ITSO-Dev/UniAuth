@@ -35,8 +35,8 @@ func (c *ControllerV1) GetProductConsumption(ctx context.Context, req *v1.GetPro
 		query = query.Where("product = ?", req.Product)
 	}
 	var consumption []v1.ConsumptionItem
-	err = query.Fields("DATE(created_at) as date, product, svc as service, source as quotaPool, SUM(cost) as cost, COUNT(*) as calls").
-		Group("DATE(created_at), product, svc, source").
+	err = query.Fields("created_at::date as date, product, svc as service, source as quotaPool, SUM(cost) as cost, COUNT(*) as calls").
+		Group("created_at::date, product, svc, source").
 		Order("date DESC, cost DESC").
 		Scan(&consumption)
 

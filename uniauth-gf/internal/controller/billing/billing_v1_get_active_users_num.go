@@ -115,9 +115,9 @@ func (c *ControllerV1) getActiveUsersData(ctx context.Context, day int) (map[str
 
 		var dailyResult []DailyActiveUser
 		err := dao.BillingCostRecords.Ctx(ctx).
-			Fields("DATE(created_at) as date, COUNT(DISTINCT upn) as daily_total").
+			Fields("created_at::date as date, COUNT(DISTINCT upn) as daily_total").
 			Where("created_at >= ?", startDate).
-			Group("DATE(created_at)").
+			Group("created_at::date").
 			Order("date DESC").
 			Scan(&dailyResult)
 

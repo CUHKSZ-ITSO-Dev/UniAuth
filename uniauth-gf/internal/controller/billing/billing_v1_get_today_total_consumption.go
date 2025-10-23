@@ -63,8 +63,8 @@ func (c *ControllerV1) getTodayAndYesterdayCost(ctx context.Context, today, yest
 
 	var result CostResult
 	err = query.Fields(`
-		COALESCE(SUM(CASE WHEN DATE(created_at) = ? THEN cost ELSE 0 END), 0) as today_cost,
-		COALESCE(SUM(CASE WHEN DATE(created_at) = ? THEN cost ELSE 0 END), 0) as yesterday_cost
+		COALESCE(SUM(CASE WHEN created_at::date = ? THEN cost ELSE 0 END), 0) as today_cost,
+		COALESCE(SUM(CASE WHEN created_at::date = ? THEN cost ELSE 0 END), 0) as yesterday_cost
 	`).
 		Scan(&result, today.Format("2006-01-02"), yesterday.Format("2006-01-02"))
 
