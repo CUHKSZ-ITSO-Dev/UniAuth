@@ -2,6 +2,7 @@ package billing
 
 import (
 	"context"
+	"strings"
 	"time"
 	"uniauth-gf/internal/dao"
 
@@ -12,6 +13,12 @@ import (
 )
 
 func (c *ControllerV1) GetProductConsumption(ctx context.Context, req *v1.GetProductConsumptionReq) (res *v1.GetProductConsumptionRes, err error) {
+	// 使用新的验证和过滤函数
+	filteredParams, err := c.validateAndFilterName(req.Service, req.QuotaPool, req.Product)
+	if err != nil {
+		return nil, err
+	}
+
 	// 计算日期范围
 	startDate := time.Now().AddDate(0, 0, -req.NDays)
 	endDate := time.Now()
@@ -24,19 +31,19 @@ func (c *ControllerV1) GetProductConsumption(ctx context.Context, req *v1.GetPro
 		Where("created_at >= ?", startDate).
 		Where("created_at <= ?", endDate)
 
-	// 过滤条件
-	if req.Service != "" {
-		query = query.Where("svc = ?", req.Service)
+	// 使用过滤后的参数
+	if filteredParams.Service != "" {
+		query = query.Where("svc = ?", filteredParams.Service)
 	}
-	if req.QuotaPool != "" {
-		query = query.Where("source = ?", req.QuotaPool)
+	if filteredParams.QuotaPool != "" {
+		query = query.Where("source = ?", filteredParams.QuotaPool)
 	}
-	if req.Product != "" {
-		query = query.Where("product = ?", req.Product)
+	if filteredParams.Product != "" {
+		query = query.Where("product = ?", filteredParams.Product)
 	}
 	var consumption []v1.ConsumptionItem
-	err = query.Fields("created_at::date as date, product, svc as service, source as quotaPool, SUM(cost) as cost, COUNT(*) as calls").
-		Group("created_at::date, product, svc, source").
+	err = query.Fields("DATE(created_at) as date, product, svc as service, source as quotaPool, SUM(cost) as cost, COUNT(*) as calls").
+		Group("DATE(created_at), product, svc, source").
 		Order("date DESC, cost DESC").
 		Scan(&consumption)
 
@@ -55,15 +62,15 @@ func (c *ControllerV1) GetProductConsumption(ctx context.Context, req *v1.GetPro
 		Where("created_at >= ?", startDate).
 		Where("created_at <= ?", endDate)
 
-	// 添加相同的过滤条件
-	if req.Service != "" {
-		totalQuery = totalQuery.Where("svc = ?", req.Service)
+	// 使用过滤后的参数
+	if filteredParams.Service != "" {
+		totalQuery = totalQuery.Where("svc = ?", filteredParams.Service)
 	}
-	if req.QuotaPool != "" {
-		totalQuery = totalQuery.Where("source = ?", req.QuotaPool)
+	if filteredParams.QuotaPool != "" {
+		totalQuery = totalQuery.Where("source = ?", filteredParams.QuotaPool)
 	}
-	if req.Product != "" {
-		totalQuery = totalQuery.Where("product = ?", req.Product)
+	if filteredParams.Product != "" {
+		totalQuery = totalQuery.Where("product = ?", filteredParams.Product)
 	}
 
 	err = totalQuery.Fields("COUNT(*) as totalCalls, SUM(cost) as totalCost").
@@ -83,4 +90,51 @@ func (c *ControllerV1) GetProductConsumption(ctx context.Context, req *v1.GetPro
 	}
 
 	return res, nil
+}
+
+// validateAndFilterName 验证和过滤服务名称、配额池和产品名称
+func (c *ControllerV1) validateAndFilterName(service string, quotaPool string, product string) (v1.ConsumptionItem, error) {
+	// 处理 "all" 关键字，转换为空字符串
+	if strings.EqualFold(service, "all") {
+		service = ""
+	}
+	if strings.EqualFold(quotaPool, "all") {
+		quotaPool = ""
+	}
+	if strings.EqualFold(product, "all") {
+		product = ""
+	}
+
+	// 输入验证
+	service = strings.TrimSpace(service)
+	quotaPool = strings.TrimSpace(quotaPool)
+	product = strings.TrimSpace(product)
+
+	// 验证长度
+	if len(service) > 50 {
+		return v1.ConsumptionItem{}, gerror.New("服务名称长度不能超过50字符")
+	}
+	if len(quotaPool) > 50 {
+		return v1.ConsumptionItem{}, gerror.New("配额池名称长度不能超过50字符")
+	}
+	if len(product) > 50 {
+		return v1.ConsumptionItem{}, gerror.New("产品名称长度不能超过50字符")
+	}
+
+	// 检查非法字符
+	if strings.ContainsAny(service, "';\"\\") {
+		return v1.ConsumptionItem{}, gerror.New("服务名称包含非法字符")
+	}
+	if strings.ContainsAny(quotaPool, "';\"\\") {
+		return v1.ConsumptionItem{}, gerror.New("配额池名称包含非法字符")
+	}
+	if strings.ContainsAny(product, "';\"\\") {
+		return v1.ConsumptionItem{}, gerror.New("产品名称包含非法字符")
+	}
+
+	return v1.ConsumptionItem{
+		Service:   service,
+		QuotaPool: quotaPool,
+		Product:   product,
+	}, nil
 }
