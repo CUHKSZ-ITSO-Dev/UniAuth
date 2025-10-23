@@ -18,6 +18,7 @@ func (c *ControllerV1) Logout(ctx context.Context, req *v1.LogoutReq) (res *v1.L
 	r.Cookie.Remove("jwt")
 	r.Cookie.Remove("jwt-login")
 	r.Cookie.Remove("refresh-token")
+	r.Cookie.Remove(g.Cfg().MustGet(ctx, "uniauth.csrf_token_cookie_name").String())
 	r.Response.RedirectTo(g.Cfg().MustGetWithEnv(ctx, "sso.logout_url").String())
 	return
 }
