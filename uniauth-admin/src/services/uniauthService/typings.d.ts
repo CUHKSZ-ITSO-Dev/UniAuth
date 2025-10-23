@@ -1004,7 +1004,7 @@ declare namespace API {
       date: string;
     }>;
     /** 总用户人数 */
-    totalUsrs?: number;
+    totalUsers?: number;
     /** 总活跃用户人数 */
     totalActiveUsers?: number;
   };

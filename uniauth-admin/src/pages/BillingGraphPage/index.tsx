@@ -84,9 +84,9 @@ const BillingGraphPage: React.FC = () => {
 
   // 天数选项
   const daysOptions = [
-    { value: 7, label: "7天" },
-    { value: 30, label: "30天" },
-    { value: 90, label: "90天" },
+    { value: 7, label: "7" },
+    { value: 30, label: "30" },
+    { value: 90, label: "90" },
   ];
 
   // 获取统计数据
@@ -417,7 +417,7 @@ const BillingGraphPage: React.FC = () => {
                   <Card>
                     <Statistic
                       title="总用户数"
-                      value={activeUsersData.totalUsrs || 0}
+                      value={activeUsersData.totalUsers || 0}
                       valueStyle={{ color: "#52c41a" }}
                       prefix={<TeamOutlined />}
                     />
