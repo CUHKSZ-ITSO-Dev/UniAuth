@@ -45,34 +45,40 @@ func (c *ControllerV1) GetTodayTotalConsumption(ctx context.Context, req *v1.Get
 
 // getTodayAndYesterdayCost 查询获取今天和昨天的消费数据
 func (c *ControllerV1) getTodayAndYesterdayCost(ctx context.Context, today, yesterday time.Time, service string) (todayCost, yesterdayCost decimal.Decimal, err error) {
-	// 查询获取今天和昨天的数据
-	query := dao.BillingCostRecords.Ctx(ctx).
-		Where("created_at >= ?", yesterday).
+	// 分别查询今天和昨天的消费数据，避免复杂的CASE WHEN查询
+	var todayCostResult, yesterdayCostResult decimal.Decimal
+
+	// 查询今天的消费
+	todayQuery := dao.BillingCostRecords.Ctx(ctx).
+		Where("created_at >= ?", today).
 		Where("created_at < ?", today.AddDate(0, 0, 1))
 
-	// 如果指定了服务类型，添加过滤条件
 	if service != "" {
-		query = query.Where("svc = ?", service)
+		todayQuery = todayQuery.Where("svc = ?", service)
 	}
 
-	// 查询中计算今天和昨天的消费
-	type CostResult struct {
-		TodayCost     decimal.Decimal `json:"today_cost"`
-		YesterdayCost decimal.Decimal `json:"yesterday_cost"`
-	}
-
-	var result CostResult
-	err = query.Fields(`
-		COALESCE(SUM(CASE WHEN created_at::date = ? THEN cost ELSE 0 END), 0) as today_cost,
-		COALESCE(SUM(CASE WHEN created_at::date = ? THEN cost ELSE 0 END), 0) as yesterday_cost
-	`).
-		Scan(&result, today.Format("2006-01-02"), yesterday.Format("2006-01-02"))
-
+	todayCostFloat, err := todayQuery.Sum("cost")
 	if err != nil {
-		return decimal.Zero, decimal.Zero, gerror.Wrap(err, "查询消费数据失败")
+		return decimal.Zero, decimal.Zero, gerror.Wrap(err, "查询今天消费失败")
+	}
+	todayCostResult = decimal.NewFromFloat(todayCostFloat)
+
+	// 查询昨天的消费
+	yesterdayQuery := dao.BillingCostRecords.Ctx(ctx).
+		Where("created_at >= ?", yesterday).
+		Where("created_at < ?", today)
+
+	if service != "" {
+		yesterdayQuery = yesterdayQuery.Where("svc = ?", service)
 	}
 
-	return result.TodayCost, result.YesterdayCost, nil
+	yesterdayCostFloat, err := yesterdayQuery.Sum("cost")
+	if err != nil {
+		return decimal.Zero, decimal.Zero, gerror.Wrap(err, "查询昨天消费失败")
+	}
+	yesterdayCostResult = decimal.NewFromFloat(yesterdayCostFloat)
+
+	return todayCostResult, yesterdayCostResult, nil
 }
 
 // validateAndFilterService 验证和过滤服务名称
