@@ -1062,13 +1062,26 @@ const BillingGraphPage: React.FC = () => {
                     <div style={{ height: "300px" }}>
                       {modelUsageData.lineChartData ? (
                         <Line
-                          data={modelUsageData.lineChartData as any}
+                          data={(
+                            modelUsageData.lineChartData as any
+                          ).series.flatMap((seriesItem: any) =>
+                            (seriesItem.data as any[]).map(
+                              (value: number, index: number) => ({
+                                date: (modelUsageData.lineChartData as any)
+                                  .dates[index],
+                                calls: value,
+                                model: seriesItem.name,
+                              }),
+                            ),
+                          )}
                           height={300}
                           xField="date"
                           yField="calls"
+                          seriesField="model"
                           meta={{
                             date: { alias: "日期" },
                             calls: { alias: "调用次数" },
+                            model: { alias: "模型" },
                           }}
                         />
                       ) : (
@@ -1090,7 +1103,14 @@ const BillingGraphPage: React.FC = () => {
                     <div style={{ height: "300px" }}>
                       {modelUsageData.barChartData ? (
                         <Bar
-                          data={modelUsageData.barChartData as any}
+                          data={(modelUsageData.barChartData as any).labels.map(
+                            (label: string, index: number) => ({
+                              product: label,
+                              calls: (modelUsageData.barChartData as any).data[
+                                index
+                              ],
+                            }),
+                          )}
                           height={300}
                           xField="product"
                           yField="calls"
