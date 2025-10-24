@@ -42,5 +42,5 @@ func StartMCPServer(ctx context.Context) error {
 	tools := registry.ListTools()
 	g.Log().Info(ctx, fmt.Sprintf("MCP服务器启动中... 已注册 %d 个工具: %v", registry.CountTools(), tools))
 
-	return server.NewSSEServer(s).Start(":8080")
+	return server.NewSSEServer(s).Start(":" + g.Cfg().MustGet(ctx, "mcp.port").String())
 }
