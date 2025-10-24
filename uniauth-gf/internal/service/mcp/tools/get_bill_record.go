@@ -21,7 +21,7 @@ func RegisterGetBillRecord(s *server.MCPServer) error {
 	s.AddTool(tool, mcp.NewStructuredToolHandler(func(ctx context.Context, request mcp.CallToolRequest, args v1.GetBillRecordReq) (v1.GetBillRecordRes, error) {
 		res, err := billing.NewV1().GetBillRecord(ctx, &args)
 		if err != nil {
-			return v1.GetBillRecordRes{}, gerror.Wrap(err, "添加配额池失败")
+            return v1.GetBillRecordRes{}, gerror.Wrap(err, "获取账单记录失败")
 		}
 		return *res, nil
 	}))
