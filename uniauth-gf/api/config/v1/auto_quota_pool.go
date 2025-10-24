@@ -96,7 +96,7 @@ type QueryUpnsCacheItem struct {
 }
 
 type QueryUpnsCacheReq struct {
-	g.Meta    `path:"/autoConfig/queryUpnsCache" tags:"Config/AutoQuotaPoolConfig" method:"get" summary:"查询指定 UPN 列表是否在指定自动配额池规则的 upns_cache 中"`
+	g.Meta    `path:"/autoConfig/queryUpnsCache" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"查询指定 UPN 列表是否在指定自动配额池规则的 upns_cache 中"`
 	Upns      []string `json:"upns" v:"required" dc:"UPN列表"`
 	RuleNames []string `json:"ruleNames" v:"required" dc:"规则名称列表"`
 }
