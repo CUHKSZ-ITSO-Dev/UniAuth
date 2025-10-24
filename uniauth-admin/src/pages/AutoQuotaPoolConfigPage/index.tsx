@@ -323,9 +323,9 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
         const createData = {
           ...processedValues,
           // 确保所有必需字段都存在
-          ruleName: processedValues.ruleName!,
-          cronCycle: processedValues.cronCycle!,
-          regularQuota: processedValues.regularQuota!,
+          ruleName: processedValues.ruleName,
+          cronCycle: processedValues.cronCycle,
+          regularQuota: processedValues.regularQuota,
         };
         await postConfigAutoConfig(createData as any);
         message.success(
