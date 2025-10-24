@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 	"uniauth-gf/internal/dao"
 
@@ -264,37 +263,16 @@ func (s *BillingService) GetActiveUsersNum(ctx context.Context, req *v1.GetActiv
 		req.Days = 30
 	}
 
-	// 尝试进行并发查询
-	var (
-		activeUsersMap   map[string]int
-		totalActiveUsers int
-		totalUsers       int
-		err1, err2       error
-		wg               sync.WaitGroup
-	)
-
-	wg.Add(2)
-
-	// 并发查询：每天的活跃用户数 + 总活跃用户数
-	go func() {
-		defer wg.Done()
-		activeUsersMap, totalActiveUsers, err1 = s.getActiveUsersData(ctx, req.Days)
-	}()
-
-	// 并发查询：系统总用户数
-	go func() {
-		defer wg.Done()
-		totalUsers, err2 = s.getTotalUsersCount(ctx)
-	}()
-
-	wg.Wait()
-
-	// 抛出错误
-	if err1 != nil {
-		return nil, gerror.Wrap(err1, "查询活跃用户数失败")
+	// 串行查询：每天的活跃用户数 + 总活跃用户数
+	activeUsersMap, totalActiveUsers, err := s.getActiveUsersData(ctx, req.Days)
+	if err != nil {
+		return nil, gerror.Wrap(err, "查询活跃用户数失败")
 	}
-	if err2 != nil {
-		return nil, gerror.Wrap(err2, "查询总用户数失败")
+
+	// 串行查询：系统总用户数
+	totalUsers, err := s.getTotalUsersCount(ctx)
+	if err != nil {
+		return nil, gerror.Wrap(err, "查询总用户数失败")
 	}
 
 	// 构建每日活跃用户列表
@@ -558,83 +536,51 @@ func (s *BillingService) buildBarChartData(consumption []v1.ConsumptionItem) *gj
 	})
 }
 
-// getActiveUsersData 查询返回每天的活跃用户数和总活跃用户数（并发查询优化）
+// getActiveUsersData 查询返回每天的活跃用户数和总活跃用户数（串行查询）
 func (s *BillingService) getActiveUsersData(ctx context.Context, day int) (map[string]int, int, error) {
 	// 计算日期范围
 	startDate := time.Now().UTC().AddDate(0, 0, -(day + 1))
 	totalStartDate := time.Now().UTC().AddDate(0, 0, -day)
 
-	var (
-		activeUsersMap   map[string]int
-		totalActiveUsers int
-		err1, err2       error
-		wg               sync.WaitGroup
-	)
-
-	wg.Add(2)
-
-	// 并发查询:每天的活跃用户数
-	go func() {
-		defer wg.Done()
-
-		type DailyActiveUser struct {
-			Date       string `json:"date"`
-			DailyTotal int    `json:"daily_total"`
-		}
-
-		var dailyResult []DailyActiveUser
-		err := dao.BillingCostRecords.Ctx(ctx).
-			Fields("DATE(created_at) as date, COUNT(DISTINCT upn) as daily_total").
-			Where("created_at >= ?", startDate).
-			Group("DATE(created_at)").
-			Order("date DESC").
-			Scan(&dailyResult)
-
-		if err != nil {
-			err1 = gerror.Wrap(err, "查询每日活跃用户失败")
-			return
-		}
-
-		activeUsersMap = make(map[string]int, len(dailyResult))
-		for _, record := range dailyResult {
-			activeUsersMap[record.Date] = record.DailyTotal
-		}
-	}()
-
-	// 并发查询:总活跃用户数
-	go func() {
-		defer wg.Done()
-
-		type TotalActiveUser struct {
-			TotalActive int `json:"total_active"`
-		}
-
-		var totalResult TotalActiveUser
-		err := dao.BillingCostRecords.Ctx(ctx).
-			Fields("COUNT(DISTINCT upn) as total_active").
-			Where("created_at >= ?", totalStartDate).
-			Scan(&totalResult)
-
-		if err != nil {
-			err2 = gerror.Wrap(err, "查询总活跃用户失败")
-			return
-		}
-
-		totalActiveUsers = totalResult.TotalActive
-	}()
-
-	// 等待所有goroutine完成
-	wg.Wait()
-
-	// 检查错误
-	if err1 != nil {
-		return nil, 0, err1
-	}
-	if err2 != nil {
-		return nil, 0, err2
+	// 串行查询:每天的活跃用户数
+	type DailyActiveUser struct {
+		Date       string `json:"date"`
+		DailyTotal int    `json:"daily_total"`
 	}
 
-	return activeUsersMap, totalActiveUsers, nil
+	var dailyResult []DailyActiveUser
+	err := dao.BillingCostRecords.Ctx(ctx).
+		Fields("DATE(created_at) as date, COUNT(DISTINCT upn) as daily_total").
+		Where("created_at >= ?", startDate).
+		Group("DATE(created_at)").
+		Order("date DESC").
+		Scan(&dailyResult)
+
+	if err != nil {
+		return nil, 0, gerror.Wrap(err, "查询每日活跃用户失败")
+	}
+
+	activeUsersMap := make(map[string]int, len(dailyResult))
+	for _, record := range dailyResult {
+		activeUsersMap[record.Date] = record.DailyTotal
+	}
+
+	// 串行查询:总活跃用户数
+	type TotalActiveUser struct {
+		TotalActive int `json:"total_active"`
+	}
+
+	var totalResult TotalActiveUser
+	err = dao.BillingCostRecords.Ctx(ctx).
+		Fields("COUNT(DISTINCT upn) as total_active").
+		Where("created_at >= ?", totalStartDate).
+		Scan(&totalResult)
+
+	if err != nil {
+		return nil, 0, gerror.Wrap(err, "查询总活跃用户失败")
+	}
+
+	return activeUsersMap, totalResult.TotalActive, nil
 }
 
 // getTotalUsersCount 查询系统总用户数
