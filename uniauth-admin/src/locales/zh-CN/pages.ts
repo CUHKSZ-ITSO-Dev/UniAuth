@@ -175,6 +175,25 @@ export default {
     "保存失败：网络错误，请稍后重试",
   "pages.autoQuotaPoolConfig.saveFailedCheckInput": "保存失败：请检查您的输入",
 
+  // UPN查询相关翻译
+  "pages.autoQuotaPoolConfig.upnQuery": "UPN用户查询",
+  "pages.autoQuotaPoolConfig.upnQueryModalTitle": "UPN用户查询",
+  "pages.autoQuotaPoolConfig.upn": "UPN",
+  "pages.autoQuotaPoolConfig.upnRequired": "请输入UPN",
+  "pages.autoQuotaPoolConfig.upnPlaceholder": "请输入用户主体名称",
+  "pages.autoQuotaPoolConfig.upnMultipleHint":
+    "支持输入多个UPN，以逗号、分号或空格分隔",
+  "pages.autoQuotaPoolConfig.upnMultiplePlaceholder": "请输入UPN",
+  "pages.autoQuotaPoolConfig.query": "查询",
+  "pages.autoQuotaPoolConfig.queryResult": "查询结果",
+  "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN查询成功",
+  "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN查询失败",
+  "pages.autoQuotaPoolConfig.queryError": "查询失败",
+  "pages.autoQuotaPoolConfig.upnInRule": "{upn} 在 {ruleName} 中",
+  "pages.autoQuotaPoolConfig.upnNotInRule": "{upn} 不在 {ruleName} 中",
+  "pages.autoQuotaPoolConfig.upnQueryDescription":
+    "查询指定UPN用户是否在自动配额池规则的缓存中",
+
   // 模型配置页面翻译
   "pages.modelConfig.title": "模型配置列表",
   "pages.modelConfig.description":
