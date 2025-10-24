@@ -6,10 +6,15 @@ package billing
 
 import (
 	"uniauth-gf/api/billing"
+	billingService "uniauth-gf/internal/service/billing"
 )
 
-type ControllerV1 struct{}
+type ControllerV1 struct {
+	billingService *billingService.BillingService
+}
 
 func NewV1() billing.IBillingV1 {
-	return &ControllerV1{}
+	return &ControllerV1{
+		billingService: billingService.NewBillingService(),
+	}
 }
