@@ -63,7 +63,7 @@ func RegisterGetUserInfo(s *server.MCPServer) error {
 			return UserinfosUserInfosDTO{}, gerror.New("找不到用户")
 		}
 		var userInfo UserinfosUserInfosDTO
-		if gconv.Struct(res, &userInfo) != nil {
+		if convErr := gconv.Struct(res, &userInfo); convErr != nil {
 			return UserinfosUserInfosDTO{}, gerror.New("转换用户信息失败")
 		}
 		g.Dump(userInfo)
