@@ -4,43 +4,16 @@ import (
 	"context"
 	"strings"
 	"time"
+
+	v1 "uniauth-gf/api/billing/v1"
 	"uniauth-gf/internal/dao"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/shopspring/decimal"
-
-	v1 "uniauth-gf/api/billing/v1"
 )
 
 func (c *ControllerV1) GetTodayTotalConsumption(ctx context.Context, req *v1.GetTodayTotalConsumptionReq) (res *v1.GetTodayTotalConsumptionRes, err error) {
-	// 输入验证和服务过滤
-	svcFilter, err := c.validateAndFilterService(req.Service)
-	if err != nil {
-		return nil, err
-	}
-
-	// 初始化响应 - 显示给用户的日期使用+8时区
-	loc, _ := time.LoadLocation("Asia/Shanghai")
-	res = &v1.GetTodayTotalConsumptionRes{
-		Date:        time.Now().In(loc).Format("2006-01-02"),
-		ServiceName: c.getServiceDisplayName(req.Service),
-	}
-
-	// 计算时间范围（使用UTC避免时区问题）
-	now := time.Now().UTC()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	yesterday := today.AddDate(0, 0, -1)
-
-	// 查询获取今天和昨天的数据
-	todayCost, yesterdayCost, err := c.getTodayAndYesterdayCostOriginal(ctx, today, yesterday, svcFilter)
-	if err != nil {
-		return nil, gerror.Wrap(err, "查询消费数据失败")
-	}
-
-	res.TotalCostCNY = todayCost
-	res.IncreaseRate = c.calculateIncreaseRate(todayCost, yesterdayCost)
-
-	return res, nil
+	return c.billingService.GetTodayTotalConsumption(ctx, req)
 }
 
 func (c *ControllerV1) getTodayAndYesterdayCostOriginal(ctx context.Context, today, yesterday time.Time, service string) (todayCost, yesterdayCost decimal.Decimal, err error) {
