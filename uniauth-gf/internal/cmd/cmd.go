@@ -47,7 +47,7 @@ var (
 
 			go func() {
 				if err := mcpSvc.StartMCPServer(ctx); err != nil {
-					g.Log().Fatal(ctx, "MCP服务器启动失败:", err)
+					g.Log().Error(ctx, "MCP服务器启动失败:", err)
 				}
 			}()
 
