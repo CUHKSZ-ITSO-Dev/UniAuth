@@ -19,16 +19,20 @@ func (c *ControllerV1) QueryUpnsCache(ctx context.Context, req *v1.QueryUpnsCach
 		return
 	}
 
-	// 构建规则名称到UPN缓存列表的映射
-	ruleUpnsMap := make(map[string][]string)
+	// 构建规则名称到UPN缓存集合的映射
+	ruleUpnsCacheSet := make(map[string]map[string]struct{}, len(autoQuotaPoolList))
 	for _, pool := range autoQuotaPoolList {
-		ruleUpnsMap[pool.RuleName] = pool.UpnsCache
+		cacheSet := make(map[string]struct{}, len(pool.UpnsCache))
+		for _, upn := range pool.UpnsCache {
+			cacheSet[upn] = struct{}{}
+		}
+		ruleUpnsCacheSet[pool.RuleName] = cacheSet
 	}
 
 	// 构建查询结果
 	var items []v1.QueryUpnsCacheItem
 	for _, ruleName := range req.RuleNames {
-		upnsCache, exists := ruleUpnsMap[ruleName]
+		upnsCacheSet, exists := ruleUpnsCacheSet[ruleName]
 		if !exists {
 			// 如果规则不存在，所有UPN都不在缓存中
 			for _, upn := range req.Upns {
@@ -43,13 +47,7 @@ func (c *ControllerV1) QueryUpnsCache(ctx context.Context, req *v1.QueryUpnsCach
 
 		// 检查每个UPN是否在缓存中
 		for _, upn := range req.Upns {
-			isInCache := false
-			for _, cachedUpn := range upnsCache {
-				if cachedUpn == upn {
-					isInCache = true
-					break
-				}
-			}
+			_, isInCache := upnsCacheSet[upn]
 			items = append(items, v1.QueryUpnsCacheItem{
 				RuleName:      ruleName,
 				Upn:           upn,
