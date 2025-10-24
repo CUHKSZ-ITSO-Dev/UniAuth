@@ -40,9 +40,9 @@ func RegisterGetQuotaPool(s *server.MCPServer) error {
 			return quotapoolQuotaPool{}, gerror.Wrap(err, "获取配额池失败")
 		}
 		var qpInfo quotapoolQuotaPool
-		if gconv.Struct(res, &qpInfo) != nil {
-			return quotapoolQuotaPool{}, gerror.Wrap(err, "转换配额池信息失败")
-		}
+        if convertErr := gconv.Struct(res, &qpInfo); convertErr != nil {
+            return quotapoolQuotaPool{}, gerror.Wrap(convertErr, "转换配额池信息失败")
+        }
 		return qpInfo, nil
 	}))
 	return nil
