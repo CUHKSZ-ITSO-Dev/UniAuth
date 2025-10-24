@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>UniAuth Login</title>
+        <meta charset="UTF-8">
+    </head>
+
+    <body>
+        <p> 这是 login 界面 </p>
+        <button onclick="login()">登录</button>
+    </body>
+
+    <script>
+    function login() {
+        window.location.href = `https://sts.cuhk.edu.cn/adfs/oauth2/authorize?client_id={{ .client_id }}&response_type=code&redirect_uri={{ .redirect_uri }}&resource={{ .resource }}&state={{ .state }}`;
+    }
+    </script>
+</html>
