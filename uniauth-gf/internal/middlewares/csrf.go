@@ -43,18 +43,10 @@ func CSRFMiddleware(r *ghttp.Request) {
 	// 从cookie中获取CSRF token
 	cookieToken := r.Cookie.Get(csrfTokenCookieName).String()
 
-	// 调试信息
-	g.Log().Debug(r.Context(), "CSRF Debug - Cookie Name:", csrfTokenCookieName)
-	g.Log().Debug(r.Context(), "CSRF Debug - Cookie Token:", cookieToken)
-	g.Log().Debug(r.Context(), "CSRF Debug - All Cookies:", r.Cookie.Map())
-	g.Log().Debug(r.Context(), "CSRF Debug - Request URL:", r.URL.String())
-	g.Log().Debug(r.Context(), "CSRF Debug - Request Method:", r.Method)
-
 	// 从请求头中获取CSRF token
 	headerToken := r.Header.Get(csrfTokenHeaderName)
-	g.Log().Debug(r.Context(), "CSRF Debug - Header Token:", headerToken)
 
-	// 如果cookie中没有token，生成一个新的并允许通过
+	// 如果cookie中没有token，生成一个新的
 	if cookieToken == "" {
 		b := make([]byte, csrfTokenLength)
 		if _, err := rand.Read(b); err != nil {
@@ -69,19 +61,25 @@ func CSRFMiddleware(r *ghttp.Request) {
 		r.Cookie.SetCookie(
 			csrfTokenCookieName,
 			cookieToken,
-			"",  // domain为空，使用当前域名
-			"/", // path为根路径
+			"",
+			"/",
 			24*time.Hour,
 			ghttp.CookieOptions{
-				HttpOnly: false,                // JavaScript需要读取来设置到请求头
-				Secure:   false,                // 开发环境可能需要设为false
-				SameSite: http.SameSiteLaxMode, // 改为Lax，更宽松
+				HttpOnly: false, // JavaScript需要读取来设置到请求头
+				Secure:   true,
+				SameSite: http.SameSiteStrictMode,
 			},
 		)
-		g.Log().Debug(r.Context(), "CSRF Debug - Generated new token:", cookieToken)
-		// 第一次请求允许通过，客户端需要读取cookie并在后续请求中使用
-		r.Middleware.Next()
-		return
+		// 对于第一次请求，如果客户端没有提供header token，则拒绝请求
+		// 这要求客户端必须先进行一次GET请求获取token，然后再进行POST请求
+		if headerToken == "" {
+			r.Response.WriteStatus(http.StatusForbidden)
+			r.Response.WriteJson(ghttp.DefaultHandlerResponse{
+				Code:    http.StatusForbidden,
+				Message: "请先获取CSRF token",
+			})
+			return
+		}
 	}
 
 	// 验证token是否匹配
