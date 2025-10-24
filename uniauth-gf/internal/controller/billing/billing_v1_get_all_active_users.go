@@ -16,7 +16,7 @@ import (
 func (c *ControllerV1) GetAllActiveUsers(ctx context.Context, req *v1.GetAllActiveUsersReq) (res *v1.GetAllActiveUsersRes, err error) {
 
 	// 起始时间
-	startOfDay := time.Now().AddDate(0, 0, -req.Days)
+	startOfDay := time.Now().UTC().AddDate(0, 0, -req.Days)
 
 	// 统计活跃用户总数
 	var totalResult struct {

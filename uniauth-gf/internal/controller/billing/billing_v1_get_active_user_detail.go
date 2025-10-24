@@ -2,17 +2,17 @@ package billing
 
 import (
 	"context"
+	"time"
 
 	v1 "uniauth-gf/api/billing/v1"
 	"uniauth-gf/internal/dao"
 
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/shopspring/decimal"
 )
 
 func (c *ControllerV1) GetActiveUserDetail(ctx context.Context, req *v1.GetActiveUserDetailReq) (res *v1.GetActiveUserDetailRes, err error) {
-	startOfDay := gtime.Now().AddDate(0, 0, -req.NDays)
+	startOfDay := time.Now().UTC().AddDate(0, 0, -req.NDays)
 	res = &v1.GetActiveUserDetailRes{}
 
 	// 查询用户基本信息

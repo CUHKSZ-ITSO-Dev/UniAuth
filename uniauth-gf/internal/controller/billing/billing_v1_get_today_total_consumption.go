@@ -19,9 +19,10 @@ func (c *ControllerV1) GetTodayTotalConsumption(ctx context.Context, req *v1.Get
 		return nil, err
 	}
 
-	// 初始化响应
+	// 初始化响应 - 显示给用户的日期使用+8时区
+	loc, _ := time.LoadLocation("Asia/Shanghai")
 	res = &v1.GetTodayTotalConsumptionRes{
-		Date:        time.Now().Format("2006-01-02"),
+		Date:        time.Now().In(loc).Format("2006-01-02"),
 		ServiceName: c.getServiceDisplayName(req.Service),
 	}
 

@@ -21,7 +21,7 @@ func (c *ControllerV1) GetActiveUsersNum(ctx context.Context, req *v1.GetActiveU
 	g.Log().Info(ctx, "GetActiveUsersNum called", g.Map{
 		"days":      req.Days,
 		"client_ip": g.RequestFromCtx(ctx).GetClientIp(),
-		"timestamp": time.Now(),
+		"timestamp": time.Now().UTC(),
 	})*/
 
 	//尝试进行并发查询
@@ -60,10 +60,12 @@ func (c *ControllerV1) GetActiveUsersNum(ctx context.Context, req *v1.GetActiveU
 	// 构建每日活跃用户列表
 	activeUsersList := make([]v1.ActiveUserList, 0, req.Days)
 
+	// 显示给用户的日期使用+8时区
+	loc, _ := time.LoadLocation("Asia/Shanghai")
 	for i := 0; i < req.Days; i++ {
-		date := time.Now().AddDate(0, 0, -i)
-		dateStr := date.Format("2006-01-02")
-		prevDateStr := date.AddDate(0, 0, -1).Format("2006-01-02")
+		date := time.Now().UTC().AddDate(0, 0, -i)
+		dateStr := date.In(loc).Format("2006-01-02")
+		prevDateStr := date.AddDate(0, 0, -1).In(loc).Format("2006-01-02")
 
 		// 从 map 中获取数据
 		activeUsersNum := activeUsersMap[dateStr]
@@ -92,8 +94,8 @@ func (c *ControllerV1) GetActiveUsersNum(ctx context.Context, req *v1.GetActiveU
 // 查询返回每天的活跃用户数和总活跃用户数（并发查询优化）
 func (c *ControllerV1) getActiveUsersData(ctx context.Context, day int) (map[string]int, int, error) {
 	// 计算日期范围
-	startDate := time.Now().AddDate(0, 0, -(day + 1))
-	totalStartDate := time.Now().AddDate(0, 0, -day)
+	startDate := time.Now().UTC().AddDate(0, 0, -(day + 1))
+	totalStartDate := time.Now().UTC().AddDate(0, 0, -day)
 
 	var (
 		activeUsersMap   map[string]int

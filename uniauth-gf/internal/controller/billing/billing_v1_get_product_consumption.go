@@ -19,12 +19,13 @@ func (c *ControllerV1) GetProductConsumption(ctx context.Context, req *v1.GetPro
 		return nil, err
 	}
 
-	// 计算日期范围
-	startDate := time.Now().AddDate(0, 0, -req.NDays)
-	endDate := time.Now()
+	// 统一使用UTC时间，确保跨时区部署的一致性
+	now := time.Now().UTC()
+	startDate := now.AddDate(0, 0, -req.NDays)
+	endDate := now
 
 	if req.NDays == 0 {
-		startDate = time.Now().AddDate(0, 0, -7)
+		startDate = now.AddDate(0, 0, -7)
 	}
 	// 构建查询
 	query := dao.BillingCostRecords.Ctx(ctx).
@@ -80,10 +81,11 @@ func (c *ControllerV1) GetProductConsumption(ctx context.Context, req *v1.GetPro
 		return nil, gerror.Wrap(err, "查询总统计失败")
 	}
 
-	// 构建响应
+	// 构建响应 - 显示给用户的日期使用+8时区
+	loc, _ := time.LoadLocation("Asia/Shanghai")
 	res = &v1.GetProductConsumptionRes{
-		StartDate:   startDate.Format("2006-01-02"),
-		EndDate:     endDate.Format("2006-01-02"),
+		StartDate:   startDate.In(loc).Format("2006-01-02"),
+		EndDate:     endDate.In(loc).Format("2006-01-02"),
 		Consumption: consumption,
 		TotalCalls:  totalStats.TotalCalls,
 		TotalCost:   totalStats.TotalCost,
