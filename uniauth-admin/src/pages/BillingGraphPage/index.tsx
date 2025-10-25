@@ -4,7 +4,6 @@ import {
   RiseOutlined,
   TableOutlined,
   TeamOutlined,
-  UserOutlined,
 } from "@ant-design/icons";
 import { PageContainer, ProTable } from "@ant-design/pro-components";
 import {
@@ -29,14 +28,11 @@ import {
   getBillingStatsTodayTotal,
 } from "@/services/uniauthService/billing";
 
-// 动态获取选项的API函数
 const getAllName = async (name: string): Promise<string[]> => {
   try {
     const response = await getBillingStatsAllName({ name });
-    console.log(`API响应数据 for ${name}:`, response);
     return response?.allName || [];
   } catch (error) {
-    console.error(`获取${name}列表失败:`, error);
     return [];
   }
 };
@@ -49,7 +45,6 @@ const BillingGraphPage: React.FC = () => {
   const [activeUsersLoading, setActiveUsersLoading] = useState<boolean>(false);
   const [modelConsumptionLoading, setModelConsumptionLoading] =
     useState<boolean>(false);
-  const [modelUsageLoading, setModelUsageLoading] = useState<boolean>(false);
 
   const [error, setError] = useState<string>("");
   const [statsData, setStatsData] =
@@ -63,7 +58,6 @@ const BillingGraphPage: React.FC = () => {
     useState<API.GetProductUsageChartRes | null>(null);
 
   const [selectedService, setSelectedService] = useState<string>("all");
-  // 为每个板块创建独立的天数状态
   const [modelSelectedDays, setModelSelectedDays] = useState<number>(7);
   const [activeUsersSelectedDays, setActiveUsersSelectedDays] =
     useState<number>(7);
@@ -74,16 +68,13 @@ const BillingGraphPage: React.FC = () => {
   const [selectedModelQuotaPool, setSelectedModelQuotaPool] =
     useState<string>("all");
 
-  // 新增状态：弹窗显示控制
   const [isConsumptionModalVisible, setIsConsumptionModalVisible] =
     useState<boolean>(false);
 
-  // 新增状态：图表类型切换
   const [activeChartType, setActiveChartType] = useState<
     "usage" | "distribution"
   >("usage");
 
-  // 动态选项状态
   const [serviceOptions, setServiceOptions] = useState<
     { value: string; label: string }[]
   >([{ value: "all", label: "all" }]);
@@ -96,20 +87,17 @@ const BillingGraphPage: React.FC = () => {
     { value: string; label: string }[]
   >([{ value: "all", label: "all" }]);
 
-  // 天数选项（保持不变）
   const daysOptions = [
     { value: 7, label: "7" },
     { value: 30, label: "30" },
     { value: 90, label: "90" },
   ];
 
-  // 获取统计数据
   const fetchStatsData = async (service?: string) => {
     setLoading(true);
     setError("");
 
     try {
-      // 正确处理可选参数，避免传递 undefined
       const params: API.GetTodayTotalConsumptionReq = service
         ? { service }
         : {};
@@ -119,13 +107,11 @@ const BillingGraphPage: React.FC = () => {
       }
     } catch (err) {
       setError("获取统计数据失败，请稍后重试");
-      console.error("获取今日总消费数据失败:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // 获取活跃用户统计数据
   const fetchActiveUsersData = async (days?: number) => {
     setActiveUsersLoading(true);
     setError("");
@@ -140,33 +126,22 @@ const BillingGraphPage: React.FC = () => {
       }
     } catch (err) {
       setError("获取活跃用户数据失败，请稍后重试");
-      console.error("获取活跃用户数据失败:", err);
     } finally {
       setActiveUsersLoading(false);
     }
   };
 
-  // 今日消费统计服务类型选择变化处理
   const handleServiceChange = (value: string) => {
     setSelectedService(value);
     fetchStatsData(value);
   };
 
-  // 模型消费统计天数选择变化处理
-  const handleModelDaysChange = (value: number) => {
-    setModelSelectedDays(value);
-    // 这里可以添加模型消费统计的数据获取逻辑
-    console.log("模型消费统计天数更改为:", value);
-  };
-
-  // 活跃用户统计天数选择变化处理
   const handleActiveUsersDaysChange = (value: number) => {
     setActiveUsersSelectedDays(value);
     fetchActiveUsersData(value);
     fetchAllUsersData(value);
   };
 
-  // 获取所有活跃用户列表
   const fetchAllUsersData = async (days?: number) => {
     setError("");
 
@@ -180,18 +155,14 @@ const BillingGraphPage: React.FC = () => {
       };
       const response = await getBillingStatsActiveUsersList(params);
       if (response) {
-        // 数据获取成功，但不再存储到状态中
       }
     } catch (err) {
       setError("获取所有用户数据失败，请稍后重试");
-      console.error("获取所有用户数据失败:", err);
     }
   };
 
-  // 获取动态选项
   const fetchDynamicOptions = async () => {
     try {
-      // 获取服务选项 - getAllName直接返回string[]
       const services = await getAllName("service");
       const serviceOptions = services.map((service) => ({
         value: service,
@@ -199,7 +170,6 @@ const BillingGraphPage: React.FC = () => {
       }));
       setServiceOptions(serviceOptions);
 
-      // 获取产品选项 - getAllName直接返回string[]
       const products = await getAllName("product");
       const productOptions = products.map((product) => ({
         value: product,
@@ -207,19 +177,15 @@ const BillingGraphPage: React.FC = () => {
       }));
       setProductOptions(productOptions);
 
-      // 获取配额池选项 - getAllName直接返回string[]
       const quotaPools = await getAllName("quotaPool");
       const quotaPoolOptions = quotaPools.map((quotaPool) => ({
         value: quotaPool,
         label: quotaPool,
       }));
       setQuotaPoolOptions(quotaPoolOptions);
-    } catch (error) {
-      console.error("获取动态选项失败:", error);
-    }
+    } catch (error) {}
   };
 
-  // 获取模型消费金额统计
   const fetchModelConsumptionData = async (
     service?: string,
     product?: string,
@@ -241,20 +207,17 @@ const BillingGraphPage: React.FC = () => {
       }
     } catch (err) {
       setError("获取模型消费金额统计失败，请稍后重试");
-      console.error("获取模型消费金额统计失败:", err);
     } finally {
       setModelConsumptionLoading(false);
     }
   };
 
-  // 获取模型调用次数图表
   const fetchModelUsageData = async (
     service?: string,
     product?: string,
     quotaPool?: string,
     days?: number,
   ) => {
-    setModelUsageLoading(true);
     setError("");
 
     try {
@@ -269,13 +232,10 @@ const BillingGraphPage: React.FC = () => {
       }
     } catch (err) {
       setError("获取模型调用次数图表失败，请稍后重试");
-      console.error("获取模型调用次数图表失败:", err);
     } finally {
-      setModelUsageLoading(false);
     }
   };
 
-  // 模型统计筛选变化处理
   const handleModelFilterChange = (
     service?: string,
     product?: string,
@@ -301,7 +261,6 @@ const BillingGraphPage: React.FC = () => {
 
   return (
     <PageContainer>
-      {/* 今日消费统计和模型消费统计 */}
       <Row gutter={24}>
         <Col xs={24} lg={12}>
           <Card>
@@ -346,8 +305,6 @@ const BillingGraphPage: React.FC = () => {
               </Col>
             </Row>
 
-            {/* 移除筛选器区域 */}
-            {/* 今日消费统计内容保持不变 */}
             {error && (
               <Alert
                 message="错误"
@@ -364,7 +321,6 @@ const BillingGraphPage: React.FC = () => {
               </div>
             ) : statsData ? (
               <Row gutter={16}>
-                {/* 总消费金额 */}
                 <Col xs={24} sm={12} md={12}>
                   <Card>
                     <Statistic
@@ -378,7 +334,6 @@ const BillingGraphPage: React.FC = () => {
                   </Card>
                 </Col>
 
-                {/* 增长率 */}
                 <Col xs={24} sm={12} md={12}>
                   <Card>
                     <Statistic
@@ -414,7 +369,6 @@ const BillingGraphPage: React.FC = () => {
             )}
           </Card>
 
-          {/* 模型消费统计 - 移动到今日消费统计下面 */}
           <Card style={{ marginTop: "24px" }}>
             <Row
               justify="space-between"
@@ -442,7 +396,6 @@ const BillingGraphPage: React.FC = () => {
               </Col>
             </Row>
 
-            {/* 添加服务、模型、配额池、天数筛选器 - 每两个一行 */}
             <Card style={{ marginBottom: "24px" }}>
               <Row gutter={16} align="middle" style={{ marginBottom: "16px" }}>
                 <Col span={12}>
@@ -597,7 +550,6 @@ const BillingGraphPage: React.FC = () => {
               </Row>
             </Card>
 
-            {/* 模型消费统计内容保持不变 */}
             {modelConsumptionLoading ? (
               <div style={{ textAlign: "center", padding: "50px" }}>
                 <Spin size="large" />
@@ -628,7 +580,6 @@ const BillingGraphPage: React.FC = () => {
                     </Card>
                   </Col>
                 </Row>
-                {/* 添加图表切换按钮 */}
                 <Row style={{ marginBottom: "16px" }}>
                   <Col>
                     <Button.Group>
@@ -653,7 +604,6 @@ const BillingGraphPage: React.FC = () => {
                     </Button.Group>
                   </Col>
                 </Row>
-                {/* 根据activeChartType显示不同的图表 */}
                 {activeChartType === "usage" ? (
                   <Card title="调用次数趋势图（折线图）">
                     <div style={{ height: "300px" }}>
@@ -730,7 +680,6 @@ const BillingGraphPage: React.FC = () => {
                   </Card>
                 )}
 
-                {/* 弹窗 */}
                 <Modal
                   title="消费明细"
                   open={isConsumptionModalVisible}
@@ -753,12 +702,8 @@ const BillingGraphPage: React.FC = () => {
                         showTotal: (total: number) => `共 ${total} 条记录`,
                         pageSizeOptions: ["10", "20", "30"],
                         defaultPageSize: 10,
-                        onChange: (page: number, pageSize: number) => {
-                          console.log(`切换到第${page}页，每页${pageSize}条`);
-                        },
-                        onShowSizeChange: (_: number, size: number) => {
-                          console.log(`每页条数改为${size}条`);
-                        },
+                        onChange: (_page: number, _pageSize: number) => {},
+                        onShowSizeChange: (_: number, _size: number) => {},
                       }}
                       scroll={{ x: 800 }}
                       columns={[
@@ -941,8 +886,6 @@ const BillingGraphPage: React.FC = () => {
               </Col>
             </Row>
 
-            {/* 移除筛选器区域 */}
-            {/* 活跃用户统计内容保持不变 */}
             {activeUsersLoading ? (
               <div style={{ textAlign: "center", padding: "50px" }}>
                 <Spin size="large" />
@@ -972,7 +915,6 @@ const BillingGraphPage: React.FC = () => {
                   </Col>
                 </Row>
 
-                {/* 活跃用户趋势折线图 */}
                 <Card title="活跃用户趋势" style={{ marginTop: "16px" }}>
                   <Line
                     data={
@@ -983,7 +925,6 @@ const BillingGraphPage: React.FC = () => {
                           activeRateInc: item.activeRateInc || 0,
                         }))
                         ?.sort((a, b) => {
-                          // 按日期从旧到新排序
                           return (
                             new Date(a.date).getTime() -
                             new Date(b.date).getTime()
@@ -1075,23 +1016,6 @@ const BillingGraphPage: React.FC = () => {
           </Card>
         </Col>
       </Row>
-
-      {/* 消费明细弹窗 - 暂时注释掉，因为相关变量未定义 */}
-      {/* <Modal
-          title="消费明细"
-          open={detailModalVisible}
-          onCancel={() => setDetailModalVisible(false)}
-          footer={null}
-          width={1200}
-        >
-          <ProTable
-            columns={detailColumns}
-            dataSource={detailData}
-            pagination={false}
-            search={false}
-            scroll={{ x: 1000 }}
-          />
-        </Modal> */}
     </PageContainer>
   );
 };
