@@ -32,6 +32,21 @@ export async function postBillingAdminGet(
   });
 }
 
+/** 查询账单总金额 查询账单总金额，根据一定的条件。有两个类型的账单：<br>1. 配额池出账，返回每个配额池的账单总金额；<br>2. 个人出账，返回每个人的账单总金额。<br>QuotaPool 数组和 UPN 数组只能同时传一个。 POST /billing/admin/amount */
+export async function postBillingAdminAmount(
+  body: API.GetBillAmountReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetBillAmountRes>("/billing/admin/amount", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 批量修改配额池 POST /quotaPool/admin/batchModify */
 export async function postQuotaPoolAdminBatchModify(
   body: API.BatchModifyQuotaPoolReq,
