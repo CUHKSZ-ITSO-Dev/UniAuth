@@ -120,7 +120,7 @@ const BillingGraphPage: React.FC = () => {
     setError("");
 
     try {
-      const params: API.GetActiveUsersNumReq = days ? { days } : {};
+      const params: API.GetActiveUsersNumReq = { days: days || selectedDays };
       const response = await getBillingStatsActiveUsersSummary(params);
       if (response) {
         setActiveUsersData(response);
@@ -364,7 +364,7 @@ const BillingGraphPage: React.FC = () => {
         </Row>
       </Card>
 
-      {/* 今日消费统计和活跃用户统计 */}
+      {/* 今日消费统计和模型消费统计 */}
       <Row gutter={24}>
         <Col xs={24} lg={12}>
           <Card>
@@ -434,6 +434,212 @@ const BillingGraphPage: React.FC = () => {
                   }}
                 >
                   暂无数据
+                </div>
+              </Card>
+            )}
+          </Card>
+
+          {/* 模型消费统计 - 移动到今日消费统计下面 */}
+          <Card style={{ marginTop: "24px" }}>
+            <Title level={4}>模型消费统计</Title>
+            <Text type="secondary">查看最近{selectedDays}天模型消费情况</Text>
+
+            {/* 移除筛选器区域 */}
+            {/* 模型消费统计内容保持不变 */}
+            {modelConsumptionLoading ? (
+              <div style={{ textAlign: "center", padding: "50px" }}>
+                <Spin size="large" />
+              </div>
+            ) : modelConsumptionData ? (
+              <>
+                <Row gutter={16} style={{ marginBottom: "24px" }}>
+                  <Col xs={24} sm={12} md={8}>
+                    <Card>
+                      <Statistic
+                        title="总消费金额"
+                        value={modelConsumptionData.totalCost || 0}
+                        precision={2}
+                        prefix="¥"
+                        valueStyle={{ color: "#cf1322" }}
+                        suffix="CNY"
+                      />
+                    </Card>
+                  </Col>
+                  <Col xs={24} sm={12} md={8}>
+                    <Card>
+                      <Statistic
+                        title="总调用次数"
+                        value={modelConsumptionData.totalCalls || 0}
+                        valueStyle={{ color: "#1890ff" }}
+                        prefix={<BarChartOutlined />}
+                      />
+                    </Card>
+                  </Col>
+                </Row>
+
+                {/* 消费数据表格 */}
+                <Card title="消费明细" style={{ marginTop: "16px" }}>
+                  <Row justify="end" style={{ marginBottom: "16px" }}>
+                    <Col>
+                      <Button
+                        type="primary"
+                        icon={<TableOutlined />}
+                        onClick={() => setIsConsumptionModalVisible(true)}
+                      >
+                        查看消费明细
+                      </Button>
+                    </Col>
+                  </Row>
+
+                  {/* 弹窗 */}
+                  <Modal
+                    title="消费明细"
+                    open={isConsumptionModalVisible}
+                    onCancel={() => setIsConsumptionModalVisible(false)}
+                    footer={null}
+                    width="90%"
+                    style={{ top: 20 }}
+                  >
+                    {modelConsumptionData.consumption &&
+                    Array.isArray(modelConsumptionData.consumption) &&
+                    modelConsumptionData.consumption.length > 0 ? (
+                      <ProTable
+                        dataSource={modelConsumptionData.consumption}
+                        rowKey={(record: any, index) =>
+                          `${record.date}-${record.product}-${record.service}-${index}`
+                        }
+                        pagination={{
+                          showSizeChanger: true,
+                          showTotal: (total: number) => `共 ${total} 条记录`,
+                          pageSizeOptions: ["10", "20", "30"],
+                          onChange: (page: number, pageSize: number) => {
+                            console.log(`切换到第${page}页，每页${pageSize}条`);
+                          },
+                          onShowSizeChange: (_: number, size: number) => {
+                            console.log(`每页条数改为${size}条`);
+                          },
+                        }}
+                        scroll={{ x: 800 }}
+                        columns={[
+                          {
+                            title: "日期",
+                            dataIndex: "date",
+                            key: "date",
+                            width: 120,
+                            sorter: (a: any, b: any) =>
+                              (a.date || "").localeCompare(b.date || ""),
+                            filters: Array.from(
+                              new Set(
+                                modelConsumptionData.consumption
+                                  .map((item: any) => item.date)
+                                  .filter(Boolean),
+                              ),
+                            ).map((date) => ({
+                              text: date as string,
+                              value: date as string,
+                            })),
+                            onFilter: (value: any, record: any) =>
+                              record.date === value,
+                            filterSearch: true,
+                          },
+                          {
+                            title: "模型",
+                            dataIndex: "product",
+                            key: "product",
+                            width: 150,
+                            sorter: (a: any, b: any) =>
+                              (a.product || "").localeCompare(b.product || ""),
+                            filters: Array.from(
+                              new Set(
+                                modelConsumptionData.consumption
+                                  .map((item: any) => item.product)
+                                  .filter(Boolean),
+                              ),
+                            ).map((product) => ({
+                              text: product as string,
+                              value: product as string,
+                            })),
+                            onFilter: (value: any, record: any) =>
+                              record.product === value,
+                            filterSearch: true,
+                          },
+                          {
+                            title: "服务类型",
+                            dataIndex: "service",
+                            key: "service",
+                            width: 120,
+                            sorter: (a: any, b: any) =>
+                              (a.service || "").localeCompare(b.service || ""),
+                            filters: Array.from(
+                              new Set(
+                                modelConsumptionData.consumption
+                                  .map((item: any) => item.service)
+                                  .filter(Boolean),
+                              ),
+                            ).map((service) => ({
+                              text: service as string,
+                              value: service as string,
+                            })),
+                            onFilter: (value: any, record: any) =>
+                              record.service === value,
+                            filterSearch: true,
+                          },
+                          {
+                            title: "调用次数",
+                            dataIndex: "calls",
+                            key: "calls",
+                            width: 100,
+                            sorter: (a: any, b: any) =>
+                              (a.calls || 0) - (b.calls || 0),
+                            render: (_: React.ReactNode, record: any) =>
+                              (record.calls || 0).toLocaleString(),
+                          },
+                          {
+                            title: "消费金额(CNY)",
+                            dataIndex: "costCNY",
+                            key: "costCNY",
+                            width: 120,
+                            sorter: (a: any, b: any) =>
+                              (a.costCNY || 0) - (b.costCNY || 0),
+                            render: (_: React.ReactNode, record: any) =>
+                              `¥${(record.costCNY || 0).toFixed(2)}`,
+                          },
+                          {
+                            title: "平均单价",
+                            dataIndex: "avgPrice",
+                            key: "avgPrice",
+                            width: 100,
+                            sorter: (a: any, b: any) =>
+                              (a.avgPrice || 0) - (b.avgPrice || 0),
+                            render: (_: React.ReactNode, record: any) =>
+                              `¥${(record.avgPrice || 0).toFixed(4)}`,
+                          },
+                        ]}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          textAlign: "center",
+                          padding: "50px",
+                          color: "#999",
+                        }}
+                      >
+                        暂无消费明细数据
+                      </div>
+                    )}
+                  </Modal>
+                </Card>
+              </>
+            ) : (
+              <Card>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "50px",
+                    color: "#999",
+                  }}
+                >
+                  暂无模型消费数据
                 </div>
               </Card>
             )}
@@ -579,241 +785,10 @@ const BillingGraphPage: React.FC = () => {
         </Col>
       </Row>
 
-      {/* 模型消费统计 */}
-      <Card style={{ marginTop: "24px" }}>
-        <Title level={4}>模型消费统计</Title>
-        <Text type="secondary">查看最近{selectedDays}天模型消费情况</Text>
-
-        {/* 移除筛选器区域 */}
-        {/* 模型消费统计内容保持不变 */}
-        {modelConsumptionLoading ? (
-          <div style={{ textAlign: "center", padding: "50px" }}>
-            <Spin size="large" />
-          </div>
-        ) : modelConsumptionData ? (
-          <>
-            <Row gutter={16} style={{ marginBottom: "24px" }}>
-              <Col xs={24} sm={12} md={8}>
-                <Card>
-                  <Statistic
-                    title="总消费金额"
-                    value={modelConsumptionData.totalCost || 0}
-                    precision={2}
-                    prefix="¥"
-                    valueStyle={{ color: "#cf1322" }}
-                    suffix="CNY"
-                  />
-                </Card>
-              </Col>
-              <Col xs={24} sm={12} md={8}>
-                <Card>
-                  <Statistic
-                    title="总调用次数"
-                    value={modelConsumptionData.totalCalls || 0}
-                    valueStyle={{ color: "#1890ff" }}
-                    prefix={<BarChartOutlined />}
-                  />
-                </Card>
-              </Col>
-            </Row>
-
-            {/* 消费数据表格 */}
-            <Card title="消费明细" style={{ marginTop: "16px" }}>
-              <Row justify="end" style={{ marginBottom: "16px" }}>
-                <Col>
-                  <Button
-                    type="primary"
-                    icon={<TableOutlined />}
-                    onClick={() => setIsConsumptionModalVisible(true)}
-                  >
-                    查看消费明细
-                  </Button>
-                </Col>
-              </Row>
-
-              {/* 弹窗 */}
-              <Modal
-                title="消费明细"
-                open={isConsumptionModalVisible}
-                onCancel={() => setIsConsumptionModalVisible(false)}
-                footer={null}
-                width="90%"
-                style={{ top: 20 }}
-              >
-                {modelConsumptionData.consumption &&
-                Array.isArray(modelConsumptionData.consumption) &&
-                modelConsumptionData.consumption.length > 0 ? (
-                  <ProTable
-                    dataSource={modelConsumptionData.consumption}
-                    rowKey={(record: any, index) =>
-                      `${record.date}-${record.product}-${record.service}-${index}`
-                    }
-                    pagination={{
-                      showSizeChanger: true,
-                      showTotal: (total: number) => `共 ${total} 条记录`,
-                      pageSizeOptions: ["10", "20", "30"],
-                      onChange: (page: number, pageSize: number) => {
-                        console.log(`切换到第${page}页，每页${pageSize}条`);
-                      },
-                      onShowSizeChange: (_: number, size: number) => {
-                        console.log(`每页条数改为${size}条`);
-                      },
-                    }}
-                    scroll={{ x: 800 }}
-                    columns={[
-                      {
-                        title: "日期",
-                        dataIndex: "date",
-                        key: "date",
-                        width: 120,
-                        sorter: (a: any, b: any) =>
-                          (a.date || "").localeCompare(b.date || ""),
-                        filters: Array.from(
-                          new Set(
-                            modelConsumptionData.consumption
-                              .map((item: any) => item.date)
-                              .filter(Boolean),
-                          ),
-                        ).map((date) => ({
-                          text: date as string,
-                          value: date as string,
-                        })),
-                        onFilter: (value: any, record: any) =>
-                          record.date === value,
-                        filterSearch: true,
-                      },
-                      {
-                        title: "模型",
-                        dataIndex: "product",
-                        key: "product",
-                        width: 150,
-                        sorter: (a: any, b: any) =>
-                          (a.product || "").localeCompare(b.product || ""),
-                        filters: Array.from(
-                          new Set(
-                            modelConsumptionData.consumption
-                              .map((item: any) => item.product)
-                              .filter(Boolean),
-                          ),
-                        ).map((product) => ({
-                          text: product as string,
-                          value: product as string,
-                        })),
-                        onFilter: (value: any, record: any) =>
-                          record.product === value,
-                        filterSearch: true,
-                      },
-                      {
-                        title: "服务类型",
-                        dataIndex: "service",
-                        key: "service",
-                        width: 120,
-                        sorter: (a: any, b: any) =>
-                          (a.service || "").localeCompare(b.service || ""),
-                        filters: Array.from(
-                          new Set(
-                            modelConsumptionData.consumption
-                              .map((item: any) => item.service)
-                              .filter(Boolean),
-                          ),
-                        ).map((service) => ({
-                          text: service as string,
-                          value: service as string,
-                        })),
-                        onFilter: (value: any, record: any) =>
-                          record.service === value,
-                        filterSearch: true,
-                      },
-                      {
-                        title: "配额池",
-                        dataIndex: "quotaPool",
-                        key: "quotaPool",
-                        width: 150,
-                        sorter: (a: any, b: any) =>
-                          (a.quotaPool || "").localeCompare(b.quotaPool || ""),
-                        filters: Array.from(
-                          new Set(
-                            modelConsumptionData.consumption
-                              .map((item: any) => item.quotaPool)
-                              .filter(Boolean),
-                          ),
-                        ).map((quotaPool) => ({
-                          text: quotaPool as string,
-                          value: quotaPool as string,
-                        })),
-                        onFilter: (value: any, record: any) =>
-                          record.quotaPool === value,
-                        filterSearch: true,
-                      },
-                      {
-                        title: "消费金额(CNY)",
-                        dataIndex: "cost",
-                        key: "cost",
-                        width: 120,
-                        sorter: (a: any, b: any) => {
-                          const costA = a.cost
-                            ? parseFloat(a.cost.toString())
-                            : 0;
-                          const costB = b.cost
-                            ? parseFloat(b.cost.toString())
-                            : 0;
-                          return costA - costB;
-                        },
-                        render: (_, record: any) => (
-                          <span
-                            style={{ color: "#cf1322", fontWeight: "bold" }}
-                          >
-                            ¥
-                            {record.cost
-                              ? parseFloat(record.cost.toString()).toFixed(2)
-                              : "0.00"}
-                          </span>
-                        ),
-                      },
-                      {
-                        title: "调用次数",
-                        dataIndex: "calls",
-                        key: "calls",
-                        width: 100,
-                        sorter: (a: any, b: any) =>
-                          (a.calls || 0) - (b.calls || 0),
-                        render: (_, record: any) => (
-                          <span style={{ color: "#1890ff" }}>
-                            {record.calls || 0}
-                          </span>
-                        ),
-                      },
-                    ]}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "50px",
-                      color: "#999",
-                    }}
-                  >
-                    暂无消费明细数据
-                  </div>
-                )}
-              </Modal>
-            </Card>
-          </>
-        ) : (
-          <Card>
-            <div
-              style={{ textAlign: "center", padding: "50px", color: "#999" }}
-            >
-              暂无模型消费数据
-            </div>
-          </Card>
-        )}
-      </Card>
-
       {/* 模型调用次数统计 */}
       <Card style={{ marginTop: "24px" }}>
         <Title level={4}>模型调用次数统计</Title>
-        <Text type="secondary">查看最近{selectedDays}天模型调用情况</Text>
+        <Text type="secondary">查看最近{selectedModelDays}天模型调用情况</Text>
 
         {/* 筛选器区域 */}
         <Card style={{ marginBottom: "24px", marginTop: "16px" }}>
