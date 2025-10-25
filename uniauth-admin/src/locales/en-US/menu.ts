@@ -1,4 +1,5 @@
 export default {
+  "menu.dashboard": "Dashboard",
   "menu.resource": "Resource Management",
   "menu.resource.user-list": "User List",
   "menu.resource.user-detail": "User Details",

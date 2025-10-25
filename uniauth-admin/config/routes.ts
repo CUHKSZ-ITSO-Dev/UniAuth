@@ -15,18 +15,7 @@ export default [
     path: "/dashboard",
     name: "dashboard",
     icon: "dashboard",
-    routes: [
-      {
-        path: "/dashboard",
-        redirect: "/dashboard/bill",
-      },
-      {
-        path: "/dashboard/bill",
-        name: "bill",
-        icon: "User",
-        component: "@/pages/BillPage",
-      },
-    ],
+    component: "@/pages/DashboardPage",
   },
   {
     path: "/resource",
