@@ -63,7 +63,10 @@ const BillingGraphPage: React.FC = () => {
     useState<API.GetProductUsageChartRes | null>(null);
 
   const [selectedService, setSelectedService] = useState<string>("all");
-  const [selectedDays, setSelectedDays] = useState<number>(7);
+  // 为每个板块创建独立的天数状态
+  const [modelSelectedDays, setModelSelectedDays] = useState<number>(7);
+  const [activeUsersSelectedDays, setActiveUsersSelectedDays] =
+    useState<number>(7);
   const [selectedModelService, setSelectedModelService] =
     useState<string>("all");
   const [selectedModelProduct, setSelectedModelProduct] =
@@ -123,7 +126,9 @@ const BillingGraphPage: React.FC = () => {
     setError("");
 
     try {
-      const params: API.GetActiveUsersNumReq = { days: days || selectedDays };
+      const params: API.GetActiveUsersNumReq = {
+        days: days || activeUsersSelectedDays,
+      };
       const response = await getBillingStatsActiveUsersSummary(params);
       if (response) {
         setActiveUsersData(response);
@@ -142,9 +147,16 @@ const BillingGraphPage: React.FC = () => {
     fetchStatsData(value);
   };
 
+  // 模型消费统计天数选择变化处理
+  const handleModelDaysChange = (value: number) => {
+    setModelSelectedDays(value);
+    // 这里可以添加模型消费统计的数据获取逻辑
+    console.log("模型消费统计天数更改为:", value);
+  };
+
   // 活跃用户统计天数选择变化处理
-  const handleDaysChange = (value: number) => {
-    setSelectedDays(value);
+  const handleActiveUsersDaysChange = (value: number) => {
+    setActiveUsersSelectedDays(value);
     fetchActiveUsersData(value);
     fetchAllUsersData(value);
   };
@@ -268,7 +280,7 @@ const BillingGraphPage: React.FC = () => {
     setSelectedModelService(service || "");
     setSelectedModelProduct(product || "");
     setSelectedModelQuotaPool(quotaPool || "");
-    setSelectedDays(days || 7);
+    setModelSelectedDays(days || 7);
     fetchModelConsumptionData(service, product, quotaPool, days);
     fetchModelUsageData(service, product, quotaPool, days);
   };
@@ -300,27 +312,32 @@ const BillingGraphPage: React.FC = () => {
                 <Text type="secondary">查看今日消费情况</Text>
               </Col>
               <Col>
-                <Select
-                  value={selectedService}
-                  onChange={handleServiceChange}
-                  style={{ width: 100 }}
-                  placeholder="选择服务类型"
-                  allowClear
-                  showSearch
-                  filterOption={(input, option) => {
-                    const children = option?.children;
-                    const text = Array.isArray(children)
-                      ? children.join("")
-                      : String(children || "");
-                    return text.toLowerCase().includes(input.toLowerCase());
-                  }}
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  {serviceOptions.map((option) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
+                  <span>服务类型:</span>
+                  <Select
+                    value={selectedService}
+                    onChange={handleServiceChange}
+                    style={{ width: 100 }}
+                    placeholder="选择服务类型"
+                    allowClear
+                    showSearch
+                    filterOption={(input, option) => {
+                      const children = option?.children;
+                      const text = Array.isArray(children)
+                        ? children.join("")
+                        : String(children || "");
+                      return text.toLowerCase().includes(input.toLowerCase());
+                    }}
+                  >
+                    {serviceOptions.map((option) => (
+                      <Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
               </Col>
             </Row>
 
@@ -424,151 +441,153 @@ const BillingGraphPage: React.FC = () => {
             <Card style={{ marginBottom: "24px" }}>
               <Row gutter={16} align="middle" style={{ marginBottom: "16px" }}>
                 <Col span={12}>
-                  <Row gutter={8} align="middle">
-                    <Col span={6}>
-                      <span>服务类型:</span>
-                    </Col>
-                    <Col span={18}>
-                      <Select
-                        value={selectedModelService}
-                        onChange={(value) =>
-                          handleModelFilterChange(
-                            value,
-                            selectedModelProduct,
-                            selectedModelQuotaPool,
-                            selectedDays,
-                          )
-                        }
-                        style={{ width: 100 }}
-                        placeholder="服务类型"
-                        allowClear
-                        showSearch
-                        filterOption={(input, option) => {
-                          const children = option?.children;
-                          const text = Array.isArray(children)
-                            ? children.join("")
-                            : String(children || "");
-                          return text
-                            .toLowerCase()
-                            .includes(input.toLowerCase());
-                        }}
-                      >
-                        {serviceOptions.map((option) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.label}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Col>
-                  </Row>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <span>服务类型:</span>
+                    <Select
+                      value={selectedModelService}
+                      onChange={(value) =>
+                        handleModelFilterChange(
+                          value,
+                          selectedModelProduct,
+                          selectedModelQuotaPool,
+                          modelSelectedDays,
+                        )
+                      }
+                      style={{ width: 100 }}
+                      placeholder="服务类型"
+                      allowClear
+                      showSearch
+                      filterOption={(input, option) => {
+                        const children = option?.children;
+                        const text = Array.isArray(children)
+                          ? children.join("")
+                          : String(children || "");
+                        return text.toLowerCase().includes(input.toLowerCase());
+                      }}
+                    >
+                      {serviceOptions.map((option) => (
+                        <Option key={option.value} value={option.value}>
+                          {option.label}
+                        </Option>
+                      ))}
+                    </Select>
+                  </div>
                 </Col>
                 <Col span={12}>
-                  <Row gutter={8} align="middle">
-                    <Col span={6}>
-                      <span>模型:</span>
-                    </Col>
-                    <Col span={18}>
-                      <Select
-                        value={selectedModelProduct}
-                        onChange={(value) =>
-                          handleModelFilterChange(
-                            selectedModelService,
-                            value,
-                            selectedModelQuotaPool,
-                            selectedDays,
-                          )
-                        }
-                        style={{ width: 100 }}
-                        placeholder="模型"
-                        allowClear
-                        showSearch
-                        filterOption={(input, option) => {
-                          const children = option?.children;
-                          const text = Array.isArray(children)
-                            ? children.join("")
-                            : String(children || "");
-                          return text
-                            .toLowerCase()
-                            .includes(input.toLowerCase());
-                        }}
-                      >
-                        {productOptions.map((option) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.label}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Col>
-                  </Row>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <span>模型:</span>
+                    <Select
+                      value={selectedModelProduct}
+                      onChange={(value) =>
+                        handleModelFilterChange(
+                          selectedModelService,
+                          value,
+                          selectedModelQuotaPool,
+                          modelSelectedDays,
+                        )
+                      }
+                      style={{ width: 100 }}
+                      placeholder="模型"
+                      allowClear
+                      showSearch
+                      filterOption={(input, option) => {
+                        const children = option?.children;
+                        const text = Array.isArray(children)
+                          ? children.join("")
+                          : String(children || "");
+                        return text.toLowerCase().includes(input.toLowerCase());
+                      }}
+                    >
+                      {productOptions.map((option) => (
+                        <Option key={option.value} value={option.value}>
+                          {option.label}
+                        </Option>
+                      ))}
+                    </Select>
+                  </div>
                 </Col>
               </Row>
               <Row gutter={16} align="middle">
                 <Col span={12}>
-                  <Row gutter={8} align="middle">
-                    <Col span={6}>
-                      <span>配额池:</span>
-                    </Col>
-                    <Col span={18}>
-                      <Select
-                        value={selectedModelQuotaPool}
-                        onChange={(value) =>
-                          handleModelFilterChange(
-                            selectedModelService,
-                            selectedModelProduct,
-                            value,
-                            selectedDays,
-                          )
-                        }
-                        style={{ width: 100 }}
-                        placeholder="配额池"
-                        allowClear
-                        showSearch
-                        filterOption={(input, option) => {
-                          const children = option?.children;
-                          const text = Array.isArray(children)
-                            ? children.join("")
-                            : String(children || "");
-                          return text
-                            .toLowerCase()
-                            .includes(input.toLowerCase());
-                        }}
-                      >
-                        {quotaPoolOptions.map((option) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.label}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Col>
-                  </Row>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <span>配额池:</span>
+                    <Select
+                      value={selectedModelQuotaPool}
+                      onChange={(value) =>
+                        handleModelFilterChange(
+                          selectedModelService,
+                          selectedModelProduct,
+                          value,
+                          modelSelectedDays,
+                        )
+                      }
+                      style={{ width: 100 }}
+                      placeholder="配额池"
+                      allowClear
+                      showSearch
+                      filterOption={(input, option) => {
+                        const children = option?.children;
+                        const text = Array.isArray(children)
+                          ? children.join("")
+                          : String(children || "");
+                        return text.toLowerCase().includes(input.toLowerCase());
+                      }}
+                    >
+                      {quotaPoolOptions.map((option) => (
+                        <Option key={option.value} value={option.value}>
+                          {option.label}
+                        </Option>
+                      ))}
+                    </Select>
+                  </div>
                 </Col>
                 <Col span={12}>
-                  <Row gutter={8} align="middle">
-                    <Col span={6}>
-                      <span>天数:</span>
-                    </Col>
-                    <Col span={18}>
-                      <Select
-                        value={selectedDays}
-                        onChange={(value) =>
-                          handleModelFilterChange(
-                            selectedModelService,
-                            selectedModelProduct,
-                            selectedModelQuotaPool,
-                            value,
-                          )
-                        }
-                        style={{ width: 100 }}
-                        placeholder="天数"
-                      >
-                        {daysOptions.map((option) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.label}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Col>
-                  </Row>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <span>天数:</span>
+                    <Select
+                      value={modelSelectedDays}
+                      onChange={(value) =>
+                        handleModelFilterChange(
+                          selectedModelService,
+                          selectedModelProduct,
+                          selectedModelQuotaPool,
+                          value,
+                        )
+                      }
+                      style={{ width: 100 }}
+                      placeholder="天数"
+                    >
+                      {daysOptions.map((option) => (
+                        <Option key={option.value} value={option.value}>
+                          {option.label}
+                        </Option>
+                      ))}
+                    </Select>
+                  </div>
                 </Col>
               </Row>
             </Card>
@@ -792,22 +811,27 @@ const BillingGraphPage: React.FC = () => {
                   活跃用户统计
                 </Title>
                 <Text type="secondary">
-                  查看最近{selectedDays}天的活跃用户数据
+                  查看最近{activeUsersSelectedDays}天的活跃用户数据
                 </Text>
               </Col>
               <Col>
-                <Select
-                  value={selectedDays}
-                  onChange={handleDaysChange}
-                  style={{ width: 100 }}
-                  placeholder="天数"
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  {daysOptions.map((option) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
+                  <span>天数:</span>
+                  <Select
+                    value={activeUsersSelectedDays}
+                    onChange={handleActiveUsersDaysChange}
+                    style={{ width: 100 }}
+                    placeholder="天数"
+                  >
+                    {daysOptions.map((option) => (
+                      <Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
               </Col>
             </Row>
 
@@ -965,6 +989,7 @@ const BillingGraphPage: React.FC = () => {
                     value,
                     selectedModelProduct,
                     selectedModelQuotaPool,
+                    modelSelectedDays,
                   )
                 }
                 style={{ width: 100 }}
@@ -997,6 +1022,7 @@ const BillingGraphPage: React.FC = () => {
                     selectedModelService,
                     value,
                     selectedModelQuotaPool,
+                    modelSelectedDays,
                   )
                 }
                 style={{ width: 100 }}
@@ -1029,6 +1055,7 @@ const BillingGraphPage: React.FC = () => {
                     selectedModelService,
                     selectedModelProduct,
                     value,
+                    modelSelectedDays,
                   )
                 }
                 style={{ width: 100 }}
