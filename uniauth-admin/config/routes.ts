@@ -18,13 +18,13 @@ export default [
     routes: [
       {
         path: "/dashboard",
-        redirect: "/dashboard/billing-graph",
+        redirect: "/dashboard/bill",
       },
       {
-        path: "/dashboard/billing-graph",
-        name: "billing-graph",
+        path: "/dashboard/bill",
+        name: "bill",
         icon: "User",
-        component: "@/pages/BillingGraphPage",
+        component: "@/pages/BillPage",
       },
     ],
   },
@@ -104,7 +104,7 @@ export default [
 
   {
     path: "/",
-    redirect: "/resource",
+    redirect: "/dashboard",
   },
   {
     path: "*",
