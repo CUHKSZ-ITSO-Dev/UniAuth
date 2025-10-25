@@ -7,7 +7,6 @@ import {
 } from "@ant-design/icons";
 import { PageContainer, ProTable } from "@ant-design/pro-components";
 import {
-  Alert,
   Button,
   Card,
   Col,
@@ -20,7 +19,6 @@ import {
 } from "antd";
 import React, { useEffect, useState } from "react";
 import {
-  getBillingStatsActiveUsersList,
   getBillingStatsActiveUsersSummary,
   getBillingStatsAllName,
   getBillingStatsModelConsumption,
@@ -46,7 +44,6 @@ const BillingGraphPage: React.FC = () => {
   const [modelConsumptionLoading, setModelConsumptionLoading] =
     useState<boolean>(false);
 
-  const [error, setError] = useState<string>("");
   const [statsData, setStatsData] =
     useState<API.GetTodayTotalConsumptionRes | null>(null);
   const [activeUsersData, setActiveUsersData] =
@@ -95,7 +92,6 @@ const BillingGraphPage: React.FC = () => {
 
   const fetchStatsData = async (service?: string) => {
     setLoading(true);
-    setError("");
 
     try {
       const params: API.GetTodayTotalConsumptionReq = service
@@ -106,7 +102,6 @@ const BillingGraphPage: React.FC = () => {
         setStatsData(response);
       }
     } catch (err) {
-      setError("获取统计数据失败，请稍后重试");
     } finally {
       setLoading(false);
     }
@@ -114,7 +109,6 @@ const BillingGraphPage: React.FC = () => {
 
   const fetchActiveUsersData = async (days?: number) => {
     setActiveUsersLoading(true);
-    setError("");
 
     try {
       const params: API.GetActiveUsersNumReq = {
@@ -125,7 +119,6 @@ const BillingGraphPage: React.FC = () => {
         setActiveUsersData(response);
       }
     } catch (err) {
-      setError("获取活跃用户数据失败，请稍后重试");
     } finally {
       setActiveUsersLoading(false);
     }
@@ -139,26 +132,6 @@ const BillingGraphPage: React.FC = () => {
   const handleActiveUsersDaysChange = (value: number) => {
     setActiveUsersSelectedDays(value);
     fetchActiveUsersData(value);
-    fetchAllUsersData(value);
-  };
-
-  const fetchAllUsersData = async (days?: number) => {
-    setError("");
-
-    try {
-      const params: API.GetAllActiveUsersReq = {
-        days: days || 7,
-        page: 1,
-        pageSize: 10,
-        sortBy: "cost",
-        sortOrder: "desc",
-      };
-      const response = await getBillingStatsActiveUsersList(params);
-      if (response) {
-      }
-    } catch (err) {
-      setError("获取所有用户数据失败，请稍后重试");
-    }
   };
 
   const fetchDynamicOptions = async () => {
@@ -193,7 +166,6 @@ const BillingGraphPage: React.FC = () => {
     days?: number,
   ) => {
     setModelConsumptionLoading(true);
-    setError("");
 
     try {
       const params: API.GetProductConsumptionReq = {};
@@ -206,7 +178,6 @@ const BillingGraphPage: React.FC = () => {
         setModelConsumptionData(response);
       }
     } catch (err) {
-      setError("获取模型消费金额统计失败，请稍后重试");
     } finally {
       setModelConsumptionLoading(false);
     }
@@ -218,8 +189,6 @@ const BillingGraphPage: React.FC = () => {
     quotaPool?: string,
     days?: number,
   ) => {
-    setError("");
-
     try {
       const params: API.GetProductUsageChartReq = {};
       if (service) params.service = service;
@@ -231,7 +200,6 @@ const BillingGraphPage: React.FC = () => {
         setModelUsageData(response);
       }
     } catch (err) {
-      setError("获取模型调用次数图表失败，请稍后重试");
     } finally {
     }
   };
@@ -254,7 +222,6 @@ const BillingGraphPage: React.FC = () => {
     fetchDynamicOptions();
     fetchStatsData();
     fetchActiveUsersData();
-    fetchAllUsersData();
     fetchModelConsumptionData();
     fetchModelUsageData();
   }, []);
@@ -304,16 +271,6 @@ const BillingGraphPage: React.FC = () => {
                 </div>
               </Col>
             </Row>
-
-            {error && (
-              <Alert
-                message="错误"
-                description={error}
-                type="error"
-                showIcon
-                style={{ marginBottom: "24px" }}
-              />
-            )}
 
             {loading ? (
               <div style={{ textAlign: "center", padding: "50px" }}>
