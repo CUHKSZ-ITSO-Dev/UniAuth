@@ -78,6 +78,11 @@ const BillingGraphPage: React.FC = () => {
   const [isConsumptionModalVisible, setIsConsumptionModalVisible] =
     useState<boolean>(false);
 
+  // 新增状态：图表类型切换
+  const [activeChartType, setActiveChartType] = useState<
+    "usage" | "distribution"
+  >("usage");
+
   // 动态选项状态
   const [serviceOptions, setServiceOptions] = useState<
     { value: string; label: string }[]
@@ -623,6 +628,107 @@ const BillingGraphPage: React.FC = () => {
                     </Card>
                   </Col>
                 </Row>
+                {/* 添加图表切换按钮 */}
+                <Row style={{ marginBottom: "16px" }}>
+                  <Col>
+                    <Button.Group>
+                      <Button
+                        type={
+                          activeChartType === "usage" ? "primary" : "default"
+                        }
+                        onClick={() => setActiveChartType("usage")}
+                      >
+                        次数趋势
+                      </Button>
+                      <Button
+                        type={
+                          activeChartType === "distribution"
+                            ? "primary"
+                            : "default"
+                        }
+                        onClick={() => setActiveChartType("distribution")}
+                      >
+                        调用分布
+                      </Button>
+                    </Button.Group>
+                  </Col>
+                </Row>
+                {/* 根据activeChartType显示不同的图表 */}
+                {activeChartType === "usage" ? (
+                  <Card title="调用次数趋势图（折线图）">
+                    <div style={{ height: "300px" }}>
+                      {modelUsageData?.lineChartData ? (
+                        <Line
+                          data={(
+                            modelUsageData.lineChartData as any
+                          ).series.flatMap((seriesItem: any) =>
+                            (seriesItem.data as any[]).map(
+                              (value: number, index: number) => ({
+                                date: (modelUsageData.lineChartData as any)
+                                  .dates[index],
+                                calls: value,
+                                model: seriesItem.name,
+                              }),
+                            ),
+                          )}
+                          height={300}
+                          xField="date"
+                          yField="calls"
+                          seriesField="model"
+                          meta={{
+                            date: { alias: "日期" },
+                            calls: { alias: "调用次数" },
+                            model: { alias: "模型" },
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            textAlign: "center",
+                            padding: "50px",
+                            color: "#999",
+                          }}
+                        >
+                          暂无折线图数据
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ) : (
+                  <Card title="模型调用分布（条形图）">
+                    <div style={{ height: "300px" }}>
+                      {modelUsageData?.barChartData ? (
+                        <Bar
+                          data={(modelUsageData.barChartData as any).labels.map(
+                            (label: string, index: number) => ({
+                              product: label,
+                              calls: (modelUsageData.barChartData as any).data[
+                                index
+                              ],
+                            }),
+                          )}
+                          height={300}
+                          xField="product"
+                          yField="calls"
+                          meta={{
+                            product: { alias: "模型" },
+                            calls: { alias: "调用次数" },
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            textAlign: "center",
+                            padding: "50px",
+                            color: "#999",
+                          }}
+                        >
+                          暂无条形图数据
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )}
 
                 {/* 弹窗 */}
                 <Modal
@@ -858,9 +964,9 @@ const BillingGraphPage: React.FC = () => {
                     <Card>
                       <Statistic
                         title="活跃用户数"
-                        value={activeUsersData.totalActiveUsers || 0}
-                        valueStyle={{ color: "#1890ff" }}
-                        prefix={<UserOutlined />}
+                        value={activeUsersData.activeUsers?.length || 0}
+                        valueStyle={{ color: "#3f8600" }}
+                        prefix={<TeamOutlined />}
                       />
                     </Card>
                   </Col>
@@ -970,228 +1076,22 @@ const BillingGraphPage: React.FC = () => {
         </Col>
       </Row>
 
-      {/* 模型调用次数统计 */}
-      <Card style={{ marginTop: "24px" }}>
-        <Title level={4}>模型调用次数统计</Title>
-        <Text type="secondary">查看模型调用情况</Text>
-
-        {/* 筛选器区域 - 调整为每两个一行 */}
-        <Card style={{ marginBottom: "24px", marginTop: "16px" }}>
-          <Row gutter={16} align="middle">
-            <Col>
-              <span style={{ marginRight: "8px" }}>服务类型:</span>
-            </Col>
-            <Col>
-              <Select
-                value={selectedModelService}
-                onChange={(value) =>
-                  handleModelFilterChange(
-                    value,
-                    selectedModelProduct,
-                    selectedModelQuotaPool,
-                    modelSelectedDays,
-                  )
-                }
-                style={{ width: 100 }}
-                placeholder="服务类型"
-                allowClear
-                showSearch
-                filterOption={(input, option) => {
-                  const children = option?.children;
-                  const text = Array.isArray(children)
-                    ? children.join("")
-                    : String(children || "");
-                  return text.toLowerCase().includes(input.toLowerCase());
-                }}
-              >
-                {serviceOptions.map((option) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
-            <Col>
-              <span style={{ marginRight: "8px" }}>模型:</span>
-            </Col>
-            <Col>
-              <Select
-                value={selectedModelProduct}
-                onChange={(value) =>
-                  handleModelFilterChange(
-                    selectedModelService,
-                    value,
-                    selectedModelQuotaPool,
-                    modelSelectedDays,
-                  )
-                }
-                style={{ width: 100 }}
-                placeholder="模型"
-                allowClear
-                showSearch
-                filterOption={(input, option) => {
-                  const children = option?.children;
-                  const text = Array.isArray(children)
-                    ? children.join("")
-                    : String(children || "");
-                  return text.toLowerCase().includes(input.toLowerCase());
-                }}
-              >
-                {productOptions.map((option) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
-            <Col>
-              <span style={{ marginRight: "8px" }}>配额池:</span>
-            </Col>
-            <Col>
-              <Select
-                value={selectedModelQuotaPool}
-                onChange={(value) =>
-                  handleModelFilterChange(
-                    selectedModelService,
-                    selectedModelProduct,
-                    value,
-                    modelSelectedDays,
-                  )
-                }
-                style={{ width: 100 }}
-                placeholder="配额池"
-                allowClear
-                showSearch
-                filterOption={(input, option) => {
-                  const children = option?.children;
-                  const text = Array.isArray(children)
-                    ? children.join("")
-                    : String(children || "");
-                  return text.toLowerCase().includes(input.toLowerCase());
-                }}
-              >
-                {quotaPoolOptions.map((option) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
-          </Row>
-        </Card>
-
-        {modelUsageLoading ? (
-          <div style={{ textAlign: "center", padding: "50px" }}>
-            <Spin size="large" />
-          </div>
-        ) : modelUsageData ? (
-          <>
-            <Row gutter={16} style={{ marginBottom: "24px" }}>
-              <Col xs={24} sm={24} md={24}>
-                <Card>
-                  <Statistic
-                    title="总调用次数"
-                    value={modelUsageData.totalCalls || 0}
-                    valueStyle={{ color: "#1890ff" }}
-                    prefix={<BarChartOutlined />}
-                  />
-                </Card>
-              </Col>
-            </Row>
-
-            {/* 模型调用次数图表 */}
-            <Row gutter={16}>
-              <Col xs={24}>
-                <Card title="调用次数趋势图（折线图）">
-                  <div style={{ height: "300px" }}>
-                    {modelUsageData.lineChartData ? (
-                      <Line
-                        data={(
-                          modelUsageData.lineChartData as any
-                        ).series.flatMap((seriesItem: any) =>
-                          (seriesItem.data as any[]).map(
-                            (value: number, index: number) => ({
-                              date: (modelUsageData.lineChartData as any).dates[
-                                index
-                              ],
-                              calls: value,
-                              model: seriesItem.name,
-                            }),
-                          ),
-                        )}
-                        height={300}
-                        xField="date"
-                        yField="calls"
-                        seriesField="model"
-                        meta={{
-                          date: { alias: "日期" },
-                          calls: { alias: "调用次数" },
-                          model: { alias: "模型" },
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          textAlign: "center",
-                          padding: "50px",
-                          color: "#999",
-                        }}
-                      >
-                        暂无折线图数据
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              </Col>
-            </Row>
-            <Row gutter={16} style={{ marginTop: "16px" }}>
-              <Col xs={24}>
-                <Card title="模型调用分布（条形图）">
-                  <div style={{ height: "300px" }}>
-                    {modelUsageData.barChartData ? (
-                      <Bar
-                        data={(modelUsageData.barChartData as any).labels.map(
-                          (label: string, index: number) => ({
-                            product: label,
-                            calls: (modelUsageData.barChartData as any).data[
-                              index
-                            ],
-                          }),
-                        )}
-                        height={300}
-                        xField="product"
-                        yField="calls"
-                        meta={{
-                          product: { alias: "模型" },
-                          calls: { alias: "调用次数" },
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          textAlign: "center",
-                          padding: "50px",
-                          color: "#999",
-                        }}
-                      >
-                        暂无条形图数据
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              </Col>
-            </Row>
-          </>
-        ) : (
-          <Card>
-            <div
-              style={{ textAlign: "center", padding: "50px", color: "#999" }}
-            >
-              暂无模型调用数据
-            </div>
-          </Card>
-        )}
-      </Card>
+      {/* 消费明细弹窗 - 暂时注释掉，因为相关变量未定义 */}
+      {/* <Modal
+          title="消费明细"
+          open={detailModalVisible}
+          onCancel={() => setDetailModalVisible(false)}
+          footer={null}
+          width={1200}
+        >
+          <ProTable
+            columns={detailColumns}
+            dataSource={detailData}
+            pagination={false}
+            search={false}
+            scroll={{ x: 1000 }}
+          />
+        </Modal> */}
     </PageContainer>
   );
 };
