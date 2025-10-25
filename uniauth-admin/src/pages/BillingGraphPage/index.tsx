@@ -68,6 +68,8 @@ const BillingGraphPage: React.FC = () => {
     useState<string>("all");
   const [selectedModelProduct, setSelectedModelProduct] =
     useState<string>("all");
+  const [selectedModelQuotaPool, setSelectedModelQuotaPool] =
+    useState<string>("all");
 
   // 新增状态：弹窗显示控制
   const [isConsumptionModalVisible, setIsConsumptionModalVisible] =
@@ -79,6 +81,10 @@ const BillingGraphPage: React.FC = () => {
   >([{ value: "all", label: "all" }]);
 
   const [productOptions, setProductOptions] = useState<
+    { value: string; label: string }[]
+  >([{ value: "all", label: "all" }]);
+
+  const [quotaPoolOptions, setQuotaPoolOptions] = useState<
     { value: string; label: string }[]
   >([{ value: "all", label: "all" }]);
 
@@ -183,6 +189,14 @@ const BillingGraphPage: React.FC = () => {
         label: product,
       }));
       setProductOptions(productOptions);
+
+      // 获取配额池选项 - getAllName直接返回string[]
+      const quotaPools = await getAllName("quotaPool");
+      const quotaPoolOptions = quotaPools.map((quotaPool) => ({
+        value: quotaPool,
+        label: quotaPool,
+      }));
+      setQuotaPoolOptions(quotaPoolOptions);
     } catch (error) {
       console.error("获取动态选项失败:", error);
     }
@@ -192,6 +206,8 @@ const BillingGraphPage: React.FC = () => {
   const fetchModelConsumptionData = async (
     service?: string,
     product?: string,
+    quotaPool?: string,
+    days?: number,
   ) => {
     setModelConsumptionLoading(true);
     setError("");
@@ -200,6 +216,8 @@ const BillingGraphPage: React.FC = () => {
       const params: API.GetProductConsumptionReq = {};
       if (service) params.service = service;
       if (product) params.product = product;
+      if (quotaPool) params.quotaPool = quotaPool;
+      if (days) params.nDays = days;
       const response = await getBillingStatsModelConsumption(params);
       if (response) {
         setModelConsumptionData(response);
@@ -213,7 +231,12 @@ const BillingGraphPage: React.FC = () => {
   };
 
   // 获取模型调用次数图表
-  const fetchModelUsageData = async (service?: string, product?: string) => {
+  const fetchModelUsageData = async (
+    service?: string,
+    product?: string,
+    quotaPool?: string,
+    days?: number,
+  ) => {
     setModelUsageLoading(true);
     setError("");
 
@@ -221,6 +244,8 @@ const BillingGraphPage: React.FC = () => {
       const params: API.GetProductUsageChartReq = {};
       if (service) params.service = service;
       if (product) params.product = product;
+      if (quotaPool) params.quotaPool = quotaPool;
+      if (days) params.nDays = days;
       const response = await getBillingStatsModelUsage(params);
       if (response) {
         setModelUsageData(response);
@@ -234,11 +259,18 @@ const BillingGraphPage: React.FC = () => {
   };
 
   // 模型统计筛选变化处理
-  const handleModelFilterChange = (service?: string, product?: string) => {
+  const handleModelFilterChange = (
+    service?: string,
+    product?: string,
+    quotaPool?: string,
+    days?: number,
+  ) => {
     setSelectedModelService(service || "");
     setSelectedModelProduct(product || "");
-    fetchModelConsumptionData(service, product);
-    fetchModelUsageData(service, product);
+    setSelectedModelQuotaPool(quotaPool || "");
+    setSelectedDays(days || 7);
+    fetchModelConsumptionData(service, product, quotaPool, days);
+    fetchModelUsageData(service, product, quotaPool, days);
   };
 
   useEffect(() => {
@@ -388,7 +420,159 @@ const BillingGraphPage: React.FC = () => {
               </Col>
             </Row>
 
-            {/* 移除筛选器区域 */}
+            {/* 添加服务、模型、配额池、天数筛选器 - 每两个一行 */}
+            <Card style={{ marginBottom: "24px" }}>
+              <Row gutter={16} align="middle" style={{ marginBottom: "16px" }}>
+                <Col span={12}>
+                  <Row gutter={8} align="middle">
+                    <Col span={6}>
+                      <span>服务类型:</span>
+                    </Col>
+                    <Col span={18}>
+                      <Select
+                        value={selectedModelService}
+                        onChange={(value) =>
+                          handleModelFilterChange(
+                            value,
+                            selectedModelProduct,
+                            selectedModelQuotaPool,
+                            selectedDays,
+                          )
+                        }
+                        style={{ width: 100 }}
+                        placeholder="服务类型"
+                        allowClear
+                        showSearch
+                        filterOption={(input, option) => {
+                          const children = option?.children;
+                          const text = Array.isArray(children)
+                            ? children.join("")
+                            : String(children || "");
+                          return text
+                            .toLowerCase()
+                            .includes(input.toLowerCase());
+                        }}
+                      >
+                        {serviceOptions.map((option) => (
+                          <Option key={option.value} value={option.value}>
+                            {option.label}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Col>
+                  </Row>
+                </Col>
+                <Col span={12}>
+                  <Row gutter={8} align="middle">
+                    <Col span={6}>
+                      <span>模型:</span>
+                    </Col>
+                    <Col span={18}>
+                      <Select
+                        value={selectedModelProduct}
+                        onChange={(value) =>
+                          handleModelFilterChange(
+                            selectedModelService,
+                            value,
+                            selectedModelQuotaPool,
+                            selectedDays,
+                          )
+                        }
+                        style={{ width: 100 }}
+                        placeholder="模型"
+                        allowClear
+                        showSearch
+                        filterOption={(input, option) => {
+                          const children = option?.children;
+                          const text = Array.isArray(children)
+                            ? children.join("")
+                            : String(children || "");
+                          return text
+                            .toLowerCase()
+                            .includes(input.toLowerCase());
+                        }}
+                      >
+                        {productOptions.map((option) => (
+                          <Option key={option.value} value={option.value}>
+                            {option.label}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+              <Row gutter={16} align="middle">
+                <Col span={12}>
+                  <Row gutter={8} align="middle">
+                    <Col span={6}>
+                      <span>配额池:</span>
+                    </Col>
+                    <Col span={18}>
+                      <Select
+                        value={selectedModelQuotaPool}
+                        onChange={(value) =>
+                          handleModelFilterChange(
+                            selectedModelService,
+                            selectedModelProduct,
+                            value,
+                            selectedDays,
+                          )
+                        }
+                        style={{ width: 100 }}
+                        placeholder="配额池"
+                        allowClear
+                        showSearch
+                        filterOption={(input, option) => {
+                          const children = option?.children;
+                          const text = Array.isArray(children)
+                            ? children.join("")
+                            : String(children || "");
+                          return text
+                            .toLowerCase()
+                            .includes(input.toLowerCase());
+                        }}
+                      >
+                        {quotaPoolOptions.map((option) => (
+                          <Option key={option.value} value={option.value}>
+                            {option.label}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Col>
+                  </Row>
+                </Col>
+                <Col span={12}>
+                  <Row gutter={8} align="middle">
+                    <Col span={6}>
+                      <span>天数:</span>
+                    </Col>
+                    <Col span={18}>
+                      <Select
+                        value={selectedDays}
+                        onChange={(value) =>
+                          handleModelFilterChange(
+                            selectedModelService,
+                            selectedModelProduct,
+                            selectedModelQuotaPool,
+                            value,
+                          )
+                        }
+                        style={{ width: 100 }}
+                        placeholder="天数"
+                      >
+                        {daysOptions.map((option) => (
+                          <Option key={option.value} value={option.value}>
+                            {option.label}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </Card>
+
             {/* 模型消费统计内容保持不变 */}
             {modelConsumptionLoading ? (
               <div style={{ textAlign: "center", padding: "50px" }}>
@@ -767,7 +951,7 @@ const BillingGraphPage: React.FC = () => {
         <Title level={4}>模型调用次数统计</Title>
         <Text type="secondary">查看模型调用情况</Text>
 
-        {/* 筛选器区域 */}
+        {/* 筛选器区域 - 调整为每两个一行 */}
         <Card style={{ marginBottom: "24px", marginTop: "16px" }}>
           <Row gutter={16} align="middle">
             <Col>
@@ -777,10 +961,14 @@ const BillingGraphPage: React.FC = () => {
               <Select
                 value={selectedModelService}
                 onChange={(value) =>
-                  handleModelFilterChange(value, selectedModelProduct)
+                  handleModelFilterChange(
+                    value,
+                    selectedModelProduct,
+                    selectedModelQuotaPool,
+                  )
                 }
                 style={{ width: 100 }}
-                placeholder="选择服务类型"
+                placeholder="服务类型"
                 allowClear
                 showSearch
                 filterOption={(input, option) => {
@@ -805,10 +993,14 @@ const BillingGraphPage: React.FC = () => {
               <Select
                 value={selectedModelProduct}
                 onChange={(value) =>
-                  handleModelFilterChange(selectedModelService, value)
+                  handleModelFilterChange(
+                    selectedModelService,
+                    value,
+                    selectedModelQuotaPool,
+                  )
                 }
                 style={{ width: 100 }}
-                placeholder="选择模型"
+                placeholder="模型"
                 allowClear
                 showSearch
                 filterOption={(input, option) => {
@@ -820,6 +1012,38 @@ const BillingGraphPage: React.FC = () => {
                 }}
               >
                 {productOptions.map((option) => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
+            </Col>
+            <Col>
+              <span style={{ marginRight: "8px" }}>配额池:</span>
+            </Col>
+            <Col>
+              <Select
+                value={selectedModelQuotaPool}
+                onChange={(value) =>
+                  handleModelFilterChange(
+                    selectedModelService,
+                    selectedModelProduct,
+                    value,
+                  )
+                }
+                style={{ width: 100 }}
+                placeholder="配额池"
+                allowClear
+                showSearch
+                filterOption={(input, option) => {
+                  const children = option?.children;
+                  const text = Array.isArray(children)
+                    ? children.join("")
+                    : String(children || "");
+                  return text.toLowerCase().includes(input.toLowerCase());
+                }}
+              >
+                {quotaPoolOptions.map((option) => (
                   <Option key={option.value} value={option.value}>
                     {option.label}
                   </Option>
