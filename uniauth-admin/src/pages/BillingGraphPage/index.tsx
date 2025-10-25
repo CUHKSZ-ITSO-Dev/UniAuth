@@ -1,7 +1,6 @@
 import { Bar, Line } from "@ant-design/charts";
 import {
   BarChartOutlined,
-  CalendarOutlined,
   RiseOutlined,
   TableOutlined,
   TeamOutlined,
@@ -48,7 +47,6 @@ const { Option } = Select;
 const BillingGraphPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [activeUsersLoading, setActiveUsersLoading] = useState<boolean>(false);
-
   const [modelConsumptionLoading, setModelConsumptionLoading] =
     useState<boolean>(false);
   const [modelUsageLoading, setModelUsageLoading] = useState<boolean>(false);
@@ -66,7 +64,6 @@ const BillingGraphPage: React.FC = () => {
 
   const [selectedService, setSelectedService] = useState<string>("all");
   const [selectedDays, setSelectedDays] = useState<number>(7);
-  const [selectedModelDays, setSelectedModelDays] = useState<number>(7);
   const [selectedModelService, setSelectedModelService] =
     useState<string>("all");
   const [selectedModelProduct, setSelectedModelProduct] =
@@ -133,36 +130,17 @@ const BillingGraphPage: React.FC = () => {
     }
   };
 
-  // 服务选择变化处理 - 更新为统一处理
+  // 今日消费统计服务类型选择变化处理
   const handleServiceChange = (value: string) => {
     setSelectedService(value);
     fetchStatsData(value);
-    // 同时更新模型统计的服务筛选器
-    setSelectedModelService(value);
-    fetchModelConsumptionData(selectedModelDays, value, selectedModelProduct);
-    fetchModelUsageData(selectedModelDays, value, selectedModelProduct);
   };
 
-  // 天数选择变化处理 - 更新为统一处理
+  // 活跃用户统计天数选择变化处理
   const handleDaysChange = (value: number) => {
     setSelectedDays(value);
     fetchActiveUsersData(value);
     fetchAllUsersData(value);
-    // 同时更新模型统计的天数筛选器
-    setSelectedModelDays(value);
-    fetchModelConsumptionData(
-      value,
-      selectedModelService,
-      selectedModelProduct,
-    );
-    fetchModelUsageData(value, selectedModelService, selectedModelProduct);
-  };
-
-  // 模型选择变化处理 - 更新为统一处理
-  const handleModelChange = (value: string) => {
-    setSelectedModelProduct(value);
-    fetchModelConsumptionData(selectedModelDays, selectedModelService, value);
-    fetchModelUsageData(selectedModelDays, selectedModelService, value);
   };
 
   // 获取所有活跃用户列表
@@ -212,7 +190,6 @@ const BillingGraphPage: React.FC = () => {
 
   // 获取模型消费金额统计
   const fetchModelConsumptionData = async (
-    days?: number,
     service?: string,
     product?: string,
   ) => {
@@ -220,11 +197,9 @@ const BillingGraphPage: React.FC = () => {
     setError("");
 
     try {
-      const params: API.GetProductConsumptionReq = {
-        nDays: days || 7,
-        service: service || "",
-        product: product || "",
-      };
+      const params: API.GetProductConsumptionReq = {};
+      if (service) params.service = service;
+      if (product) params.product = product;
       const response = await getBillingStatsModelConsumption(params);
       if (response) {
         setModelConsumptionData(response);
@@ -238,20 +213,14 @@ const BillingGraphPage: React.FC = () => {
   };
 
   // 获取模型调用次数图表
-  const fetchModelUsageData = async (
-    days?: number,
-    service?: string,
-    product?: string,
-  ) => {
+  const fetchModelUsageData = async (service?: string, product?: string) => {
     setModelUsageLoading(true);
     setError("");
 
     try {
-      const params: API.GetProductUsageChartReq = {
-        nDays: days || 7,
-        service: service || "",
-        product: product || "",
-      };
+      const params: API.GetProductUsageChartReq = {};
+      if (service) params.service = service;
+      if (product) params.product = product;
       const response = await getBillingStatsModelUsage(params);
       if (response) {
         setModelUsageData(response);
@@ -265,16 +234,11 @@ const BillingGraphPage: React.FC = () => {
   };
 
   // 模型统计筛选变化处理
-  const handleModelFilterChange = (
-    days?: number,
-    service?: string,
-    product?: string,
-  ) => {
-    setSelectedModelDays(days || 7);
+  const handleModelFilterChange = (service?: string, product?: string) => {
     setSelectedModelService(service || "");
     setSelectedModelProduct(product || "");
-    fetchModelConsumptionData(days, service, product);
-    fetchModelUsageData(days, service, product);
+    fetchModelConsumptionData(service, product);
+    fetchModelUsageData(service, product);
   };
 
   useEffect(() => {
@@ -288,88 +252,45 @@ const BillingGraphPage: React.FC = () => {
 
   return (
     <PageContainer>
-      {/* 统一的筛选器组件 */}
-      <Card style={{ marginBottom: "24px" }}>
-        <Title level={4}>筛选条件</Title>
-        <Row gutter={16} align="middle">
-          <Col>
-            <span style={{ marginRight: "8px" }}>服务类型:</span>
-          </Col>
-          <Col>
-            <Select
-              value={selectedService}
-              onChange={handleServiceChange}
-              style={{ width: 200 }}
-              placeholder="选择服务类型"
-              allowClear
-              showSearch
-              filterOption={(input, option) => {
-                const children = option?.children;
-                const text = Array.isArray(children)
-                  ? children.join("")
-                  : String(children || "");
-                return text.toLowerCase().includes(input.toLowerCase());
-              }}
-            >
-              {serviceOptions.map((option) => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col>
-            <span style={{ marginRight: "8px" }}>模型:</span>
-          </Col>
-          <Col>
-            <Select
-              value={selectedModelProduct}
-              onChange={handleModelChange}
-              style={{ width: 200 }}
-              placeholder="选择模型"
-              allowClear
-              showSearch
-              filterOption={(input, option) => {
-                const children = option?.children;
-                const text = Array.isArray(children)
-                  ? children.join("")
-                  : String(children || "");
-                return text.toLowerCase().includes(input.toLowerCase());
-              }}
-            >
-              {productOptions.map((option) => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col>
-            <span style={{ marginRight: "8px" }}>统计天数:</span>
-          </Col>
-          <Col>
-            <Select
-              value={selectedDays}
-              onChange={handleDaysChange}
-              style={{ width: 120 }}
-              placeholder="选择天数"
-            >
-              {daysOptions.map((option) => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-        </Row>
-      </Card>
-
       {/* 今日消费统计和模型消费统计 */}
       <Row gutter={24}>
         <Col xs={24} lg={12}>
           <Card>
-            <Title level={4}>今日消费统计</Title>
-            <Text type="secondary">查看最近{selectedDays}天消费情况</Text>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: "16px" }}
+            >
+              <Col>
+                <Title level={4} style={{ margin: 0 }}>
+                  今日消费统计
+                </Title>
+                <Text type="secondary">查看今日消费情况</Text>
+              </Col>
+              <Col>
+                <Select
+                  value={selectedService}
+                  onChange={handleServiceChange}
+                  style={{ width: 100 }}
+                  placeholder="选择服务类型"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) => {
+                    const children = option?.children;
+                    const text = Array.isArray(children)
+                      ? children.join("")
+                      : String(children || "");
+                    return text.toLowerCase().includes(input.toLowerCase());
+                  }}
+                >
+                  {serviceOptions.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            </Row>
 
             {/* 移除筛选器区域 */}
             {/* 今日消费统计内容保持不变 */}
@@ -450,9 +371,7 @@ const BillingGraphPage: React.FC = () => {
                 <Title level={4} style={{ margin: 0 }}>
                   模型消费统计
                 </Title>
-                <Text type="secondary">
-                  查看最近{selectedDays}天模型消费情况
-                </Text>
+                <Text type="secondary">查看最近7天的模型消费情况</Text>
               </Col>
               <Col>
                 <Button
@@ -519,10 +438,12 @@ const BillingGraphPage: React.FC = () => {
                       rowKey={(record: any, index) =>
                         `${record.date}-${record.product}-${record.service}-${index}`
                       }
+                      search={false}
                       pagination={{
                         showSizeChanger: true,
                         showTotal: (total: number) => `共 ${total} 条记录`,
                         pageSizeOptions: ["10", "20", "30"],
+                        defaultPageSize: 10,
                         onChange: (page: number, pageSize: number) => {
                           console.log(`切换到第${page}页，每页${pageSize}条`);
                         },
@@ -551,7 +472,6 @@ const BillingGraphPage: React.FC = () => {
                           })),
                           onFilter: (value: any, record: any) =>
                             record.date === value,
-                          filterSearch: true,
                         },
                         {
                           title: "模型",
@@ -572,7 +492,6 @@ const BillingGraphPage: React.FC = () => {
                           })),
                           onFilter: (value: any, record: any) =>
                             record.product === value,
-                          filterSearch: true,
                         },
                         {
                           title: "服务类型",
@@ -593,7 +512,49 @@ const BillingGraphPage: React.FC = () => {
                           })),
                           onFilter: (value: any, record: any) =>
                             record.service === value,
-                          filterSearch: true,
+                        },
+                        {
+                          title: "配额池",
+                          dataIndex: "quotaPool",
+                          key: "quotaPool",
+                          width: 150,
+                          sorter: (a: any, b: any) =>
+                            (a.quotaPool || "").localeCompare(
+                              b.quotaPool || "",
+                            ),
+                          filters: Array.from(
+                            new Set(
+                              modelConsumptionData.consumption
+                                .map((item: any) => item.quotaPool)
+                                .filter(Boolean),
+                            ),
+                          ).map((quotaPool) => ({
+                            text: quotaPool as string,
+                            value: quotaPool as string,
+                          })),
+                          onFilter: (value: any, record: any) =>
+                            record.quotaPool === value,
+                        },
+                        {
+                          title: "消费金额(CNY)",
+                          dataIndex: "cost",
+                          key: "cost",
+                          width: 120,
+                          sorter: (a: any, b: any) => {
+                            const aCost = a.cost
+                              ? parseFloat(a.cost.toString())
+                              : 0;
+                            const bCost = b.cost
+                              ? parseFloat(b.cost.toString())
+                              : 0;
+                            return aCost - bCost;
+                          },
+                          render: (_: React.ReactNode, record: any) => {
+                            const costValue = record.cost
+                              ? parseFloat(record.cost.toString())
+                              : 0;
+                            return `¥${costValue.toFixed(2)}`;
+                          },
                         },
                         {
                           title: "调用次数",
@@ -604,26 +565,6 @@ const BillingGraphPage: React.FC = () => {
                             (a.calls || 0) - (b.calls || 0),
                           render: (_: React.ReactNode, record: any) =>
                             (record.calls || 0).toLocaleString(),
-                        },
-                        {
-                          title: "消费金额(CNY)",
-                          dataIndex: "costCNY",
-                          key: "costCNY",
-                          width: 120,
-                          sorter: (a: any, b: any) =>
-                            (a.costCNY || 0) - (b.costCNY || 0),
-                          render: (_: React.ReactNode, record: any) =>
-                            `¥${(record.costCNY || 0).toFixed(2)}`,
-                        },
-                        {
-                          title: "平均单价",
-                          dataIndex: "avgPrice",
-                          key: "avgPrice",
-                          width: 100,
-                          sorter: (a: any, b: any) =>
-                            (a.avgPrice || 0) - (b.avgPrice || 0),
-                          render: (_: React.ReactNode, record: any) =>
-                            `¥${(record.avgPrice || 0).toFixed(4)}`,
                         },
                       ]}
                     />
@@ -657,8 +598,34 @@ const BillingGraphPage: React.FC = () => {
         </Col>
         <Col xs={24} lg={12}>
           <Card>
-            <Title level={4}>活跃用户统计</Title>
-            <Text type="secondary">查看最近{selectedDays}天的活跃用户数据</Text>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: "16px" }}
+            >
+              <Col>
+                <Title level={4} style={{ margin: 0 }}>
+                  活跃用户统计
+                </Title>
+                <Text type="secondary">
+                  查看最近{selectedDays}天的活跃用户数据
+                </Text>
+              </Col>
+              <Col>
+                <Select
+                  value={selectedDays}
+                  onChange={handleDaysChange}
+                  style={{ width: 100 }}
+                  placeholder="天数"
+                >
+                  {daysOptions.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+            </Row>
 
             {/* 移除筛选器区域 */}
             {/* 活跃用户统计内容保持不变 */}
@@ -798,7 +765,7 @@ const BillingGraphPage: React.FC = () => {
       {/* 模型调用次数统计 */}
       <Card style={{ marginTop: "24px" }}>
         <Title level={4}>模型调用次数统计</Title>
-        <Text type="secondary">查看最近{selectedModelDays}天模型调用情况</Text>
+        <Text type="secondary">查看模型调用情况</Text>
 
         {/* 筛选器区域 */}
         <Card style={{ marginBottom: "24px", marginTop: "16px" }}>
@@ -810,13 +777,9 @@ const BillingGraphPage: React.FC = () => {
               <Select
                 value={selectedModelService}
                 onChange={(value) =>
-                  handleModelFilterChange(
-                    selectedModelDays,
-                    value,
-                    selectedModelProduct,
-                  )
+                  handleModelFilterChange(value, selectedModelProduct)
                 }
-                style={{ width: 200 }}
+                style={{ width: 100 }}
                 placeholder="选择服务类型"
                 allowClear
                 showSearch
@@ -842,13 +805,9 @@ const BillingGraphPage: React.FC = () => {
               <Select
                 value={selectedModelProduct}
                 onChange={(value) =>
-                  handleModelFilterChange(
-                    selectedModelDays,
-                    selectedModelService,
-                    value,
-                  )
+                  handleModelFilterChange(selectedModelService, value)
                 }
-                style={{ width: 200 }}
+                style={{ width: 100 }}
                 placeholder="选择模型"
                 allowClear
                 showSearch
@@ -867,29 +826,6 @@ const BillingGraphPage: React.FC = () => {
                 ))}
               </Select>
             </Col>
-            <Col>
-              <span style={{ marginRight: "8px" }}>天数:</span>
-            </Col>
-            <Col>
-              <Select
-                value={selectedModelDays}
-                onChange={(value) =>
-                  handleModelFilterChange(
-                    value,
-                    selectedModelService,
-                    selectedModelProduct,
-                  )
-                }
-                style={{ width: 120 }}
-                placeholder="选择天数"
-              >
-                {daysOptions.map((option) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
           </Row>
         </Card>
 
@@ -900,23 +836,13 @@ const BillingGraphPage: React.FC = () => {
         ) : modelUsageData ? (
           <>
             <Row gutter={16} style={{ marginBottom: "24px" }}>
-              <Col xs={24} sm={12} md={12}>
+              <Col xs={24} sm={24} md={24}>
                 <Card>
                   <Statistic
                     title="总调用次数"
                     value={modelUsageData.totalCalls || 0}
                     valueStyle={{ color: "#1890ff" }}
                     prefix={<BarChartOutlined />}
-                  />
-                </Card>
-              </Col>
-              <Col xs={24} sm={12} md={12}>
-                <Card>
-                  <Statistic
-                    title="统计周期"
-                    value={`${selectedModelDays}天`}
-                    valueStyle={{ color: "#52c41a" }}
-                    prefix={<CalendarOutlined />}
                   />
                 </Card>
               </Col>
