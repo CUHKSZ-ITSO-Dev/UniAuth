@@ -131,7 +131,7 @@ type GetActiveUserDetailReq struct {
 
 // GetActiveUserDetailRes 查询某个活跃用户详细信息响应
 type GetActiveUserDetailRes struct {
-	UserInfo   entity.UserinfosUserInfos `json:"userInfo" dc:"用户基本信息"`
+	UserInfo   entity.UserinfosUserInfos `json:"userInfo" dc:"用户基本信息" example:"{\"upn\":\"test@cuhk.edu.cn\"}"`
 	TotalCost  decimal.Decimal           `json:"totalCost" dc:"个人总消费金额(CNY)" example:"125.50"`
 	TotalCalls int                       `json:"totalCalls" dc:"个人总调用次数" example:"42"`
 	LastActive string                    `json:"lastActive" dc:"最后活跃时间" example:"2025-01-15 10:30:00"`
