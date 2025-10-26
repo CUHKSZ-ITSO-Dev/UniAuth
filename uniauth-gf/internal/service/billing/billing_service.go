@@ -409,12 +409,9 @@ func (s *BillingService) GetActiveUserDetail(ctx context.Context, req *v1.GetAct
 	err = dao.UserinfosUserInfos.Ctx(ctx).
 		Where("upn = ?", req.Upn).
 		Scan(&res.UserInfo)
-	if err != nil {
-		return nil, gerror.Wrap(err, "查询用户基本信息失败")
-	}
 
 	// 检查用户是否存在
-	if res.UserInfo.Upn == "" {
+	if err != nil || res.UserInfo.Upn == "" {
 		return nil, gerror.Newf("用户 '%s' 不存在", req.Upn)
 	}
 
