@@ -238,12 +238,20 @@ const BillingGraphPage: React.FC = () => {
           <Card>
             <Row justify="space-between" align="middle">
               <Col>
-                <Title level={4}>今日消费统计</Title>
-                <Text type="secondary">查看今日消费情况</Text>
+                <Title level={4}>
+                  {intl.formatMessage({ id: "pages.dashboard.todayTitle" })}
+                </Title>
+                <Text type="secondary">
+                  {intl.formatMessage({ id: "pages.dashboard.todaySub" })}
+                </Text>
               </Col>
               <Col>
                 <div>
-                  <span>服务类型:</span>
+                  <span>
+                    {intl.formatMessage({
+                      id: "pages.dashboard.serviceOption",
+                    })}
+                  </span>
                   <Select
                     value={selectedService}
                     onChange={handleServiceChange}
@@ -335,8 +343,12 @@ const BillingGraphPage: React.FC = () => {
           <Card style={{ marginTop: "12px" }}>
             <Row justify="space-between" align="middle">
               <Col>
-                <Title level={4}>模型消费统计</Title>
-                <Text type="secondary">查看模型消费情况</Text>
+                <Title level={4}>
+                  {intl.formatMessage({ id: "pages.dashboard.modelTitle" })}
+                </Title>
+                <Text type="secondary">
+                  {intl.formatMessage({ id: "pages.dashboard.modelSub" })}
+                </Text>
               </Col>
               <Col>
                 <Button
@@ -356,7 +368,11 @@ const BillingGraphPage: React.FC = () => {
               <Row gutter={12}>
                 <Col md={12}>
                   <div>
-                    <span>服务类型:</span>
+                    <span>
+                      {intl.formatMessage({
+                        id: "pages.dashboard.serviceOption",
+                      })}
+                    </span>
                     <Select
                       value={selectedModelService}
                       onChange={(value) =>
@@ -387,7 +403,11 @@ const BillingGraphPage: React.FC = () => {
                 </Col>
                 <Col span={12}>
                   <div>
-                    <span>模型:</span>
+                    <span>
+                      {intl.formatMessage({
+                        id: "pages.dashboard.productOption",
+                      })}
+                    </span>
                     <Select
                       value={selectedModelProduct}
                       onChange={(value) =>
@@ -420,7 +440,11 @@ const BillingGraphPage: React.FC = () => {
               <Row gutter={12} style={{ marginTop: "12px" }}>
                 <Col span={12}>
                   <div>
-                    <span>配额池:</span>
+                    <span>
+                      {intl.formatMessage({
+                        id: "pages.dashboard.quotaPoolOption",
+                      })}
+                    </span>
                     <Select
                       value={selectedModelQuotaPool}
                       onChange={(value) =>
@@ -451,7 +475,9 @@ const BillingGraphPage: React.FC = () => {
                 </Col>
                 <Col span={12}>
                   <div>
-                    <span>天数:</span>
+                    <span>
+                      {intl.formatMessage({ id: "pages.dashboard.dayOption" })}
+                    </span>
                     <Select
                       value={modelSelectedDays}
                       onChange={(value) =>
@@ -485,7 +511,9 @@ const BillingGraphPage: React.FC = () => {
                   <Col md={12} style={{ marginTop: "12px" }}>
                     <Card>
                       <Statistic
-                        title="总消费金额"
+                        title={intl.formatMessage({
+                          id: "pages.dashboard.modelCost",
+                        })}
                         value={modelConsumptionData.totalCost || 0}
                         precision={2}
                         prefix="¥"
@@ -496,7 +524,9 @@ const BillingGraphPage: React.FC = () => {
                   <Col md={12} style={{ marginTop: "12px" }}>
                     <Card>
                       <Statistic
-                        title="总调用次数"
+                        title={intl.formatMessage({
+                          id: "pages.dashboard.modelCall",
+                        })}
                         value={modelConsumptionData.totalCalls || 0}
                         valueStyle={{ color: "blue" }}
                         prefix={<BarChartOutlined />}
@@ -510,7 +540,9 @@ const BillingGraphPage: React.FC = () => {
                       type={activeChartType === "usage" ? "primary" : "default"}
                       onClick={() => setActiveChartType("usage")}
                     >
-                      次数趋势
+                      {intl.formatMessage({
+                        id: "pages.dashboard.modelTrend",
+                      })}
                     </Button>
                     <Button
                       type={
@@ -520,12 +552,14 @@ const BillingGraphPage: React.FC = () => {
                       }
                       onClick={() => setActiveChartType("distribution")}
                     >
-                      调用分布
+                      {intl.formatMessage({
+                        id: "pages.dashboard.modelDistribution",
+                      })}
                     </Button>
                   </Col>
                 </Row>
                 {activeChartType === "usage" ? (
-                  <Card title="调用次数趋势图（折线图）">
+                  <Card>
                     <div>
                       {modelUsageData?.lineChartData ? (
                         <Line
@@ -563,13 +597,13 @@ const BillingGraphPage: React.FC = () => {
                             color: "grey",
                           }}
                         >
-                          暂无数据
+                          {intl.formatMessage({ id: "pages.dashboard.noData" })}
                         </div>
                       )}
                     </div>
                   </Card>
                 ) : (
-                  <Card title="模型调用分布（条形图）">
+                  <Card>
                     <div>
                       {modelUsageData?.barChartData ? (
                         <Bar
@@ -593,7 +627,7 @@ const BillingGraphPage: React.FC = () => {
                             color: "grey",
                           }}
                         >
-                          暂无数据
+                          {intl.formatMessage({ id: "pages.dashboard.noData" })}
                         </div>
                       )}
                     </div>
@@ -601,7 +635,9 @@ const BillingGraphPage: React.FC = () => {
                 )}
 
                 <Modal
-                  title="消费明细"
+                  title={intl.formatMessage({
+                    id: "pages.dashboard.modelDetail",
+                  })}
                   open={isConsumptionModalVisible}
                   onCancel={() => setIsConsumptionModalVisible(false)}
                   footer={null}
@@ -619,7 +655,6 @@ const BillingGraphPage: React.FC = () => {
                       search={false}
                       pagination={{
                         showSizeChanger: true,
-                        showTotal: (total: number) => `共 ${total} 条记录`,
                         pageSizeOptions: ["10", "20", "30"],
                         defaultPageSize: 10,
                         onChange: (_page: number, _pageSize: number) => {},
@@ -628,7 +663,9 @@ const BillingGraphPage: React.FC = () => {
                       scroll={{ x: 800 }}
                       columns={[
                         {
-                          title: "日期",
+                          title: intl.formatMessage({
+                            id: "pages.dashboard.date",
+                          }),
                           dataIndex: "date",
                           key: "date",
                           width: 120,
@@ -648,7 +685,9 @@ const BillingGraphPage: React.FC = () => {
                             record.date === value,
                         },
                         {
-                          title: "模型",
+                          title: intl.formatMessage({
+                            id: "pages.dashboard.product",
+                          }),
                           dataIndex: "product",
                           key: "product",
                           width: 150,
@@ -668,7 +707,9 @@ const BillingGraphPage: React.FC = () => {
                             record.product === value,
                         },
                         {
-                          title: "服务类型",
+                          title: intl.formatMessage({
+                            id: "pages.dashboard.service",
+                          }),
                           dataIndex: "service",
                           key: "service",
                           width: 120,
@@ -688,7 +729,9 @@ const BillingGraphPage: React.FC = () => {
                             record.service === value,
                         },
                         {
-                          title: "配额池",
+                          title: intl.formatMessage({
+                            id: "pages.dashboard.quotaPool",
+                          }),
                           dataIndex: "quotaPool",
                           key: "quotaPool",
                           width: 150,
@@ -710,7 +753,9 @@ const BillingGraphPage: React.FC = () => {
                             record.quotaPool === value,
                         },
                         {
-                          title: "消费金额(CNY)",
+                          title: intl.formatMessage({
+                            id: "pages.dashboard.cost",
+                          }),
                           dataIndex: "cost",
                           key: "cost",
                           width: 120,
@@ -731,7 +776,9 @@ const BillingGraphPage: React.FC = () => {
                           },
                         },
                         {
-                          title: "调用次数",
+                          title: intl.formatMessage({
+                            id: "pages.dashboard.call",
+                          }),
                           dataIndex: "calls",
                           key: "calls",
                           width: 100,
@@ -750,7 +797,7 @@ const BillingGraphPage: React.FC = () => {
                         color: "grey",
                       }}
                     >
-                      暂无数据
+                      {intl.formatMessage({ id: "pages.dashboard.noData" })}
                     </div>
                   )}
                 </Modal>
@@ -764,7 +811,7 @@ const BillingGraphPage: React.FC = () => {
                     color: "grey",
                   }}
                 >
-                  暂无数据
+                  {intl.formatMessage({ id: "pages.dashboard.noData" })}
                 </div>
               </Card>
             )}
@@ -774,12 +821,18 @@ const BillingGraphPage: React.FC = () => {
           <Card>
             <Row justify="space-between" align="middle">
               <Col>
-                <Title level={4}>活跃用户统计</Title>
-                <Text type="secondary">查看活跃用户数据</Text>
+                <Title level={4}>
+                  {intl.formatMessage({ id: "pages.dashboard.activeTitle" })}
+                </Title>
+                <Text type="secondary">
+                  {intl.formatMessage({ id: "pages.dashboard.activeSub" })}
+                </Text>
               </Col>
               <Col>
                 <div>
-                  <span>天数:</span>
+                  <span>
+                    {intl.formatMessage({ id: "pages.dashboard.dayOption" })}
+                  </span>
                   <Select
                     value={activeUsersSelectedDays}
                     onChange={handleActiveUsersDaysChange}
@@ -805,7 +858,9 @@ const BillingGraphPage: React.FC = () => {
                   <Col md={12}>
                     <Card>
                       <Statistic
-                        title="总用户数"
+                        title={intl.formatMessage({
+                          id: "pages.dashboard.activeTotal",
+                        })}
                         value={activeUsersData.totalUsers || 0}
                         valueStyle={{ color: "green" }}
                         prefix={<TeamOutlined />}
@@ -815,7 +870,9 @@ const BillingGraphPage: React.FC = () => {
                   <Col md={12}>
                     <Card>
                       <Statistic
-                        title="活跃用户数"
+                        title={intl.formatMessage({
+                          id: "pages.dashboard.activeUser",
+                        })}
                         value={activeUsersData.activeUsers?.length || 0}
                         valueStyle={{ color: "blue" }}
                         prefix={<UserOutlined />}
@@ -824,7 +881,12 @@ const BillingGraphPage: React.FC = () => {
                   </Col>
                 </Row>
 
-                <Card title="活跃用户趋势" style={{ marginTop: "12px" }}>
+                <Card
+                  title={intl.formatMessage({
+                    id: "pages.dashboard.activeTrend",
+                  })}
+                  style={{ marginTop: "12px" }}
+                >
                   <Line
                     data={
                       activeUsersData.activeUsers
@@ -857,16 +919,22 @@ const BillingGraphPage: React.FC = () => {
                       items: [
                         {
                           channel: "x",
-                          name: "日期",
+                          name: intl.formatMessage({
+                            id: "pages.dashboard.date",
+                          }),
                           valueFormatter: (v: any) => v,
                         },
                         {
                           channel: "y",
-                          name: "活跃用户数",
+                          name: intl.formatMessage({
+                            id: "pages.dashboard.activeUser",
+                          }),
                           valueFormatter: (v: any) => `${v} 人`,
                         },
                         {
-                          name: "活跃率变化",
+                          name: intl.formatMessage({
+                            id: "pages.dashboard.activeRate",
+                          }),
                           field: "activeRateInc",
                           valueFormatter: (v: any) => `${v}%`,
                         },
@@ -884,7 +952,7 @@ const BillingGraphPage: React.FC = () => {
                     color: "grey",
                   }}
                 >
-                  暂无数据
+                  {intl.formatMessage({ id: "pages.dashboard.noData" })}
                 </div>
               </Card>
             )}
