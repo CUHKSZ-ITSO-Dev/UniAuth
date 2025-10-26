@@ -14,6 +14,7 @@ import {
   Button,
   Card,
   Col,
+  Input,
   Modal,
   Row,
   Select,
@@ -23,6 +24,7 @@ import {
 } from "antd";
 import React, { useEffect, useState } from "react";
 import {
+  getBillingStatsActiveUserDetail,
   getBillingStatsActiveUsersSummary,
   getBillingStatsAllName,
   getBillingStatsModelConsumption,
@@ -72,6 +74,14 @@ const BillingGraphPage: React.FC = () => {
 
   const [isConsumptionModalVisible, setIsConsumptionModalVisible] =
     useState<boolean>(false);
+
+  const [isActiveUserDetailModalVisible, setIsActiveUserDetailModalVisible] =
+    useState<boolean>(false);
+  const [activeUserDetailLoading, setActiveUserDetailLoading] =
+    useState<boolean>(false);
+  const [activeUserDetailData, setActiveUserDetailData] =
+    useState<API.GetActiveUserDetailRes | null>(null);
+  const [searchUpn, setSearchUpn] = useState<string>("");
 
   const [activeChartType, setActiveChartType] = useState<
     "usage" | "distribution"
@@ -186,6 +196,33 @@ const BillingGraphPage: React.FC = () => {
     } finally {
       setModelConsumptionLoading(false);
     }
+  };
+
+  const fetchActiveUserDetail = async (upn: string, nDays?: number) => {
+    setActiveUserDetailLoading(true);
+    setActiveUserDetailData(null);
+
+    try {
+      const params: API.GetActiveUserDetailReq = {
+        upn,
+        nDays: nDays || activeUsersSelectedDays,
+      };
+      const response = await getBillingStatsActiveUserDetail(params);
+      if (response) {
+        setActiveUserDetailData(response);
+      }
+    } catch (err) {
+    } finally {
+      setActiveUserDetailLoading(false);
+    }
+  };
+
+  const handleSearchActiveUser = () => {
+    if (!searchUpn.trim()) {
+      return;
+    }
+    setIsActiveUserDetailModalVisible(true);
+    fetchActiveUserDetail(searchUpn.trim());
   };
 
   const fetchModelUsageData = async (
@@ -352,10 +389,6 @@ const BillingGraphPage: React.FC = () => {
               </Col>
               <Col>
                 <Button
-                  style={{
-                    backgroundColor: "white",
-                    color: "black",
-                  }}
                   icon={<TableOutlined />}
                   onClick={() => setIsConsumptionModalVisible(true)}
                 >
@@ -512,7 +545,7 @@ const BillingGraphPage: React.FC = () => {
                     <Card>
                       <Statistic
                         title={intl.formatMessage({
-                          id: "pages.dashboard.modelCost",
+                          id: "pages.dashboard.totalCost",
                         })}
                         value={modelConsumptionData.totalCost || 0}
                         precision={2}
@@ -525,7 +558,7 @@ const BillingGraphPage: React.FC = () => {
                     <Card>
                       <Statistic
                         title={intl.formatMessage({
-                          id: "pages.dashboard.modelCall",
+                          id: "pages.dashboard.totalCall",
                         })}
                         value={modelConsumptionData.totalCalls || 0}
                         valueStyle={{ color: "blue" }}
@@ -829,22 +862,38 @@ const BillingGraphPage: React.FC = () => {
                 </Text>
               </Col>
               <Col>
-                <div>
-                  <span>
-                    {intl.formatMessage({ id: "pages.dashboard.dayOption" })}
-                  </span>
-                  <Select
-                    value={activeUsersSelectedDays}
-                    onChange={handleActiveUsersDaysChange}
-                    style={{ width: 100 }}
-                  >
-                    {daysOptions.map((option) => (
-                      <Option key={option.value} value={option.value}>
-                        {option.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </div>
+                <Row gutter={8} align="middle">
+                  <Col>
+                    <div>
+                      <span>
+                        {intl.formatMessage({
+                          id: "pages.dashboard.dayOption",
+                        })}
+                      </span>
+                      <Select
+                        value={activeUsersSelectedDays}
+                        onChange={handleActiveUsersDaysChange}
+                        style={{ width: 100 }}
+                      >
+                        {daysOptions.map((option) => (
+                          <Option key={option.value} value={option.value}>
+                            {option.label}
+                          </Option>
+                        ))}
+                      </Select>
+                    </div>
+                  </Col>
+                  <Col>
+                    <Button
+                      icon={<TableOutlined />}
+                      onClick={() => setIsActiveUserDetailModalVisible(true)}
+                    >
+                      {intl.formatMessage({
+                        id: "pages.dashboard.activeQuery",
+                      })}
+                    </Button>
+                  </Col>
+                </Row>
               </Col>
             </Row>
 
@@ -959,6 +1008,84 @@ const BillingGraphPage: React.FC = () => {
           </Card>
         </Col>
       </Row>
+
+      <Modal
+        title={intl.formatMessage({ id: "pages.dashboard.activeQuery" })}
+        open={isActiveUserDetailModalVisible}
+        onCancel={() => {
+          setIsActiveUserDetailModalVisible(false);
+          setSearchUpn("");
+          setActiveUserDetailData(null);
+        }}
+        footer={null}
+        width={600}
+      >
+        <div>
+          <Row align="middle">
+            <Col flex="auto" style={{ marginRight: 12 }}>
+              <Input
+                placeholder={intl.formatMessage({
+                  id: "pages.dashboard.activeQueryUpnPlaceholder",
+                })}
+                value={searchUpn}
+                onChange={(e) => setSearchUpn(e.target.value)}
+                onPressEnter={handleSearchActiveUser}
+              />
+            </Col>
+            <Col>
+              <Button type="primary" onClick={handleSearchActiveUser}>
+                {intl.formatMessage({ id: "pages.dashboard.search" })}
+              </Button>
+            </Col>
+          </Row>
+        </div>
+
+        {activeUserDetailLoading ? (
+          <div style={{ textAlign: "center", padding: "50px" }}>
+            <Spin size="large" />
+          </div>
+        ) : activeUserDetailData ? (
+          <Card style={{ marginTop: 12 }}>
+            <Row>
+              <Col md={12}>
+                <Statistic
+                  title={intl.formatMessage({
+                    id: "pages.dashboard.totalCost",
+                  })}
+                  value={activeUserDetailData.totalCost || 0}
+                  precision={2}
+                  prefix="¥"
+                  valueStyle={{ color: "red" }}
+                />
+              </Col>
+              <Col span={12}>
+                <Statistic
+                  title={intl.formatMessage({
+                    id: "pages.dashboard.totalCall",
+                  })}
+                  value={activeUserDetailData.totalCalls || 0}
+                  valueStyle={{ color: "blue" }}
+                />
+              </Col>
+            </Row>
+            <Row style={{ marginTop: 12 }}>
+              <Col span={24}>
+                <div>
+                  <Text strong>
+                    {intl.formatMessage({ id: "pages.dashboard.lastActive" })}
+                  </Text>
+                  <Text>
+                    {activeUserDetailData.lastActive ||
+                      intl.formatMessage({
+                        id: "pages.dashboard.noData",
+                      })}
+                  </Text>
+                </div>
+              </Col>
+            </Row>
+          </Card>
+        ) : null}
+      </Modal>
     </PageContainer>
   );
 };

@@ -171,3 +171,18 @@ export async function getBillingStatsAllName(
     ...(options || {}),
   });
 }
+
+/** 活跃用户详情 查询某个活跃用户详细信息 GET /billing/stats/active-users/detail */
+export async function getBillingStatsActiveUserDetail(
+  params: API.GetActiveUserDetailReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetActiveUserDetailRes>(
+    "/billing/stats/active-users/detail",
+    {
+      method: "GET",
+      params,
+      ...(options || {}),
+    },
+  );
+}

@@ -1156,6 +1156,24 @@ declare namespace API {
     /** 返回指定服务名称 */
     allName: string[];
   };
+
+  // 活跃用户详情请求参数
+  type GetActiveUserDetailReq = {
+    /** 用户唯一标识 */
+    upn: string;
+    /** 统计天数，默认7天 */
+    nDays?: number;
+  };
+
+  // 活跃用户详情响应
+  type GetActiveUserDetailRes = {
+    /** 总消费金额 */
+    totalCost?: Decimal;
+    /** 总调用次数 */
+    totalCalls?: number;
+    /** 最后活跃时间 */
+    lastActive?: string;
+  };
 }
 
 type DefaultCasbinRule = {
