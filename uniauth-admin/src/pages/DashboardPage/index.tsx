@@ -1,11 +1,15 @@
 import { Bar, Line } from "@ant-design/charts";
 import {
   BarChartOutlined,
+  FallOutlined,
+  MinusOutlined,
   RiseOutlined,
   TableOutlined,
   TeamOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { PageContainer, ProTable } from "@ant-design/pro-components";
+import { useIntl } from "@umijs/max";
 import {
   Button,
   Card,
@@ -39,6 +43,7 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 const BillingGraphPage: React.FC = () => {
+  const intl = useIntl();
   const [loading, setLoading] = useState<boolean>(true);
   const [activeUsersLoading, setActiveUsersLoading] = useState<boolean>(false);
   const [modelConsumptionLoading, setModelConsumptionLoading] =
@@ -228,31 +233,21 @@ const BillingGraphPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Row gutter={24}>
-        <Col xs={24} lg={12}>
+      <Row gutter={12}>
+        <Col md={12}>
           <Card>
-            <Row
-              justify="space-between"
-              align="middle"
-              style={{ marginBottom: "16px" }}
-            >
+            <Row justify="space-between" align="middle">
               <Col>
-                <Title level={4} style={{ margin: 0 }}>
-                  今日消费统计
-                </Title>
+                <Title level={4}>今日消费统计</Title>
                 <Text type="secondary">查看今日消费情况</Text>
               </Col>
               <Col>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
+                <div>
                   <span>服务类型:</span>
                   <Select
                     value={selectedService}
                     onChange={handleServiceChange}
                     style={{ width: 100 }}
-                    placeholder="选择服务类型"
-                    allowClear
                     showSearch
                     filterOption={(input, option) => {
                       const children = option?.children;
@@ -277,34 +272,45 @@ const BillingGraphPage: React.FC = () => {
                 <Spin size="large" />
               </div>
             ) : statsData ? (
-              <Row gutter={16}>
-                <Col xs={24} sm={12} md={12}>
+              <Row gutter={12} style={{ marginTop: "12px" }}>
+                <Col md={12}>
                   <Card>
                     <Statistic
-                      title="今日总消费"
+                      title={intl.formatMessage({
+                        id: "pages.dashboard.todayCost",
+                      })}
                       value={statsData.totalCostCNY}
                       precision={2}
                       prefix="¥"
-                      valueStyle={{ color: "#cf1322" }}
-                      suffix="CNY"
+                      valueStyle={{ color: "red" }}
                     />
                   </Card>
                 </Col>
 
-                <Col xs={24} sm={12} md={12}>
+                <Col md={12}>
                   <Card>
                     <Statistic
-                      title="消费增长率"
+                      title={intl.formatMessage({
+                        id: "pages.dashboard.todayRate",
+                      })}
                       value={statsData.increaseRate}
                       precision={2}
                       valueStyle={{
                         color:
-                          statsData.increaseRate > 0 ? "#cf1322" : "#3f8600",
+                          statsData.increaseRate > 0
+                            ? "red"
+                            : statsData.increaseRate === 0
+                              ? "black"
+                              : "green",
                       }}
                       prefix={
                         statsData.increaseRate > 0 ? (
                           <RiseOutlined />
-                        ) : undefined
+                        ) : statsData.increaseRate === 0 ? (
+                          <MinusOutlined />
+                        ) : (
+                          <FallOutlined />
+                        )
                       }
                       suffix="%"
                     />
@@ -317,52 +323,39 @@ const BillingGraphPage: React.FC = () => {
                   style={{
                     textAlign: "center",
                     padding: "50px",
-                    color: "#999",
+                    color: "grey",
                   }}
                 >
-                  暂无数据
+                  {intl.formatMessage({ id: "pages.dashboard.noData" })}
                 </div>
               </Card>
             )}
           </Card>
 
-          <Card style={{ marginTop: "24px" }}>
-            <Row
-              justify="space-between"
-              align="middle"
-              style={{ marginBottom: "16px" }}
-            >
+          <Card style={{ marginTop: "12px" }}>
+            <Row justify="space-between" align="middle">
               <Col>
-                <Title level={4} style={{ margin: 0 }}>
-                  模型消费统计
-                </Title>
-                <Text type="secondary">查看最近7天的模型消费情况</Text>
+                <Title level={4}>模型消费统计</Title>
+                <Text type="secondary">查看模型消费情况</Text>
               </Col>
               <Col>
                 <Button
                   style={{
-                    backgroundColor: "#fff",
-                    color: "#000",
-                    border: "1px solid #d9d9d9",
+                    backgroundColor: "white",
+                    color: "black",
                   }}
                   icon={<TableOutlined />}
                   onClick={() => setIsConsumptionModalVisible(true)}
                 >
-                  查看消费明细
+                  {intl.formatMessage({ id: "pages.dashboard.modelDetail" })}
                 </Button>
               </Col>
             </Row>
 
-            <Card style={{ marginBottom: "24px" }}>
-              <Row gutter={16} align="middle" style={{ marginBottom: "16px" }}>
-                <Col span={12}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
+            <Card style={{ marginTop: "12px" }}>
+              <Row gutter={12}>
+                <Col md={12}>
+                  <div>
                     <span>服务类型:</span>
                     <Select
                       value={selectedModelService}
@@ -375,8 +368,6 @@ const BillingGraphPage: React.FC = () => {
                         )
                       }
                       style={{ width: 100 }}
-                      placeholder="服务类型"
-                      allowClear
                       showSearch
                       filterOption={(input, option) => {
                         const children = option?.children;
@@ -395,13 +386,7 @@ const BillingGraphPage: React.FC = () => {
                   </div>
                 </Col>
                 <Col span={12}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
+                  <div>
                     <span>模型:</span>
                     <Select
                       value={selectedModelProduct}
@@ -414,8 +399,6 @@ const BillingGraphPage: React.FC = () => {
                         )
                       }
                       style={{ width: 100 }}
-                      placeholder="模型"
-                      allowClear
                       showSearch
                       filterOption={(input, option) => {
                         const children = option?.children;
@@ -434,15 +417,9 @@ const BillingGraphPage: React.FC = () => {
                   </div>
                 </Col>
               </Row>
-              <Row gutter={16} align="middle">
+              <Row gutter={12} style={{ marginTop: "12px" }}>
                 <Col span={12}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
+                  <div>
                     <span>配额池:</span>
                     <Select
                       value={selectedModelQuotaPool}
@@ -455,8 +432,6 @@ const BillingGraphPage: React.FC = () => {
                         )
                       }
                       style={{ width: 100 }}
-                      placeholder="配额池"
-                      allowClear
                       showSearch
                       filterOption={(input, option) => {
                         const children = option?.children;
@@ -475,13 +450,7 @@ const BillingGraphPage: React.FC = () => {
                   </div>
                 </Col>
                 <Col span={12}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
+                  <div>
                     <span>天数:</span>
                     <Select
                       value={modelSelectedDays}
@@ -494,7 +463,6 @@ const BillingGraphPage: React.FC = () => {
                         )
                       }
                       style={{ width: 100 }}
-                      placeholder="天数"
                     >
                       {daysOptions.map((option) => (
                         <Option key={option.value} value={option.value}>
@@ -513,57 +481,52 @@ const BillingGraphPage: React.FC = () => {
               </div>
             ) : modelConsumptionData ? (
               <>
-                <Row gutter={16} style={{ marginBottom: "24px" }}>
-                  <Col xs={24} sm={12} md={12}>
+                <Row gutter={12}>
+                  <Col md={12} style={{ marginTop: "12px" }}>
                     <Card>
                       <Statistic
                         title="总消费金额"
                         value={modelConsumptionData.totalCost || 0}
                         precision={2}
                         prefix="¥"
-                        valueStyle={{ color: "#cf1322" }}
-                        suffix="CNY"
+                        valueStyle={{ color: "red" }}
                       />
                     </Card>
                   </Col>
-                  <Col xs={24} sm={12} md={12}>
+                  <Col md={12} style={{ marginTop: "12px" }}>
                     <Card>
                       <Statistic
                         title="总调用次数"
                         value={modelConsumptionData.totalCalls || 0}
-                        valueStyle={{ color: "#1890ff" }}
+                        valueStyle={{ color: "blue" }}
                         prefix={<BarChartOutlined />}
                       />
                     </Card>
                   </Col>
                 </Row>
-                <Row style={{ marginBottom: "16px" }}>
-                  <Col>
-                    <Button.Group>
-                      <Button
-                        type={
-                          activeChartType === "usage" ? "primary" : "default"
-                        }
-                        onClick={() => setActiveChartType("usage")}
-                      >
-                        次数趋势
-                      </Button>
-                      <Button
-                        type={
-                          activeChartType === "distribution"
-                            ? "primary"
-                            : "default"
-                        }
-                        onClick={() => setActiveChartType("distribution")}
-                      >
-                        调用分布
-                      </Button>
-                    </Button.Group>
+                <Row>
+                  <Col style={{ marginTop: "12px" }}>
+                    <Button
+                      type={activeChartType === "usage" ? "primary" : "default"}
+                      onClick={() => setActiveChartType("usage")}
+                    >
+                      次数趋势
+                    </Button>
+                    <Button
+                      type={
+                        activeChartType === "distribution"
+                          ? "primary"
+                          : "default"
+                      }
+                      onClick={() => setActiveChartType("distribution")}
+                    >
+                      调用分布
+                    </Button>
                   </Col>
                 </Row>
                 {activeChartType === "usage" ? (
                   <Card title="调用次数趋势图（折线图）">
-                    <div style={{ height: "300px" }}>
+                    <div>
                       {modelUsageData?.lineChartData ? (
                         <Line
                           data={(
@@ -582,10 +545,14 @@ const BillingGraphPage: React.FC = () => {
                           xField="date"
                           yField="calls"
                           seriesField="model"
-                          meta={{
-                            date: { alias: "日期" },
-                            calls: { alias: "调用次数" },
-                            model: { alias: "模型" },
+                          point={{
+                            size: 5,
+                          }}
+                          label={{
+                            style: {
+                              textAlign: "center",
+                              textBaseline: "alphabetic",
+                            },
                           }}
                         />
                       ) : (
@@ -593,17 +560,17 @@ const BillingGraphPage: React.FC = () => {
                           style={{
                             textAlign: "center",
                             padding: "50px",
-                            color: "#999",
+                            color: "grey",
                           }}
                         >
-                          暂无折线图数据
+                          暂无数据
                         </div>
                       )}
                     </div>
                   </Card>
                 ) : (
                   <Card title="模型调用分布（条形图）">
-                    <div style={{ height: "300px" }}>
+                    <div>
                       {modelUsageData?.barChartData ? (
                         <Bar
                           data={(modelUsageData.barChartData as any).labels.map(
@@ -617,20 +584,16 @@ const BillingGraphPage: React.FC = () => {
                           height={300}
                           xField="product"
                           yField="calls"
-                          meta={{
-                            product: { alias: "模型" },
-                            calls: { alias: "调用次数" },
-                          }}
                         />
                       ) : (
                         <div
                           style={{
                             textAlign: "center",
                             padding: "50px",
-                            color: "#999",
+                            color: "grey",
                           }}
                         >
-                          暂无条形图数据
+                          暂无数据
                         </div>
                       )}
                     </div>
@@ -784,10 +747,10 @@ const BillingGraphPage: React.FC = () => {
                       style={{
                         textAlign: "center",
                         padding: "50px",
-                        color: "#999",
+                        color: "grey",
                       }}
                     >
-                      暂无消费明细数据
+                      暂无数据
                     </div>
                   )}
                 </Modal>
@@ -798,40 +761,29 @@ const BillingGraphPage: React.FC = () => {
                   style={{
                     textAlign: "center",
                     padding: "50px",
-                    color: "#999",
+                    color: "grey",
                   }}
                 >
-                  暂无模型消费数据
+                  暂无数据
                 </div>
               </Card>
             )}
           </Card>
         </Col>
-        <Col xs={24} lg={12}>
+        <Col md={12}>
           <Card>
-            <Row
-              justify="space-between"
-              align="middle"
-              style={{ marginBottom: "16px" }}
-            >
+            <Row justify="space-between" align="middle">
               <Col>
-                <Title level={4} style={{ margin: 0 }}>
-                  活跃用户统计
-                </Title>
-                <Text type="secondary">
-                  查看最近{activeUsersSelectedDays}天的活跃用户数据
-                </Text>
+                <Title level={4}>活跃用户统计</Title>
+                <Text type="secondary">查看活跃用户数据</Text>
               </Col>
               <Col>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
+                <div>
                   <span>天数:</span>
                   <Select
                     value={activeUsersSelectedDays}
                     onChange={handleActiveUsersDaysChange}
                     style={{ width: 100 }}
-                    placeholder="天数"
                   >
                     {daysOptions.map((option) => (
                       <Option key={option.value} value={option.value}>
@@ -849,30 +801,30 @@ const BillingGraphPage: React.FC = () => {
               </div>
             ) : activeUsersData ? (
               <>
-                <Row gutter={16} style={{ marginBottom: "24px" }}>
-                  <Col xs={24} sm={12} md={12}>
+                <Row gutter={12} style={{ marginTop: "12px" }}>
+                  <Col md={12}>
                     <Card>
                       <Statistic
                         title="总用户数"
                         value={activeUsersData.totalUsers || 0}
-                        valueStyle={{ color: "#52c41a" }}
+                        valueStyle={{ color: "green" }}
                         prefix={<TeamOutlined />}
                       />
                     </Card>
                   </Col>
-                  <Col xs={24} sm={12} md={12}>
+                  <Col md={12}>
                     <Card>
                       <Statistic
                         title="活跃用户数"
                         value={activeUsersData.activeUsers?.length || 0}
-                        valueStyle={{ color: "#3f8600" }}
-                        prefix={<TeamOutlined />}
+                        valueStyle={{ color: "blue" }}
+                        prefix={<UserOutlined />}
                       />
                     </Card>
                   </Col>
                 </Row>
 
-                <Card title="活跃用户趋势" style={{ marginTop: "16px" }}>
+                <Card title="活跃用户趋势" style={{ marginTop: "12px" }}>
                   <Line
                     data={
                       activeUsersData.activeUsers
@@ -893,31 +845,11 @@ const BillingGraphPage: React.FC = () => {
                     height={300}
                     point={{
                       size: 5,
-                      shape: "diamond",
                     }}
                     label={{
                       style: {
                         textAlign: "center",
                         textBaseline: "alphabetic",
-                      },
-                    }}
-                    meta={{
-                      date: {
-                        alias: "日期",
-                        type: "cat",
-                        range: [0, 1],
-                      },
-                      activeUsersNum: {
-                        alias: "活跃用户数",
-                      },
-                      activeRateInc: {
-                        alias: "活跃率增长",
-                        formatter: (v: number) => `${v}%`,
-                      },
-                    }}
-                    xAxis={{
-                      label: {
-                        autoRotate: false,
                       },
                     }}
                     tooltip={{
@@ -940,20 +872,6 @@ const BillingGraphPage: React.FC = () => {
                         },
                       ],
                     }}
-                    state={{
-                      active: {
-                        style: {
-                          shadowBlur: 4,
-                          stroke: "#000",
-                          fill: "red",
-                        },
-                      },
-                    }}
-                    interactions={[
-                      {
-                        type: "marker-active",
-                      },
-                    ]}
                   />
                 </Card>
               </>
@@ -963,10 +881,10 @@ const BillingGraphPage: React.FC = () => {
                   style={{
                     textAlign: "center",
                     padding: "50px",
-                    color: "#999",
+                    color: "grey",
                   }}
                 >
-                  暂无活跃用户数据
+                  暂无数据
                 </div>
               </Card>
             )}
