@@ -396,7 +396,13 @@ func (s *BillingService) GetAllActiveUsers(ctx context.Context, req *v1.GetAllAc
 
 // GetActiveUserDetail 获取活跃用户详情
 func (s *BillingService) GetActiveUserDetail(ctx context.Context, req *v1.GetActiveUserDetailReq) (res *v1.GetActiveUserDetailRes, err error) {
-	startOfDay := time.Now().UTC().AddDate(0, 0, -req.NDays)
+	// 如果没有指定天数，默认使用7天
+	nDays := req.NDays
+	if nDays == 0 {
+		nDays = 7
+	}
+
+	startOfDay := time.Now().UTC().AddDate(0, 0, -nDays)
 	res = &v1.GetActiveUserDetailRes{}
 
 	// 查询用户基本信息
@@ -405,6 +411,11 @@ func (s *BillingService) GetActiveUserDetail(ctx context.Context, req *v1.GetAct
 		Scan(&res.UserInfo)
 	if err != nil {
 		return nil, gerror.Wrap(err, "查询用户基本信息失败")
+	}
+
+	// 检查用户是否存在
+	if res.UserInfo.Upn == "" {
+		return nil, gerror.Newf("用户 '%s' 不存在", req.Upn)
 	}
 
 	// 查询用户的消费统计数据
@@ -424,9 +435,14 @@ func (s *BillingService) GetActiveUserDetail(ctx context.Context, req *v1.GetAct
 		return nil, gerror.Wrap(err, "查询用户统计数据失败")
 	}
 
+	// 设置返回值，确保即使没有消费记录也有默认值
 	res.TotalCost = stats.TotalCost
 	res.TotalCalls = stats.TotalCalls
-	res.LastActive = stats.LastActive
+	if stats.LastActive == "" {
+		res.LastActive = "暂无活跃记录"
+	} else {
+		res.LastActive = stats.LastActive
+	}
 
 	return res, nil
 }
@@ -565,7 +581,7 @@ func (s *BillingService) getActiveUsersData(ctx context.Context, day int) (map[s
 		activeUsersMap[record.Date] = record.DailyTotal
 	}
 
-	// 串行查询:总活跃用户数
+	// 串行查询:总活跃用户数，不采用并发查询了
 	type TotalActiveUser struct {
 		TotalActive int `json:"total_active"`
 	}
