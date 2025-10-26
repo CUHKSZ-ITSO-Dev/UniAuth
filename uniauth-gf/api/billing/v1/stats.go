@@ -126,13 +126,13 @@ type GetAllNameRes struct {
 type GetActiveUserDetailReq struct {
 	g.Meta `path:"/stats/active-users/detail" tags:"Billing/Status" method:"GET" summary:"查询某用户具体信息"`
 	Upn    string `json:"upn" v:"required" dc:"用户唯一标识"`
-	NDays  int    `json:"nDays" v:"required" dc:"当前查询的指定天数"`
+	NDays  int    `json:"nDays" v:"integer|min:1|max:365" d:"7" dc:"当前查询的指定天数,默认7天"`
 }
 
 // GetActiveUserDetailRes 查询某个活跃用户详细信息响应
 type GetActiveUserDetailRes struct {
 	UserInfo   entity.UserinfosUserInfos `json:"userInfo" dc:"用户基本信息"`
-	TotalCost  decimal.Decimal           `json:"totalCost" dc:"个人总消费金额(CNY)"`
-	TotalCalls int                       `json:"totalCalls" dc:"个人总调用次数"`
-	LastActive string                    `json:"lastActive" dc:"最后活跃时间"`
+	TotalCost  decimal.Decimal           `json:"totalCost" dc:"个人总消费金额(CNY)" example:"125.50"`
+	TotalCalls int                       `json:"totalCalls" dc:"个人总调用次数" example:"42"`
+	LastActive string                    `json:"lastActive" dc:"最后活跃时间" example:"2025-01-15 10:30:00"`
 }
