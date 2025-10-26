@@ -36,7 +36,7 @@ const getAllName = async (name: string): Promise<string[]> => {
   try {
     const response = await getBillingStatsAllName({ name });
     return response?.allName || [];
-  } catch (error) {
+  } catch (err) {
     return [];
   }
 };
@@ -171,7 +171,7 @@ const BillingGraphPage: React.FC = () => {
         label: quotaPool,
       }));
       setQuotaPoolOptions(quotaPoolOptions);
-    } catch (error) {}
+    } catch (err) {}
   };
 
   const fetchModelConsumptionData = async (
