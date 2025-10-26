@@ -209,7 +209,7 @@ func (s *BillingService) getTodayAndYesterdayCost(ctx context.Context, today, ye
 
 	var results []CostResult
 
-	// 构建基础查询，使用COALESCE处理NULL值
+	// 构建基础查询
 	query := dao.BillingCostRecords.Ctx(ctx).
 		Fields("DATE(created_at) as date, COALESCE(SUM(cost), 0) as cost").
 		Where("created_at BETWEEN ? AND ?", yesterday, today.AddDate(0, 0, 1)).
@@ -422,26 +422,26 @@ func (s *BillingService) GetActiveUserDetail(ctx context.Context, req *v1.GetAct
 	type StatsResult struct {
 		TotalCost  decimal.Decimal `json:"totalCost"`
 		TotalCalls int             `json:"totalCalls"`
-		LastActive string          `json:"lastActive"`
+		LastActive *string         `json:"lastActive"` // 使用指针来处理 NULL
 	}
 
 	var stats StatsResult
 	err = dao.BillingCostRecords.Ctx(ctx).
 		Where("upn = ?", req.Upn).
 		Where("created_at >= ?", startOfDay).
-		Fields("COALESCE(SUM(cost), 0) as totalCost, COUNT(*) as totalCalls, COALESCE(MAX(created_at), '') as lastActive").
+		Fields("COALESCE(SUM(cost), 0) as totalCost, COUNT(*) as totalCalls, MAX(created_at) as lastActive").
 		Scan(&stats)
 	if err != nil {
 		return nil, gerror.Wrap(err, "查询用户统计数据失败")
 	}
 
-	// 设置返回值，确保即使没有消费记录也有默认值
+	// 设置返回值
 	res.TotalCost = stats.TotalCost
 	res.TotalCalls = stats.TotalCalls
-	if stats.LastActive == "" {
+	if stats.LastActive == nil {
 		res.LastActive = "暂无活跃记录"
 	} else {
-		res.LastActive = stats.LastActive
+		res.LastActive = *stats.LastActive
 	}
 
 	return res, nil
