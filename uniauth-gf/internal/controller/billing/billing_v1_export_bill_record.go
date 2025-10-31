@@ -85,7 +85,7 @@ func (c *ControllerV1) ExportBillRecord(ctx context.Context, req *v1.ExportBillR
 			return nil, gerror.Wrap(err, "无法加载校徽图像")
 		}
 
-		// 设置第一行高度以容j纳校徽
+		// 设置第一行高度以容纳校徽
 		_ = f.SetRowHeight(sheet, 1, 120)
 
 		// Header - 机构信息
