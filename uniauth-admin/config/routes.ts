@@ -12,6 +12,12 @@
  */
 export default [
   {
+    path: "/dashboard",
+    name: "dashboard",
+    icon: "dashboard",
+    component: "@/pages/DashboardPage",
+  },
+  {
     path: "/resource",
     name: "resource",
     icon: "Appstore",
@@ -87,7 +93,7 @@ export default [
 
   {
     path: "/",
-    redirect: "/resource",
+    redirect: "/dashboard",
   },
   {
     path: "*",

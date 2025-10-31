@@ -1,4 +1,5 @@
 export default {
+  "menu.dashboard": "仪表盘",
   "menu.resource": "资源管理",
   "menu.resource.user-list": "用户列表",
   "menu.resource.user-detail": "用户详情",
