@@ -16,6 +16,11 @@ import (
 )
 
 func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI18nReq) (res *v1.BatchUploadI18nRes, err error) {
+	// 检查输入参数，确保app_id不为空
+	if req.AppId == "" {
+		return nil, gerror.New("app_id不能为空")
+	}
+
 	file := req.File
 	if file == nil {
 		return nil, gerror.Newf("未获取到文件或文件上传失败")
@@ -56,6 +61,7 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 		} else {
 			item := &entity.ConfigInternationalization{
 				Key:         prefix,
+				AppId:       req.AppId,
 				ZhCn:        "",
 				EnUs:        "",
 				Description: "",
@@ -85,7 +91,10 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 
 		// 批量查询已存在的记录
 		var existingRecords []*entity.ConfigInternationalization
-		err = dao.ConfigInternationalization.Ctx(ctx).WhereIn("key", keys).Scan(&existingRecords)
+		err = dao.ConfigInternationalization.Ctx(ctx).
+			WhereIn("key", keys).
+			Where("app_id", req.AppId).
+			Scan(&existingRecords)
 		if err != nil {
 			return nil, gerror.Wrap(err, "批量查询数据失败")
 		}
@@ -127,7 +136,10 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 					case "en-US":
 						updateData["en_us"] = item.EnUs
 					}
-					_, err := tx.Model(dao.ConfigInternationalization.Table()).Where("key", item.Key).Update(updateData)
+					_, err := tx.Model(dao.ConfigInternationalization.Table()).
+						Where("key", item.Key).
+						Where("app_id", req.AppId).
+						Update(updateData)
 					if err != nil {
 						return err
 					}
