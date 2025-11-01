@@ -7,7 +7,7 @@ package config
 import (
 	"context"
 
-	"uniauth-gf/api/config/v1"
+	v1 "uniauth-gf/api/config/v1"
 )
 
 type IConfigV1 interface {
@@ -16,6 +16,7 @@ type IConfigV1 interface {
 	DeleteAutoQuotaPoolConfig(ctx context.Context, req *v1.DeleteAutoQuotaPoolConfigReq) (res *v1.DeleteAutoQuotaPoolConfigRes, err error)
 	AddAutoQuotaPoolConfig(ctx context.Context, req *v1.AddAutoQuotaPoolConfigReq) (res *v1.AddAutoQuotaPoolConfigRes, err error)
 	SyncAutoQuotaPoolUpnsCache(ctx context.Context, req *v1.SyncAutoQuotaPoolUpnsCacheReq) (res *v1.SyncAutoQuotaPoolUpnsCacheRes, err error)
+	QueryUpnsCache(ctx context.Context, req *v1.QueryUpnsCacheReq) (res *v1.QueryUpnsCacheRes, err error)
 	GetModelConfig(ctx context.Context, req *v1.GetModelConfigReq) (res *v1.GetModelConfigRes, err error)
 	AddModelConfig(ctx context.Context, req *v1.AddModelConfigReq) (res *v1.AddModelConfigRes, err error)
 	EditModelConfig(ctx context.Context, req *v1.EditModelConfigReq) (res *v1.EditModelConfigRes, err error)

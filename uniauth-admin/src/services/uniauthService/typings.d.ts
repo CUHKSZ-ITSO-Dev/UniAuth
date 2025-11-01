@@ -705,10 +705,45 @@ declare namespace API {
     endTime: string;
     /** 排序顺序 */
     order: "asc" | "desc";
+    /** 分页信息 */
+    pagination?: {
+      page?: number;
+      pageSize?: number;
+    };
+    /** UPN关键词搜索 */
+    keywords?: string;
   };
 
   type GetBillRecordRes = {
     records?: Json;
+    page?: number;
+    pageSize?: number;
+    totalCount?: number;
+    totalPages?: number;
+  };
+
+  type GetBillAmountReq = {
+    /** 类型 */
+    type: "qp" | "upn";
+    /** UPN列表 */
+    upns?: string[];
+    /** 配额池 */
+    quotaPools?: string[];
+    /** 服务 */
+    svc?: string[];
+    /** 产品 */
+    product?: string[];
+    /** 开始时间 */
+    startTime: string;
+    /** 结束时间 */
+    endTime: string;
+  };
+
+  type GetBillAmountRes = {
+    /** 打折后的总金额 */
+    amount?: string;
+    /** 原始总金额（打折前） */
+    originalAmount?: string;
   };
 
   type getConfigI18nLangParams = {
