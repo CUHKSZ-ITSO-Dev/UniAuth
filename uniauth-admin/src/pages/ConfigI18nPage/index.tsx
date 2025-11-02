@@ -281,6 +281,20 @@ const ConfigI18nPage: React.FC = () => {
         id: "pages.configI18n.delete.success",
       }),
     );
+
+    // 删除成功后重新加载应用列表
+    const updatedAppList = await reloadAppList();
+
+    // 如果当前选中的 app_id 已经不在列表中（说明该应用下所有条目都被删除了）
+    if (!updatedAppList.some((app) => app.value === currentAppId)) {
+      // 如果还有其他应用，选择第一个；否则清空选择
+      if (updatedAppList.length > 0) {
+        setCurrentAppId(updatedAppList[0].value);
+      } else {
+        setCurrentAppId("");
+      }
+    }
+
     actionRef.current?.reload();
   };
 
@@ -359,6 +373,19 @@ const ConfigI18nPage: React.FC = () => {
             }),
           );
 
+          // 批量删除成功后重新加载应用列表
+          const updatedAppList = await reloadAppList();
+
+          // 如果当前选中的 app_id 已经不在列表中（说明该应用下所有条目都被删除了）
+          if (!updatedAppList.some((app) => app.value === currentAppId)) {
+            // 如果还有其他应用，选择第一个；否则清空选择
+            if (updatedAppList.length > 0) {
+              setCurrentAppId(updatedAppList[0].value);
+            } else {
+              setCurrentAppId("");
+            }
+          }
+
           // 清空选择并刷新表格
           setSelectedRowKeys([]);
           setSelectedRows([]);
@@ -373,6 +400,24 @@ const ConfigI18nPage: React.FC = () => {
         }
       },
     });
+  };
+
+  // 重新加载应用列表的函数
+  const reloadAppList = async () => {
+    try {
+      const response = await getConfigI18NApps();
+      if (response && response.apps) {
+        const options = response.apps.map((appId: string) => ({
+          label: appId,
+          value: appId,
+        }));
+        setAppList(options);
+        return options;
+      }
+    } catch (error) {
+      console.error("重新加载应用列表失败:", error);
+    }
+    return [];
   };
 
   // 处理模态框的确认操作（新增或编辑）
@@ -416,6 +461,17 @@ const ConfigI18nPage: React.FC = () => {
             id: "pages.configI18n.add.success",
           }),
         );
+
+        // 新增成功后重新加载应用列表
+        const updatedAppList = await reloadAppList();
+
+        // 如果新增的 app_id 不在当前列表中，则设置为当前选中的 app_id
+        if (
+          updatedAppList.some((app) => app.value === app_id) &&
+          currentAppId !== app_id
+        ) {
+          setCurrentAppId(app_id);
+        }
       }
 
       setModalVisible(false);
@@ -539,6 +595,17 @@ const ConfigI18nPage: React.FC = () => {
                   defaultMessage: "批量上传成功",
                 }),
               );
+            }
+
+            // 批量上传成功后重新加载应用列表
+            const updatedAppList = await reloadAppList();
+
+            // 如果上传的 app_id 不在当前列表中，则设置为当前选中的 app_id
+            if (
+              updatedAppList.some((app) => app.value === values.app_id) &&
+              currentAppId !== values.app_id
+            ) {
+              setCurrentAppId(values.app_id);
             }
 
             // 刷新表格数据
@@ -831,6 +898,7 @@ const ConfigI18nPage: React.FC = () => {
             ]}
           >
             <Input
+              disabled={modalMode === "edit"}
               placeholder={intl.formatMessage({
                 id: "pages.configI18n.form.appId.placeholder",
                 defaultMessage: "请输入应用ID",
