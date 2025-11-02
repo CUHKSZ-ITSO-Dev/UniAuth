@@ -88,15 +88,25 @@ export async function getConfigI18NLangs(options?: { [key: string]: any }) {
 export async function postConfigI18NBatchUpload(
   file: File,
   lang: "zh-CN" | "en-US",
+  app_id: string,
   options?: { [key: string]: any },
 ) {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("lang", lang);
+  formData.append("app_id", app_id);
 
   return request<API.BatchUploadI18nRes>("/config/i18n/batch", {
     method: "POST",
     data: formData,
+    ...(options || {}),
+  });
+}
+
+/** 获取系统中存在i18n配置的所有应用ID列表 GET /config/i18n/apps */
+export async function getConfigI18NApps(options?: { [key: string]: any }) {
+  return request<API.GetI18NAppsRes>("/config/i18n/apps", {
+    method: "GET",
     ...(options || {}),
   });
 }

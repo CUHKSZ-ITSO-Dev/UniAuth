@@ -14,7 +14,7 @@ import {
   Modal,
   message,
   Popconfirm,
-  Radio,
+  Select,
   Space,
   Spin,
   Table,
@@ -22,9 +22,10 @@ import {
   Typography,
   Upload,
 } from "antd";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   deleteConfigI18N,
+  getConfigI18NApps,
   postConfigI18N,
   postConfigI18NBatchUpload,
   postConfigI18NFilter,
@@ -57,8 +58,64 @@ const ConfigI18nPage: React.FC = () => {
   const actionRef = useRef<any>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<I18nDataType[]>([]);
+  const [appList, setAppList] = useState<
+    Array<{ label: string; value: string }>
+  >([]);
+  const [currentAppId, setCurrentAppId] = useState<string>("");
+
+  // 加载应用列表
+  useEffect(() => {
+    const loadAppList = async () => {
+      try {
+        const response = await getConfigI18NApps();
+        if (response && response.apps) {
+          const options = response.apps.map((appId: string) => ({
+            label: appId,
+            value: appId,
+          }));
+          setAppList(options);
+          // 如果有应用，默认选择第一个
+          if (options.length > 0) {
+            setCurrentAppId(options[0].value);
+          }
+        }
+      } catch (error) {
+        console.error("加载应用列表失败:", error);
+        message.error("加载应用列表失败");
+      }
+    };
+
+    loadAppList();
+  }, []);
 
   const columns: ProColumns<I18nDataType>[] = [
+    {
+      title: intl.formatMessage({
+        id: "pages.configI18n.appId",
+        defaultMessage: "应用ID",
+      }),
+      dataIndex: "app_id",
+      key: "app_id",
+      hideInTable: true,
+      valueType: "select",
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.configI18n.appId.placeholder",
+          defaultMessage: "请选择应用",
+        }),
+        options: appList,
+        value: currentAppId,
+        onChange: (value: string) => {
+          setCurrentAppId(value);
+          // 当app_id改变时，刷新表格
+          actionRef.current?.reload();
+        },
+        allowClear: true,
+      },
+      search: {
+        transform: (value) => ({ app_id: value }),
+      },
+    },
     {
       title: intl.formatMessage({
         id: "pages.configI18n.search",
@@ -192,6 +249,10 @@ const ConfigI18nPage: React.FC = () => {
 
   // 编辑翻译配置
   const handleEdit = (record: I18nDataType) => {
+    if (!currentAppId) {
+      message.warning("请先选择应用");
+      return;
+    }
     // 为编辑模式设置表单值
     const zh_cn =
       record.translations.find((t) => t.lang === "zh_cn")?.value || "";
@@ -203,6 +264,7 @@ const ConfigI18nPage: React.FC = () => {
       zh_cn: zh_cn,
       en_us: en_us,
       description: record.description,
+      app_id: currentAppId,
     });
 
     setModalMode("edit");
@@ -211,7 +273,11 @@ const ConfigI18nPage: React.FC = () => {
 
   // 删除翻译配置
   const handleDelete = async (record: I18nDataType) => {
-    await deleteConfigI18N({ key: record.keyValue });
+    if (!currentAppId) {
+      message.warning("请先选择应用");
+      return;
+    }
+    await deleteConfigI18N({ key: record.keyValue, app_id: currentAppId });
     message.success(
       intl.formatMessage({
         id: "pages.configI18n.delete.success",
@@ -222,6 +288,10 @@ const ConfigI18nPage: React.FC = () => {
 
   // 新增翻译配置
   const handleAdd = () => {
+    if (!currentAppId) {
+      message.warning("请先选择应用");
+      return;
+    }
     form.resetFields();
 
     // 为新增模式初始化表单字段
@@ -230,6 +300,7 @@ const ConfigI18nPage: React.FC = () => {
       zh_cn: "",
       en_us: "",
       description: "",
+      app_id: currentAppId,
     });
 
     setModalMode("add");
@@ -238,6 +309,10 @@ const ConfigI18nPage: React.FC = () => {
 
   // 批量添加翻译配置
   const handleBatchAdd = () => {
+    if (!currentAppId) {
+      message.warning("请先选择应用");
+      return;
+    }
     uploadForm.resetFields();
     setUploadFile(null);
     setUploadModalVisible(true);
@@ -273,9 +348,13 @@ const ConfigI18nPage: React.FC = () => {
       ),
       onOk: async () => {
         try {
+          if (!currentAppId) {
+            message.warning("请先选择应用");
+            return;
+          }
           // 批量删除所有选中的键值
           const deletePromises = uniqueKeys.map((key) =>
-            deleteConfigI18N({ key }),
+            deleteConfigI18N({ key, app_id: currentAppId }),
           );
 
           await Promise.all(deletePromises);
@@ -307,6 +386,11 @@ const ConfigI18nPage: React.FC = () => {
     try {
       const values = await form.validateFields();
 
+      if (!currentAppId) {
+        message.warning("请先选择应用");
+        return;
+      }
+
       if (modalMode === "edit") {
         // 编辑模式：更新翻译内容
         await putConfigI18N({
@@ -314,6 +398,7 @@ const ConfigI18nPage: React.FC = () => {
           zh_cn: values.zh_cn,
           en_us: values.en_us,
           description: values.description,
+          app_id: currentAppId,
         });
         message.success(
           intl.formatMessage({
@@ -329,6 +414,7 @@ const ConfigI18nPage: React.FC = () => {
           zh_cn: zh_cn || "",
           en_us: en_us || "",
           description: description || "",
+          app_id: currentAppId,
         });
 
         message.success(
@@ -366,49 +452,128 @@ const ConfigI18nPage: React.FC = () => {
         return;
       }
 
-      setUploadLoading(true);
-
-      // 发送批量上传请求
-      const response = await postConfigI18NBatchUpload(
-        uploadFile,
-        values.language,
-      );
-
-      setUploadLoading(false);
-      setUploadModalVisible(false);
-
-      // 根据返回结果提示成功信息
-      if (response && response.count !== undefined) {
-        message.success(
-          intl.formatMessage(
-            {
-              id: "pages.configI18n.upload.success",
-              defaultMessage: "批量上传成功，共添加 {count} 项翻译",
-            },
-            { count: response.count },
-          ),
-        );
-      } else {
-        message.success(
-          intl.formatMessage({
-            id: "pages.configI18n.upload.successGeneric",
-            defaultMessage: "批量上传成功",
-          }),
-        );
+      if (!currentAppId) {
+        message.warning("请先选择应用");
+        return;
       }
 
-      // 刷新表格数据
-      actionRef.current?.reload();
-    } catch (error) {
-      setUploadLoading(false);
-      console.error("批量上传失败:", error);
+      // 获取语言显示名称
+      const languageDisplayName =
+        values.language === "zh-CN"
+          ? intl.formatMessage({
+              id: "pages.configI18n.uploadModal.language.zhCN",
+              defaultMessage: "简体中文",
+            })
+          : intl.formatMessage({
+              id: "pages.configI18n.uploadModal.language.enUS",
+              defaultMessage: "英文",
+            });
 
-      message.error(
-        intl.formatMessage({
-          id: "pages.configI18n.upload.error",
-          defaultMessage: "批量上传失败，请检查文件格式是否正确",
+      // 二次确认对话框
+      Modal.confirm({
+        title: intl.formatMessage({
+          id: "pages.configI18n.uploadModal.confirm.title",
+          defaultMessage: "确认上传信息",
         }),
-      );
+        content: (
+          <div style={{ marginTop: 16 }}>
+            <p>
+              <strong>
+                {intl.formatMessage({
+                  id: "pages.configI18n.uploadModal.confirm.appId",
+                  defaultMessage: "应用ID：",
+                })}
+              </strong>
+              {currentAppId}
+            </p>
+            <p>
+              <strong>
+                {intl.formatMessage({
+                  id: "pages.configI18n.uploadModal.confirm.language",
+                  defaultMessage: "上传语言：",
+                })}
+              </strong>
+              {languageDisplayName} ({values.language})
+            </p>
+            <p>
+              <strong>
+                {intl.formatMessage({
+                  id: "pages.configI18n.uploadModal.confirm.fileName",
+                  defaultMessage: "文件名：",
+                })}
+              </strong>
+              {uploadFile?.name}
+            </p>
+            <p style={{ color: "#ff4d4f", marginTop: 12 }}>
+              {intl.formatMessage({
+                id: "pages.configI18n.uploadModal.confirm.warning",
+                defaultMessage:
+                  "请确认上述信息无误后再继续上传，上传后将覆盖相同键值的翻译内容。",
+              })}
+            </p>
+          </div>
+        ),
+        onOk: async () => {
+          try {
+            setUploadLoading(true);
+
+            // 发送批量上传请求
+            const response = await postConfigI18NBatchUpload(
+              uploadFile,
+              values.language,
+              currentAppId,
+            );
+
+            setUploadLoading(false);
+            setUploadModalVisible(false);
+
+            // 根据返回结果提示成功信息
+            if (response && response.count !== undefined) {
+              message.success(
+                intl.formatMessage(
+                  {
+                    id: "pages.configI18n.upload.success",
+                    defaultMessage: "批量上传成功，共添加 {count} 项翻译",
+                  },
+                  { count: response.count },
+                ),
+              );
+            } else {
+              message.success(
+                intl.formatMessage({
+                  id: "pages.configI18n.upload.successGeneric",
+                  defaultMessage: "批量上传成功",
+                }),
+              );
+            }
+
+            // 刷新表格数据
+            actionRef.current?.reload();
+          } catch (error) {
+            setUploadLoading(false);
+            console.error("批量上传失败:", error);
+
+            message.error(
+              intl.formatMessage({
+                id: "pages.configI18n.upload.error",
+                defaultMessage: "批量上传失败，请检查文件格式是否正确",
+              }),
+            );
+          }
+        },
+        okText: intl.formatMessage({
+          id: "pages.configI18n.uploadModal.confirm.ok",
+          defaultMessage: "确认上传",
+        }),
+        cancelText: intl.formatMessage({
+          id: "pages.configI18n.uploadModal.confirm.cancel",
+          defaultMessage: "取消",
+        }),
+        okType: "primary",
+        width: 520,
+      });
+    } catch (error) {
+      console.error("表单验证失败:", error);
     }
   };
 
@@ -416,9 +581,19 @@ const ConfigI18nPage: React.FC = () => {
   const columnRequest = async (params: any) => {
     const { current, pageSize, keyword } = params;
 
+    // 如果没有选择应用，返回空数据
+    if (!currentAppId) {
+      return {
+        data: [],
+        success: true,
+        total: 0,
+      };
+    }
+
     // 发送搜索请求
     const response = await postConfigI18NFilter({
       keyword: keyword || "",
+      app_id: currentAppId,
       pagination: {
         page: current || 1,
         pageSize: pageSize || 10,
@@ -645,6 +820,9 @@ const ConfigI18nPage: React.FC = () => {
         width={800}
       >
         <Form form={form} layout="vertical">
+          <Form.Item name="app_id" hidden>
+            <Input />
+          </Form.Item>
           <Form.Item
             name="key"
             label={intl.formatMessage({
@@ -762,12 +940,20 @@ const ConfigI18nPage: React.FC = () => {
         <Spin spinning={uploadLoading}>
           <Form form={uploadForm} layout="vertical">
             <Form.Item
+              label={intl.formatMessage({
+                id: "pages.configI18n.uploadModal.appId",
+                defaultMessage: "应用ID",
+              })}
+            >
+              <Input value={currentAppId} disabled style={{ color: "#000" }} />
+            </Form.Item>
+
+            <Form.Item
               name="language"
               label={intl.formatMessage({
                 id: "pages.configI18n.uploadModal.language",
                 defaultMessage: "选择语言",
               })}
-              initialValue="zh-CN"
               rules={[
                 {
                   required: true,
@@ -778,20 +964,28 @@ const ConfigI18nPage: React.FC = () => {
                 },
               ]}
             >
-              <Radio.Group>
-                <Radio value="zh-CN">
-                  {intl.formatMessage({
-                    id: "pages.configI18n.uploadModal.language.zhCN",
-                    defaultMessage: "简体中文",
-                  })}
-                </Radio>
-                <Radio value="en-US">
-                  {intl.formatMessage({
-                    id: "pages.configI18n.uploadModal.language.enUS",
-                    defaultMessage: "英文",
-                  })}
-                </Radio>
-              </Radio.Group>
+              <Select
+                placeholder={intl.formatMessage({
+                  id: "pages.configI18n.uploadModal.language.placeholder",
+                  defaultMessage: "请选择要上传的语言",
+                })}
+                options={[
+                  {
+                    value: "zh-CN",
+                    label: intl.formatMessage({
+                      id: "pages.configI18n.uploadModal.language.zhCN",
+                      defaultMessage: "简体中文",
+                    }),
+                  },
+                  {
+                    value: "en-US",
+                    label: intl.formatMessage({
+                      id: "pages.configI18n.uploadModal.language.enUS",
+                      defaultMessage: "英文",
+                    }),
+                  },
+                ]}
+              />
             </Form.Item>
 
             <Form.Item

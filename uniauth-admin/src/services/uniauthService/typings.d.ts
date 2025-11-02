@@ -26,6 +26,7 @@ declare namespace API {
   type AddI18nItemReq = {
     /** 翻译键 */
     key: string;
+    app_id: string;
     /** 中文翻译 */
     zh_cn?: string;
     /** 英文翻译 */
@@ -247,6 +248,8 @@ declare namespace API {
   type deleteConfigI18nParams = {
     /** 翻译键 */
     key: string;
+    /** 应用 ID */
+    app_id: string;
   };
 
   type deleteConfigModelParams = {
@@ -321,6 +324,7 @@ declare namespace API {
   type EditI18nItemReq = {
     /** 翻译键 */
     key: string;
+    app_id: string;
     /** 中文翻译 */
     zh_cn?: string;
     /** 英文翻译 */
@@ -474,6 +478,8 @@ declare namespace API {
   type FilterI18nReq = {
     /** 搜索关键词，对key、zh_cn、en_us、description字段进行模糊匹配 */
     keyword?: string;
+    /** 应用 ID */
+    app_id: string;
     /** 排序条件，支持多字段排序 */
     sort?: I18nSortCondition[];
     /** 分页参数，支持分页或查询全部 */
@@ -749,6 +755,8 @@ declare namespace API {
   type getConfigI18nLangParams = {
     /** 语言代码 */
     lang: "zh-CN" | "en-US";
+    app_id: string;
+    type: "tree" | "path";
   };
 
   type GetI18nConfigReq = {
@@ -759,6 +767,11 @@ declare namespace API {
   type GetI18nConfigRes = {
     /** 语言包键值对，支持嵌套结构 */
     langpack?: Json;
+  };
+
+  type GetI18NAppsRes = {
+    /** 应用 ID 列表 */
+    apps: string[];
   };
 
   type GetModelConfigReq = Record<string, never>;
