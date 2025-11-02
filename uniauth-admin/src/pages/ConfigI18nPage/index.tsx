@@ -1,6 +1,7 @@
 import {
   DeleteOutlined,
   EditOutlined,
+  FileOutlined,
   InboxOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
@@ -9,6 +10,7 @@ import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
 import {
   Button,
+  Card,
   Form,
   Input,
   Modal,
@@ -249,10 +251,6 @@ const ConfigI18nPage: React.FC = () => {
 
   // 编辑翻译配置
   const handleEdit = (record: I18nDataType) => {
-    if (!currentAppId) {
-      message.warning("请先选择应用");
-      return;
-    }
     // 为编辑模式设置表单值
     const zh_cn =
       record.translations.find((t) => t.lang === "zh_cn")?.value || "";
@@ -264,7 +262,7 @@ const ConfigI18nPage: React.FC = () => {
       zh_cn: zh_cn,
       en_us: en_us,
       description: record.description,
-      app_id: currentAppId,
+      app_id: currentAppId || "", // 如果有当前appId则填入，否则为空让用户输入
     });
 
     setModalMode("edit");
@@ -288,10 +286,6 @@ const ConfigI18nPage: React.FC = () => {
 
   // 新增翻译配置
   const handleAdd = () => {
-    if (!currentAppId) {
-      message.warning("请先选择应用");
-      return;
-    }
     form.resetFields();
 
     // 为新增模式初始化表单字段
@@ -300,7 +294,7 @@ const ConfigI18nPage: React.FC = () => {
       zh_cn: "",
       en_us: "",
       description: "",
-      app_id: currentAppId,
+      app_id: currentAppId || "", // 如果有当前appId则填入，否则为空让用户输入
     });
 
     setModalMode("add");
@@ -309,12 +303,12 @@ const ConfigI18nPage: React.FC = () => {
 
   // 批量添加翻译配置
   const handleBatchAdd = () => {
-    if (!currentAppId) {
-      message.warning("请先选择应用");
-      return;
-    }
     uploadForm.resetFields();
     setUploadFile(null);
+    // 如果有当前appId则预填，否则让用户输入
+    uploadForm.setFieldsValue({
+      app_id: currentAppId || "",
+    });
     setUploadModalVisible(true);
   };
 
@@ -386,8 +380,8 @@ const ConfigI18nPage: React.FC = () => {
     try {
       const values = await form.validateFields();
 
-      if (!currentAppId) {
-        message.warning("请先选择应用");
+      if (!values.app_id) {
+        message.warning("请输入应用ID");
         return;
       }
 
@@ -398,7 +392,7 @@ const ConfigI18nPage: React.FC = () => {
           zh_cn: values.zh_cn,
           en_us: values.en_us,
           description: values.description,
-          app_id: currentAppId,
+          app_id: values.app_id,
         });
         message.success(
           intl.formatMessage({
@@ -407,14 +401,14 @@ const ConfigI18nPage: React.FC = () => {
         );
       } else {
         // 新增模式：添加新的翻译配置
-        const { key, zh_cn, en_us, description } = values;
+        const { key, zh_cn, en_us, description, app_id } = values;
 
         await postConfigI18N({
           key,
           zh_cn: zh_cn || "",
           en_us: en_us || "",
           description: description || "",
-          app_id: currentAppId,
+          app_id: app_id,
         });
 
         message.success(
@@ -452,8 +446,8 @@ const ConfigI18nPage: React.FC = () => {
         return;
       }
 
-      if (!currentAppId) {
-        message.warning("请先选择应用");
+      if (!values.app_id) {
+        message.warning("请输入应用ID");
         return;
       }
 
@@ -484,7 +478,7 @@ const ConfigI18nPage: React.FC = () => {
                   defaultMessage: "应用ID：",
                 })}
               </strong>
-              {currentAppId}
+              {values.app_id}
             </p>
             <p>
               <strong>
@@ -521,7 +515,7 @@ const ConfigI18nPage: React.FC = () => {
             const response = await postConfigI18NBatchUpload(
               uploadFile,
               values.language,
-              currentAppId,
+              values.app_id,
             );
 
             setUploadLoading(false);
@@ -820,8 +814,28 @@ const ConfigI18nPage: React.FC = () => {
         width={800}
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="app_id" hidden>
-            <Input />
+          <Form.Item
+            name="app_id"
+            label={intl.formatMessage({
+              id: "pages.configI18n.form.appId",
+              defaultMessage: "应用ID",
+            })}
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: "pages.configI18n.form.appId.required",
+                  defaultMessage: "请输入应用ID",
+                }),
+              },
+            ]}
+          >
+            <Input
+              placeholder={intl.formatMessage({
+                id: "pages.configI18n.form.appId.placeholder",
+                defaultMessage: "请输入应用ID",
+              })}
+            />
           </Form.Item>
           <Form.Item
             name="key"
@@ -940,12 +954,27 @@ const ConfigI18nPage: React.FC = () => {
         <Spin spinning={uploadLoading}>
           <Form form={uploadForm} layout="vertical">
             <Form.Item
+              name="app_id"
               label={intl.formatMessage({
                 id: "pages.configI18n.uploadModal.appId",
                 defaultMessage: "应用ID",
               })}
+              rules={[
+                {
+                  required: true,
+                  message: intl.formatMessage({
+                    id: "pages.configI18n.uploadModal.appId.required",
+                    defaultMessage: "请输入应用ID",
+                  }),
+                },
+              ]}
             >
-              <Input value={currentAppId} disabled style={{ color: "#000" }} />
+              <Input
+                placeholder={intl.formatMessage({
+                  id: "pages.configI18n.uploadModal.appId.placeholder",
+                  defaultMessage: "请输入应用ID",
+                })}
+              />
             </Form.Item>
 
             <Form.Item
@@ -1000,42 +1029,100 @@ const ConfigI18nPage: React.FC = () => {
                   '请上传JSON格式的翻译文件，支持JSON文件，格式为 {"key": "value"} 的键值对',
               })}
             >
-              <Upload.Dragger
-                name="file"
-                accept=".json"
-                maxCount={1}
-                beforeUpload={(file) => {
-                  const isJSON =
-                    file.type === "application/json" ||
-                    file.name.endsWith(".json");
-                  if (!isJSON) {
-                    message.error(
-                      intl.formatMessage({
-                        id: "pages.configI18n.uploadModal.file.typeError",
-                        defaultMessage: "只能上传JSON文件!",
-                      }),
-                    );
-                    return Upload.LIST_IGNORE;
-                  }
+              {!uploadFile ? (
+                <Upload.Dragger
+                  name="file"
+                  accept=".json"
+                  maxCount={1}
+                  beforeUpload={(file) => {
+                    const isJSON =
+                      file.type === "application/json" ||
+                      file.name.endsWith(".json");
+                    if (!isJSON) {
+                      message.error(
+                        intl.formatMessage({
+                          id: "pages.configI18n.uploadModal.file.typeError",
+                          defaultMessage: "只能上传JSON文件!",
+                        }),
+                      );
+                      return Upload.LIST_IGNORE;
+                    }
 
-                  // 保存文件对象以便后续上传
-                  setUploadFile(file);
-                  return false; // 阻止自动上传
-                }}
-                onRemove={() => {
-                  setUploadFile(null);
-                }}
-              >
-                <p className="ant-upload-drag-icon">
-                  <InboxOutlined />
-                </p>
-                <p className="ant-upload-text">
-                  {intl.formatMessage({
-                    id: "pages.configI18n.uploadModal.file.clickOrDrag",
-                    defaultMessage: "点击或拖拽文件到此区域上传",
-                  })}
-                </p>
-              </Upload.Dragger>
+                    // 保存文件对象以便后续上传
+                    setUploadFile(file);
+                    return false; // 阻止自动上传
+                  }}
+                >
+                  <p className="ant-upload-drag-icon">
+                    <InboxOutlined />
+                  </p>
+                  <p className="ant-upload-text">
+                    {intl.formatMessage({
+                      id: "pages.configI18n.uploadModal.file.clickOrDrag",
+                      defaultMessage: "点击或拖拽文件到此区域上传",
+                    })}
+                  </p>
+                </Upload.Dragger>
+              ) : (
+                <Card
+                  size="small"
+                  style={{
+                    border: "1px dashed #d9d9d9",
+                    borderRadius: "6px",
+                    backgroundColor: "#fafafa",
+                  }}
+                  bodyStyle={{ padding: "16px" }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <FileOutlined
+                      style={{
+                        fontSize: "24px",
+                        color: "#1890ff",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div style={{ flex: 1, overflow: "hidden" }}>
+                      <div
+                        style={{
+                          fontWeight: 500,
+                          marginBottom: "4px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {uploadFile.name}
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#8c8c8c" }}>
+                        {intl.formatMessage({
+                          id: "pages.configI18n.uploadModal.file.size",
+                          defaultMessage: "文件大小：",
+                        })}
+                        {(uploadFile.size / 1024).toFixed(2)} KB
+                      </div>
+                    </div>
+                    <Button
+                      type="text"
+                      size="small"
+                      danger
+                      onClick={() => {
+                        setUploadFile(null);
+                      }}
+                    >
+                      {intl.formatMessage({
+                        id: "pages.configI18n.uploadModal.file.remove",
+                        defaultMessage: "移除",
+                      })}
+                    </Button>
+                  </div>
+                </Card>
+              )}
             </Form.Item>
           </Form>
         </Spin>
