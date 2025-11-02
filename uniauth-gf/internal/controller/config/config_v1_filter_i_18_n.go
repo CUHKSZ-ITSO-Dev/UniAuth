@@ -55,10 +55,13 @@ func (c *ControllerV1) FilterI18n(ctx context.Context, req *v1.FilterI18nReq) (r
 	// 根据关键词进行模糊匹配
 	if req.Keyword != "" {
 		keyword := "%" + req.Keyword + "%"
-		model = model.WhereOrLike(dao.ConfigInternationalization.Columns().Key, keyword).
-			WhereOrLike(dao.ConfigInternationalization.Columns().ZhCn, keyword).
-			WhereOrLike(dao.ConfigInternationalization.Columns().EnUs, keyword).
-			WhereOrLike(dao.ConfigInternationalization.Columns().Description, keyword)
+		// 使用括号分组OR条件
+		whereCondition := fmt.Sprintf("(%s LIKE ? OR %s LIKE ? OR %s LIKE ? OR %s LIKE ?)",
+			dao.ConfigInternationalization.Columns().Key,
+			dao.ConfigInternationalization.Columns().ZhCn,
+			dao.ConfigInternationalization.Columns().EnUs,
+			dao.ConfigInternationalization.Columns().Description)
+		model = model.Where(whereCondition, keyword, keyword, keyword, keyword)
 	}
 
 	// 获取总数
