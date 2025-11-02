@@ -71,9 +71,9 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 			// 按语言代码填充
 			switch req.Lang {
 			case "zh-CN":
-				item.ZhCn = j.String()
+				item.ZhCn = j.Var().String()
 			case "en-US":
-				item.EnUs = j.String()
+				item.EnUs = j.Var().String()
 			}
 			list = append(list, item)
 		}
