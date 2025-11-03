@@ -16,8 +16,9 @@ export default {
    */
   dev: {
     "/api/": {
-      target: "http://localhost:8000",
+      target: "http://localhost:10200/",
       changeOrigin: true,
+      headers: { "X-Service": "uniauth-gf" },
       pathRewrite: { "^/api/": "" },
     },
   },
