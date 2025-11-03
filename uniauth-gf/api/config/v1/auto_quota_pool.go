@@ -123,3 +123,19 @@ type AutoQuotaPoolUsageStatsRes struct {
 	g.Meta    `resEg:"resource/interface/config/autoquotapool/auto_quota_pool_usage_stats_res.json"`
 	StatsData *gjson.Json `json:"statsData" dc:"统计数据，按日期和配额池分组"`
 }
+
+type QueryUpnsCacheItem struct {
+	RuleName      string `json:"ruleName" dc:"规则名称"`
+	Upn           string `json:"upn" dc:"UPN"`
+	IsInUpnsCache bool   `json:"isInUpnsCache" dc:"是否在自动配额池规则的upns_cache中"`
+}
+
+type QueryUpnsCacheReq struct {
+	g.Meta    `path:"/autoConfig/queryUpnsCache" tags:"Config/AutoQuotaPoolConfig" method:"post" summary:"查询指定 UPN 列表是否在指定自动配额池规则的 upns_cache 中"`
+	Upns      []string `json:"upns" v:"required" dc:"UPN列表"`
+	RuleNames []string `json:"ruleNames" v:"required" dc:"规则名称列表"`
+}
+
+type QueryUpnsCacheRes struct {
+	Items []QueryUpnsCacheItem `json:"items" dc:"查询结果列表"`
+}
