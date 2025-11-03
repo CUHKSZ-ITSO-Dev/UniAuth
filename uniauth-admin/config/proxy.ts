@@ -15,11 +15,10 @@ export default {
    * @doc https://github.com/chimurai/http-proxy-middleware
    */
   dev: {
-    "/api/": {
+    "/": {
       target: "http://localhost:10200/",
       changeOrigin: true,
       headers: { "X-Service": "uniauth-gf" },
-      pathRewrite: { "^/api/": "" },
     },
   },
   // test: {
