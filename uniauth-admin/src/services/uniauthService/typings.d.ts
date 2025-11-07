@@ -1006,6 +1006,27 @@ declare namespace API {
   };
 
   type Var = unknown;
+
+  type GetQuestionCountStatsReq = Record<string, never>;
+
+  type GetQuestionCountStatsRes = {
+    /** 问题数量统计 */
+    questionCount?: number;
+  };
+
+  type GetUsageStatsReq = Record<string, never>;
+
+  type GetUsageStatsRes = {
+    /** 使用量统计 */
+    usage?: Json;
+  };
+
+  type GetUserCountStatsReq = Record<string, never>;
+
+  type GetUserCountStatsRes = {
+    /** 用户数量统计 */
+    userCount?: number;
+  };
 }
 
 type DefaultCasbinRule = {

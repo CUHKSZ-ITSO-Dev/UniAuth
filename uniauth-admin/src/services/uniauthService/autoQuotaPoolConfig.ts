@@ -71,3 +71,31 @@ export async function postConfigAutoConfigSyncUpnsCache(
     },
   );
 }
+
+/** 获取问题数量统计 GET /config/stats/questionCount */
+export async function getConfigStatsQuestionCount(options?: {
+  [key: string]: any;
+}) {
+  return request<API.GetQuestionCountStatsRes>("/config/stats/questionCount", {
+    method: "GET",
+    ...(options || {}),
+  });
+}
+
+/** 获取使用量统计 GET /config/stats/usage */
+export async function getConfigStatsUsage(options?: { [key: string]: any }) {
+  return request<API.GetUsageStatsRes>("/config/stats/usage", {
+    method: "GET",
+    ...(options || {}),
+  });
+}
+
+/** 获取用户数量统计 GET /config/stats/userCount */
+export async function getConfigStatsUserCount(options?: {
+  [key: string]: any;
+}) {
+  return request<API.GetUserCountStatsRes>("/config/stats/userCount", {
+    method: "GET",
+    ...(options || {}),
+  });
+}
