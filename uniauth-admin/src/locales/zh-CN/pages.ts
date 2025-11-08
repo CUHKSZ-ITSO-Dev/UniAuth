@@ -174,6 +174,15 @@ export default {
   "pages.autoQuotaPoolConfig.saveFailedNetworkError":
     "保存失败：网络错误，请稍后重试",
   "pages.autoQuotaPoolConfig.saveFailedCheckInput": "保存失败：请检查您的输入",
+  "pages.autoQuotaPoolConfig.detail": "详情",
+  "pages.autoQuotaPoolConfig.detailModalTitle": "配额池配置详情",
+  "pages.autoQuotaPoolConfig.questionCountTitle": "问题数量统计",
+  "pages.autoQuotaPoolConfig.usageTitle": "使用量统计",
+  "pages.autoQuotaPoolConfig.userCountTitle": "用户数量统计",
+  "pages.autoQuotaPoolConfig.noData": "暂无数据",
+  "pages.autoQuotaPoolConfig.loading": "加载中...",
+  "pages.autoQuotaPoolConfig.close": "关闭",
+  "pages.autoQuotaPoolConfig.fetchStatsFailed": "获取统计数据失败",
 
   // 模型配置页面翻译
   "pages.modelConfig.title": "模型配置列表",

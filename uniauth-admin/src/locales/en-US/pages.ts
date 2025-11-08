@@ -190,8 +190,19 @@ export default {
   "pages.autoQuotaPoolConfig.requestFailed": "Request Failed",
   "pages.autoQuotaPoolConfig.saveFailedNetworkError":
     "Save Failed: Network error, please try again later",
+
   "pages.autoQuotaPoolConfig.saveFailedCheckInput":
     "Save Failed: Please check your input",
+  "pages.autoQuotaPoolConfig.detail": "Detail",
+  "pages.autoQuotaPoolConfig.detailModalTitle":
+    "Quota Pool Configuration Detail",
+  "pages.autoQuotaPoolConfig.questionCountTitle": "Question Count Statistics",
+  "pages.autoQuotaPoolConfig.usageTitle": "Usage Statistics",
+  "pages.autoQuotaPoolConfig.userCountTitle": "User Count Statistics",
+  "pages.autoQuotaPoolConfig.noData": "No Data",
+  "pages.autoQuotaPoolConfig.loading": "Loading...",
+  "pages.autoQuotaPoolConfig.close": "Close",
+  "pages.autoQuotaPoolConfig.fetchStatsFailed": "Failed to fetch statistics",
 
   // Model Configuration Page Translations
   "pages.modelConfig.title": "Model Configuration List",

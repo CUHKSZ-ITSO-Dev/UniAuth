@@ -10,7 +10,9 @@ import {
   Modal,
   message,
   Popconfirm,
+  Spin,
   Switch,
+  Tag,
   Typography,
 } from "antd";
 import cronstrue from "cronstrue/i18n";
@@ -18,6 +20,9 @@ import { useRef, useState } from "react";
 import {
   deleteConfigAutoConfig,
   getConfigAutoConfig,
+  getConfigStatsQuestionCount,
+  getConfigStatsUsage,
+  getConfigStatsUserCount,
   postConfigAutoConfig,
   postConfigAutoConfigSyncUpnsCache,
   putConfigAutoConfig,
@@ -95,6 +100,15 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
 
   // 同步操作 loading 状态（含每条与全量）
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
+
+  // 详情弹窗相关状态
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [statsData, setStatsData] = useState<{
+    questionCount?: API.GetQuestionCountStatsRes;
+    usage?: API.GetUsageStatsRes;
+    userCount?: API.GetUserCountStatsRes;
+  }>({});
 
   /**
    * 编辑记录处理函数
@@ -356,6 +370,45 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
   };
 
   /**
+   * 详情按钮点击处理函数
+   */
+  const handleDetailClick = async () => {
+    setDetailLoading(true);
+    setDetailModalVisible(true);
+
+    try {
+      // 并行获取三个统计接口的数据
+      const [questionCountRes, usageRes, userCountRes] = await Promise.all([
+        getConfigStatsQuestionCount(),
+        getConfigStatsUsage(),
+        getConfigStatsUserCount(),
+      ]);
+
+      setStatsData({
+        questionCount: questionCountRes,
+        usage: usageRes,
+        userCount: userCountRes,
+      });
+    } catch (error) {
+      message.error(
+        intl.formatMessage({
+          id: "pages.autoQuotaPoolConfig.fetchStatsFailed",
+        }),
+      );
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  /**
+   * 详情弹窗关闭处理函数
+   */
+  const handleDetailModalClose = () => {
+    setDetailModalVisible(false);
+    setStatsData({});
+  };
+
+  /**
    * 获取配置列表请求函数
    * @param params 查询参数
    */
@@ -570,6 +623,10 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             disabled={!!loading.all}
           >
             {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.syncOne" })}
+          </Button>
+          <span style={{ margin: "0 8px" }} />
+          <Button type="link" key="detail" onClick={handleDetailClick}>
+            {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.detail" })}
           </Button>
           <span style={{ margin: "0 8px" }} />
           <Popconfirm
@@ -893,6 +950,167 @@ const AutoQuotaPoolConfigPage: React.FC = () => {
             />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 详情弹窗 */}
+      <Modal
+        title={intl.formatMessage({
+          id: "pages.autoQuotaPoolConfig.detailModalTitle",
+        })}
+        open={detailModalVisible}
+        onCancel={handleDetailModalClose}
+        width={900}
+        footer={[
+          <Button key="close" onClick={handleDetailModalClose}>
+            {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.close" })}
+          </Button>,
+        ]}
+      >
+        {detailLoading ? (
+          <div style={{ textAlign: "center", padding: "60px 0" }}>
+            <Spin size="large" />
+            <div style={{ marginTop: 16, color: "#666" }}>
+              {intl.formatMessage({ id: "pages.autoQuotaPoolConfig.loading" })}
+            </div>
+          </div>
+        ) : (
+          <div style={{ maxHeight: "70vh", overflow: "auto" }}>
+            {/* 问题数量统计 */}
+            <ProCard
+              title={intl.formatMessage({
+                id: "pages.autoQuotaPoolConfig.questionCountTitle",
+              })}
+              style={{ marginBottom: 16 }}
+              bordered
+              extra={
+                statsData.questionCount && (
+                  <Tag color="blue">
+                    {typeof statsData.questionCount === "number"
+                      ? `总计: ${statsData.questionCount}`
+                      : "数据已加载"}
+                  </Tag>
+                )
+              }
+            >
+              {statsData.questionCount ? (
+                <div style={{ padding: "8px 0" }}>
+                  <pre
+                    style={{
+                      margin: 0,
+                      whiteSpace: "pre-wrap",
+                      fontSize: "14px",
+                      lineHeight: "1.5",
+                      backgroundColor: "#f8f9fa",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      border: "1px solid #e8e8e8",
+                    }}
+                  >
+                    {JSON.stringify(statsData.questionCount, null, 2)}
+                  </pre>
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                  <Text type="secondary">
+                    {intl.formatMessage({
+                      id: "pages.autoQuotaPoolConfig.noData",
+                    })}
+                  </Text>
+                </div>
+              )}
+            </ProCard>
+
+            {/* 使用量统计 */}
+            <ProCard
+              title={intl.formatMessage({
+                id: "pages.autoQuotaPoolConfig.usageTitle",
+              })}
+              style={{ marginBottom: 16 }}
+              bordered
+              extra={
+                statsData.usage && (
+                  <Tag color="green">
+                    {typeof statsData.usage === "number"
+                      ? `总计: ${statsData.usage}`
+                      : "数据已加载"}
+                  </Tag>
+                )
+              }
+            >
+              {statsData.usage ? (
+                <div style={{ padding: "8px 0" }}>
+                  <pre
+                    style={{
+                      margin: 0,
+                      whiteSpace: "pre-wrap",
+                      fontSize: "14px",
+                      lineHeight: "1.5",
+                      backgroundColor: "#f8f9fa",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      border: "1px solid #e8e8e8",
+                    }}
+                  >
+                    {JSON.stringify(statsData.usage, null, 2)}
+                  </pre>
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                  <Text type="secondary">
+                    {intl.formatMessage({
+                      id: "pages.autoQuotaPoolConfig.noData",
+                    })}
+                  </Text>
+                </div>
+              )}
+            </ProCard>
+
+            {/* 用户数量统计 */}
+            <ProCard
+              title={intl.formatMessage({
+                id: "pages.autoQuotaPoolConfig.userCountTitle",
+              })}
+              style={{ marginBottom: 16 }}
+              bordered
+              extra={
+                statsData.userCount && (
+                  <Tag color="orange">
+                    {typeof statsData.userCount === "number"
+                      ? `总计: ${statsData.userCount}`
+                      : "数据已加载"}
+                  </Tag>
+                )
+              }
+            >
+              {statsData.userCount ? (
+                <div style={{ padding: "8px 0" }}>
+                  <pre
+                    style={{
+                      margin: 0,
+                      whiteSpace: "pre-wrap",
+                      fontSize: "14px",
+                      lineHeight: "1.5",
+                      backgroundColor: "#f8f9fa",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      border: "1px solid #e8e8e8",
+                    }}
+                  >
+                    {JSON.stringify(statsData.userCount, null, 2)}
+                  </pre>
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                  <Text type="secondary">
+                    {intl.formatMessage({
+                      id: "pages.autoQuotaPoolConfig.noData",
+                    })}
+                  </Text>
+                </div>
+              )}
+            </ProCard>
+          </div>
+        )}
       </Modal>
     </PageContainer>
   );
