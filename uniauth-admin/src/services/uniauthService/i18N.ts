@@ -86,15 +86,14 @@ export async function getConfigI18NLangs(options?: { [key: string]: any }) {
 
 /** 批量添加i18n配置 POST /config/i18n/batch  */
 export async function postConfigI18NBatchUpload(
-  file: File,
-  lang: "zh-CN" | "en-US",
-  app_id: string,
+  body: API.BatchUploadI18nReq,
   options?: { [key: string]: any },
 ) {
   const formData = new FormData();
-  formData.append("file", file);
-  formData.append("lang", lang);
-  formData.append("app_id", app_id);
+  formData.append("file", body.file);
+  formData.append("lang", body.lang);
+  formData.append("app_id", body.app_id);
+  formData.append("preview", body.preview ? "true" : "false");
 
   return request<API.BatchUploadI18nRes>("/config/i18n/batch", {
     method: "POST",

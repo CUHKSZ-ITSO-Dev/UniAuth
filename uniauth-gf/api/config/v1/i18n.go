@@ -114,13 +114,21 @@ type FilterI18nRes struct {
 
 // ==================== I18n Batch Upload ====================
 type BatchUploadI18nReq struct {
-	g.Meta `path:"/i18n/batch" tags:"Config/I18n" method:"post" summary:"批量上传i18n文件" dc:"上传i18n翻译JSON文件，批量处理多个翻译键值对"`
-	File   *ghttp.UploadFile `json:"file" v:"required" type:"file" dc:"翻译的JSON文件，格式为键值对对象"`
-	Lang   string            `json:"lang" v:"required|in:zh-CN,en-US" dc:"翻译文件的语言代码" example:"zh-CN"`
-	AppId  string            `json:"app_id" v:"required" dc:"应用ID" example:"uniauthAdmin"`
+	g.Meta  `path:"/i18n/batch" tags:"Config/I18n" method:"post" summary:"批量上传i18n文件" dc:"上传i18n翻译JSON文件，批量处理多个翻译键值对"`
+	File    *ghttp.UploadFile `json:"file" v:"required" type:"file" dc:"翻译的JSON文件，格式为键值对对象"`
+	Lang    string            `json:"lang" v:"required|in:zh-CN,en-US" dc:"翻译文件的语言代码" example:"zh-CN"`
+	AppId   string            `json:"app_id" v:"required" dc:"应用ID" example:"uniauthAdmin"`
+	Preview bool              `json:"preview" dc:"是否仅预览解析结果，不进行数据库写入操作"`
+}
+
+type PreviewData struct {
+	Key      string `json:"key" dc:"翻译键"`
+	OldValue string `json:"old_value" dc:"旧翻译值"`
+	NewValue string `json:"new_value" dc:"新翻译值"`
 }
 
 type BatchUploadI18nRes struct {
-	OK    bool `json:"ok" dc:"是否解析成功"`
-	Count int  `json:"count" dc:"成功解析的翻译键值对数量"`
+	OK          bool                   `json:"ok" dc:"是否解析成功"`
+	Count       int                    `json:"count" dc:"受影响的翻译项数量，什么时候都返回"`
+	PreviewData map[string]PreviewData `json:"preview_data,omitempty" dc:"预览解析的翻译键值对，Preview为true时返回"`
 }

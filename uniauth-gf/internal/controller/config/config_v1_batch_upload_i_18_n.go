@@ -31,7 +31,7 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 	}
 	defer func() {
 		if closeErr := f.Close(); closeErr != nil {
-			g.Log().Errorf(ctx, "文件关闭失败: %v", closeErr)
+			gerror.Wrap(closeErr, "文件关闭失败")
 		}
 	}()
 	content, err := io.ReadAll(f)
@@ -103,21 +103,77 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 			return nil, gerror.Wrap(err, "批量查询数据失败")
 		}
 
-		existingKeys := make(map[string]bool)
+		// 现有记录
+		existingMap := make(map[string]*entity.ConfigInternationalization)
 		for _, record := range existingRecords {
-			existingKeys[record.Key] = true
+			existingMap[record.Key] = record
 		}
 
 		// 分离需要插入和更新的数据
 		toInsert := make([]*entity.ConfigInternationalization, 0)
 		toUpdate := make([]*entity.ConfigInternationalization, 0)
+		previewData := make(map[string]v1.PreviewData)
+
 		for _, item := range list {
-			if _, ok := existingKeys[item.Key]; ok {
-				toUpdate = append(toUpdate, item)
+			if existing, ok := existingMap[item.Key]; ok {
+				// 检查是否真的需要更新
+				needUpdate := false
+				var oldValue, newValue string
+
+				switch req.Lang {
+				case "zh-CN":
+					oldValue = existing.ZhCn
+					newValue = item.ZhCn
+					if oldValue != newValue {
+						needUpdate = true
+					}
+				case "en-US":
+					oldValue = existing.EnUs
+					newValue = item.EnUs
+					if oldValue != newValue {
+						needUpdate = true
+					}
+				}
+
+				if needUpdate {
+					toUpdate = append(toUpdate, item)
+					previewData[item.Key] = v1.PreviewData{
+						Key:      item.Key,
+						OldValue: oldValue,
+						NewValue: newValue,
+					}
+				}
 			} else {
+				// 新增的项
 				toInsert = append(toInsert, item)
+				var newValue string
+				switch req.Lang {
+				case "zh-CN":
+					newValue = item.ZhCn
+				case "en-US":
+					newValue = item.EnUs
+				}
+				previewData[item.Key] = v1.PreviewData{
+					Key:      item.Key,
+					OldValue: "",
+					NewValue: newValue,
+				}
 			}
 		}
+
+		// 预览模式，只返回预览数据，不执行数据库操作
+		if req.Preview {
+			res = &v1.BatchUploadI18nRes{
+				OK:          true,
+				Count:       len(toInsert) + len(toUpdate),
+				PreviewData: previewData,
+			}
+			return res, nil
+		}
+
+		// 执行实际的数据库操作
+		insertCount := 0
+		updateCount := 0
 
 		// 批量插入新数据
 		if len(toInsert) > 0 {
@@ -125,6 +181,7 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 			if err != nil {
 				return nil, gerror.Wrap(err, "批量插入数据失败")
 			}
+			insertCount = len(toInsert)
 		}
 
 		// 批量更新已存在的数据
@@ -153,12 +210,19 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 			if err != nil {
 				return nil, gerror.Wrap(err, "批量更新数据失败")
 			}
+			updateCount = len(toUpdate)
+		}
+
+		res = &v1.BatchUploadI18nRes{
+			OK:    true,
+			Count: insertCount + updateCount,
+		}
+	} else {
+		res = &v1.BatchUploadI18nRes{
+			OK:    true,
+			Count: 0,
 		}
 	}
 
-	res = &v1.BatchUploadI18nRes{
-		OK:    true,
-		Count: len(list),
-	}
 	return res, nil
 }

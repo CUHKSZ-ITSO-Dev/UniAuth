@@ -21,7 +21,7 @@ import {
   postConfigI18NFilter,
   putConfigI18N,
 } from "@/services/uniauthService/i18N";
-import { BatchUploadModal, I18nFormModal } from "./components";
+import { BatchUploadStepsModal, I18nFormModal } from "./components";
 
 const { Title, Text } = Typography;
 
@@ -466,7 +466,12 @@ const ConfigI18nPage: React.FC = () => {
     appId: string,
   ) => {
     // 发送批量上传请求
-    const response = await postConfigI18NBatchUpload(file, language, appId);
+    const response = await postConfigI18NBatchUpload({
+      file,
+      lang: language,
+      app_id: appId,
+      preview: false,
+    });
 
     setUploadModalVisible(false);
 
@@ -739,7 +744,7 @@ const ConfigI18nPage: React.FC = () => {
       />
 
       {/* 批量上传模态框 */}
-      <BatchUploadModal
+      <BatchUploadStepsModal
         visible={uploadModalVisible}
         initialAppId={currentAppId}
         onOk={handleUploadModalOk}

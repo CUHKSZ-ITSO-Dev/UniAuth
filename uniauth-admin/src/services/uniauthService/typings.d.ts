@@ -1018,11 +1018,28 @@ declare namespace API {
     updatedAt?: string;
   };
 
+  type BatchUploadI18nReq = {
+    /** 文件 */
+    file: File;
+    /** 语言代码 */
+    lang: "zh-CN" | "en-US";
+    /** 应用ID */
+    app_id: string;
+    /** 是否是预览模式 */
+    preview?: boolean;
+  };
+
   type BatchUploadI18nRes = {
     /** 是否成功 */
-    ok?: boolean;
+    ok: boolean;
     /** 识别到的新i18n键数量 */
     count: number;
+    /** 预览模式下的i18n键列表 */
+    preview_data: {
+      key: string;
+      old_value: string;
+      new_value: string;
+    };
   };
 
   type Var = unknown;
