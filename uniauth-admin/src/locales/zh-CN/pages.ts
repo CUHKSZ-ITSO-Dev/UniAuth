@@ -284,7 +284,7 @@ export default {
   "pages.configI18n.uploadModal.language.enUS": "English (en-US)",
   "pages.configI18n.uploadModal.file": "选择文件",
   "pages.configI18n.uploadModal.file.description":
-    '请上传JSON格式的翻译文件，支持JSON文件，格式为 {"key": "value"} 的键值对',
+    "请上传JSON格式的翻译文件，支持JSON文件",
   "pages.configI18n.uploadModal.file.clickOrDrag": "点击或拖拽文件到此区域上传",
   "pages.configI18n.batchAdd": "批量添加",
 

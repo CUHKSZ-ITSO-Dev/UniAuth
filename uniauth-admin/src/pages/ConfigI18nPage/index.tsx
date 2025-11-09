@@ -1093,8 +1093,7 @@ const ConfigI18nPage: React.FC = () => {
               required
               extra={intl.formatMessage({
                 id: "pages.configI18n.uploadModal.file.description",
-                defaultMessage:
-                  '请上传JSON格式的翻译文件，支持JSON文件，格式为 {"key": "value"} 的键值对',
+                defaultMessage: "请上传JSON格式的翻译文件，支持JSON文件",
               })}
             >
               {!uploadFile ? (
