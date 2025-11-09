@@ -15,10 +15,10 @@ export default {
    * @doc https://github.com/chimurai/http-proxy-middleware
    */
   dev: {
-    "/api/": {
-      target: "http://localhost:8000",
+    "/": {
+      target: "http://localhost:10200/",
       changeOrigin: true,
-      pathRewrite: { "^/api/": "" },
+      headers: { "X-Service": "uniauth-gf" },
       // 禁用代理缓冲，支持SSE流式传输
       onProxyReq: (proxyReq: any, _req: any, _res: any) => {
         // 设置无缓冲
