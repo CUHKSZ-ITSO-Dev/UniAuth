@@ -54,20 +54,18 @@ export async function deleteConfigAutoConfig(
   });
 }
 
-/** 手动同步自动配额池规则的 upns_cache POST /config/autoConfig/syncUpnsCache */
-export async function postConfigAutoConfigSyncUpnsCache(
-  body: API.SyncAutoQuotaPoolUpnsCacheReq,
+/** 查询指定UPN列表是否在指定自动配额池规则的upns_cache中 POST /config/autoConfig/queryUpnsCache */
+export async function getConfigAutoConfigQueryUpnsCache(
+  // 使用body参数传递请求数据
+  body: API.getConfigAutoConfigQueryUpnsCacheParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.SyncAutoQuotaPoolUpnsCacheRes>(
-    "/config/autoConfig/syncUpnsCache",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: body,
-      ...(options || {}),
+  return request<API.QueryUpnsCacheRes>("/config/autoConfig/queryUpnsCache", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    data: body,
+    ...(options || {}),
+  });
 }
