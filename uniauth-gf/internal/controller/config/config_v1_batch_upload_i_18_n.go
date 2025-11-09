@@ -8,12 +8,42 @@ import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gtime"
 
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
 )
+
+func flattenJSON(j *gjson.Json, prefix string, req *v1.BatchUploadI18nReq, list *[]*entity.ConfigInternationalization) {
+	v := j.Var()
+	if v.IsMap() {
+		for key, val := range j.Map() {
+			newPrefix := key
+			if prefix != "" {
+				newPrefix = prefix + "." + key
+			}
+			flattenJSON(gjson.New(val), newPrefix, req, list)
+		}
+	} else if v.IsSlice() {
+		// 数组不处理
+	} else {
+		item := &entity.ConfigInternationalization{
+			Key:         prefix,
+			AppId:       req.AppId,
+			ZhCn:        "",
+			EnUs:        "",
+			Description: "",
+		}
+		// 按语言代码填充
+		switch req.Lang {
+		case "zh-CN":
+			item.ZhCn = j.Var().String()
+		case "en-US":
+			item.EnUs = j.Var().String()
+		}
+		*list = append(*list, item)
+	}
+}
 
 func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI18nReq) (res *v1.BatchUploadI18nRes, err error) {
 	// 检查输入参数，确保app_id不为空
@@ -49,43 +79,8 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 
 	// 构造批量插入数据
 	list := make([]*entity.ConfigInternationalization, 0)
-	now := gtime.Now()
 
-	var flatten func(j *gjson.Json, prefix string)
-	flatten = func(j *gjson.Json, prefix string) {
-		v := j.Var()
-		if v.IsMap() {
-			for key, val := range j.Map() {
-				newPrefix := key
-				if prefix != "" {
-					newPrefix = prefix + "." + key
-				}
-				flatten(gjson.New(val), newPrefix)
-			}
-		} else if v.IsSlice() {
-			// 数组不处理
-		} else {
-			item := &entity.ConfigInternationalization{
-				Key:         prefix,
-				AppId:       req.AppId,
-				ZhCn:        "",
-				EnUs:        "",
-				Description: "",
-				CreatedAt:   now,
-				UpdatedAt:   now,
-			}
-			// 按语言代码填充
-			switch req.Lang {
-			case "zh-CN":
-				item.ZhCn = j.Var().String()
-			case "en-US":
-				item.EnUs = j.Var().String()
-			}
-			list = append(list, item)
-		}
-	}
-
-	flatten(json, "")
+	flattenJSON(json, "", req, &list)
 
 	// 批量插入或更新数据库
 	if len(list) > 0 {
@@ -190,9 +185,7 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 		if len(toUpdate) > 0 {
 			err = g.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 				for _, item := range toUpdate {
-					updateData := g.Map{
-						"updated_at": gtime.Now(),
-					}
+					updateData := g.Map{}
 					switch req.Lang {
 					case "zh-CN":
 						updateData["zh_cn"] = item.ZhCn
