@@ -115,8 +115,7 @@ declare namespace API {
     defaultCasbinRules?: Json;
     /** 默认ITTools规则 */
     defaultUserinfosRules?: Json;
-    /** UPN缓存列表 */
-    upnsCache?: string;
+
     /** 优先级，数值越小优先匹配 */
     priority?: number;
     /** 该规则上次评估时间 */
@@ -948,18 +947,6 @@ declare namespace API {
     order?: "asc" | "desc";
   };
 
-  type SyncAutoQuotaPoolUpnsCacheReq = {
-    /** 规则名称。不传或者传空数组会同步所有自动配额池的 UPNs Cache。 */
-    ruleName?: string[];
-  };
-
-  type SyncAutoQuotaPoolUpnsCacheRes = {
-    /** 是否成功 */
-    ok: boolean;
-    /** 批量刷新时，这个值是一共更改了多少个自动配额池的缓存；指定配额池刷新时，这个值是这个配额池有多少个用户 */
-    updatedCount: number;
-  };
-
   type UniauthLoginReq = {
     account: string;
     password: string;
@@ -1043,6 +1030,27 @@ declare namespace API {
   };
 
   type Var = unknown;
+
+  type QueryUpnsCacheItem = {
+    /** 规则名称 */
+    ruleName: string;
+    /** UPN */
+    upn: string;
+    /** 是否在自动配额池规则的upns_cache中 */
+    isInUpnsCache: boolean;
+  };
+
+  type getConfigAutoConfigQueryUpnsCacheParams = {
+    /** UPN列表 */
+    upns: string[];
+    /** 规则名称列表 */
+    ruleNames: string[];
+  };
+
+  type QueryUpnsCacheRes = {
+    /** 查询结果列表 */
+    items: QueryUpnsCacheItem[];
+  };
 }
 
 type DefaultCasbinRule = {
