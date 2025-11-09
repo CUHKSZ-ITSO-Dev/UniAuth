@@ -1,6 +1,7 @@
 import { useIntl } from "@@/plugin-locale/localeExports";
 import { EyeOutlined } from "@ant-design/icons";
 import {
+  type ActionType,
   GridContent,
   type ProColumns,
   ProTable,
@@ -20,8 +21,9 @@ import {
   Typography,
 } from "antd";
 import dayjs from "dayjs";
-import { type FC, useState } from "react";
+import { type FC, useEffect, useRef, useState } from "react";
 import {
+  postBillingAdminAmount,
   postBillingAdminGet,
   postBillingAdminOpenApiExport,
 } from "@/services/uniauthService/admin";
@@ -71,13 +73,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   quotaPoolName = "itso-deep-research-vip",
 }) => {
   const intl = useIntl();
+  // 创建表格的 actionRef
+  const actionRef = useRef<ActionType>(null);
 
   const [statistics, setStatistics] = useState({
-    currentMonthCost: 0,
-    lastMonthCost: 0,
-    totalCost: 0,
-    avgDailyCost: 0,
-    recordCount: 0,
+    currentMonthCost: 0, // 本月费用（打折后）
+    currentMonthOriginalCost: 0, // 本月原始费用（打折前）
+    dailyAverageCost: 0, // 当月日均消费金额（打折后）
   });
 
   // 状态管理
@@ -204,36 +206,44 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   const fetchStatistics = async () => {
     try {
       const now = new Date();
-      const startOfYear = new Date(now.getFullYear(), 0, 1);
-      // 结束时间加一天，确保包含当天的所有数据
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
 
-      const response = await postBillingAdminGet({
+      // 获取本月的开始和结束日期
+      const startOfCurrentMonth = new Date(currentYear, currentMonth, 1);
+      const endOfCurrentMonth = new Date(currentYear, currentMonth + 1, 0);
+      // 结束时间加一天，确保包含当天的所有数据
+      const nextDay = new Date(endOfCurrentMonth);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      // 获取本月消费金额（包括打折后和原始金额）
+      const currentMonthResponse = await postBillingAdminAmount({
         type: "qp",
         quotaPools: [quotaPoolName],
         svc: [],
         product: [],
-        startTime: startOfYear.toISOString().split("T")[0],
-        endTime: tomorrow.toISOString().split("T")[0],
-        order: "desc",
+        startTime: startOfCurrentMonth.toISOString().split("T")[0],
+        endTime: nextDay.toISOString().split("T")[0],
       });
 
-      if (response.records) {
-        const recordsData = response.records;
-        let allRecords: BillingRecord[] = [];
+      // 获取本月费用
+      const currentMonthCost = currentMonthResponse.amount
+        ? parseFloat(currentMonthResponse.amount)
+        : 0;
+      const currentMonthOriginalCost = currentMonthResponse.originalAmount
+        ? parseFloat(currentMonthResponse.originalAmount)
+        : 0;
 
-        Object.keys(recordsData).forEach((poolName) => {
-          const poolRecords = (recordsData as any)[poolName] || [];
-          allRecords = allRecords.concat(poolRecords);
-        });
+      // 计算当月日均消费金额
+      const currentDay = now.getDate();
+      const daysToCalculate = currentDay > 1 ? currentDay : 1;
+      const dailyAverageCost = currentMonthCost / daysToCalculate;
 
-        const stats = calculateStatistics(allRecords);
-        setStatistics({
-          ...stats,
-          recordCount: allRecords.length,
-        });
-      }
+      setStatistics({
+        currentMonthCost,
+        currentMonthOriginalCost,
+        dailyAverageCost,
+      });
     } catch (error) {
       console.error("获取统计数据失败:", error);
       message.error(
@@ -318,12 +328,12 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
   };
 
   // 页面加载时获取数据
-  useState(() => {
+  useEffect(() => {
     // 首先获取完整的计费选项
     fetchBillingOptions();
     // 然后获取统计数据
     fetchStatistics();
-  });
+  }, [quotaPoolName]);
   const billingRecordsColumns: ProColumns<BillingRecord>[] = [
     {
       title: intl.formatMessage({
@@ -332,8 +342,15 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       }),
       dataIndex: "upn",
       valueType: "text",
-      search: true,
       ellipsis: true,
+      // 直接使用 upn 字段，不做转换，在 request 方法中再处理
+      search: true,
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.billingDetail.userSearchPlaceholder",
+          defaultMessage: "请输入用户名关键字",
+        }),
+      },
     },
     {
       title: intl.formatMessage({
@@ -566,7 +583,10 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
       const thirtyDaysAgo = now.subtract(30, "day");
       const defaultStartTime = thirtyDaysAgo.format("YYYY-MM-DD");
 
-      // 根据 params.endTime 是否存在来确定结束时间（结束时间加一天以包含当天数据）
+      // 使用传入的时间范围，或者使用默认范围
+      const startTime = params.startTime || defaultStartTime;
+
+      // 结束时间加一天以包含当天数据
       const endTime = params.endTime
         ? dayjs(params.endTime).add(1, "day").format("YYYY-MM-DD")
         : now.add(1, "day").format("YYYY-MM-DD");
@@ -585,10 +605,17 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
             ? params.product
             : [params.product]
           : [],
-        // 优先使用用户选择的时间范围，如果没有则使用默认值
-        startTime: params.startTime || defaultStartTime,
+        // 使用准备好的开始和结束时间
+        startTime,
         endTime,
         order: "desc" as const,
+        // 添加后端分页参数
+        pagination: {
+          page: params.current || 1,
+          pageSize: params.pageSize || 20,
+        },
+        // 添加upn模糊搜索关键词，直接使用params.upn作为keywords
+        keywords: params.upn || "",
       };
 
       const response = await postBillingAdminGet(requestParams);
@@ -604,30 +631,13 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           allRecords = allRecords.concat(poolRecords);
         });
 
-        // 过滤数据
-        let filteredRecords = allRecords;
-        if (params.upn) {
-          filteredRecords = filteredRecords.filter((record: BillingRecord) =>
-            record.upn.toLowerCase().includes(params.upn.toLowerCase()),
-          );
-        }
-        if (params.plan) {
-          filteredRecords = filteredRecords.filter((record: BillingRecord) =>
-            record.plan.toLowerCase().includes(params.plan.toLowerCase()),
-          );
-        }
-
-        // 实现分页逻辑
-        const pageSize = params.pageSize || 20;
-        const current = params.current || 1;
-        const startIndex = (current - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedRecords = filteredRecords.slice(startIndex, endIndex);
-
         return {
-          data: paginatedRecords,
+          data: allRecords,
           success: true,
-          total: filteredRecords.length,
+          total: response.totalCount || allRecords.length,
+          // ProTable 期望 current 而不是 page
+          current: response.page || params.current || 1,
+          pageSize: response.pageSize || params.pageSize || 20,
         };
       }
     } catch (error) {
@@ -648,46 +658,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
     };
   };
 
-  // 计算统计数据
-  const calculateStatistics = (records: BillingRecord[]) => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-
-    let currentMonthCost = 0;
-    let lastMonthCost = 0;
-    let totalCost = 0;
-
-    records.forEach((record) => {
-      const recordDate = new Date(record.created_at);
-      const cost = Number(record.cost);
-      totalCost += cost;
-
-      if (
-        recordDate.getFullYear() === currentYear &&
-        recordDate.getMonth() === currentMonth
-      ) {
-        currentMonthCost += cost;
-      }
-      if (
-        recordDate.getFullYear() === lastMonthYear &&
-        recordDate.getMonth() === lastMonth
-      ) {
-        lastMonthCost += cost;
-      }
-    });
-
-    const avgDailyCost = currentMonthCost / now.getDate();
-
-    return {
-      currentMonthCost,
-      lastMonthCost,
-      totalCost,
-      avgDailyCost,
-    };
-  };
+  // 不再需要前端计算统计数据，直接从后端获取
 
   return (
     <GridContent>
@@ -714,19 +685,40 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
-              id: "pages.billingDetail.totalCost",
-              defaultMessage: "累计消费",
+              id: "pages.billingDetail.currentMonthOriginalCost",
+              defaultMessage: "本月原始费用",
             })}
           >
-            <Text strong>￥{statistics.totalCost.toFixed(4)}</Text>
+            <Text strong>
+              ￥{statistics.currentMonthOriginalCost.toFixed(4)}
+            </Text>
+            {statistics.currentMonthOriginalCost > 0 &&
+              statistics.currentMonthOriginalCost >
+                statistics.currentMonthCost && (
+                <Text type="secondary" style={{ marginLeft: 8 }}>
+                  (
+                  {intl.formatMessage({
+                    id: "pages.billingDetail.discount",
+                    defaultMessage: "优惠",
+                  })}
+                  :{" "}
+                  {(
+                    (1 -
+                      statistics.currentMonthCost /
+                        statistics.currentMonthOriginalCost) *
+                    100
+                  ).toFixed(1)}
+                  %)
+                </Text>
+              )}
           </Descriptions.Item>
           <Descriptions.Item
             label={intl.formatMessage({
-              id: "pages.billingDetail.recordCount",
-              defaultMessage: "总记录数",
+              id: "pages.billingDetail.dailyAverageCost",
+              defaultMessage: "本月日均消费",
             })}
           >
-            <Text>{statistics.recordCount} 条</Text>
+            <Text>￥{statistics.dailyAverageCost.toFixed(4)}</Text>
           </Descriptions.Item>
         </Descriptions>
       </Card>
@@ -744,6 +736,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
         <ProTable<BillingRecord>
           columns={billingRecordsColumns}
           rowKey="id"
+          actionRef={actionRef}
           search={{
             labelWidth: "auto",
             collapsed: false,
@@ -768,6 +761,7 @@ const BillingDetailTab: FC<BillingDetailTabProps> = ({
               pageSize: params.pageSize || 20,
             };
 
+            // 移除调试日志，使用正常参数
             return billingRecordsDataRequest(pageParams);
           }}
           dateFormatter="string"
