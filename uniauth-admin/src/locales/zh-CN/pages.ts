@@ -175,6 +175,25 @@ export default {
     "保存失败：网络错误，请稍后重试",
   "pages.autoQuotaPoolConfig.saveFailedCheckInput": "保存失败：请检查您的输入",
 
+  // UPN查询相关翻译
+  "pages.autoQuotaPoolConfig.upnQuery": "UPN用户查询",
+  "pages.autoQuotaPoolConfig.upnQueryModalTitle": "UPN用户查询",
+  "pages.autoQuotaPoolConfig.upn": "UPN",
+  "pages.autoQuotaPoolConfig.upnRequired": "请输入UPN",
+  "pages.autoQuotaPoolConfig.upnPlaceholder": "请输入用户主体名称",
+  "pages.autoQuotaPoolConfig.upnMultipleHint":
+    "支持输入多个UPN，以逗号、分号或空格分隔",
+  "pages.autoQuotaPoolConfig.upnMultiplePlaceholder": "请输入UPN",
+  "pages.autoQuotaPoolConfig.query": "查询",
+  "pages.autoQuotaPoolConfig.queryResult": "查询结果",
+  "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN查询成功",
+  "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN查询失败",
+  "pages.autoQuotaPoolConfig.queryError": "查询失败",
+  "pages.autoQuotaPoolConfig.upnInRule": "{upn} 在 {ruleName} 中",
+  "pages.autoQuotaPoolConfig.upnNotInRule": "{upn} 不在 {ruleName} 中",
+  "pages.autoQuotaPoolConfig.upnQueryDescription":
+    "查询指定UPN用户是否在自动配额池规则的缓存中",
+
   // 模型配置页面翻译
   "pages.modelConfig.title": "模型配置列表",
   "pages.modelConfig.description":
@@ -643,4 +662,28 @@ export default {
     "获取服务和产品选项失败，请刷新页面重试",
   "pages.billingDetail.fetchStatisticsFailed": "获取统计数据失败",
   "pages.billingDetail.fetchRecordsFailed": "获取账单数据失败",
+
+  // ChatPage
+  "pages.chat.title": "AI 对话助手",
+  "pages.chat.button.clear": "清空对话",
+  "pages.chat.button.send": "发送",
+  "pages.chat.input.placeholder": "输入消息... (Enter发送, Shift+Enter换行)",
+  "pages.chat.input.required": "请输入消息内容",
+  "pages.chat.thinking": "正在思考...",
+  "pages.chat.tool.label": "工具调用",
+  "pages.chat.tool.calling": "正在调用工具: {tool}",
+  "pages.chat.tool.completed": "工具 {tool} 执行完成",
+  "pages.chat.tool.result.view": "查看结果详情",
+  "pages.chat.tool.params.view": "查看调用参数",
+  "pages.chat.reasoning.view": "查看思考过程",
+  "pages.chat.reasoning.thinking": "AI正在思考...",
+  "pages.chat.tool.confirm.title": "工具执行确认",
+  "pages.chat.tool.confirm.message": "AI 想要执行工具 {tool}，是否允许？",
+  "pages.chat.tool.confirm.params": "工具参数",
+  "pages.chat.tool.confirm.allow": "允许执行",
+  "pages.chat.tool.confirm.deny": "拒绝",
+  "pages.chat.tool.rejected": "已拒绝执行工具 {tool}",
+  "pages.chat.cleared": "对话已清空",
+  "pages.chat.error.requestFailed": "请求失败",
+  "pages.chat.error.sendFailed": "发送消息失败，请重试",
 };

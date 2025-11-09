@@ -193,6 +193,26 @@ export default {
   "pages.autoQuotaPoolConfig.saveFailedCheckInput":
     "Save Failed: Please check your input",
 
+  // UPN Query related translations
+  "pages.autoQuotaPoolConfig.upnQuery": "UPN User Query",
+  "pages.autoQuotaPoolConfig.upnQueryModalTitle": "UPN User Query",
+  "pages.autoQuotaPoolConfig.upn": "UPN",
+  "pages.autoQuotaPoolConfig.upnRequired": "Please enter UPN",
+  "pages.autoQuotaPoolConfig.upnPlaceholder":
+    "Please enter user principal name",
+  "pages.autoQuotaPoolConfig.upnMultipleHint":
+    "Supports multiple UPNs separated by commas, semicolons, or spaces",
+  "pages.autoQuotaPoolConfig.upnMultiplePlaceholder": "Enter UPNs",
+  "pages.autoQuotaPoolConfig.query": "Query",
+  "pages.autoQuotaPoolConfig.queryResult": "Query Result",
+  "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN Query Successful",
+  "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN Query Failed",
+  "pages.autoQuotaPoolConfig.queryError": "Query failed",
+  "pages.autoQuotaPoolConfig.upnInRule": "{upn} is in {ruleName}",
+  "pages.autoQuotaPoolConfig.upnNotInRule": "{upn} is not in {ruleName}",
+  "pages.autoQuotaPoolConfig.upnQueryDescription":
+    "Query whether specified UPN users are in the cache of automatic quota pool rules",
+
   // Model Configuration Page Translations
   "pages.modelConfig.title": "Model Configuration List",
   "pages.modelConfig.description":
@@ -779,4 +799,29 @@ export default {
     "Failed to fetch service and product options, please refresh page",
   "pages.billingDetail.fetchStatisticsFailed": "Failed to fetch statistics",
   "pages.billingDetail.fetchRecordsFailed": "Failed to fetch billing records",
+
+  // ChatPage
+  "pages.chat.title": "AI Chat Assistant",
+  "pages.chat.button.clear": "Clear Chat",
+  "pages.chat.button.send": "Send",
+  "pages.chat.input.placeholder":
+    "Enter message... (Press Enter to send, Shift+Enter for new line)",
+  "pages.chat.input.required": "Please enter a message",
+  "pages.chat.thinking": "Thinking...",
+  "pages.chat.tool.label": "Tool Calls",
+  "pages.chat.tool.calling": "Calling tool: {tool}",
+  "pages.chat.tool.completed": "Tool {tool} completed",
+  "pages.chat.tool.result.view": "View result details",
+  "pages.chat.tool.params.view": "View parameters",
+  "pages.chat.reasoning.view": "View reasoning process",
+  "pages.chat.reasoning.thinking": "AI is thinking...",
+  "pages.chat.tool.confirm.title": "Tool Execution Confirmation",
+  "pages.chat.tool.confirm.message": "AI wants to execute tool {tool}, allow?",
+  "pages.chat.tool.confirm.params": "Tool Parameters",
+  "pages.chat.tool.confirm.allow": "Allow",
+  "pages.chat.tool.confirm.deny": "Deny",
+  "pages.chat.tool.rejected": "Execution of tool {tool} has been rejected",
+  "pages.chat.cleared": "Chat cleared",
+  "pages.chat.error.requestFailed": "Request failed",
+  "pages.chat.error.sendFailed": "Failed to send message, please try again",
 };
