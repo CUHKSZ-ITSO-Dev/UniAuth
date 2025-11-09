@@ -193,6 +193,26 @@ export default {
   "pages.autoQuotaPoolConfig.saveFailedCheckInput":
     "Save Failed: Please check your input",
 
+  // UPN Query related translations
+  "pages.autoQuotaPoolConfig.upnQuery": "UPN User Query",
+  "pages.autoQuotaPoolConfig.upnQueryModalTitle": "UPN User Query",
+  "pages.autoQuotaPoolConfig.upn": "UPN",
+  "pages.autoQuotaPoolConfig.upnRequired": "Please enter UPN",
+  "pages.autoQuotaPoolConfig.upnPlaceholder":
+    "Please enter user principal name",
+  "pages.autoQuotaPoolConfig.upnMultipleHint":
+    "Supports multiple UPNs separated by commas, semicolons, or spaces",
+  "pages.autoQuotaPoolConfig.upnMultiplePlaceholder": "Enter UPNs",
+  "pages.autoQuotaPoolConfig.query": "Query",
+  "pages.autoQuotaPoolConfig.queryResult": "Query Result",
+  "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN Query Successful",
+  "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN Query Failed",
+  "pages.autoQuotaPoolConfig.queryError": "Query failed",
+  "pages.autoQuotaPoolConfig.upnInRule": "{upn} is in {ruleName}",
+  "pages.autoQuotaPoolConfig.upnNotInRule": "{upn} is not in {ruleName}",
+  "pages.autoQuotaPoolConfig.upnQueryDescription":
+    "Query whether specified UPN users are in the cache of automatic quota pool rules",
+
   // Model Configuration Page Translations
   "pages.modelConfig.title": "Model Configuration List",
   "pages.modelConfig.description":
