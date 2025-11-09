@@ -98,6 +98,23 @@ export default {
   "pages.userDetail.displayName": "Display Name",
   "pages.userDetail.schoolStatus": "School Status",
   "pages.userDetail.identityType": "Identity Type",
+
+  // Config export modal
+  "pages.configI18n.export": "Export",
+  "pages.configI18n.export.title": "Export Language Configuration",
+  "pages.configI18n.export.success": "Export successful",
+  "pages.configI18n.export.failed": "Export failed",
+  "pages.configI18n.export.appId": "Select Application",
+  "pages.configI18n.export.appId.placeholder": "Please select an application",
+  "pages.configI18n.export.appId.required":
+    "Please select an application to export",
+  "pages.configI18n.export.language": "Select Export Language",
+  "pages.configI18n.export.language.required":
+    "Please select a language to export",
+  "pages.configI18n.export.type": "Select Export Type",
+  "pages.configI18n.export.type.required": "Please select an export type",
+  "pages.configI18n.export.type.tree": "Nested Structure",
+  "pages.configI18n.export.type.path": "Path Structure",
   "pages.userDetail.employeeId": "Employee ID",
   "pages.userDetail.name": "Full Name",
   "pages.userDetail.tags": "Tags",
