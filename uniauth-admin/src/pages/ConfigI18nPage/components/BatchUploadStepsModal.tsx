@@ -178,6 +178,7 @@ const BatchUploadStepsModal: React.FC<BatchUploadStepsModalProps> = ({
       onCancel={onCancel}
       footer={null}
       width={1200}
+      destroyOnHidden={true}
     >
       <StepsForm
         onFinish={handleFinish}
