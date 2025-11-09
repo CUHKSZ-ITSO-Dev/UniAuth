@@ -315,6 +315,29 @@ export default {
   "pages.configI18n.batchDelete.clear": "Clear Selection",
   "pages.configI18n.batchDelete.delete": "Batch Delete",
   "pages.configI18n.updatedAt": "Updated Time",
+  "pages.configI18n.appId": "Application ID",
+  "pages.configI18n.appId.placeholder": "Please select application",
+  "pages.configI18n.form.appId": "Application ID",
+  "pages.configI18n.form.appId.required": "Please enter Application ID",
+  "pages.configI18n.form.appId.placeholder": "Please enter Application ID",
+  "pages.configI18n.uploadModal.title": "Bulk Upload Translations",
+  "pages.configI18n.uploadModal.appId": "Application ID",
+  "pages.configI18n.uploadModal.appId.required": "Please enter Application ID",
+  "pages.configI18n.uploadModal.appId.placeholder":
+    "Please enter Application ID",
+  "pages.configI18n.uploadModal.language": "Select Language",
+  "pages.configI18n.uploadModal.language.required":
+    "Please select a language to upload",
+  "pages.configI18n.uploadModal.language.placeholder":
+    "Please select the language to upload",
+  "pages.configI18n.uploadModal.language.zhCN": "Simplified Chinese (zh-CN)",
+  "pages.configI18n.uploadModal.language.enUS": "English (en-US)",
+  "pages.configI18n.uploadModal.file": "Select File",
+  "pages.configI18n.uploadModal.file.description":
+    "Please upload a translation file in JSON format. JSON files are supported.",
+  "pages.configI18n.uploadModal.file.clickOrDrag":
+    "Click or drag files to this area to upload",
+  "pages.configI18n.batchAdd": "Batch Add",
 
   // PolicyListPage
   "pages.policyList.title": "Policies",
@@ -495,8 +518,27 @@ export default {
   "pages.quotaPoolList.create.success": "Quota pool created successfully",
   "pages.quotaPoolList.create.error": "Failed to create quota pool",
   "pages.quotaPoolList.form.validation.error":
-    "Form validation failed, please check your input",
+    "Form validation failed, please check input",
 
+  // BatchUploadStepsModal translations
+  "pages.configI18n.upload.fileRequired": "Please select a file to upload",
+  "pages.configI18n.upload.previewFailed": "Preview failed, please try again",
+  "pages.configI18n.upload.invalidFormat": "Only JSON files are supported!",
+  "pages.configI18n.upload.dragText":
+    "Click or drag file to this area to upload",
+  "pages.configI18n.upload.change": "Change file",
+  "pages.configI18n.upload.preview": "Preview content",
+  "pages.configI18n.upload.back": "Previous step",
+  "pages.configI18n.upload.confirm": "Confirm upload",
+  "pages.configI18n.upload.step1": "Choose Configuration",
+  "pages.configI18n.upload.step2": "Confirm Changes",
+  "pages.configI18n.upload.preview.title": "Preview Content",
+  "pages.configI18n.upload.preview.total": "Total {total} records",
+  "pages.configI18n.upload.preview.key": "Key",
+  "pages.configI18n.upload.preview.oldValue": "Original Value",
+  "pages.configI18n.upload.preview.newValue": "New Value",
+  "pages.configI18n.upload.success":
+    "Batch upload successful, {count} translations added",
   // Batch Modify Modal
   "pages.quotaPoolList.batchModify.title": "Batch Modify Quota Pools",
   "pages.quotaPoolList.batchModify.step1": "Set Filter Conditions",
