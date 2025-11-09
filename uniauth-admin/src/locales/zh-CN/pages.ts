@@ -498,11 +498,29 @@ export default {
   // Placeholders for operators
   "pages.quotaPoolList.operator.like.placeholder": "输入值，支持通配符",
   "pages.quotaPoolList.operator.contains.placeholder": "输入包含的内容",
+
+  // BatchUploadStepsModal translations
+  "pages.configI18n.upload.fileRequired": "请选择要上传的文件",
+  "pages.configI18n.upload.previewFailed": "预览失败，请重试",
+  "pages.configI18n.upload.invalidFormat": "只支持上传 JSON 格式的文件！",
+  "pages.configI18n.upload.dragText": "点击或拖拽文件到此区域上传",
+  "pages.configI18n.upload.change": "更换文件",
+  "pages.configI18n.upload.preview": "预览上传内容",
+  "pages.configI18n.upload.back": "上一步",
+  "pages.configI18n.upload.confirm": "确认上传",
+  "pages.configI18n.upload.step1": "选择配置",
+  "pages.configI18n.upload.step2": "确认更改",
+  "pages.configI18n.upload.preview.title": "预览内容",
+  "pages.configI18n.upload.preview.total": "共 {total} 条记录",
+  "pages.configI18n.upload.preview.key": "键值",
+  "pages.configI18n.upload.preview.oldValue": "原始值",
+  "pages.configI18n.upload.preview.newValue": "新值",
   "pages.quotaPoolList.operator.notcontains.placeholder": "输入不包含的内容",
   "pages.quotaPoolList.operator.startswith.placeholder": "输入开头内容",
   "pages.quotaPoolList.operator.endswith.placeholder": "输入结尾内容",
   "pages.quotaPoolList.operator.in.placeholder": "请输入值，按回车分隔多个值",
   "pages.quotaPoolList.operator.default.placeholder": "请输入值",
+  "pages.configI18n.upload.success": "批量上传成功，共添加 {count} 项翻译",
 
   // QuotaPoolDetailsPage
   "pages.quotaPoolDetails.title": "配额池详情",

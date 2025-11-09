@@ -29,7 +29,13 @@ func (c *ControllerV1) BatchUploadI18n(ctx context.Context, req *v1.BatchUploadI
 	if err != nil {
 		return nil, gerror.Wrap(err, "文件打开失败")
 	}
-	defer f.Close()
+	defer func() {
+		if closeErr := f.Close(); closeErr != nil {
+			if err == nil {
+				err = gerror.Wrap(closeErr, "关闭文件失败")
+			}
+		}
+	}()
 	content, err := io.ReadAll(f)
 	if err != nil {
 		return nil, gerror.Wrap(err, "文件读取失败")
