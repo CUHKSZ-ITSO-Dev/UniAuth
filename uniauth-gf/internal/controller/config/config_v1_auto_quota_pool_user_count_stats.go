@@ -10,7 +10,6 @@ import (
 	v1 "uniauth-gf/api/config/v1"
 	"uniauth-gf/internal/dao"
 	"uniauth-gf/internal/model/entity"
-	"uniauth-gf/internal/service/autoQuotaPool"
 )
 
 func (c *ControllerV1) AutoQuotaPoolUserCountStats(ctx context.Context, req *v1.AutoQuotaPoolUserCountStatsReq) (res *v1.AutoQuotaPoolUserCountStatsRes, err error) {
@@ -21,25 +20,10 @@ func (c *ControllerV1) AutoQuotaPoolUserCountStats(ctx context.Context, req *v1.
 		return
 	}
 
-	// 提取所有规则名称
-	var ruleNames []string
-	for _, config := range autoQuotaPoolList {
-		ruleNames = append(ruleNames, config.RuleName)
-	}
-
-	// 调用SyncUpnsCache更新所有配额池的缓存并获取用户数统计
-	matchedUserCountMap, err := autoQuotaPool.SyncUpnsCache(ctx, ruleNames)
-	if err != nil {
-		err = gerror.Wrap(err, "同步自动配额池缓存失败")
-		return
-	}
-
 	// 构建返回的统计数据
 	quotaPoolStats := g.Map{}
-	for ruleName, userCount := range matchedUserCountMap {
-		quotaPoolStats[ruleName] = g.Map{
-			"userCount": userCount,
-		}
+	for _, config := range autoQuotaPoolList {
+		quotaPoolStats[config.RuleName] = len(config.UpnsCache)
 	}
 
 	// 转换为gjson.Json格式
