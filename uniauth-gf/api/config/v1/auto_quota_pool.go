@@ -2,15 +2,26 @@ package v1
 
 import (
 	userinfosv1 "uniauth-gf/api/userinfos/v1"
-	"uniauth-gf/internal/model/entity"
 
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/shopspring/decimal"
 )
 
 type AutoQuotaPoolItem struct {
-	entity.ConfigAutoQuotaPool
+	Id                 int64           `json:"id"                 orm:"id"                   description:"自增主键"`         // 自增主键
+	RuleName           string          `json:"ruleName"           orm:"rule_name"            description:"规则名称，唯一"`      // 规则名称，唯一
+	Description        string          `json:"description"        orm:"description"          description:"规则说明"`         // 规则说明
+	CronCycle          string          `json:"cronCycle"          orm:"cron_cycle"           description:"刷新周期"`         // 刷新周期
+	RegularQuota       decimal.Decimal `json:"regularQuota"       orm:"regular_quota"        description:"定期配额"`         // 定期配额
+	Enabled            bool            `json:"enabled"            orm:"enabled"              description:"是否启用该配额池"`     // 是否启用该配额池
+	FilterGroup        *gjson.Json     `json:"filterGroup"        orm:"filter_group"         description:"过滤条件组"`        // 过滤条件组
+	Priority           int             `json:"priority"           orm:"priority"             description:"优先级，数值越小优先匹配"` // 优先级，数值越小优先匹配
+	LastEvaluatedAt    *gtime.Time     `json:"lastEvaluatedAt"    orm:"last_evaluated_at"    description:"该规则上次评估时间"`    // 该规则上次评估时间
+	CreatedAt          *gtime.Time     `json:"createdAt"          orm:"created_at"           description:"创建时间"`         // 创建时间
+	UpdatedAt          *gtime.Time     `json:"updatedAt"          orm:"updated_at"           description:"更新时间"`         // 更新时间
+	DefaultCasbinRules *gjson.Json     `json:"defaultCasbinRules" orm:"default_casbin_rules" description:"默认Casbin规则"`   // 默认Casbin规则
 }
 
 type DefaultCasbinRule struct {

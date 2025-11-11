@@ -15,6 +15,7 @@ import (
 // 字段白名单
 var allowedI18nFields = g.MapStrStr{
 	"key":         dao.ConfigInternationalization.Columns().Key,
+	"app_id":      dao.ConfigInternationalization.Columns().AppId,
 	"zh_cn":       dao.ConfigInternationalization.Columns().ZhCn,
 	"en_us":       dao.ConfigInternationalization.Columns().EnUs,
 	"description": dao.ConfigInternationalization.Columns().Description,
@@ -25,6 +26,7 @@ var allowedI18nFields = g.MapStrStr{
 // 支持排序的字段（加了索引的）
 var sortableI18nFields = g.MapStrBool{
 	"key":        true,
+	"app_id":     true,
 	"zh_cn":      true,
 	"en_us":      true,
 	"created_at": true,
@@ -32,6 +34,11 @@ var sortableI18nFields = g.MapStrBool{
 }
 
 func (c *ControllerV1) FilterI18n(ctx context.Context, req *v1.FilterI18nReq) (res *v1.FilterI18nRes, err error) {
+	// 检查输入参数，确保app_id不为空
+	if req.AppId == "" {
+		return nil, gerror.New("app_id不能为空")
+	}
+
 	// 设置默认分页参数
 	if req.Pagination == nil {
 		req.Pagination = &v1.I18nPaginationReq{
@@ -42,13 +49,19 @@ func (c *ControllerV1) FilterI18n(ctx context.Context, req *v1.FilterI18nReq) (r
 
 	model := dao.ConfigInternationalization.Ctx(ctx)
 
+	// 根据AppId进行过滤
+	model = model.Where(dao.ConfigInternationalization.Columns().AppId, req.AppId)
+
 	// 根据关键词进行模糊匹配
 	if req.Keyword != "" {
 		keyword := "%" + req.Keyword + "%"
-		model = model.WhereOrLike(dao.ConfigInternationalization.Columns().Key, keyword).
-			WhereOrLike(dao.ConfigInternationalization.Columns().ZhCn, keyword).
-			WhereOrLike(dao.ConfigInternationalization.Columns().EnUs, keyword).
-			WhereOrLike(dao.ConfigInternationalization.Columns().Description, keyword)
+		// 使用括号分组OR条件
+		whereCondition := fmt.Sprintf("(%s LIKE ? OR %s LIKE ? OR %s LIKE ? OR %s LIKE ?)",
+			dao.ConfigInternationalization.Columns().Key,
+			dao.ConfigInternationalization.Columns().ZhCn,
+			dao.ConfigInternationalization.Columns().EnUs,
+			dao.ConfigInternationalization.Columns().Description)
+		model = model.Where(whereCondition, keyword, keyword, keyword, keyword)
 	}
 
 	// 获取总数
