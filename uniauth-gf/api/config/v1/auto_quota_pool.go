@@ -100,18 +100,6 @@ type AutoQuotaPoolUserCountStatsRes struct {
 	QuotaPoolStats *gjson.Json `json:"quotaPoolStats" dc:"统计数据，按自动配额池分组显示用户数量"`
 }
 
-// ==================== Auto Quota Pool Usage Stats ====================
-type AutoQuotaPoolUsageStatsReq struct {
-	g.Meta        `path:"/stats/usage" tags:"Config/AutoQuotaPoolConfig" method:"GET" summary:"分自动配额池消费" dc:"按日期和自动配额池统计消费情况"`
-	NDays         int    `d:"7" example:"7" dc:"数据跨度天数"`
-	AutoQuotaPool string `d:"" example:"student-pool" dc:"自动配额池名称，为空则统计所有自动配额池"`
-}
-
-type AutoQuotaPoolUsageStatsRes struct {
-	g.Meta    `resEg:"resource/interface/config/autoquotapool/auto_quota_pool_usage_stats_res.json"`
-	StatsData *gjson.Json `json:"statsData" dc:"统计数据，按日期和配额池分组"`
-}
-
 type QueryUpnsCacheItem struct {
 	RuleName      string `json:"ruleName" dc:"规则名称"`
 	Upn           string `json:"upn" dc:"UPN"`
