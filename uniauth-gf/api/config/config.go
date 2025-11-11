@@ -17,7 +17,6 @@ type IConfigV1 interface {
 	AddAutoQuotaPoolConfig(ctx context.Context, req *v1.AddAutoQuotaPoolConfigReq) (res *v1.AddAutoQuotaPoolConfigRes, err error)
 	SyncAutoQuotaPoolUpnsCache(ctx context.Context, req *v1.SyncAutoQuotaPoolUpnsCacheReq) (res *v1.SyncAutoQuotaPoolUpnsCacheRes, err error)
 	AutoQuotaPoolUserCountStats(ctx context.Context, req *v1.AutoQuotaPoolUserCountStatsReq) (res *v1.AutoQuotaPoolUserCountStatsRes, err error)
-	AutoQuotaPoolQuestionCountStats(ctx context.Context, req *v1.AutoQuotaPoolQuestionCountStatsReq) (res *v1.AutoQuotaPoolQuestionCountStatsRes, err error)
 	AutoQuotaPoolUsageStats(ctx context.Context, req *v1.AutoQuotaPoolUsageStatsReq) (res *v1.AutoQuotaPoolUsageStatsRes, err error)
 	QueryUpnsCache(ctx context.Context, req *v1.QueryUpnsCacheReq) (res *v1.QueryUpnsCacheRes, err error)
 	GetModelConfig(ctx context.Context, req *v1.GetModelConfigReq) (res *v1.GetModelConfigRes, err error)
