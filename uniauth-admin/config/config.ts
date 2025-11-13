@@ -2,6 +2,7 @@
 
 import { join } from "node:path";
 import type { defineConfig } from "@umijs/max";
+import { theme } from "antd";
 import defaultSettings from "./defaultSettings";
 import proxy from "./proxy";
 
@@ -19,6 +20,8 @@ const PUBLIC_PATH: string = "/uniauth/";
 type Config = Parameters<typeof defineConfig>[0];
 
 const config: Config = {
+  favicons: ["/favicon.png"],
+
   // https://umijs.org/docs/api/config#define
   define: {
     "process.env.REACT_APP_ENV": process.env.REACT_APP_ENV,
@@ -153,6 +156,7 @@ const config: Config = {
     appConfig: {},
     configProvider: {
       theme: {
+        algorithm: [theme.compactAlgorithm],
         cssVar: true,
         token: {
           fontFamily: "AlibabaSans, sans-serif",

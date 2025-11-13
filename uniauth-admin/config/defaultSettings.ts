@@ -19,7 +19,7 @@ const Settings: ProLayoutProps & {
 
   title: "UniAuth Admin Panel",
   pwa: false,
-  logo: "/logo.png",
+  logo: "/uniauth/logo.png",
   iconfontUrl: "",
   token: {
     // 参见ts声明，demo 见文档，通过token 修改样式
