@@ -199,7 +199,7 @@ const config: Config = {
       requestLibPath: "import { request } from '@/utils/request';",
       // 或者使用在线的版本
       // schemaPath: "https://gw.alipayobjects.com/os/antfincdn/M%24jrzTTYJN/oneapi.json"
-      schemaPath: "http://localhost:8000/api.json",
+      schemaPath: "http://localhost:8004/api.json",
       mock: false,
       projectName: "uniauthService",
     },
