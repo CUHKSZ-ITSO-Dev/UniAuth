@@ -1031,6 +1031,173 @@ declare namespace API {
 
   type Var = unknown;
 
+  type GetTodayTotalConsumptionReq = {
+    /** 依据服务类型查询，默认统计全部 */
+    service?: string;
+  };
+
+  type GetTodayTotalConsumptionRes = {
+    /** 日期,格式:2025-10-01 */
+    date: string;
+    /** 总消费金额(CNY) */
+    totalCostCNY: Decimal;
+    /** 消费增加率 */
+    increaseRate: number;
+    /** 依据服务类型查询，默认统计全部 */
+    serviceName: string;
+  };
+
+  type GetActiveUsersNumReq = {
+    /** 统计活跃用户的天数，默认30天 */
+    days?: number;
+  };
+
+  type GetActiveUsersNumRes = {
+    /** 每天活跃用户数列表 */
+    activeUsers?: Array<{
+      /** 当天活跃用户数 */
+      activeUsersNum: number;
+      /** 活跃率增加 */
+      activeRateInc: number;
+      /** 人数对应的日期 */
+      date: string;
+    }>;
+    /** 总用户人数 */
+    totalUsers?: number;
+    /** 总活跃用户人数 */
+    totalActiveUsers?: number;
+  };
+
+  // 活跃用户详情
+  type ActiveUserDetail = {
+    upn?: string;
+    totalCost?: Decimal;
+    totalCalls?: number;
+    lastActive?: string;
+  };
+
+  // 获取所有活跃用户请求参数
+  type GetAllActiveUsersReq = {
+    /** 返回指定天数的活跃用户信息,默认七天 */
+    days?: number;
+    /** 分页页码,从1开始 */
+    page?: number;
+    /** 每页条数，默认10，最大30 */
+    pageSize?: number;
+    /** 排序条件:cost(花费),calls(调用次数),upn(用户名),last_active(最后活跃时间) */
+    sortBy?: "cost" | "calls" | "upn" | "last_active";
+    /** 按升序(asc)还是降序(desc)排列 */
+    sortOrder?: "asc" | "desc";
+  };
+
+  // 获取所有活跃用户响应
+  type GetAllActiveUsersRes = {
+    /** 返回活跃用户信息列表 */
+    activeUsers?: ActiveUserDetail[];
+    /** 活跃用户总数 */
+    total?: number;
+    /** 当前页码 */
+    page?: number;
+    /** 每页条数 */
+    pageSize?: number;
+    /** 总页数 */
+    totalPages?: number;
+  };
+
+  // 模型消费金额请求参数
+  type GetProductConsumptionReq = {
+    /** 最近N天，默认7天 */
+    nDays?: number;
+    /** 按服务过滤 */
+    service?: string;
+    /** 按配额池过滤 */
+    quotaPool?: string;
+    /** 按模型过滤 */
+    product?: string;
+  };
+
+  // 模型消费金额响应
+  type GetProductConsumptionRes = {
+    /** 统计起始日期 */
+    startDate?: string;
+    /** 统计结束日期 */
+    endDate?: string;
+    /** 按模型分组的消费统计 */
+    productConsumption?: Json;
+    /** 按日期分组的消费统计 */
+    dateConsumption?: Json;
+    /** 消费明细数据 */
+    consumption?: Array<{
+      /** 日期 */
+      date?: string;
+      /** 模型 */
+      product?: string;
+      /** 服务类型 */
+      service?: string;
+      /** 配额池 */
+      quotaPool?: string;
+      /** 消费金额 */
+      cost?: Decimal;
+      /** 调用次数 */
+      calls?: number;
+    }>;
+    /** 总调用次数(当前分类下) */
+    totalCalls?: number;
+    /** 总消费（当前条件下） */
+    totalCost?: Decimal;
+  };
+
+  // 模型调用次数图表请求参数
+  type GetProductUsageChartReq = {
+    /** 最近N天，默认7天 */
+    nDays?: number;
+    /** 按服务过滤 */
+    service?: string;
+    /** 按配额池过滤 */
+    quotaPool?: string;
+    /** 按模型过滤 */
+    product?: string;
+  };
+
+  // 模型调用次数图表响应
+  type GetProductUsageChartRes = {
+    /** 折线图数据，dates为日期数组，series为各维度的时间序列 */
+    lineChartData?: Json;
+    /** 条形图数据，按模型分别总调用次数 */
+    barChartData?: Json;
+    /** 总调用次数（当前分类下） */
+    totalCalls?: number;
+  };
+
+  // 获取所有名称请求参数
+  type GetAllNameReq = {
+    /** 要查询的名称类型：service/quotaPool/product */
+    name: string;
+  };
+
+  // 获取所有名称响应
+  type GetAllNameRes = {
+    /** 返回指定服务名称 */
+    allName: string[];
+  };
+
+  // 活跃用户详情请求参数
+  type GetActiveUserDetailReq = {
+    /** 用户唯一标识 */
+    upn: string;
+    /** 统计天数，默认7天 */
+    nDays?: number;
+  };
+
+  // 活跃用户详情响应
+  type GetActiveUserDetailRes = {
+    /** 总消费金额 */
+    totalCost?: Decimal;
+    /** 总调用次数 */
+    totalCalls?: number;
+    /** 最后活跃时间 */
+    lastActive?: string;
+  };
   type QueryUpnsCacheItem = {
     /** 规则名称 */
     ruleName: string;

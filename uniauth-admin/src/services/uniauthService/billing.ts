@@ -60,3 +60,129 @@ export async function postBillingRecord(
     ...(options || {}),
   });
 }
+
+/** 今日总消费 获取今天的总消费金额统计 GET /billing/stats/today/total */
+export async function getBillingStatsTodayTotal(
+  params: API.GetTodayTotalConsumptionReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetTodayTotalConsumptionRes>(
+    "/billing/stats/today/total",
+    {
+      method: "GET",
+      params,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 活跃用户统计 按消费记录查询活跃用户 GET /billing/stats/active-users/summary */
+export async function getBillingStatsActiveUsersSummary(
+  params: API.GetActiveUsersNumReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetActiveUsersNumRes>(
+    "/billing/stats/active-users/summary",
+    {
+      method: "GET",
+      params,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 获取所有活跃用户列表 获取指定天数内的活跃用户信息 GET /billing/stats/active-users/list */
+export async function getBillingStatsActiveUsersList(
+  params: API.GetAllActiveUsersReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetAllActiveUsersRes>("/billing/stats/active-users/list", {
+    method: "GET",
+    params,
+    ...(options || {}),
+  });
+}
+
+/** 对话服务使用次数统计（详细） 获取N天内对话服务使用次数统计图表 GET /billing/stats/chat/usage/chart */
+export async function getBillingStatsChatUsageChart(
+  params: API.NDaysProductUsageChartReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.NDaysProductUsageChartRes>(
+    "/billing/stats/chat/usage/chart",
+    {
+      method: "GET",
+      params,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 对话服务使用次数统计（聚合） 获取N天内对话服务使用次数统计聚合 GET /billing/stats/chat/usage/group */
+export async function getBillingStatsChatUsageGroup(
+  params: API.NDaysProductUsageGroupReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.NDaysProductUsageGroupRes>(
+    "/billing/stats/chat/usage/group",
+    {
+      method: "GET",
+      params,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 模型消费金额统计 获取最近N天模型消费金额统计 GET /billing/stats/model/consumption */
+export async function getBillingStatsModelConsumption(
+  params: API.GetProductConsumptionReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetProductConsumptionRes>(
+    "/billing/stats/model/consumption",
+    {
+      method: "GET",
+      params,
+      ...(options || {}),
+    },
+  );
+}
+
+/** 模型调用次数图表 获取最近N天模型调用次数图表（折线+条形图） GET /billing/stats/model/usage */
+export async function getBillingStatsModelUsage(
+  params: API.GetProductUsageChartReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetProductUsageChartRes>("/billing/stats/model/usage", {
+    method: "GET",
+    params,
+    ...(options || {}),
+  });
+}
+
+/** 获取所有名称 获取指定类型的名称列表 GET /billing/stats/service/list */
+export async function getBillingStatsAllName(
+  params: API.GetAllNameReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetAllNameRes>("/billing/stats/service/list", {
+    method: "GET",
+    params,
+    ...(options || {}),
+  });
+}
+
+/** 活跃用户详情 查询某个活跃用户详细信息 GET /billing/stats/active-users/detail */
+export async function getBillingStatsActiveUserDetail(
+  params: API.GetActiveUserDetailReq,
+  options?: { [key: string]: any },
+) {
+  return request<API.GetActiveUserDetailRes>(
+    "/billing/stats/active-users/detail",
+    {
+      method: "GET",
+      params,
+      ...(options || {}),
+    },
+  );
+}

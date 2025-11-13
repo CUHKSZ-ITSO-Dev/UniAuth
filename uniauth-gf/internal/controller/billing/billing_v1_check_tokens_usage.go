@@ -19,8 +19,8 @@ func (c *ControllerV1) CheckTokensUsage(ctx context.Context, req *v1.CheckTokens
 	startDate := gtime.Now().AddDate(0, 0, 1-req.NDays).Format("Y-m-d")
 	result, err := dao.BillingCostRecords.Ctx(ctx).
 		Where("upn = ? AND source = ? AND created_at >= ?", req.Upn, req.QuotaPool, startDate).
-		Fields("DATE(created_at) as date, product, SUM(cost) as total_cost").
-		Group("date, product").
+		Fields("created_at::date as date, product, SUM(cost) as total_cost").
+		Group("created_at::date, product").
 		Order("date desc").
 		All()
 	if err != nil {

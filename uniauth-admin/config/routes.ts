@@ -26,6 +26,12 @@ export default [
         icon: "MessageOutlined",
         component: "@/pages/ChatPage",
       },
+      {
+        path: "/dashboard/billing",
+        name: "billing",
+        icon: "MessageOutlined",
+        component: "@/pages/BillingPage",
+      },
     ],
   },
 
