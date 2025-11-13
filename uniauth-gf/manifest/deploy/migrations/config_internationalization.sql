@@ -1,11 +1,15 @@
 CREATE TABLE config_internationalization (
-    key TEXT PRIMARY KEY,
+    key TEXT NOT NULL,
+    app_id TEXT NOT NULL DEFAULT 'uniauthAdmin',
     zh_cn TEXT NOT NULL,
     en_us TEXT NOT NULL,
     description TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    PRIMARY KEY (key, app_id)
 );
+
+CREATE INDEX idx_config_internationalization_app_id ON config_internationalization (app_id);
 
 CREATE INDEX idx_config_internationalization_zh_cn ON config_internationalization (zh_cn);
 

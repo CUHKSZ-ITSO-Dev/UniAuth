@@ -1,0 +1,261 @@
+.chat-container {
+  :global {
+    .ant-card-body {
+      padding: 0 !important;
+      height: calc(100vh - 300px);
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px;
+    background: #f5f5f5;
+    
+    .message-item {
+      display: flex;
+      margin-bottom: 20px;
+      animation: fadeIn 0.3s ease-in;
+
+      &.user-message {
+        flex-direction: row-reverse;
+        
+        .message-content {
+          background: #1890ff;
+          color: white;
+          margin-right: 12px;
+        }
+      }
+
+      &.assistant-message {
+        flex-direction: row;
+        
+        .message-content {
+          background: white;
+          color: rgba(0, 0, 0, 0.85);
+          margin-left: 12px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          max-width: 85%; // AI回复使用更大的宽度
+        }
+      }
+
+      .message-avatar {
+        flex-shrink: 0;
+      }
+      
+      // 工具调用消息样式
+      &.tool-call-message {
+        justify-content: center;
+        margin-bottom: 12px;
+        
+        .tool-call-content {
+          background: #e6f7ff;
+          border: 1px solid #91d5ff;
+          padding: 8px 16px;
+          border-radius: 4px;
+          font-size: 13px;
+          color: #0050b3;
+          
+          .tool-icon {
+            font-size: 16px;
+          }
+        }
+      }
+      
+      // 工具结果消息样式
+      &.tool-result-message {
+        justify-content: center;
+        margin-bottom: 12px;
+        
+        .tool-result-content {
+          background: #f6ffed;
+          border: 1px solid #b7eb8f;
+          padding: 8px 16px;
+          border-radius: 4px;
+          font-size: 13px;
+          color: #389e0d;
+          max-width: 85%;
+          
+          .tool-icon {
+            font-size: 16px;
+          }
+          
+          summary {
+            font-size: 12px;
+            margin-top: 4px;
+          }
+        }
+      }
+
+      .message-content {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 8px;
+        word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        
+        .reasoning-section {
+          margin-bottom: 12px;
+          padding: 12px;
+          background: #fffbe6;
+          border-left: 3px solid #faad14;
+          border-radius: 4px;
+          
+          summary {
+            font-weight: 500;
+            font-size: 13px;
+            user-select: none;
+            
+            &:hover {
+              color: #1890ff;
+            }
+          }
+          
+          .reasoning-content {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #ffe58f;
+            color: #666;
+            font-size: 13px;
+          }
+        }
+        
+        .message-text {
+          line-height: 1.1;
+          white-space: pre-wrap;
+          
+          // Markdown样式优化
+          pre {
+            background: #282c34;
+            border-radius: 4px;
+            padding: 6px;
+            overflow-x: auto;
+            margin: 0.1em 0;
+            line-height: 1.2;
+            
+            code {
+              background: transparent;
+              padding: 0;
+              color: #abb2bf;
+            }
+          }
+          
+          code {
+            background: rgba(0, 0, 0, 0.06);
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-family: 'Courier New', Courier, monospace;
+          }
+          
+          p {
+            margin: 0;
+            &:not(:last-child) {
+              margin-bottom: 0.05em;
+            }
+          }
+          
+          ul, ol {
+            margin: 0.05em 0;
+            padding-left: 1.3em;
+            
+            li {
+              margin: 0;
+              padding: 0;
+            }
+          }
+          
+          blockquote {
+            border-left: 3px solid #ddd;
+            margin: 0.1em 0;
+            padding-left: 0.6em;
+            color: #666;
+          }
+          
+          table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0.1em 0;
+            
+            th, td {
+              border: 1px solid #ddd;
+              padding: 4px 6px;
+              text-align: left;
+              line-height: 1.2;
+            }
+            
+            th {
+              background: #f5f5f5;
+              font-weight: bold;
+            }
+          }
+          
+          h1, h2, h3, h4, h5, h6 {
+            margin: 0.3em 0 0.1em 0;
+            font-weight: 600;
+            line-height: 1.2;
+            
+            &:first-child {
+              margin-top: 0;
+            }
+          }
+          
+          a {
+            color: #1890ff;
+            text-decoration: none;
+            
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .chat-input-area {
+    display: flex;
+    align-items: flex-end;
+    padding: 16px 24px;
+    border-top: 1px solid #f0f0f0;
+    background: white;
+
+    textarea {
+      flex: 1;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 滚动条样式 */
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+

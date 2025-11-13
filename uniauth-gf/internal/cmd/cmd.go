@@ -14,9 +14,11 @@ import (
 
 	"uniauth-gf/internal/controller/auth"
 	"uniauth-gf/internal/controller/billing"
+	"uniauth-gf/internal/controller/chat"
 	"uniauth-gf/internal/controller/config"
 	"uniauth-gf/internal/controller/quotaPool"
 	"uniauth-gf/internal/controller/userinfos"
+	mcpSvc "uniauth-gf/internal/service/mcp"
 	quotaPoolSvc "uniauth-gf/internal/service/quotaPool"
 
 	"uniauth-gf/internal/middlewares"
@@ -42,6 +44,13 @@ var (
 			if err := gtime.SetTimeZone("Asia/Shanghai"); err != nil {
 				panic(err)
 			}
+
+			go func() {
+				if err := mcpSvc.StartMCPServer(ctx); err != nil {
+					g.Log().Error(ctx, "MCP服务器启动失败:", err)
+				}
+			}()
+
 			// 注册定时任务
 			if _, err = gcron.Add(ctx, "@daily", func(ctx context.Context) {
 				if err := quotaPoolSvc.UpdateQuotaPoolsUsersInCasbin(ctx, nil); err != nil {
@@ -53,6 +62,10 @@ var (
 			}
 
 			s := g.Server()
+
+			// 配置CORS中间件（开发环境使用，生产环境应该配置具体的域名）
+			s.Use(ghttp.MiddlewareCORS)
+
 			s.Use(middlewares.UniResMiddleware)
 			s.Group("/userinfos", func(group *ghttp.RouterGroup) {
 				group.Bind(
@@ -77,6 +90,11 @@ var (
 			s.Group("/quotaPool", func(group *ghttp.RouterGroup) {
 				group.Bind(
 					quotaPool.NewV1(),
+				)
+			})
+			s.Group("/chat", func(group *ghttp.RouterGroup) {
+				group.Bind(
+					chat.NewV1(),
 				)
 			})
 			s.SetOpenApiPath(g.Cfg().MustGetWithEnv(ctx, "server.openapiPath").String())

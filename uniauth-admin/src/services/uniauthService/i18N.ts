@@ -83,3 +83,29 @@ export async function getConfigI18NLangs(options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 批量添加i18n配置 POST /config/i18n/batch  */
+export async function postConfigI18NBatchUpload(
+  body: API.BatchUploadI18nReq,
+  options?: { [key: string]: any },
+) {
+  const formData = new FormData();
+  formData.append("file", body.file);
+  formData.append("lang", body.lang);
+  formData.append("app_id", body.app_id);
+  formData.append("preview", body.preview ? "true" : "false");
+
+  return request<API.BatchUploadI18nRes>("/config/i18n/batch", {
+    method: "POST",
+    data: formData,
+    ...(options || {}),
+  });
+}
+
+/** 获取系统中存在i18n配置的所有应用ID列表 GET /config/i18n/apps */
+export async function getConfigI18NApps(options?: { [key: string]: any }) {
+  return request<API.GetI18NAppsRes>("/config/i18n/apps", {
+    method: "GET",
+    ...(options || {}),
+  });
+}
