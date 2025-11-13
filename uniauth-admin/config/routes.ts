@@ -14,9 +14,27 @@ export default [
   {
     path: "/dashboard",
     name: "dashboard",
-    icon: "dashboard",
-    component: "@/pages/DashboardPage",
+    icon: "DashboardOutlined",
+    routes: [
+      {
+        path: "/dashboard",
+        redirect: "/dashboard/chat",
+      },
+      {
+        path: "/dashboard/chat",
+        name: "chat",
+        icon: "MessageOutlined",
+        component: "@/pages/ChatPage",
+      },
+      {
+        path: "/dashboard/billing",
+        name: "billing",
+        icon: "MessageOutlined",
+        component: "@/pages/BillingPage",
+      },
+    ],
   },
+
   {
     path: "/resource",
     name: "resource",
@@ -93,7 +111,7 @@ export default [
 
   {
     path: "/",
-    redirect: "/dashboard",
+    redirect: "/dashboard/chat",
   },
   {
     path: "*",

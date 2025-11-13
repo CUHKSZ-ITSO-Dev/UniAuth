@@ -26,6 +26,7 @@ declare namespace API {
   type AddI18nItemReq = {
     /** 翻译键 */
     key: string;
+    app_id: string;
     /** 中文翻译 */
     zh_cn?: string;
     /** 英文翻译 */
@@ -114,8 +115,7 @@ declare namespace API {
     defaultCasbinRules?: Json;
     /** 默认ITTools规则 */
     defaultUserinfosRules?: Json;
-    /** UPN缓存列表 */
-    upnsCache?: string;
+
     /** 优先级，数值越小优先匹配 */
     priority?: number;
     /** 该规则上次评估时间 */
@@ -247,6 +247,8 @@ declare namespace API {
   type deleteConfigI18nParams = {
     /** 翻译键 */
     key: string;
+    /** 应用 ID */
+    app_id: string;
   };
 
   type deleteConfigModelParams = {
@@ -321,6 +323,7 @@ declare namespace API {
   type EditI18nItemReq = {
     /** 翻译键 */
     key: string;
+    app_id: string;
     /** 中文翻译 */
     zh_cn?: string;
     /** 英文翻译 */
@@ -474,6 +477,8 @@ declare namespace API {
   type FilterI18nReq = {
     /** 搜索关键词，对key、zh_cn、en_us、description字段进行模糊匹配 */
     keyword?: string;
+    /** 应用 ID */
+    app_id: string;
     /** 排序条件，支持多字段排序 */
     sort?: I18nSortCondition[];
     /** 分页参数，支持分页或查询全部 */
@@ -749,6 +754,8 @@ declare namespace API {
   type getConfigI18nLangParams = {
     /** 语言代码 */
     lang: "zh-CN" | "en-US";
+    app_id: string;
+    type: "tree" | "path";
   };
 
   type GetI18nConfigReq = {
@@ -759,6 +766,11 @@ declare namespace API {
   type GetI18nConfigRes = {
     /** 语言包键值对，支持嵌套结构 */
     langpack?: Json;
+  };
+
+  type GetI18NAppsRes = {
+    /** 应用 ID 列表 */
+    apps: string[];
   };
 
   type GetModelConfigReq = Record<string, never>;
@@ -935,18 +947,6 @@ declare namespace API {
     order?: "asc" | "desc";
   };
 
-  type SyncAutoQuotaPoolUpnsCacheReq = {
-    /** 规则名称。不传或者传空数组会同步所有自动配额池的 UPNs Cache。 */
-    ruleName?: string[];
-  };
-
-  type SyncAutoQuotaPoolUpnsCacheRes = {
-    /** 是否成功 */
-    ok: boolean;
-    /** 批量刷新时，这个值是一共更改了多少个自动配额池的缓存；指定配额池刷新时，这个值是这个配额池有多少个用户 */
-    updatedCount: number;
-  };
-
   type UniauthLoginReq = {
     account: string;
     password: string;
@@ -1003,6 +1003,30 @@ declare namespace API {
     createdAt?: string;
     /** 更新时间 - 记录最后更新时间。 */
     updatedAt?: string;
+  };
+
+  type BatchUploadI18nReq = {
+    /** 文件 */
+    file: File;
+    /** 语言代码 */
+    lang: "zh-CN" | "en-US";
+    /** 应用ID */
+    app_id: string;
+    /** 是否是预览模式 */
+    preview?: boolean;
+  };
+
+  type BatchUploadI18nRes = {
+    /** 是否成功 */
+    ok: boolean;
+    /** 识别到的新i18n键数量 */
+    count: number;
+    /** 预览模式下的i18n键列表 */
+    preview_data: {
+      key: string;
+      old_value: string;
+      new_value: string;
+    };
   };
 
   type Var = unknown;
@@ -1173,6 +1197,26 @@ declare namespace API {
     totalCalls?: number;
     /** 最后活跃时间 */
     lastActive?: string;
+  };
+  type QueryUpnsCacheItem = {
+    /** 规则名称 */
+    ruleName: string;
+    /** UPN */
+    upn: string;
+    /** 是否在自动配额池规则的upns_cache中 */
+    isInUpnsCache: boolean;
+  };
+
+  type getConfigAutoConfigQueryUpnsCacheParams = {
+    /** UPN列表 */
+    upns: string[];
+    /** 规则名称列表 */
+    ruleNames: string[];
+  };
+
+  type QueryUpnsCacheRes = {
+    /** 查询结果列表 */
+    items: QueryUpnsCacheItem[];
   };
 }
 

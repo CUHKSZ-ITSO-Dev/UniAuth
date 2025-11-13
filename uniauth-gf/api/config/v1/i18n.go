@@ -3,11 +3,14 @@ package v1
 import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type GetI18nConfigReq struct {
 	g.Meta `path:"/i18n/lang" tags:"Config/I18n" method:"get" summary:"获取i18n语言包" dc:"获取指定语言的所有翻译配置"`
 	Lang   string `json:"lang" v:"required|in:zh-CN,en-US" dc:"语言代码" example:"zh-CN"`
+	AppId  string `json:"app_id" v:"required" dc:"应用ID" example:"uniauthAdmin"`
+	Type   string `json:"type" v:"required|in:path,tree" dc:"返回的语言包类型(路径表示 path | 嵌套表示 tree)" example:"tree"`
 }
 
 type GetI18nConfigRes struct {
@@ -15,9 +18,18 @@ type GetI18nConfigRes struct {
 	Langpack *gjson.Json `json:"langpack" dc:"语言包键值对，支持嵌套结构"`
 }
 
+type GetAllAppsReq struct {
+	g.Meta `path:"/i18n/apps" tags:"Config/I18n" method:"get" summary:"获取所有应用列表" dc:"获取系统中存在i18n配置的所有应用ID列表"`
+}
+
+type GetAllAppsRes struct {
+	Apps []string `json:"apps" dc:"应用ID列表" example:"[\"uniauthAdmin\", \"myApp\"]"`
+}
+
 type AddI18nItemReq struct {
 	g.Meta      `path:"/i18n" tags:"Config/I18n" method:"post" summary:"添加i18n项目" dc:"添加一项i18n配置，包含多个语言的翻译"`
 	Key         string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
+	AppId       string `json:"app_id" v:"required" dc:"应用ID" example:"uniauthAdmin"`
 	ZhCn        string `json:"zh_cn" dc:"中文翻译" example:"统一鉴权"`
 	EnUs        string `json:"en_us" dc:"英文翻译" example:"Unified Auth"`
 	Description string `json:"description" dc:"描述" example:"导航栏标题"`
@@ -30,6 +42,7 @@ type AddI18nItemRes struct {
 type EditI18nItemReq struct {
 	g.Meta      `path:"/i18n" tags:"Config/I18n" method:"put" summary:"编辑i18n项目" dc:"编辑一项i18n配置的翻译"`
 	Key         string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
+	AppId       string `json:"app_id" v:"required" dc:"应用ID" example:"uniauthAdmin"`
 	ZhCn        string `json:"zh_cn" dc:"中文翻译" example:"统一鉴权"`
 	EnUs        string `json:"en_us" dc:"英文翻译" example:"Unified Auth"`
 	Description string `json:"description" dc:"描述" example:"导航栏标题"`
@@ -42,6 +55,7 @@ type EditI18nItemRes struct {
 type DeleteI18ConfigReq struct {
 	g.Meta `path:"/i18n" tags:"Config/I18n" method:"delete" summary:"删除i18n配置" dc:"删除指定Key的i18n配置项"`
 	Key    string `json:"key" v:"required" dc:"翻译键" example:"navBar.title"`
+	AppId  string `json:"app_id" v:"required" dc:"应用ID" example:"uniauthAdmin"`
 }
 
 type DeleteI18ConfigRes struct {
@@ -72,6 +86,7 @@ type I18nPaginationReq struct {
 // I18nItem 表示单个i18n配置项
 type I18nItem struct {
 	Key         string `json:"key" dc:"翻译键" example:"navBar.title"`
+	AppId       string `json:"app_id" v:"required" dc:"应用ID" example:"uniauthAdmin"`
 	ZhCn        string `json:"zh_cn" dc:"中文翻译" example:"统一鉴权"`
 	EnUs        string `json:"en_us" dc:"英文翻译" example:"Unified Auth"`
 	Description string `json:"description" dc:"描述" example:"导航栏标题"`
@@ -83,6 +98,7 @@ type FilterI18nReq struct {
 	g.Meta     `path:"/i18n/filter" tags:"Config/I18n" method:"post" summary:"筛选i18n配置" dc:"根据关键词筛选i18n配置，支持排序和分页"`
 	Keyword    string               `json:"keyword" dc:"搜索关键词，对key、zh_cn、en_us、description字段进行模糊匹配"`
 	Sort       []*I18nSortCondition `json:"sort" dc:"排序条件，支持多字段排序"`
+	AppId      string               `json:"app_id" v:"required" dc:"应用ID" example:"uniauthAdmin"`
 	Pagination *I18nPaginationReq   `json:"pagination" dc:"分页参数，支持分页或查询全部"`
 	Verbose    bool                 `json:"verbose" dc:"是否返回详细i18n信息，false时仅返回键列表"`
 }
@@ -94,4 +110,25 @@ type FilterI18nRes struct {
 	Page       int        `json:"page" dc:"当前页码"`
 	PageSize   int        `json:"page_size" dc:"每页条数"`
 	TotalPages int        `json:"total_pages" dc:"总页数"`
+}
+
+// ==================== I18n Batch Upload ====================
+type BatchUploadI18nReq struct {
+	g.Meta  `path:"/i18n/batch" tags:"Config/I18n" method:"post" summary:"批量上传i18n文件" dc:"上传i18n翻译JSON文件，批量处理多个翻译键值对"`
+	File    *ghttp.UploadFile `json:"file" v:"required" type:"file" dc:"翻译的JSON文件，格式为键值对对象"`
+	Lang    string            `json:"lang" v:"required|in:zh-CN,en-US" dc:"翻译文件的语言代码" example:"zh-CN"`
+	AppId   string            `json:"app_id" v:"required" dc:"应用ID" example:"uniauthAdmin"`
+	Preview bool              `json:"preview" dc:"是否仅预览解析结果，不进行数据库写入操作"`
+}
+
+type PreviewData struct {
+	Key      string `json:"key" dc:"翻译键"`
+	OldValue string `json:"old_value" dc:"旧翻译值"`
+	NewValue string `json:"new_value" dc:"新翻译值"`
+}
+
+type BatchUploadI18nRes struct {
+	OK          bool                   `json:"ok" dc:"是否解析成功"`
+	Count       int                    `json:"count" dc:"受影响的翻译项数量，什么时候都返回"`
+	PreviewData map[string]PreviewData `json:"preview_data,omitempty" dc:"预览解析的翻译键值对，Preview为true时返回"`
 }

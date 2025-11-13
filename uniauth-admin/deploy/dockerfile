@@ -5,7 +5,7 @@ FROM nginx:alpine
 COPY deploy/nginx.conf /etc/nginx/nginx.conf
 
 # 从预构建的 dist 目录复制静态文件到 nginx
-COPY --chown=nginx:nginx dist /usr/share/nginx/html
+COPY --chown=nginx:nginx dist /usr/share/nginx/html/uniauth/
 
 # 暴露端口
 EXPOSE 80

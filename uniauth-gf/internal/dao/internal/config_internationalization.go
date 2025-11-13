@@ -1,5 +1,5 @@
 // ==========================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-16 12:07:45
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
 // ==========================================================================
 
 package internal
@@ -22,6 +22,7 @@ type ConfigInternationalizationDao struct {
 // ConfigInternationalizationColumns defines and stores column names for the table config_internationalization.
 type ConfigInternationalizationColumns struct {
 	Key         string //
+	AppId       string //
 	ZhCn        string //
 	EnUs        string //
 	Description string //
@@ -32,6 +33,7 @@ type ConfigInternationalizationColumns struct {
 // configInternationalizationColumns holds the columns for the table config_internationalization.
 var configInternationalizationColumns = ConfigInternationalizationColumns{
 	Key:         "key",
+	AppId:       "app_id",
 	ZhCn:        "zh_cn",
 	EnUs:        "en_us",
 	Description: "description",
