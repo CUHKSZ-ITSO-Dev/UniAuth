@@ -2,7 +2,6 @@
 
 import { join } from "node:path";
 import type { defineConfig } from "@umijs/max";
-import { theme } from "antd";
 import defaultSettings from "./defaultSettings";
 import proxy from "./proxy";
 
@@ -156,7 +155,6 @@ const config: Config = {
     appConfig: {},
     configProvider: {
       theme: {
-        algorithm: [theme.compactAlgorithm],
         cssVar: true,
         token: {
           fontFamily: "AlibabaSans, sans-serif",
