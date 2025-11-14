@@ -4,8 +4,6 @@ import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
 import {
   Button,
-  Form,
-  Input,
   Modal,
   message,
   Popconfirm,
@@ -14,13 +12,16 @@ import {
   Tag,
   Typography,
 } from "antd";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   deleteConfigI18N,
+  getConfigI18NApps,
   postConfigI18N,
+  postConfigI18NBatchUpload,
   postConfigI18NFilter,
   putConfigI18N,
 } from "@/services/uniauthService/i18N";
+import { BatchUploadStepsModal, I18nFormModal } from "./components";
 
 const { Title, Text } = Typography;
 
@@ -40,12 +41,69 @@ const ConfigI18nPage: React.FC = () => {
   const intl = useIntl();
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
-  const [form] = Form.useForm();
+  const [uploadModalVisible, setUploadModalVisible] = useState(false);
+  const [formInitialValues, setFormInitialValues] = useState<any>(undefined);
   const actionRef = useRef<any>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<I18nDataType[]>([]);
+  const [appList, setAppList] = useState<
+    Array<{ label: string; value: string }>
+  >([]);
+  const [currentAppId, setCurrentAppId] = useState<string>("");
+
+  // 加载应用列表
+  useEffect(() => {
+    const loadAppList = async () => {
+      try {
+        const response = await getConfigI18NApps();
+        if (response && response.apps) {
+          const options = response.apps.map((appId: string) => ({
+            label: appId,
+            value: appId,
+          }));
+          setAppList(options);
+          // 如果有应用，默认选择第一个
+          if (options.length > 0) {
+            setCurrentAppId(options[0].value);
+          }
+        }
+      } catch (error) {
+        console.error("加载应用列表失败:", error);
+        message.error("加载应用列表失败");
+      }
+    };
+
+    loadAppList();
+  }, []);
 
   const columns: ProColumns<I18nDataType>[] = [
+    {
+      title: intl.formatMessage({
+        id: "pages.configI18n.appId",
+        defaultMessage: "应用ID",
+      }),
+      dataIndex: "app_id",
+      key: "app_id",
+      hideInTable: true,
+      valueType: "select",
+      fieldProps: {
+        placeholder: intl.formatMessage({
+          id: "pages.configI18n.appId.placeholder",
+          defaultMessage: "请选择应用",
+        }),
+        options: appList,
+        value: currentAppId,
+        onChange: (value: string) => {
+          setCurrentAppId(value);
+          // 当app_id改变时，刷新表格
+          actionRef.current?.reload();
+        },
+        allowClear: true,
+      },
+      search: {
+        transform: (value) => ({ app_id: value }),
+      },
+    },
     {
       title: intl.formatMessage({
         id: "pages.configI18n.search",
@@ -185,11 +243,12 @@ const ConfigI18nPage: React.FC = () => {
     const en_us =
       record.translations.find((t) => t.lang === "en_us")?.value || "";
 
-    form.setFieldsValue({
+    setFormInitialValues({
       key: record.keyValue,
       zh_cn: zh_cn,
       en_us: en_us,
       description: record.description,
+      app_id: currentAppId || "", // 如果有当前appId则填入，否则为空让用户输入
     });
 
     setModalMode("edit");
@@ -198,29 +257,51 @@ const ConfigI18nPage: React.FC = () => {
 
   // 删除翻译配置
   const handleDelete = async (record: I18nDataType) => {
-    await deleteConfigI18N({ key: record.keyValue });
+    if (!currentAppId) {
+      message.warning("请先选择应用");
+      return;
+    }
+    await deleteConfigI18N({ key: record.keyValue, app_id: currentAppId });
     message.success(
       intl.formatMessage({
         id: "pages.configI18n.delete.success",
       }),
     );
+
+    // 删除成功后重新加载应用列表
+    const updatedAppList = await reloadAppList();
+
+    // 如果当前选中的 app_id 已经不在列表中（说明该应用下所有条目都被删除了）
+    if (!updatedAppList.some((app) => app.value === currentAppId)) {
+      // 如果还有其他应用，选择第一个；否则清空选择
+      if (updatedAppList.length > 0) {
+        setCurrentAppId(updatedAppList[0].value);
+      } else {
+        setCurrentAppId("");
+      }
+    }
+
     actionRef.current?.reload();
   };
 
   // 新增翻译配置
   const handleAdd = () => {
-    form.resetFields();
-
     // 为新增模式初始化表单字段
-    form.setFieldsValue({
+    setFormInitialValues({
       key: "",
       zh_cn: "",
       en_us: "",
       description: "",
+      app_id: currentAppId || "", // 如果有当前appId则填入，否则为空让用户输入
     });
 
     setModalMode("add");
     setModalVisible(true);
+  };
+
+  // 批量添加翻译配置
+  const handleBatchAdd = () => {
+    setUploadModalVisible(true);
   };
 
   // 批量删除翻译配置
@@ -253,9 +334,13 @@ const ConfigI18nPage: React.FC = () => {
       ),
       onOk: async () => {
         try {
+          if (!currentAppId) {
+            message.warning("请先选择应用");
+            return;
+          }
           // 批量删除所有选中的键值
           const deletePromises = uniqueKeys.map((key) =>
-            deleteConfigI18N({ key }),
+            deleteConfigI18N({ key, app_id: currentAppId }),
           );
 
           await Promise.all(deletePromises);
@@ -265,6 +350,19 @@ const ConfigI18nPage: React.FC = () => {
               id: "pages.configI18n.batchDelete.success",
             }),
           );
+
+          // 批量删除成功后重新加载应用列表
+          const updatedAppList = await reloadAppList();
+
+          // 如果当前选中的 app_id 已经不在列表中（说明该应用下所有条目都被删除了）
+          if (!updatedAppList.some((app) => app.value === currentAppId)) {
+            // 如果还有其他应用，选择第一个；否则清空选择
+            if (updatedAppList.length > 0) {
+              setCurrentAppId(updatedAppList[0].value);
+            } else {
+              setCurrentAppId("");
+            }
+          }
 
           // 清空选择并刷新表格
           setSelectedRowKeys([]);
@@ -282,62 +380,153 @@ const ConfigI18nPage: React.FC = () => {
     });
   };
 
-  // 处理模态框的确认操作（新增或编辑）
-  const handleModalOk = async () => {
+  // 重新加载应用列表的函数
+  const reloadAppList = async () => {
     try {
-      const values = await form.validateFields();
-
-      if (modalMode === "edit") {
-        // 编辑模式：更新翻译内容
-        await putConfigI18N({
-          key: values.key,
-          zh_cn: values.zh_cn,
-          en_us: values.en_us,
-          description: values.description,
-        });
-        message.success(
-          intl.formatMessage({
-            id: "pages.configI18n.edit.success",
-          }),
-        );
-      } else {
-        // 新增模式：添加新的翻译配置
-        const { key, zh_cn, en_us, description } = values;
-
-        await postConfigI18N({
-          key,
-          zh_cn: zh_cn || "",
-          en_us: en_us || "",
-          description: description || "",
-        });
-
-        message.success(
-          intl.formatMessage({
-            id: "pages.configI18n.add.success",
-          }),
-        );
+      const response = await getConfigI18NApps();
+      if (response && response.apps) {
+        const options = response.apps.map((appId: string) => ({
+          label: appId,
+          value: appId,
+        }));
+        setAppList(options);
+        return options;
       }
-
-      setModalVisible(false);
-      actionRef.current?.reload();
     } catch (error) {
-      console.error("操作失败:", error);
+      console.error("重新加载应用列表失败:", error);
+    }
+    return [];
+  };
 
-      message.error(
+  // 处理模态框的确认操作（新增或编辑）
+  const handleModalOk = async (values: {
+    app_id: string;
+    key: string;
+    zh_cn: string;
+    en_us: string;
+    description: string;
+  }) => {
+    if (!values.app_id) {
+      message.warning("请输入应用ID");
+      return;
+    }
+
+    if (modalMode === "edit") {
+      // 编辑模式：更新翻译内容
+      await putConfigI18N({
+        key: values.key,
+        zh_cn: values.zh_cn,
+        en_us: values.en_us,
+        description: values.description,
+        app_id: values.app_id,
+      });
+      message.success(
         intl.formatMessage({
-          id: "pages.configI18n.operation.error",
+          id: "pages.configI18n.edit.success",
+        }),
+      );
+    } else {
+      // 新增模式：添加新的翻译配置
+      const { key, zh_cn, en_us, description, app_id } = values;
+
+      await postConfigI18N({
+        key,
+        zh_cn: zh_cn || "",
+        en_us: en_us || "",
+        description: description || "",
+        app_id: app_id,
+      });
+
+      message.success(
+        intl.formatMessage({
+          id: "pages.configI18n.add.success",
+        }),
+      );
+
+      // 新增成功后重新加载应用列表
+      const updatedAppList = await reloadAppList();
+
+      // 如果新增的 app_id 不在当前列表中，则设置为当前选中的 app_id
+      if (
+        updatedAppList.some((app) => app.value === app_id) &&
+        currentAppId !== app_id
+      ) {
+        setCurrentAppId(app_id);
+      }
+    }
+
+    setModalVisible(false);
+    actionRef.current?.reload();
+  };
+
+  // 处理文件上传模态框的确认操作
+  const handleUploadModalOk = async (
+    file: File,
+    language: "zh-CN" | "en-US",
+    appId: string,
+  ) => {
+    // 发送批量上传请求
+    const response = await postConfigI18NBatchUpload({
+      file,
+      lang: language,
+      app_id: appId,
+      preview: false,
+    });
+
+    setUploadModalVisible(false);
+
+    // 根据返回结果提示成功信息
+    if (response && response.count !== undefined) {
+      message.success(
+        intl.formatMessage(
+          {
+            id: "pages.configI18n.upload.success",
+            defaultMessage: "批量上传成功，共添加 {count} 项翻译",
+          },
+          { count: response.count },
+        ),
+      );
+    } else {
+      message.success(
+        intl.formatMessage({
+          id: "pages.configI18n.upload.successGeneric",
+          defaultMessage: "批量上传成功",
         }),
       );
     }
+
+    // 批量上传成功后重新加载应用列表
+    const updatedAppList = await reloadAppList();
+
+    // 如果上传的 app_id 不在当前列表中，则设置为当前选中的 app_id
+    if (
+      updatedAppList.some((app) => app.value === appId) &&
+      currentAppId !== appId
+    ) {
+      setCurrentAppId(appId);
+    }
+
+    // 刷新表格数据
+    actionRef.current?.reload();
   };
 
   // 表格数据请求
   const columnRequest = async (params: any) => {
     const { current, pageSize, keyword } = params;
 
+    // 如果没有选择应用，返回空数据
+    if (!currentAppId) {
+      return {
+        data: [],
+        success: true,
+        total: 0,
+      };
+    }
+
     // 发送搜索请求
     const response = await postConfigI18NFilter({
       keyword: keyword || "",
+      app_id: currentAppId,
       pagination: {
         page: current || 1,
         pageSize: pageSize || 10,
@@ -458,6 +647,17 @@ const ConfigI18nPage: React.FC = () => {
           actionRef={actionRef}
           toolBarRender={() => [
             <Button
+              key="batchAdd"
+              type="default"
+              icon={<PlusOutlined />}
+              onClick={handleBatchAdd}
+            >
+              {intl.formatMessage({
+                id: "pages.configI18n.batchAdd",
+                defaultMessage: "批量添加",
+              })}
+            </Button>,
+            <Button
               key="add"
               type="primary"
               icon={<PlusOutlined />}
@@ -535,122 +735,21 @@ const ConfigI18nPage: React.FC = () => {
       </ProCard>
 
       {/* 编辑/新增模态框 */}
-      <Modal
-        title={
-          modalMode === "edit"
-            ? intl.formatMessage({
-                id: "pages.configI18n.modal.edit.title",
-              })
-            : intl.formatMessage({
-                id: "pages.configI18n.modal.add.title",
-              })
-        }
-        open={modalVisible}
+      <I18nFormModal
+        visible={modalVisible}
+        mode={modalMode}
+        initialValues={formInitialValues}
         onOk={handleModalOk}
-        onCancel={() => {
-          setModalVisible(false);
-        }}
-        width={800}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="key"
-            label={intl.formatMessage({
-              id: "pages.configI18n.form.key",
-            })}
-            rules={[
-              {
-                required: true,
-                message: intl.formatMessage({
-                  id: "pages.configI18n.form.key.required",
-                }),
-              },
-              {
-                pattern: /^[a-zA-Z_]+(\.[a-zA-Z_]+)+$/,
-                message: intl.formatMessage({
-                  id: "pages.configI18n.form.key.pattern",
-                  defaultMessage:
-                    "键值格式不正确，应该是由点分割的字符串，例如：test.temp、nav.title 等",
-                }),
-              },
-            ]}
-          >
-            <Input
-              disabled={modalMode === "edit"}
-              placeholder={intl.formatMessage({
-                id: "pages.configI18n.form.key.placeholder",
-              })}
-            />
-          </Form.Item>
+        onCancel={() => setModalVisible(false)}
+      />
 
-          <Form.Item
-            name="description"
-            label={intl.formatMessage({
-              id: "pages.configI18n.form.description",
-            })}
-          >
-            <Input.TextArea
-              placeholder={intl.formatMessage({
-                id: "pages.configI18n.form.description.placeholder",
-              })}
-              rows={2}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label={intl.formatMessage({
-              id: "pages.configI18n.form.translations",
-            })}
-          >
-            <div
-              style={{
-                border: "1px solid #d9d9d9",
-                borderRadius: "6px",
-                padding: "12px",
-              }}
-            >
-              {[
-                { lang: "zh-CN", field: "zh_cn", color: "#2db7f5" },
-                { lang: "en-US", field: "en_us", color: "#87d068" },
-              ].map((item) => (
-                <Form.Item
-                  key={item.lang}
-                  name={item.field}
-                  label={
-                    <span>
-                      <Tag color={item.color} style={{ marginRight: 8 }}>
-                        {item.lang}
-                      </Tag>
-                    </span>
-                  }
-                  rules={[
-                    {
-                      required: true,
-                      message: intl.formatMessage(
-                        {
-                          id: "pages.configI18n.form.translation.required",
-                        },
-                        { lang: item.lang },
-                      ),
-                    },
-                  ]}
-                  style={{ marginBottom: "16px" }}
-                >
-                  <Input.TextArea
-                    placeholder={intl.formatMessage(
-                      {
-                        id: "pages.configI18n.form.translation.placeholder",
-                      },
-                      { lang: item.lang },
-                    )}
-                    rows={1}
-                  />
-                </Form.Item>
-              ))}
-            </div>
-          </Form.Item>
-        </Form>
-      </Modal>
+      {/* 批量上传模态框 */}
+      <BatchUploadStepsModal
+        visible={uploadModalVisible}
+        initialAppId={currentAppId}
+        onOk={handleUploadModalOk}
+        onCancel={() => setUploadModalVisible(false)}
+      />
     </PageContainer>
   );
 };

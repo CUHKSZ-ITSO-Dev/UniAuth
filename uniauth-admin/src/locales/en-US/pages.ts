@@ -193,6 +193,26 @@ export default {
   "pages.autoQuotaPoolConfig.saveFailedCheckInput":
     "Save Failed: Please check your input",
 
+  // UPN Query related translations
+  "pages.autoQuotaPoolConfig.upnQuery": "UPN User Query",
+  "pages.autoQuotaPoolConfig.upnQueryModalTitle": "UPN User Query",
+  "pages.autoQuotaPoolConfig.upn": "UPN",
+  "pages.autoQuotaPoolConfig.upnRequired": "Please enter UPN",
+  "pages.autoQuotaPoolConfig.upnPlaceholder":
+    "Please enter user principal name",
+  "pages.autoQuotaPoolConfig.upnMultipleHint":
+    "Supports multiple UPNs separated by commas, semicolons, or spaces",
+  "pages.autoQuotaPoolConfig.upnMultiplePlaceholder": "Enter UPNs",
+  "pages.autoQuotaPoolConfig.query": "Query",
+  "pages.autoQuotaPoolConfig.queryResult": "Query Result",
+  "pages.autoQuotaPoolConfig.upnQuerySuccess": "UPN Query Successful",
+  "pages.autoQuotaPoolConfig.upnQueryFailed": "UPN Query Failed",
+  "pages.autoQuotaPoolConfig.queryError": "Query failed",
+  "pages.autoQuotaPoolConfig.upnInRule": "{upn} is in {ruleName}",
+  "pages.autoQuotaPoolConfig.upnNotInRule": "{upn} is not in {ruleName}",
+  "pages.autoQuotaPoolConfig.upnQueryDescription":
+    "Query whether specified UPN users are in the cache of automatic quota pool rules",
+
   // Model Configuration Page Translations
   "pages.modelConfig.title": "Model Configuration List",
   "pages.modelConfig.description":
@@ -295,6 +315,29 @@ export default {
   "pages.configI18n.batchDelete.clear": "Clear Selection",
   "pages.configI18n.batchDelete.delete": "Batch Delete",
   "pages.configI18n.updatedAt": "Updated Time",
+  "pages.configI18n.appId": "Application ID",
+  "pages.configI18n.appId.placeholder": "Please select application",
+  "pages.configI18n.form.appId": "Application ID",
+  "pages.configI18n.form.appId.required": "Please enter Application ID",
+  "pages.configI18n.form.appId.placeholder": "Please enter Application ID",
+  "pages.configI18n.uploadModal.title": "Bulk Upload Translations",
+  "pages.configI18n.uploadModal.appId": "Application ID",
+  "pages.configI18n.uploadModal.appId.required": "Please enter Application ID",
+  "pages.configI18n.uploadModal.appId.placeholder":
+    "Please enter Application ID",
+  "pages.configI18n.uploadModal.language": "Select Language",
+  "pages.configI18n.uploadModal.language.required":
+    "Please select a language to upload",
+  "pages.configI18n.uploadModal.language.placeholder":
+    "Please select the language to upload",
+  "pages.configI18n.uploadModal.language.zhCN": "Simplified Chinese (zh-CN)",
+  "pages.configI18n.uploadModal.language.enUS": "English (en-US)",
+  "pages.configI18n.uploadModal.file": "Select File",
+  "pages.configI18n.uploadModal.file.description":
+    "Please upload a translation file in JSON format. JSON files are supported.",
+  "pages.configI18n.uploadModal.file.clickOrDrag":
+    "Click or drag files to this area to upload",
+  "pages.configI18n.batchAdd": "Batch Add",
 
   // PolicyListPage
   "pages.policyList.title": "Policies",
@@ -475,8 +518,27 @@ export default {
   "pages.quotaPoolList.create.success": "Quota pool created successfully",
   "pages.quotaPoolList.create.error": "Failed to create quota pool",
   "pages.quotaPoolList.form.validation.error":
-    "Form validation failed, please check your input",
+    "Form validation failed, please check input",
 
+  // BatchUploadStepsModal translations
+  "pages.configI18n.upload.fileRequired": "Please select a file to upload",
+  "pages.configI18n.upload.previewFailed": "Preview failed, please try again",
+  "pages.configI18n.upload.invalidFormat": "Only JSON files are supported!",
+  "pages.configI18n.upload.dragText":
+    "Click or drag file to this area to upload",
+  "pages.configI18n.upload.change": "Change file",
+  "pages.configI18n.upload.preview": "Preview content",
+  "pages.configI18n.upload.back": "Previous step",
+  "pages.configI18n.upload.confirm": "Confirm upload",
+  "pages.configI18n.upload.step1": "Choose Configuration",
+  "pages.configI18n.upload.step2": "Confirm Changes",
+  "pages.configI18n.upload.preview.title": "Preview Content",
+  "pages.configI18n.upload.preview.total": "Total {total} records",
+  "pages.configI18n.upload.preview.key": "Key",
+  "pages.configI18n.upload.preview.oldValue": "Original Value",
+  "pages.configI18n.upload.preview.newValue": "New Value",
+  "pages.configI18n.upload.success":
+    "Batch upload successful, {count} translations added",
   // Batch Modify Modal
   "pages.quotaPoolList.batchModify.title": "Batch Modify Quota Pools",
   "pages.quotaPoolList.batchModify.step1": "Set Filter Conditions",
@@ -737,4 +799,29 @@ export default {
     "Failed to fetch service and product options, please refresh page",
   "pages.billingDetail.fetchStatisticsFailed": "Failed to fetch statistics",
   "pages.billingDetail.fetchRecordsFailed": "Failed to fetch billing records",
+
+  // ChatPage
+  "pages.chat.title": "AI Chat Assistant",
+  "pages.chat.button.clear": "Clear Chat",
+  "pages.chat.button.send": "Send",
+  "pages.chat.input.placeholder":
+    "Enter message... (Press Enter to send, Shift+Enter for new line)",
+  "pages.chat.input.required": "Please enter a message",
+  "pages.chat.thinking": "Thinking...",
+  "pages.chat.tool.label": "Tool Calls",
+  "pages.chat.tool.calling": "Calling tool: {tool}",
+  "pages.chat.tool.completed": "Tool {tool} completed",
+  "pages.chat.tool.result.view": "View result details",
+  "pages.chat.tool.params.view": "View parameters",
+  "pages.chat.reasoning.view": "View reasoning process",
+  "pages.chat.reasoning.thinking": "AI is thinking...",
+  "pages.chat.tool.confirm.title": "Tool Execution Confirmation",
+  "pages.chat.tool.confirm.message": "AI wants to execute tool {tool}, allow?",
+  "pages.chat.tool.confirm.params": "Tool Parameters",
+  "pages.chat.tool.confirm.allow": "Allow",
+  "pages.chat.tool.confirm.deny": "Deny",
+  "pages.chat.tool.rejected": "Execution of tool {tool} has been rejected",
+  "pages.chat.cleared": "Chat cleared",
+  "pages.chat.error.requestFailed": "Request failed",
+  "pages.chat.error.sendFailed": "Failed to send message, please try again",
 };

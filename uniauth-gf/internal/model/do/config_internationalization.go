@@ -1,5 +1,5 @@
 // =================================================================================
-// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT. Created at 2025-09-16 12:07:45
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
 // =================================================================================
 
 package do
@@ -13,6 +13,7 @@ import (
 type ConfigInternationalization struct {
 	g.Meta      `orm:"table:config_internationalization, do:true"`
 	Key         any         //
+	AppId       any         //
 	ZhCn        any         //
 	EnUs        any         //
 	Description any         //

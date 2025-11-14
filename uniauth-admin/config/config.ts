@@ -14,7 +14,7 @@ const { REACT_APP_ENV = "dev" } = process.env;
  * @description 部署时的路径，如果部署在非根目录下，需要配置这个变量
  * @doc https://umijs.org/docs/api/config#publicpaths
  */
-const PUBLIC_PATH: string = "/";
+const PUBLIC_PATH: string = "/uniauth/";
 
 type Config = Parameters<typeof defineConfig>[0];
 
@@ -44,6 +44,12 @@ const config: Config = {
    * @doc https://umijs.org/docs/api/config#publicpath
    */
   publicPath: PUBLIC_PATH,
+  /**
+   * @name 路由基础路径
+   * @description SPA 挂载到子路径时需要设置 base，确保路由正常
+   * @doc https://umijs.org/docs/api/config#base
+   */
+  base: "/uniauth/",
 
   /**
    * @name 兼容性设置
