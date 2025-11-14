@@ -254,39 +254,75 @@ const BillingGraphPage: React.FC = () => {
   return (
     <PageContainer>
       <div>
-        {/* 全局天数选择器 */}
+        {/* 全局天数选择器 - 横向滑块样式 */}
         <Card style={{ marginBottom: 12 }}>
-          <Row align="middle" gutter={12}>
-            <Col>
-              <Text strong>时间范围：</Text>
-            </Col>
-            <Col>
-              <Select
-                value={useCustomDays ? -1 : globalDays}
-                onChange={handleGlobalDaysChange}
-                style={{ width: 120 }}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              flexWrap: "wrap",
+            }}
+          >
+            <Text strong style={{ marginRight: 8 }}>
+              时间范围：
+            </Text>
+
+            {/* 固定天数选项 */}
+            {daysOptions.map((option) => (
+              <div
+                key={option.value}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  border: "1px solid",
+                  borderColor:
+                    (useCustomDays && option.value === -1) ||
+                    (!useCustomDays && option.value === globalDays)
+                      ? "#1890ff"
+                      : "#d9d9d9",
+                  backgroundColor:
+                    (useCustomDays && option.value === -1) ||
+                    (!useCustomDays && option.value === globalDays)
+                      ? "#e6f7ff"
+                      : "#fff",
+                  color:
+                    (useCustomDays && option.value === -1) ||
+                    (!useCustomDays && option.value === globalDays)
+                      ? "#1890ff"
+                      : "#000",
+                  cursor: "pointer",
+                  fontWeight:
+                    (useCustomDays && option.value === -1) ||
+                    (!useCustomDays && option.value === globalDays)
+                      ? 600
+                      : 400,
+                  transition: "all 0.3s",
+                  minWidth: 60,
+                  textAlign: "center",
+                }}
+                onClick={() => handleGlobalDaysChange(option.value)}
               >
-                {daysOptions.map((option) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
+                {option.label}
+              </div>
+            ))}
+
+            {/* 自定义天数输入框 */}
             {useCustomDays && (
-              <Col>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <InputNumber
                   min={1}
                   max={365}
                   value={customDays}
                   onChange={handleCustomDaysChange}
                   placeholder="输入天数"
-                  style={{ width: 100 }}
+                  style={{ width: 80 }}
+                  size="small"
                 />
-                <Text style={{ marginLeft: 8 }}>天</Text>
-              </Col>
+                <Text style={{ color: "#666" }}>天</Text>
+              </div>
             )}
-          </Row>
+          </div>
         </Card>
 
         {/* 今日消费统计 */}
@@ -296,9 +332,6 @@ const BillingGraphPage: React.FC = () => {
               <Title level={4}>
                 {intl.formatMessage({ id: "pages.dashboard.todayTitle" })}
               </Title>
-              <Text type="secondary">
-                {intl.formatMessage({ id: "pages.dashboard.todaySub" })}
-              </Text>
             </Col>
             <Col>
               <div>
@@ -408,9 +441,6 @@ const BillingGraphPage: React.FC = () => {
               <Title level={4}>
                 {intl.formatMessage({ id: "pages.dashboard.modelTitle" })}
               </Title>
-              <Text type="secondary">
-                {intl.formatMessage({ id: "pages.dashboard.modelSub" })}
-              </Text>
             </Col>
           </Row>
 
@@ -684,16 +714,13 @@ const BillingGraphPage: React.FC = () => {
           )}
         </Card>
 
-        {/* 活跃用户统计 */}
+        {/* 活跃用户趋势 */}
         <Card style={{ marginBottom: 12 }}>
           <Row justify="space-between" align="middle">
             <Col>
               <Title level={4}>
                 {intl.formatMessage({ id: "pages.dashboard.activeTitle" })}
               </Title>
-              <Text type="secondary">
-                {intl.formatMessage({ id: "pages.dashboard.activeSub" })}
-              </Text>
             </Col>
           </Row>
 
@@ -703,69 +730,66 @@ const BillingGraphPage: React.FC = () => {
             </div>
           ) : activeUsersData ? (
             <>
-              <Row gutter={12} style={{ marginTop: "12px" }}>
-                <Col md={12}>
-                  <Card>
-                    <Statistic
-                      title={intl.formatMessage({
-                        id: "pages.dashboard.activeUser",
-                      })}
-                      value={activeUsersData.activeUsers?.length || 0}
-                      valueStyle={{ color: "blue" }}
-                      prefix={<UserOutlined />}
-                    />
-                  </Card>
-                </Col>
-              </Row>
-
-              <Card
-                title={intl.formatMessage({
-                  id: "pages.dashboard.activeTrend",
-                })}
-                style={{ marginTop: "12px" }}
+              <div
+                style={{
+                  marginBottom: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
               >
-                <Line
-                  data={
-                    activeUsersData.activeUsers
-                      ?.map((item) => ({
-                        date: item.date || "",
-                        activeUsersNum: item.activeUsersNum || 0,
-                        activeRateInc: item.activeRateInc || 0,
-                      }))
-                      ?.sort((a, b) => {
-                        return (
-                          new Date(a.date).getTime() -
-                          new Date(b.date).getTime()
-                        );
-                      }) || []
-                  }
-                  xField="date"
-                  yField="activeUsersNum"
-                  height={300}
-                  point={{
-                    size: 5,
+                <UserOutlined style={{ color: "blue", fontSize: "24px" }} />
+                <span
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    color: "blue",
                   }}
-                  tooltip={{
-                    title: false,
-                    items: [
-                      {
-                        channel: "x",
-                        name: intl.formatMessage({
-                          id: "pages.dashboard.date",
-                        }),
-                        valueFormatter: (v: any) => v,
-                      },
-                      {
-                        channel: "y",
-                        name: intl.formatMessage({
-                          id: "pages.dashboard.activeUser",
-                        }),
-                        valueFormatter: (v: any) => `${v} 人`,
-                      },
-                    ],
-                  }}
-                />
-              </Card>
+                >
+                  {activeUsersData.activeUsers?.length || 0}
+                </span>
+              </div>
+
+              <Line
+                data={
+                  activeUsersData.activeUsers
+                    ?.map((item) => ({
+                      date: item.date || "",
+                      activeUsersNum: item.activeUsersNum || 0,
+                      activeRateInc: item.activeRateInc || 0,
+                    }))
+                    ?.sort((a, b) => {
+                      return (
+                        new Date(a.date).getTime() - new Date(b.date).getTime()
+                      );
+                    }) || []
+                }
+                xField="date"
+                yField="activeUsersNum"
+                height={300}
+                point={{
+                  size: 5,
+                }}
+                tooltip={{
+                  title: false,
+                  items: [
+                    {
+                      channel: "x",
+                      name: intl.formatMessage({
+                        id: "pages.dashboard.date",
+                      }),
+                      valueFormatter: (v: any) => v,
+                    },
+                    {
+                      channel: "y",
+                      name: intl.formatMessage({
+                        id: "pages.dashboard.activeUser",
+                      }),
+                      valueFormatter: (v: any) => `${v} 人`,
+                    },
+                  ],
+                }}
+              />
             </>
           ) : (
             <Card>
