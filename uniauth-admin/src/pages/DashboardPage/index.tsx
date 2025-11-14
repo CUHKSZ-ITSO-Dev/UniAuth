@@ -1,21 +1,16 @@
-import { Bar, Line } from "@ant-design/charts";
+import { Line } from "@ant-design/charts";
 import {
-  BarChartOutlined,
   FallOutlined,
   MinusOutlined,
   RiseOutlined,
-  TableOutlined,
-  TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { PageContainer, ProTable } from "@ant-design/pro-components";
+import { PageContainer } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
 import {
-  Button,
   Card,
   Col,
-  Input,
-  Modal,
+  InputNumber,
   Row,
   Select,
   Spin,
@@ -24,7 +19,6 @@ import {
 } from "antd";
 import React, { useEffect, useState } from "react";
 import {
-  getBillingStatsActiveUserDetail,
   getBillingStatsActiveUsersSummary,
   getBillingStatsAllName,
   getBillingStatsModelConsumption,
@@ -61,31 +55,18 @@ const BillingGraphPage: React.FC = () => {
   const [modelUsageData, setModelUsageData] =
     useState<API.GetProductUsageChartRes | null>(null);
 
-  const [selectedService, setSelectedService] = useState<string>("all");
-  const [modelSelectedDays, setModelSelectedDays] = useState<number>(7);
+  const [selectedService, setSelectedService] = useState<string[]>(["all"]);
+  const [globalDays, setGlobalDays] = useState<number>(7);
+  const [customDays, setCustomDays] = useState<number>(7);
+  const [useCustomDays, setUseCustomDays] = useState<boolean>(false);
   const [activeUsersSelectedDays, setActiveUsersSelectedDays] =
     useState<number>(7);
-  const [selectedModelService, setSelectedModelService] =
-    useState<string>("all");
-  const [selectedModelProduct, setSelectedModelProduct] =
-    useState<string>("all");
-  const [selectedModelQuotaPool, setSelectedModelQuotaPool] =
-    useState<string>("all");
-
-  const [isConsumptionModalVisible, setIsConsumptionModalVisible] =
-    useState<boolean>(false);
-
-  const [isActiveUserDetailModalVisible, setIsActiveUserDetailModalVisible] =
-    useState<boolean>(false);
-  const [activeUserDetailLoading, setActiveUserDetailLoading] =
-    useState<boolean>(false);
-  const [activeUserDetailData, setActiveUserDetailData] =
-    useState<API.GetActiveUserDetailRes | null>(null);
-  const [searchUpn, setSearchUpn] = useState<string>("");
-
-  const [activeChartType, setActiveChartType] = useState<
-    "usage" | "distribution"
-  >("usage");
+  const [selectedModelService, setSelectedModelService] = useState<string[]>([
+    "all",
+  ]);
+  const [selectedModelProduct, setSelectedModelProduct] = useState<string[]>([
+    "all",
+  ]);
 
   const [serviceOptions, setServiceOptions] = useState<
     { value: string; label: string }[]
@@ -95,23 +76,25 @@ const BillingGraphPage: React.FC = () => {
     { value: string; label: string }[]
   >([{ value: "all", label: "all" }]);
 
-  const [quotaPoolOptions, setQuotaPoolOptions] = useState<
-    { value: string; label: string }[]
-  >([{ value: "all", label: "all" }]);
-
   const daysOptions = [
     { value: 7, label: "7" },
     { value: 30, label: "30" },
     { value: 90, label: "90" },
+    { value: -1, label: "自定义" },
   ];
 
-  const fetchStatsData = async (service?: string) => {
+  const getActualDays = (days: number, customDays: number) => {
+    return days === -1 ? customDays : days;
+  };
+
+  const fetchStatsData = async (services?: string[]) => {
     setLoading(true);
 
     try {
-      const params: API.GetTodayTotalConsumptionReq = service
-        ? { service }
-        : {};
+      const params: API.GetTodayTotalConsumptionReq = {};
+      if (services && !services.includes("all")) {
+        params.service = services.join(",");
+      }
       const response = await getBillingStatsTodayTotal(params);
       if (response) {
         setStatsData(response);
@@ -126,8 +109,12 @@ const BillingGraphPage: React.FC = () => {
     setActiveUsersLoading(true);
 
     try {
+      const actualDays = getActualDays(
+        days || activeUsersSelectedDays,
+        customDays,
+      );
       const params: API.GetActiveUsersNumReq = {
-        days: days || activeUsersSelectedDays,
+        days: actualDays,
       };
       const response = await getBillingStatsActiveUsersSummary(params);
       if (response) {
@@ -139,14 +126,40 @@ const BillingGraphPage: React.FC = () => {
     }
   };
 
-  const handleServiceChange = (value: string) => {
+  const handleServiceChange = (value: string[]) => {
     setSelectedService(value);
     fetchStatsData(value);
   };
 
-  const handleActiveUsersDaysChange = (value: number) => {
-    setActiveUsersSelectedDays(value);
-    fetchActiveUsersData(value);
+  const handleGlobalDaysChange = (value: number) => {
+    if (value === -1) {
+      setUseCustomDays(true);
+    } else {
+      setUseCustomDays(false);
+      setGlobalDays(value);
+      setActiveUsersSelectedDays(value);
+      fetchActiveUsersData(value);
+      fetchModelConsumptionData(
+        selectedModelService,
+        selectedModelProduct,
+        value,
+      );
+      fetchModelUsageData(selectedModelService, selectedModelProduct, value);
+    }
+  };
+
+  const handleCustomDaysChange = (value: number | null) => {
+    if (value !== null) {
+      setCustomDays(value);
+      setActiveUsersSelectedDays(value);
+      fetchActiveUsersData(value);
+      fetchModelConsumptionData(
+        selectedModelService,
+        selectedModelProduct,
+        value,
+      );
+      fetchModelUsageData(selectedModelService, selectedModelProduct, value);
+    }
   };
 
   const fetchDynamicOptions = async () => {
@@ -164,30 +177,26 @@ const BillingGraphPage: React.FC = () => {
         label: product,
       }));
       setProductOptions(productOptions);
-
-      const quotaPools = await getAllName("quotaPool");
-      const quotaPoolOptions = quotaPools.map((quotaPool) => ({
-        value: quotaPool,
-        label: quotaPool,
-      }));
-      setQuotaPoolOptions(quotaPoolOptions);
     } catch (err) {}
   };
 
   const fetchModelConsumptionData = async (
-    service?: string,
-    product?: string,
-    quotaPool?: string,
+    services?: string[],
+    products?: string[],
     days?: number,
   ) => {
     setModelConsumptionLoading(true);
 
     try {
       const params: API.GetProductConsumptionReq = {};
-      if (service) params.service = service;
-      if (product) params.product = product;
-      if (quotaPool) params.quotaPool = quotaPool;
-      if (days) params.nDays = days;
+      if (services && !services.includes("all")) {
+        params.service = services.join(",");
+      }
+      if (products && !products.includes("all")) {
+        params.product = products.join(",");
+      }
+      const actualDays = getActualDays(days || globalDays, customDays);
+      params.nDays = actualDays;
       const response = await getBillingStatsModelConsumption(params);
       if (response) {
         setModelConsumptionData(response);
@@ -198,45 +207,21 @@ const BillingGraphPage: React.FC = () => {
     }
   };
 
-  const fetchActiveUserDetail = async (upn: string, nDays?: number) => {
-    setActiveUserDetailLoading(true);
-    setActiveUserDetailData(null);
-
-    try {
-      const params: API.GetActiveUserDetailReq = {
-        upn,
-        nDays: nDays || activeUsersSelectedDays,
-      };
-      const response = await getBillingStatsActiveUserDetail(params);
-      if (response) {
-        setActiveUserDetailData(response);
-      }
-    } catch (err) {
-    } finally {
-      setActiveUserDetailLoading(false);
-    }
-  };
-
-  const handleSearchActiveUser = () => {
-    if (!searchUpn.trim()) {
-      return;
-    }
-    setIsActiveUserDetailModalVisible(true);
-    fetchActiveUserDetail(searchUpn.trim());
-  };
-
   const fetchModelUsageData = async (
-    service?: string,
-    product?: string,
-    quotaPool?: string,
+    services?: string[],
+    products?: string[],
     days?: number,
   ) => {
     try {
       const params: API.GetProductUsageChartReq = {};
-      if (service) params.service = service;
-      if (product) params.product = product;
-      if (quotaPool) params.quotaPool = quotaPool;
-      if (days) params.nDays = days;
+      if (services && !services.includes("all")) {
+        params.service = services.join(",");
+      }
+      if (products && !products.includes("all")) {
+        params.product = products.join(",");
+      }
+      const actualDays = getActualDays(days || globalDays, customDays);
+      params.nDays = actualDays;
       const response = await getBillingStatsModelUsage(params);
       if (response) {
         setModelUsageData(response);
@@ -247,17 +232,15 @@ const BillingGraphPage: React.FC = () => {
   };
 
   const handleModelFilterChange = (
-    service?: string,
-    product?: string,
-    quotaPool?: string,
+    services?: string[],
+    products?: string[],
     days?: number,
   ) => {
-    setSelectedModelService(service || "");
-    setSelectedModelProduct(product || "");
-    setSelectedModelQuotaPool(quotaPool || "");
-    setModelSelectedDays(days || 7);
-    fetchModelConsumptionData(service, product, quotaPool, days);
-    fetchModelUsageData(service, product, quotaPool, days);
+    setSelectedModelService(services || ["all"]);
+    setSelectedModelProduct(products || ["all"]);
+    const actualDays = getActualDays(days || globalDays, customDays);
+    fetchModelConsumptionData(services, products, actualDays);
+    fetchModelUsageData(services, products, actualDays);
   };
 
   useEffect(() => {
@@ -270,329 +253,252 @@ const BillingGraphPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Row gutter={12}>
-        <Col md={12}>
-          <Card>
-            <Row justify="space-between" align="middle">
+      <div>
+        {/* 全局天数选择器 */}
+        <Card style={{ marginBottom: 12 }}>
+          <Row align="middle" gutter={12}>
+            <Col>
+              <Text strong>时间范围：</Text>
+            </Col>
+            <Col>
+              <Select
+                value={useCustomDays ? -1 : globalDays}
+                onChange={handleGlobalDaysChange}
+                style={{ width: 120 }}
+              >
+                {daysOptions.map((option) => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
+            </Col>
+            {useCustomDays && (
               <Col>
-                <Title level={4}>
-                  {intl.formatMessage({ id: "pages.dashboard.todayTitle" })}
-                </Title>
-                <Text type="secondary">
-                  {intl.formatMessage({ id: "pages.dashboard.todaySub" })}
-                </Text>
+                <InputNumber
+                  min={1}
+                  max={365}
+                  value={customDays}
+                  onChange={handleCustomDaysChange}
+                  placeholder="输入天数"
+                  style={{ width: 100 }}
+                />
+                <Text style={{ marginLeft: 8 }}>天</Text>
               </Col>
-              <Col>
-                <div>
-                  <span>
-                    {intl.formatMessage({
-                      id: "pages.dashboard.serviceOption",
-                    })}
-                  </span>
-                  <Select
-                    value={selectedService}
-                    onChange={handleServiceChange}
-                    style={{ width: 100 }}
-                    showSearch
-                    filterOption={(input, option) => {
-                      const children = option?.children;
-                      const text = Array.isArray(children)
-                        ? children.join("")
-                        : String(children || "");
-                      return text.toLowerCase().includes(input.toLowerCase());
-                    }}
-                  >
-                    {serviceOptions.map((option) => (
-                      <Option key={option.value} value={option.value}>
-                        {option.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </div>
-              </Col>
-            </Row>
-
-            {loading ? (
-              <div style={{ textAlign: "center", padding: "50px" }}>
-                <Spin size="large" />
-              </div>
-            ) : statsData ? (
-              <Row gutter={12} style={{ marginTop: "12px" }}>
-                <Col md={12}>
-                  <Card>
-                    <Statistic
-                      title={intl.formatMessage({
-                        id: "pages.dashboard.todayCost",
-                      })}
-                      value={statsData.totalCostCNY}
-                      precision={2}
-                      prefix="¥"
-                      valueStyle={{ color: "red" }}
-                    />
-                  </Card>
-                </Col>
-
-                <Col md={12}>
-                  <Card>
-                    <Statistic
-                      title={intl.formatMessage({
-                        id: "pages.dashboard.todayRate",
-                      })}
-                      value={statsData.increaseRate}
-                      precision={2}
-                      valueStyle={{
-                        color:
-                          statsData.increaseRate > 0
-                            ? "red"
-                            : statsData.increaseRate === 0
-                              ? "black"
-                              : "green",
-                      }}
-                      prefix={
-                        statsData.increaseRate > 0 ? (
-                          <RiseOutlined />
-                        ) : statsData.increaseRate === 0 ? (
-                          <MinusOutlined />
-                        ) : (
-                          <FallOutlined />
-                        )
-                      }
-                      suffix="%"
-                    />
-                  </Card>
-                </Col>
-              </Row>
-            ) : (
-              <Card>
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "50px",
-                    color: "grey",
-                  }}
-                >
-                  {intl.formatMessage({ id: "pages.dashboard.noData" })}
-                </div>
-              </Card>
             )}
-          </Card>
+          </Row>
+        </Card>
 
-          <Card style={{ marginTop: "12px" }}>
-            <Row justify="space-between" align="middle">
-              <Col>
-                <Title level={4}>
-                  {intl.formatMessage({ id: "pages.dashboard.modelTitle" })}
-                </Title>
-                <Text type="secondary">
-                  {intl.formatMessage({ id: "pages.dashboard.modelSub" })}
-                </Text>
-              </Col>
-              <Col>
-                <Button
-                  icon={<TableOutlined />}
-                  onClick={() => setIsConsumptionModalVisible(true)}
+        {/* 今日消费统计 */}
+        <Card style={{ marginBottom: 12 }}>
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Title level={4}>
+                {intl.formatMessage({ id: "pages.dashboard.todayTitle" })}
+              </Title>
+              <Text type="secondary">
+                {intl.formatMessage({ id: "pages.dashboard.todaySub" })}
+              </Text>
+            </Col>
+            <Col>
+              <div>
+                <span>
+                  {intl.formatMessage({
+                    id: "pages.dashboard.serviceOption",
+                  })}
+                </span>
+                <Select
+                  mode="multiple"
+                  value={selectedService}
+                  onChange={handleServiceChange}
+                  style={{ width: 200 }}
+                  showSearch
+                  filterOption={(input, option) => {
+                    const children = option?.children;
+                    const text = Array.isArray(children)
+                      ? children.join("")
+                      : String(children || "");
+                    return text.toLowerCase().includes(input.toLowerCase());
+                  }}
+                  maxTagCount="responsive"
                 >
-                  {intl.formatMessage({ id: "pages.dashboard.modelDetail" })}
-                </Button>
-              </Col>
-            </Row>
-
-            <Card style={{ marginTop: "12px" }}>
-              <Row gutter={12}>
-                <Col md={12}>
-                  <div>
-                    <span>
-                      {intl.formatMessage({
-                        id: "pages.dashboard.serviceOption",
-                      })}
-                    </span>
-                    <Select
-                      value={selectedModelService}
-                      onChange={(value) =>
-                        handleModelFilterChange(
-                          value,
-                          selectedModelProduct,
-                          selectedModelQuotaPool,
-                          modelSelectedDays,
-                        )
-                      }
-                      style={{ width: 100 }}
-                      showSearch
-                      filterOption={(input, option) => {
-                        const children = option?.children;
-                        const text = Array.isArray(children)
-                          ? children.join("")
-                          : String(children || "");
-                        return text.toLowerCase().includes(input.toLowerCase());
-                      }}
-                    >
-                      {serviceOptions.map((option) => (
-                        <Option key={option.value} value={option.value}>
-                          {option.label}
-                        </Option>
-                      ))}
-                    </Select>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <div>
-                    <span>
-                      {intl.formatMessage({
-                        id: "pages.dashboard.productOption",
-                      })}
-                    </span>
-                    <Select
-                      value={selectedModelProduct}
-                      onChange={(value) =>
-                        handleModelFilterChange(
-                          selectedModelService,
-                          value,
-                          selectedModelQuotaPool,
-                          modelSelectedDays,
-                        )
-                      }
-                      style={{ width: 100 }}
-                      showSearch
-                      filterOption={(input, option) => {
-                        const children = option?.children;
-                        const text = Array.isArray(children)
-                          ? children.join("")
-                          : String(children || "");
-                        return text.toLowerCase().includes(input.toLowerCase());
-                      }}
-                    >
-                      {productOptions.map((option) => (
-                        <Option key={option.value} value={option.value}>
-                          {option.label}
-                        </Option>
-                      ))}
-                    </Select>
-                  </div>
-                </Col>
-              </Row>
-              <Row gutter={12} style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <div>
-                    <span>
-                      {intl.formatMessage({
-                        id: "pages.dashboard.quotaPoolOption",
-                      })}
-                    </span>
-                    <Select
-                      value={selectedModelQuotaPool}
-                      onChange={(value) =>
-                        handleModelFilterChange(
-                          selectedModelService,
-                          selectedModelProduct,
-                          value,
-                          modelSelectedDays,
-                        )
-                      }
-                      style={{ width: 100 }}
-                      showSearch
-                      filterOption={(input, option) => {
-                        const children = option?.children;
-                        const text = Array.isArray(children)
-                          ? children.join("")
-                          : String(children || "");
-                        return text.toLowerCase().includes(input.toLowerCase());
-                      }}
-                    >
-                      {quotaPoolOptions.map((option) => (
-                        <Option key={option.value} value={option.value}>
-                          {option.label}
-                        </Option>
-                      ))}
-                    </Select>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <div>
-                    <span>
-                      {intl.formatMessage({ id: "pages.dashboard.dayOption" })}
-                    </span>
-                    <Select
-                      value={modelSelectedDays}
-                      onChange={(value) =>
-                        handleModelFilterChange(
-                          selectedModelService,
-                          selectedModelProduct,
-                          selectedModelQuotaPool,
-                          value,
-                        )
-                      }
-                      style={{ width: 100 }}
-                    >
-                      {daysOptions.map((option) => (
-                        <Option key={option.value} value={option.value}>
-                          {option.label}
-                        </Option>
-                      ))}
-                    </Select>
-                  </div>
-                </Col>
-              </Row>
-            </Card>
-
-            {modelConsumptionLoading ? (
-              <div style={{ textAlign: "center", padding: "50px" }}>
-                <Spin size="large" />
+                  {serviceOptions.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
               </div>
-            ) : modelConsumptionData ? (
-              <>
-                <Row gutter={12}>
-                  <Col md={12} style={{ marginTop: "12px" }}>
-                    <Card>
+            </Col>
+          </Row>
+
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "50px" }}>
+              <Spin size="large" />
+            </div>
+          ) : statsData ? (
+            <Row gutter={12} style={{ marginTop: "12px" }}>
+              <Col md={24}>
+                <Card>
+                  <Row align="middle" gutter={12}>
+                    <Col>
                       <Statistic
                         title={intl.formatMessage({
-                          id: "pages.dashboard.totalCost",
+                          id: "pages.dashboard.todayCost",
                         })}
-                        value={modelConsumptionData.totalCost || 0}
+                        value={statsData.totalCostCNY}
                         precision={2}
                         prefix="¥"
-                        valueStyle={{ color: "red" }}
+                        valueStyle={{ color: "red", fontSize: "24px" }}
                       />
-                    </Card>
-                  </Col>
-                  <Col md={12} style={{ marginTop: "12px" }}>
-                    <Card>
-                      <Statistic
-                        title={intl.formatMessage({
-                          id: "pages.dashboard.totalCall",
-                        })}
-                        value={modelConsumptionData.totalCalls || 0}
-                        valueStyle={{ color: "blue" }}
-                        prefix={<BarChartOutlined />}
-                      />
-                    </Card>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col style={{ marginTop: "12px" }}>
-                    <Button
-                      type={activeChartType === "usage" ? "primary" : "default"}
-                      onClick={() => setActiveChartType("usage")}
-                    >
-                      {intl.formatMessage({
-                        id: "pages.dashboard.modelTrend",
-                      })}
-                    </Button>
-                    <Button
-                      type={
-                        activeChartType === "distribution"
-                          ? "primary"
-                          : "default"
-                      }
-                      onClick={() => setActiveChartType("distribution")}
-                    >
-                      {intl.formatMessage({
-                        id: "pages.dashboard.modelDistribution",
-                      })}
-                    </Button>
-                  </Col>
-                </Row>
-                {activeChartType === "usage" ? (
-                  <Card>
+                    </Col>
+                    <Col>
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <Text type="secondary" style={{ marginRight: 8 }}>
+                          变化率：
+                        </Text>
+                        <Statistic
+                          value={statsData.increaseRate}
+                          precision={2}
+                          valueStyle={{
+                            color:
+                              statsData.increaseRate > 0
+                                ? "red"
+                                : statsData.increaseRate === 0
+                                  ? "black"
+                                  : "green",
+                            fontSize: "16px",
+                          }}
+                          prefix={
+                            statsData.increaseRate > 0 ? (
+                              <RiseOutlined />
+                            ) : statsData.increaseRate === 0 ? (
+                              <MinusOutlined />
+                            ) : (
+                              <FallOutlined />
+                            )
+                          }
+                          suffix="%"
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+            </Row>
+          ) : (
+            <Card>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "50px",
+                  color: "grey",
+                }}
+              >
+                {intl.formatMessage({ id: "pages.dashboard.noData" })}
+              </div>
+            </Card>
+          )}
+        </Card>
+
+        {/* 模型消费统计 */}
+        <Card style={{ marginBottom: 12 }}>
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Title level={4}>
+                {intl.formatMessage({ id: "pages.dashboard.modelTitle" })}
+              </Title>
+              <Text type="secondary">
+                {intl.formatMessage({ id: "pages.dashboard.modelSub" })}
+              </Text>
+            </Col>
+          </Row>
+
+          <Card style={{ marginTop: "12px" }}>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <div>
+                <span>
+                  {intl.formatMessage({
+                    id: "pages.dashboard.serviceOption",
+                  })}
+                </span>
+                <Select
+                  mode="multiple"
+                  value={selectedModelService}
+                  onChange={(value) =>
+                    handleModelFilterChange(
+                      value,
+                      selectedModelProduct,
+                      globalDays,
+                    )
+                  }
+                  style={{ width: 200 }}
+                  showSearch
+                  filterOption={(input, option) => {
+                    const children = option?.children;
+                    const text = Array.isArray(children)
+                      ? children.join("")
+                      : String(children || "");
+                    return text.toLowerCase().includes(input.toLowerCase());
+                  }}
+                >
+                  {serviceOptions.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <span>
+                  {intl.formatMessage({
+                    id: "pages.dashboard.productOption",
+                  })}
+                </span>
+                <Select
+                  mode="multiple"
+                  value={selectedModelProduct}
+                  onChange={(value) =>
+                    handleModelFilterChange(
+                      selectedModelService,
+                      value,
+                      globalDays,
+                    )
+                  }
+                  style={{ width: 200 }}
+                  showSearch
+                  filterOption={(input, option) => {
+                    const children = option?.children;
+                    const text = Array.isArray(children)
+                      ? children.join("")
+                      : String(children || "");
+                    return text.toLowerCase().includes(input.toLowerCase());
+                  }}
+                >
+                  {productOptions.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+          </Card>
+
+          {modelConsumptionLoading ? (
+            <div style={{ textAlign: "center", padding: "50px" }}>
+              <Spin size="large" />
+            </div>
+          ) : modelConsumptionData ? (
+            <>
+              <Row gutter={16}>
+                <Col md={12}>
+                  {/* 次数趋势图 */}
+                  <Card
+                    title={intl.formatMessage({
+                      id: "pages.dashboard.modelTrend",
+                    })}
+                  >
                     <div>
                       {modelUsageData?.lineChartData ? (
                         <Line
@@ -615,12 +521,6 @@ const BillingGraphPage: React.FC = () => {
                           point={{
                             size: 5,
                           }}
-                          label={{
-                            style: {
-                              textAlign: "center",
-                              textBaseline: "alphabetic",
-                            },
-                          }}
                         />
                       ) : (
                         <div
@@ -635,23 +535,124 @@ const BillingGraphPage: React.FC = () => {
                       )}
                     </div>
                   </Card>
-                ) : (
-                  <Card>
+                </Col>
+                <Col md={12}>
+                  {/* 调用分布排行榜 */}
+                  <Card
+                    title={intl.formatMessage({
+                      id: "pages.dashboard.modelDistribution",
+                    })}
+                  >
                     <div>
                       {modelUsageData?.barChartData ? (
-                        <Bar
-                          data={(modelUsageData.barChartData as any).labels.map(
-                            (label: string, index: number) => ({
-                              product: label,
-                              calls: (modelUsageData.barChartData as any).data[
-                                index
-                              ],
-                            }),
-                          )}
-                          height={300}
-                          xField="product"
-                          yField="calls"
-                        />
+                        <div style={{ maxHeight: 400, overflowY: "auto" }}>
+                          {/* 对数据进行排序，调用次数大的排在前面 */}
+                          {(modelUsageData.barChartData as any).labels
+                            .map((label: string, index: number) => ({
+                              label,
+                              calls:
+                                (modelUsageData.barChartData as any).data[
+                                  index
+                                ] || 0,
+                              index,
+                            }))
+                            .sort((a: any, b: any) => b.calls - a.calls) // 按调用次数降序排序
+                            .map((item: any, sortedIndex: number) => {
+                              const maxCalls = Math.max(
+                                ...(modelUsageData.barChartData as any).data,
+                              );
+                              const percentage =
+                                maxCalls > 0
+                                  ? (item.calls / maxCalls) * 100
+                                  : 0;
+
+                              return (
+                                <div
+                                  key={item.index}
+                                  style={{
+                                    marginBottom: 8,
+                                    padding: "12px 16px",
+                                    borderRadius: 8,
+                                    background: "rgba(24, 144, 255, 0.05)",
+                                    border: "1px solid rgba(24, 144, 255, 0.1)",
+                                    backdropFilter: "blur(4px)",
+                                    position: "relative",
+                                    overflow: "hidden",
+                                  }}
+                                >
+                                  {/* 背景渐变效果作为进度条 */}
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: 0,
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      background: `linear-gradient(90deg, rgba(24, 144, 255, 0.2) ${percentage}%, transparent ${percentage}%)`,
+                                      zIndex: 0,
+                                    }}
+                                  />
+
+                                  <Row
+                                    justify="space-between"
+                                    align="middle"
+                                    style={{ position: "relative", zIndex: 1 }}
+                                  >
+                                    <Col span={16}>
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          marginBottom: 4,
+                                        }}
+                                      >
+                                        <div
+                                          style={{
+                                            width: 24,
+                                            height: 24,
+                                            borderRadius: "50%",
+                                            background: "#1890ff",
+                                            color: "white",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            fontSize: 12,
+                                            fontWeight: 600,
+                                            marginRight: 12,
+                                          }}
+                                        >
+                                          {sortedIndex + 1}
+                                        </div>
+                                        <div
+                                          style={{
+                                            fontSize: 14,
+                                            fontWeight: 500,
+                                            color: "#1890ff",
+                                          }}
+                                        >
+                                          {item.label}
+                                        </div>
+                                      </div>
+                                    </Col>
+                                    <Col
+                                      span={8}
+                                      style={{ textAlign: "right" }}
+                                    >
+                                      <div
+                                        style={{
+                                          fontSize: 18,
+                                          fontWeight: 700,
+                                          color: "#1890ff",
+                                        }}
+                                      >
+                                        {item.calls.toLocaleString()}
+                                      </div>
+                                    </Col>
+                                  </Row>
+                                </div>
+                              );
+                            })}
+                        </div>
                       ) : (
                         <div
                           style={{
@@ -665,427 +666,122 @@ const BillingGraphPage: React.FC = () => {
                       )}
                     </div>
                   </Card>
-                )}
-
-                <Modal
-                  title={intl.formatMessage({
-                    id: "pages.dashboard.modelDetail",
-                  })}
-                  open={isConsumptionModalVisible}
-                  onCancel={() => setIsConsumptionModalVisible(false)}
-                  footer={null}
-                  width="90%"
-                  style={{ top: 20 }}
-                >
-                  {modelConsumptionData.consumption &&
-                  Array.isArray(modelConsumptionData.consumption) &&
-                  modelConsumptionData.consumption.length > 0 ? (
-                    <ProTable
-                      dataSource={modelConsumptionData.consumption}
-                      rowKey={(record: any, index) =>
-                        `${record.date}-${record.product}-${record.service}-${index}`
-                      }
-                      search={false}
-                      pagination={{
-                        showSizeChanger: true,
-                        pageSizeOptions: ["10", "20", "30"],
-                        defaultPageSize: 10,
-                        onChange: (_page: number, _pageSize: number) => {},
-                        onShowSizeChange: (_: number, _size: number) => {},
-                      }}
-                      scroll={{ x: 800 }}
-                      columns={[
-                        {
-                          title: intl.formatMessage({
-                            id: "pages.dashboard.date",
-                          }),
-                          dataIndex: "date",
-                          key: "date",
-                          width: 120,
-                          sorter: (a: any, b: any) =>
-                            (a.date || "").localeCompare(b.date || ""),
-                          filters: Array.from(
-                            new Set(
-                              modelConsumptionData.consumption
-                                .map((item: any) => item.date)
-                                .filter(Boolean),
-                            ),
-                          ).map((date) => ({
-                            text: date as string,
-                            value: date as string,
-                          })),
-                          onFilter: (value: any, record: any) =>
-                            record.date === value,
-                        },
-                        {
-                          title: intl.formatMessage({
-                            id: "pages.dashboard.product",
-                          }),
-                          dataIndex: "product",
-                          key: "product",
-                          width: 150,
-                          sorter: (a: any, b: any) =>
-                            (a.product || "").localeCompare(b.product || ""),
-                          filters: Array.from(
-                            new Set(
-                              modelConsumptionData.consumption
-                                .map((item: any) => item.product)
-                                .filter(Boolean),
-                            ),
-                          ).map((product) => ({
-                            text: product as string,
-                            value: product as string,
-                          })),
-                          onFilter: (value: any, record: any) =>
-                            record.product === value,
-                        },
-                        {
-                          title: intl.formatMessage({
-                            id: "pages.dashboard.service",
-                          }),
-                          dataIndex: "service",
-                          key: "service",
-                          width: 120,
-                          sorter: (a: any, b: any) =>
-                            (a.service || "").localeCompare(b.service || ""),
-                          filters: Array.from(
-                            new Set(
-                              modelConsumptionData.consumption
-                                .map((item: any) => item.service)
-                                .filter(Boolean),
-                            ),
-                          ).map((service) => ({
-                            text: service as string,
-                            value: service as string,
-                          })),
-                          onFilter: (value: any, record: any) =>
-                            record.service === value,
-                        },
-                        {
-                          title: intl.formatMessage({
-                            id: "pages.dashboard.quotaPool",
-                          }),
-                          dataIndex: "quotaPool",
-                          key: "quotaPool",
-                          width: 150,
-                          sorter: (a: any, b: any) =>
-                            (a.quotaPool || "").localeCompare(
-                              b.quotaPool || "",
-                            ),
-                          filters: Array.from(
-                            new Set(
-                              modelConsumptionData.consumption
-                                .map((item: any) => item.quotaPool)
-                                .filter(Boolean),
-                            ),
-                          ).map((quotaPool) => ({
-                            text: quotaPool as string,
-                            value: quotaPool as string,
-                          })),
-                          onFilter: (value: any, record: any) =>
-                            record.quotaPool === value,
-                        },
-                        {
-                          title: intl.formatMessage({
-                            id: "pages.dashboard.cost",
-                          }),
-                          dataIndex: "cost",
-                          key: "cost",
-                          width: 120,
-                          sorter: (a: any, b: any) => {
-                            const aCost = a.cost
-                              ? parseFloat(a.cost.toString())
-                              : 0;
-                            const bCost = b.cost
-                              ? parseFloat(b.cost.toString())
-                              : 0;
-                            return aCost - bCost;
-                          },
-                          render: (_: React.ReactNode, record: any) => {
-                            const costValue = record.cost
-                              ? parseFloat(record.cost.toString())
-                              : 0;
-                            return `¥${costValue.toFixed(2)}`;
-                          },
-                        },
-                        {
-                          title: intl.formatMessage({
-                            id: "pages.dashboard.call",
-                          }),
-                          dataIndex: "calls",
-                          key: "calls",
-                          width: 100,
-                          sorter: (a: any, b: any) =>
-                            (a.calls || 0) - (b.calls || 0),
-                          render: (_: React.ReactNode, record: any) =>
-                            (record.calls || 0).toLocaleString(),
-                        },
-                      ]}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        textAlign: "center",
-                        padding: "50px",
-                        color: "grey",
-                      }}
-                    >
-                      {intl.formatMessage({ id: "pages.dashboard.noData" })}
-                    </div>
-                  )}
-                </Modal>
-              </>
-            ) : (
-              <Card>
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "50px",
-                    color: "grey",
-                  }}
-                >
-                  {intl.formatMessage({ id: "pages.dashboard.noData" })}
-                </div>
-              </Card>
-            )}
-          </Card>
-        </Col>
-        <Col md={12}>
-          <Card>
-            <Row justify="space-between" align="middle">
-              <Col>
-                <Title level={4}>
-                  {intl.formatMessage({ id: "pages.dashboard.activeTitle" })}
-                </Title>
-                <Text type="secondary">
-                  {intl.formatMessage({ id: "pages.dashboard.activeSub" })}
-                </Text>
-              </Col>
-              <Col>
-                <Row gutter={8} align="middle">
-                  <Col>
-                    <div>
-                      <span>
-                        {intl.formatMessage({
-                          id: "pages.dashboard.dayOption",
-                        })}
-                      </span>
-                      <Select
-                        value={activeUsersSelectedDays}
-                        onChange={handleActiveUsersDaysChange}
-                        style={{ width: 100 }}
-                      >
-                        {daysOptions.map((option) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.label}
-                          </Option>
-                        ))}
-                      </Select>
-                    </div>
-                  </Col>
-                  <Col>
-                    <Button
-                      icon={<TableOutlined />}
-                      onClick={() => setIsActiveUserDetailModalVisible(true)}
-                    >
-                      {intl.formatMessage({
-                        id: "pages.dashboard.activeQuery",
-                      })}
-                    </Button>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-
-            {activeUsersLoading ? (
-              <div style={{ textAlign: "center", padding: "50px" }}>
-                <Spin size="large" />
+                </Col>
+              </Row>
+            </>
+          ) : (
+            <Card>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "50px",
+                  color: "grey",
+                }}
+              >
+                {intl.formatMessage({ id: "pages.dashboard.noData" })}
               </div>
-            ) : activeUsersData ? (
-              <>
-                <Row gutter={12} style={{ marginTop: "12px" }}>
-                  <Col md={12}>
-                    <Card>
-                      <Statistic
-                        title={intl.formatMessage({
-                          id: "pages.dashboard.activeTotal",
-                        })}
-                        value={activeUsersData.totalUsers || 0}
-                        valueStyle={{ color: "green" }}
-                        prefix={<TeamOutlined />}
-                      />
-                    </Card>
-                  </Col>
-                  <Col md={12}>
-                    <Card>
-                      <Statistic
-                        title={intl.formatMessage({
-                          id: "pages.dashboard.activeUser",
-                        })}
-                        value={activeUsersData.activeUsers?.length || 0}
-                        valueStyle={{ color: "blue" }}
-                        prefix={<UserOutlined />}
-                      />
-                    </Card>
-                  </Col>
-                </Row>
+            </Card>
+          )}
+        </Card>
 
-                <Card
-                  title={intl.formatMessage({
-                    id: "pages.dashboard.activeTrend",
-                  })}
-                  style={{ marginTop: "12px" }}
-                >
-                  <Line
-                    data={
-                      activeUsersData.activeUsers
-                        ?.map((item) => ({
-                          date: item.date || "",
-                          activeUsersNum: item.activeUsersNum || 0,
-                          activeRateInc: item.activeRateInc || 0,
-                        }))
-                        ?.sort((a, b) => {
-                          return (
-                            new Date(a.date).getTime() -
-                            new Date(b.date).getTime()
-                          );
-                        }) || []
-                    }
-                    xField="date"
-                    yField="activeUsersNum"
-                    height={300}
-                    point={{
-                      size: 5,
-                    }}
-                    label={{
-                      style: {
-                        textAlign: "center",
-                        textBaseline: "alphabetic",
-                      },
-                    }}
-                    tooltip={{
-                      title: false,
-                      items: [
-                        {
-                          channel: "x",
-                          name: intl.formatMessage({
-                            id: "pages.dashboard.date",
-                          }),
-                          valueFormatter: (v: any) => v,
-                        },
-                        {
-                          channel: "y",
-                          name: intl.formatMessage({
-                            id: "pages.dashboard.activeUser",
-                          }),
-                          valueFormatter: (v: any) => `${v} 人`,
-                        },
-                        {
-                          name: intl.formatMessage({
-                            id: "pages.dashboard.activeRate",
-                          }),
-                          field: "activeRateInc",
-                          valueFormatter: (v: any) => `${v}%`,
-                        },
-                      ],
-                    }}
-                  />
-                </Card>
-              </>
-            ) : (
-              <Card>
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "50px",
-                    color: "grey",
-                  }}
-                >
-                  {intl.formatMessage({ id: "pages.dashboard.noData" })}
-                </div>
-              </Card>
-            )}
-          </Card>
-        </Col>
-      </Row>
-
-      <Modal
-        title={intl.formatMessage({ id: "pages.dashboard.activeQuery" })}
-        open={isActiveUserDetailModalVisible}
-        onCancel={() => {
-          setIsActiveUserDetailModalVisible(false);
-          setSearchUpn("");
-          setActiveUserDetailData(null);
-        }}
-        footer={null}
-        width={600}
-      >
-        <div>
-          <Row align="middle">
-            <Col flex="auto" style={{ marginRight: 12 }}>
-              <Input
-                placeholder={intl.formatMessage({
-                  id: "pages.dashboard.activeQueryUpnPlaceholder",
-                })}
-                value={searchUpn}
-                onChange={(e) => setSearchUpn(e.target.value)}
-                onPressEnter={handleSearchActiveUser}
-              />
-            </Col>
+        {/* 活跃用户统计 */}
+        <Card style={{ marginBottom: 12 }}>
+          <Row justify="space-between" align="middle">
             <Col>
-              <Button type="primary" onClick={handleSearchActiveUser}>
-                {intl.formatMessage({ id: "pages.dashboard.search" })}
-              </Button>
+              <Title level={4}>
+                {intl.formatMessage({ id: "pages.dashboard.activeTitle" })}
+              </Title>
+              <Text type="secondary">
+                {intl.formatMessage({ id: "pages.dashboard.activeSub" })}
+              </Text>
             </Col>
           </Row>
-        </div>
 
-        {activeUserDetailLoading ? (
-          <div style={{ textAlign: "center", padding: "50px" }}>
-            <Spin size="large" />
-          </div>
-        ) : activeUserDetailData ? (
-          <Card style={{ marginTop: 12 }}>
-            <Row>
-              <Col md={12}>
-                <Statistic
-                  title={intl.formatMessage({
-                    id: "pages.dashboard.totalCost",
-                  })}
-                  value={activeUserDetailData.totalCost || 0}
-                  precision={2}
-                  prefix="¥"
-                  valueStyle={{ color: "red" }}
-                />
-              </Col>
-              <Col span={12}>
-                <Statistic
-                  title={intl.formatMessage({
-                    id: "pages.dashboard.totalCall",
-                  })}
-                  value={activeUserDetailData.totalCalls || 0}
-                  valueStyle={{ color: "blue" }}
-                />
-              </Col>
-            </Row>
-            <Row style={{ marginTop: 12 }}>
-              <Col span={24}>
-                <div>
-                  <Text strong>
-                    {intl.formatMessage({ id: "pages.dashboard.lastActive" })}
-                  </Text>
-                  <Text>
-                    {activeUserDetailData.lastActive ||
-                      intl.formatMessage({
-                        id: "pages.dashboard.noData",
+          {activeUsersLoading ? (
+            <div style={{ textAlign: "center", padding: "50px" }}>
+              <Spin size="large" />
+            </div>
+          ) : activeUsersData ? (
+            <>
+              <Row gutter={12} style={{ marginTop: "12px" }}>
+                <Col md={12}>
+                  <Card>
+                    <Statistic
+                      title={intl.formatMessage({
+                        id: "pages.dashboard.activeUser",
                       })}
-                  </Text>
-                </div>
-              </Col>
-            </Row>
-          </Card>
-        ) : null}
-      </Modal>
+                      value={activeUsersData.activeUsers?.length || 0}
+                      valueStyle={{ color: "blue" }}
+                      prefix={<UserOutlined />}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+
+              <Card
+                title={intl.formatMessage({
+                  id: "pages.dashboard.activeTrend",
+                })}
+                style={{ marginTop: "12px" }}
+              >
+                <Line
+                  data={
+                    activeUsersData.activeUsers
+                      ?.map((item) => ({
+                        date: item.date || "",
+                        activeUsersNum: item.activeUsersNum || 0,
+                        activeRateInc: item.activeRateInc || 0,
+                      }))
+                      ?.sort((a, b) => {
+                        return (
+                          new Date(a.date).getTime() -
+                          new Date(b.date).getTime()
+                        );
+                      }) || []
+                  }
+                  xField="date"
+                  yField="activeUsersNum"
+                  height={300}
+                  point={{
+                    size: 5,
+                  }}
+                  tooltip={{
+                    title: false,
+                    items: [
+                      {
+                        channel: "x",
+                        name: intl.formatMessage({
+                          id: "pages.dashboard.date",
+                        }),
+                        valueFormatter: (v: any) => v,
+                      },
+                      {
+                        channel: "y",
+                        name: intl.formatMessage({
+                          id: "pages.dashboard.activeUser",
+                        }),
+                        valueFormatter: (v: any) => `${v} 人`,
+                      },
+                    ],
+                  }}
+                />
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "50px",
+                  color: "grey",
+                }}
+              >
+                {intl.formatMessage({ id: "pages.dashboard.noData" })}
+              </div>
+            </Card>
+          )}
+        </Card>
+      </div>
     </PageContainer>
   );
 };
