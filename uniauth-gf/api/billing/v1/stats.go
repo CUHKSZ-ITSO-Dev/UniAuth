@@ -10,8 +10,8 @@ import (
 
 // GetTodayTotalConsumptionReq 当天总消费(可以按服务类型查询）
 type GetTodayTotalConsumptionReq struct {
-	g.Meta  `path:"/stats/today/total" tags:"Billing/Status" method:"GET" summary:"今日总消费" dc:"获取今天的总消费金额统计"`
-	Service string `json:"service"   dc:"依据服务类型查询，默认统计全部" example:"chat"`
+	g.Meta   `path:"/stats/today/total" tags:"Billing/Status" method:"GET" summary:"今日总消费" dc:"获取今天的总消费金额统计"`
+	Services []string `json:"services"   dc:"依据服务类型查询，默认统计全部,支持多选查询" example:"chat,aippt"`
 }
 
 // GetTodayTotalConsumptionRes 当天总消费(分服务查询)响应
