@@ -103,6 +103,7 @@ const ChatPage: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-Service": "uniauth-gf",
         },
         body: JSON.stringify(requestBody),
       });
