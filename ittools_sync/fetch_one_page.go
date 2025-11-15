@@ -66,8 +66,7 @@ func FetchOnePage(ctx context.Context, wg *sync.WaitGroup, semaphore chan struct
 			CreatedAt:                  gtime.Now().Time,
 		}
 		if err := UpdateRecord(ctx, &record); err != nil {
-			g.Log().Error(ctx, gerror.Wrapf(err, "[%s] 更新用户数据失败。当前页码：%d", apiKey[:8], page))
-			return
+			g.Log().Error(ctx, gerror.Wrapf(err, "[%s] 更新用户 %s 数据失败。当前页码：%d", apiKey[:8], user.UserPrincipalName, page))
 		}
 	}
 }

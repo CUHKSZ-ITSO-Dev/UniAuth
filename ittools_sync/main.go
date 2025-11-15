@@ -64,7 +64,8 @@ func main() {
 				return
 			}
 			totalCount := res.TotalCount
-			totalPage := totalCount/config.PAGE_SIZE + 1
+			totalPage := (totalCount + config.PAGE_SIZE - 1) / config.PAGE_SIZE
+			// 不能写成 totalPage := totalCount/config.PAGE_SIZE + 1 因为 totalCount 是 config.PAGE_SIZE 的整数倍时会多算一页
 
 			wgBatch := sync.WaitGroup{}
 			for page := 1; page <= totalPage; page++ {
