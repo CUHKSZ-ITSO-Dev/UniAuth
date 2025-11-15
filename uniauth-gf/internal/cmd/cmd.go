@@ -63,6 +63,9 @@ var (
 
 			s := g.Server()
 
+			// 配置CORS中间件（开发环境使用，生产环境应该配置具体的域名）
+			s.Use(ghttp.MiddlewareCORS)
+
 			s.Use(middlewares.UniResMiddleware)
 			s.Group("/userinfos", func(group *ghttp.RouterGroup) {
 				group.Bind(
