@@ -8,3 +8,4 @@ uniauth
 uniauth-go
 pro-full-example
 *.exe~
+config.yaml
