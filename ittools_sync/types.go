@@ -46,7 +46,7 @@ type UserInfo struct {
 	ExtensionAttribute6  string
 	ExtensionAttribute10 string
 	MailNickname         string
-	MemberOf             []string
+	MemberOf             string
 }
 
 type UserInfoFetchResult struct {

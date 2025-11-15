@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/gogf/gf/v2 v2.9.5
+	github.com/lib/pq v1.10.9
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
 )

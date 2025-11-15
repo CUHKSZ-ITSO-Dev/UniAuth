@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/lib/pq"
 	"gorm.io/gorm/clause"
 )
 
-type UserInfoRecord struct {
+type UserinfosUserInfos struct {
 	Upn                        string
 	Email                      string
 	DisplayName                string
@@ -28,12 +29,12 @@ type UserInfoRecord struct {
 	ResidentialCollege         string
 	StaffRole                  string
 	MailNickname               string
-	Tags                       []string
+	Tags                       pq.StringArray `gorm:"type:text[]"`
 	CreatedAt                  time.Time
 	UpdatedAt                  time.Time
 }
 
-func UpdateRecord(ctx context.Context, record *UserInfoRecord) error {
+func UpdateRecord(ctx context.Context, record *UserinfosUserInfos) error {
 	return db.WithContext(ctx).Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "upn"}}, // 冲突键
 		DoUpdates: clause.AssignmentColumns([]string{ // 更新所有其他字段
