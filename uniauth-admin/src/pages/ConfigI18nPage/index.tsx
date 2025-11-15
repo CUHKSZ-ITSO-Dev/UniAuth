@@ -664,7 +664,7 @@ const ConfigI18nPage: React.FC = () => {
           actionRef={actionRef}
           toolBarRender={() => [
             <Button
-              key="batchAdd"
+              key="export"
               type="default"
               icon={<DownloadOutlined />}
               onClick={handleExport}
