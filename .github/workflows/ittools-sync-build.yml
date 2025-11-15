@@ -2,9 +2,6 @@ name: ITTools Sync 镜像构建与部署
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - new-sso_fetch-yang
 
 env:
   IMAGE_NAME: ghcr.io/cuhksz-itso-dev/ittools-sync
