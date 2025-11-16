@@ -16,9 +16,11 @@ import (
 // 如果存在失败的情况，会在处理完一轮后返回发生错误的配额池列表，不影响其他配额池的更新。
 func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) error {
 	if qpNameList == nil {
-		if err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields(dao.QuotapoolQuotaPool.Columns().QuotaPoolName).Scan(&qpNameList); err != nil {
+		var qpNames []string
+		if err := dao.QuotapoolQuotaPool.Ctx(ctx).Fields(dao.QuotapoolQuotaPool.Columns().QuotaPoolName).Scan(&qpNames); err != nil {
 			return gerror.Wrap(err, "查询所有配额池失败")
 		}
+		qpNameList = &qpNames
 	}
 	if len(*qpNameList) == 0 {
 		return nil // 列表为空，无需操作
@@ -27,7 +29,7 @@ func UpdateQuotaPoolsUsersInCasbin(ctx context.Context, qpNameList *[]string) er
 	failures := []string{}
 	for _, qp := range *qpNameList {
 		if err := Edit(ctx, g.Map{"quotaPoolName": qp}); err != nil {
-			failures = append(failures, err.Error() + " 配额池：" + qp)
+			failures = append(failures, err.Error()+" 配额池："+qp)
 		}
 	}
 	if len(failures) > 0 {

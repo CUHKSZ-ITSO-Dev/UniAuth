@@ -1,4 +1,9 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import type { ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProCard, ProTable } from "@ant-design/pro-components";
 import { useIntl } from "@umijs/max";
@@ -22,6 +27,7 @@ import {
   putConfigI18N,
 } from "@/services/uniauthService/i18N";
 import { BatchUploadStepsModal, I18nFormModal } from "./components";
+import ExportConfigModal from "./components/ExportConfigModal";
 
 const { Title, Text } = Typography;
 
@@ -297,6 +303,17 @@ const ConfigI18nPage: React.FC = () => {
 
     setModalMode("add");
     setModalVisible(true);
+  };
+
+  // 导出翻译配置
+  const [exportModalVisible, setExportModalVisible] = useState(false);
+
+  const handleExport = () => {
+    if (appList.length === 0) {
+      message.warning("暂无可导出的应用");
+      return;
+    }
+    setExportModalVisible(true);
   };
 
   // 批量添加翻译配置
@@ -647,6 +664,17 @@ const ConfigI18nPage: React.FC = () => {
           actionRef={actionRef}
           toolBarRender={() => [
             <Button
+              key="export"
+              type="default"
+              icon={<DownloadOutlined />}
+              onClick={handleExport}
+            >
+              {intl.formatMessage({
+                id: "pages.configI18n.export",
+                defaultMessage: "导出配置",
+              })}
+            </Button>,
+            <Button
               key="batchAdd"
               type="default"
               icon={<PlusOutlined />}
@@ -749,6 +777,14 @@ const ConfigI18nPage: React.FC = () => {
         initialAppId={currentAppId}
         onOk={handleUploadModalOk}
         onCancel={() => setUploadModalVisible(false)}
+      />
+
+      {/* 导出配置模态框 */}
+      <ExportConfigModal
+        visible={exportModalVisible}
+        appList={appList}
+        onOk={() => setExportModalVisible(false)}
+        onCancel={() => setExportModalVisible(false)}
       />
     </PageContainer>
   );

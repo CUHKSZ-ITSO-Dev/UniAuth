@@ -335,7 +335,6 @@ const BatchUploadStepsModal: React.FC<BatchUploadStepsModalProps> = ({
                   borderRadius: "6px",
                   backgroundColor: "#fafafa",
                 }}
-                bodyStyle={{ padding: "16px" }}
               >
                 <Space direction="vertical" style={{ width: "100%" }}>
                   <Space>

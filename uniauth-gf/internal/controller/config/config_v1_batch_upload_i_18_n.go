@@ -17,16 +17,34 @@ import (
 func flattenJSON(j *gjson.Json, prefix string, req *v1.BatchUploadI18nReq, list *[]*entity.ConfigInternationalization) {
 	v := j.Var()
 	if v.IsMap() {
-		for key, val := range j.Map() {
+		m := j.Map()
+		if len(m) == 0 { // 如果是空对象，也将其作为值存储
+			item := &entity.ConfigInternationalization{
+				Key:         prefix,
+				AppId:       req.AppId,
+				ZhCn:        "{}",
+				EnUs:        "{}",
+				Description: "",
+			}
+			// 按语言代码填充
+			switch req.Lang {
+			case "zh-CN":
+				item.ZhCn = "{}"
+			case "en-US":
+				item.EnUs = "{}"
+			}
+			*list = append(*list, item)
+			return
+		}
+
+		for key, val := range m {
 			newPrefix := key
 			if prefix != "" {
 				newPrefix = prefix + "." + key
 			}
 			flattenJSON(gjson.New(val), newPrefix, req, list)
 		}
-	} else if v.IsSlice() {
-		// 数组不处理
-	} else {
+	} else { // 对于非 Map 类型（包括数组、字符串、数字、布尔值等）
 		item := &entity.ConfigInternationalization{
 			Key:         prefix,
 			AppId:       req.AppId,
@@ -34,12 +52,22 @@ func flattenJSON(j *gjson.Json, prefix string, req *v1.BatchUploadI18nReq, list 
 			EnUs:        "",
 			Description: "",
 		}
+
+		var valueStr string
+		if v.IsSlice() {
+			// 对数组类型，保存为JSON字符串
+			valueStr = j.MustToJsonString()
+		} else {
+			// 对其他简单类型，直接转为字符串
+			valueStr = v.String()
+		}
+
 		// 按语言代码填充
 		switch req.Lang {
 		case "zh-CN":
-			item.ZhCn = j.Var().String()
+			item.ZhCn = valueStr
 		case "en-US":
-			item.EnUs = j.Var().String()
+			item.EnUs = valueStr
 		}
 		*list = append(*list, item)
 	}
