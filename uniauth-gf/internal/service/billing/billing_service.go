@@ -20,7 +20,7 @@ func NewBillingService() *BillingService {
 	return &BillingService{}
 }
 
-// ValidateAndFilterName 验证和过滤服务名称、配额池和产品名称（可复用）
+// ValidateAndFilterName 验证和过滤服务名称、配额池和产品名称
 func (s *BillingService) ValidateAndFilterName(service string, quotaPool string, product string) (v1.ConsumptionItem, error) {
 	// 处理 "all" 关键字，转换为空字符串
 	if service == "all" {
@@ -67,7 +67,7 @@ func (s *BillingService) ValidateAndFilterName(service string, quotaPool string,
 	}, nil
 }
 
-// ValidateAndFilterService 验证和过滤服务名称数组（可复用）
+// ValidateAndFilterService 验证和过滤服务名称数组
 func (s *BillingService) ValidateAndFilterService(services []string) ([]string, error) {
 	// 如果为空或nil，返回空数组（表示查询全部）
 	if len(services) == 0 {
@@ -110,7 +110,7 @@ func (s *BillingService) ValidateAndFilterService(services []string) ([]string, 
 	return filteredServices, nil
 }
 
-// GetServiceDisplayName 获取服务显示名称（可复用）
+// GetServiceDisplayName 获取服务显示名称
 func (s *BillingService) GetServiceDisplayName(services []string) string {
 	if len(services) == 0 {
 		return "全部服务"
@@ -122,7 +122,7 @@ func (s *BillingService) GetServiceDisplayName(services []string) string {
 	return strings.Join(services, ", ")
 }
 
-// GetTodayAndYesterdayCost 获取今日和昨日消费数据（可复用）
+// GetTodayAndYesterdayCost 获取今日和昨日消费数据
 func (s *BillingService) GetTodayAndYesterdayCost(ctx context.Context, today, yesterday time.Time, services []string) (todayCost, yesterdayCost decimal.Decimal, err error) {
 	// 使用精确的decimal类型处理财务数据，避免浮点数精度问题
 	type CostResult struct {
@@ -164,7 +164,7 @@ func (s *BillingService) GetTodayAndYesterdayCost(ctx context.Context, today, ye
 	return todayCost, yesterdayCost, nil
 }
 
-// CalculateIncreaseRate 计算增加率（可复用）
+// CalculateIncreaseRate 计算增加率
 func (s *BillingService) CalculateIncreaseRate(yesterdayCost, todayCost decimal.Decimal) float64 {
 	if yesterdayCost.IsZero() {
 		if todayCost.IsZero() {
@@ -180,7 +180,7 @@ func (s *BillingService) CalculateIncreaseRate(yesterdayCost, todayCost decimal.
 	return rateFloat
 }
 
-// GetActiveUsersData 查询返回每天的活跃用户数和总活跃用户数（可复用）
+// GetActiveUsersData 查询返回每天的活跃用户数和总活跃用户数
 func (s *BillingService) GetActiveUsersData(ctx context.Context, day int) (map[string]int, int, error) {
 	// 计算日期范围
 	startDate := time.Now().AddDate(0, 0, -(day + 1))
@@ -227,7 +227,7 @@ func (s *BillingService) GetActiveUsersData(ctx context.Context, day int) (map[s
 	return activeUsersMap, totalResult.TotalActive, nil
 }
 
-// GetTotalUsersCount 查询系统总用户数（可复用）
+// GetTotalUsersCount 查询系统总用户数
 func (s *BillingService) GetTotalUsersCount(ctx context.Context) (int, error) {
 	count, err := dao.UserinfosUserInfos.Ctx(ctx).Count()
 	if err != nil {
@@ -236,7 +236,7 @@ func (s *BillingService) GetTotalUsersCount(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-// CalculateActiveRateIncrease 计算活跃率增长（可复用）
+// CalculateActiveRateIncrease 计算活跃率增长
 func (s *BillingService) CalculateActiveRateIncrease(current, previous int) float64 {
 	// 前一天无活跃用户的特殊处理
 	if previous == 0 {
@@ -253,7 +253,7 @@ func (s *BillingService) CalculateActiveRateIncrease(current, previous int) floa
 	return rate
 }
 
-// ValidatePagination 验证分页参数（可复用）
+// ValidatePagination 验证分页参数
 func (s *BillingService) ValidatePagination(page, pageSize int) error {
 	if page <= 0 {
 		return gerror.New("页码必须大于0")
