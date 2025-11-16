@@ -267,7 +267,7 @@ func (s *BillingService) ValidatePagination(page, pageSize int) error {
 	return nil
 }
 
-// ValidateBillType 验证账单类型并返回字段映射（可复用）
+// ValidateBillType 验证账单类型并返回字段映射
 func (s *BillingService) ValidateBillType(billType string, upns, quotaPools []string) (keyField, auxiliaryField, searchField string, keyValues, auxiliaryValues []string, err error) {
 	switch billType {
 	case "upn":
@@ -284,7 +284,7 @@ func (s *BillingService) ValidateBillType(billType string, upns, quotaPools []st
 	return keyField, auxiliaryField, searchField, keyValues, auxiliaryValues, nil
 }
 
-// ValidateBillTypeAndKeyValues 验证账单类型并返回主键字段和值（可复用）
+// ValidateBillTypeAndKeyValues 验证账单类型并返回主键字段和值
 func (s *BillingService) ValidateBillTypeAndKeyValues(billType string, upns, quotaPools []string) (keyField string, keyValues []string, err error) {
 	switch billType {
 	case "upn":
@@ -304,7 +304,7 @@ func (s *BillingService) ValidateBillTypeAndKeyValues(billType string, upns, quo
 	return keyField, keyValues, nil
 }
 
-// ValidateNameType 验证名称类型并返回数据库字段名（可复用）
+// ValidateNameType 验证名称类型并返回数据库字段名
 func (s *BillingService) ValidateNameType(nameType string) (string, error) {
 	// 字段映射（防止SQL注入）
 	fieldMap := map[string]string{
@@ -321,7 +321,7 @@ func (s *BillingService) ValidateNameType(nameType string) (string, error) {
 	return field, nil
 }
 
-// QueryDistinctNames 查询指定字段的所有不重复值（可复用）
+// QueryDistinctNames 查询指定字段的所有不重复值
 func (s *BillingService) QueryDistinctNames(ctx context.Context, field string) ([]string, error) {
 	// 使用Array()方法获取字符串数组
 	result, err := dao.BillingCostRecords.Ctx(ctx).
