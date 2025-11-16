@@ -1,0 +1,17 @@
+{
+  "questionCountStats": {
+    "2025-11-07": {
+      "teachers_pool": "0.01099"
+    },
+    "2025-11-08": {
+      "students_pool": "0.1226650932",
+      "teachers_pool": "0"
+    },
+    "2025-11-09": {
+      "students_pool": "0.01825"
+    },
+    "2025-11-10": {
+      "students_pool": "0.00730"
+    }
+  }
+}

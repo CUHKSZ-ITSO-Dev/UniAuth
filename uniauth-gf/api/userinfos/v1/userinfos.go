@@ -3,6 +3,7 @@ package v1
 import (
 	"uniauth-gf/internal/model/entity"
 
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -57,4 +58,14 @@ type FilterRes struct {
 	PageSize   int                         `json:"pageSize" dc:"每页条数"`
 	TotalPages int                         `json:"totalPages" dc:"总页数"`
 	IsAll      bool                        `json:"isAll" dc:"是否为全部数据查询"`
+}
+
+// ==================== Department User Count Stats ====================
+type DepartmentUserCountStatsReq struct {
+	g.Meta `path:"/stats/department/userCount" tags:"UserInfo" method:"GET" summary:"部门总用户数统计" dc:"按部门统计用户总数"`
+}
+
+type DepartmentUserCountStatsRes struct {
+	g.Meta          `resEg:"resource/interface/userinfos/department_user_count_stats_res.json"`
+	DepartmentStats *gjson.Json `json:"departmentStats" dc:"统计数据，按部门分组显示用户数量"`
 }

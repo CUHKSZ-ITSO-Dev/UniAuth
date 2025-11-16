@@ -52,3 +52,23 @@ type GetBillingOptionsRes struct {
 	Services []string `json:"services" example:"[\"openai\", \"claude\", \"gemini\"]" dc:"该配额池存在的所有服务类型"`
 	Products []string `json:"products" example:"[\"gpt-4\", \"gpt-3.5-turbo\", \"claude-3-opus\"]" dc:"该配额池存在的所有产品类型"`
 }
+
+type DepartmentQuestionCountStatsReq struct {
+	g.Meta `path:"/stats/department/questionCount" tags:"Billing" method:"GET" summary:"分部门提问次数统计" dc:"按日期和部门统计提问次数"`
+	NDays  int `d:"7" example:"7" dc:"数据跨度天数"`
+}
+
+type DepartmentQuestionCountStatsRes struct {
+	g.Meta             `resEg:"resource/interface/billing/department_question_count_stats_res.json"`
+	QuestionCountStats *gjson.Json `json:"questionCountStats" dc:"统计数据，按日期和部门分组"`
+}
+
+type DepartmentUsageStatsReq struct {
+	g.Meta `path:"/stats/department/usage" tags:"Billing" method:"GET" summary:"分部门使用统计" dc:"按日期和部门统计使用情况"`
+	NDays  int `d:"7" example:"7" dc:"数据跨度天数"`
+}
+
+type DepartmentUsageStatsRes struct {
+	g.Meta    `resEg:"resource/interface/billing/department_usage_stats_res.json"`
+	StatsData *gjson.Json `json:"statsData" dc:"统计数据，按日期和部门分组"`
+}

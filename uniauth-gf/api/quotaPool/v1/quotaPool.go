@@ -117,3 +117,25 @@ type RefreshUsersOfQuotaPoolReq struct {
 type RefreshUsersOfQuotaPoolRes struct {
 	OK bool `json:"ok" v:"required" dc:"是否成功"`
 }
+
+// ==================== Quota Pool Question Count Stats ====================
+type QuotaPoolQuestionCountStatsReq struct {
+	g.Meta `path:"/stats/questionCount" tags:"QuotaPool" method:"GET" summary:"配额池提问次数统计" dc:"按日期和配额池统计提问次数"`
+	NDays  int `d:"7" example:"7" dc:"数据跨度天数"`
+}
+
+type QuotaPoolQuestionCountStatsRes struct {
+	g.Meta             `resEg:"resource/interface/quotaPool/quota_pool_question_count_stats_res.json"`
+	QuestionCountStats *gjson.Json `json:"questionCountStats" dc:"统计数据，按日期和配额池分组"`
+}
+
+// ==================== Quota Pool Usage Stats ====================
+type QuotaPoolUsageStatsReq struct {
+	g.Meta `path:"/stats/usage" tags:"QuotaPool" method:"GET" summary:"配额池消费统计" dc:"按日期和配额池统计消费情况"`
+	NDays  int `d:"7" example:"7" dc:"数据跨度天数"`
+}
+
+type QuotaPoolUsageStatsRes struct {
+	g.Meta    `resEg:"resource/interface/quotaPool/quota_pool_usage_stats_res.json"`
+	StatsData *gjson.Json `json:"statsData" dc:"统计数据，按日期和配额池分组"`
+}

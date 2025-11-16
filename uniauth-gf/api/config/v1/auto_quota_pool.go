@@ -101,6 +101,16 @@ type SyncAutoQuotaPoolUpnsCacheRes struct {
 	UpdatedCount int  `json:"updatedCount" v:"required" dc:"批量刷新时，这个值是一共更改了多少个自动配额池的缓存；指定配额池刷新时，这个值是这个配额池有多少个用户"`
 }
 
+// ==================== Auto Quota Pool User Count Stats ====================
+type AutoQuotaPoolUserCountStatsReq struct {
+	g.Meta `path:"/stats/userCount" tags:"Config/AutoQuotaPoolConfig" method:"GET" summary:"自动配额池用户数统计" dc:"按自动配额池统计用户总数"`
+}
+
+type AutoQuotaPoolUserCountStatsRes struct {
+	g.Meta         `resEg:"resource/interface/config/autoquotapool/auto_quota_pool_user_count_stats_res.json"`
+	QuotaPoolStats *gjson.Json `json:"quotaPoolStats" dc:"统计数据，按自动配额池分组显示用户数量"`
+}
+
 type QueryUpnsCacheItem struct {
 	RuleName      string `json:"ruleName" dc:"规则名称"`
 	Upn           string `json:"upn" dc:"UPN"`
