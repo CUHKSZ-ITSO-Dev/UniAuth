@@ -39,14 +39,22 @@ func (c *ControllerV1) GetI18nConfig(ctx context.Context, req *v1.GetI18nConfigR
 		// 路径格式：{"pages.login.submit": "登录", ...}
 		pathData := g.Map{}
 		for _, item := range items {
-			var value string
+			var value interface{}
+			var valueStr string
 			switch req.Lang {
 			case "zh-CN":
-				value = item.ZhCn
+				valueStr = item.ZhCn
 			case "en-US":
-				value = item.EnUs
+				valueStr = item.EnUs
 			default:
 				return nil, gerror.Newf("不支持的语言代码: %s", req.Lang)
+			}
+			// 尝试将字符串解析为JSON，如果失败则保持为原始字符串
+			parsedValue, err := gjson.Decode(valueStr)
+			if err != nil {
+				value = valueStr
+			} else {
+				value = parsedValue
 			}
 			pathData[item.Key] = value
 		}
@@ -56,14 +64,23 @@ func (c *ControllerV1) GetI18nConfig(ctx context.Context, req *v1.GetI18nConfigR
 		// 嵌套格式：{"pages": {"login": {"submit": "登录"}}}
 		jsonObj = gjson.New(g.Map{})
 		for _, item := range items {
-			var value string
+			var value interface{}
+			var valueStr string
 			switch req.Lang {
 			case "zh-CN":
-				value = item.ZhCn
+				valueStr = item.ZhCn
 			case "en-US":
-				value = item.EnUs
+				valueStr = item.EnUs
 			default:
 				return nil, gerror.Newf("不支持的语言代码: %s", req.Lang)
+			}
+
+			// 尝试将字符串解析为JSON，如果失败则保持为原始字符串
+			parsedValue, err := gjson.Decode(valueStr)
+			if err != nil {
+				value = valueStr
+			} else {
+				value = parsedValue
 			}
 
 			if err = jsonObj.Set(item.Key, value); err != nil {
