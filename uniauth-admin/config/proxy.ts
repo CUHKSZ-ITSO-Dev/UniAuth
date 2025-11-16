@@ -15,29 +15,41 @@ export default {
    * @doc https://github.com/chimurai/http-proxy-middleware
    */
   dev: {
-    "/": {
-      target: "http://localhost:10200/",
+    // 只代理后端 API 请求，不代理前端资源
+    "/auth": {
+      target: "http://localhost:8004",
       changeOrigin: true,
       headers: { "X-Service": "uniauth-gf" },
-      // 禁用代理缓冲，支持SSE流式传输
-      onProxyReq: (proxyReq: any, _req: any, _res: any) => {
-        // 设置无缓冲
-        proxyReq.setHeader("X-Accel-Buffering", "no");
-      },
-      onProxyRes: (proxyRes: any, _req: any, _res: any) => {
-        // 对于SSE请求，禁用压缩和缓冲
-        if (proxyRes.headers["content-type"]?.includes("text/event-stream")) {
-          // 删除可能导致缓冲的头
-          delete proxyRes.headers["content-encoding"];
-          // 设置立即传输
-          proxyRes.headers["cache-control"] = "no-cache, no-transform";
-          proxyRes.headers["x-accel-buffering"] = "no";
-        }
-      },
-      // 禁用代理超时
-      timeout: 0,
-      // 禁用保持连接
-      proxyTimeout: 0,
+    },
+    "/config": {
+      target: "http://localhost:8004",
+      changeOrigin: true,
+      headers: { "X-Service": "uniauth-gf" },
+    },
+    "/quotaPool": {
+      target: "http://localhost:8004",
+      changeOrigin: true,
+      headers: { "X-Service": "uniauth-gf" },
+    },
+    "/billing": {
+      target: "http://localhost:8004",
+      changeOrigin: true,
+      headers: { "X-Service": "uniauth-gf" },
+    },
+    "/userinfos": {
+      target: "http://localhost:8004",
+      changeOrigin: true,
+      headers: { "X-Service": "uniauth-gf" },
+    },
+    "/api.json": {
+      target: "http://localhost:8004",
+      changeOrigin: true,
+      headers: { "X-Service": "uniauth-gf" },
+    },
+    "/swagger": {
+      target: "http://localhost:8004",
+      changeOrigin: true,
+      headers: { "X-Service": "uniauth-gf" },
     },
   },
   // test: {

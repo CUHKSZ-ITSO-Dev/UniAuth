@@ -99,10 +99,11 @@ const ChatPage: React.FC = () => {
         }
       }
 
-      const response = await fetch("/api/chat/mcp/stream", {
+      const response = await fetch("/chat/mcp/stream", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-Service": "uniauth-gf",
         },
         body: JSON.stringify(requestBody),
       });

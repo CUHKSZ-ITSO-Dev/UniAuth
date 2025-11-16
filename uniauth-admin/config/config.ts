@@ -19,6 +19,8 @@ const PUBLIC_PATH: string = "/uniauth/";
 type Config = Parameters<typeof defineConfig>[0];
 
 const config: Config = {
+  favicons: ["/favicon.png"],
+
   // https://umijs.org/docs/api/config#define
   define: {
     "process.env.REACT_APP_ENV": process.env.REACT_APP_ENV,
@@ -197,7 +199,7 @@ const config: Config = {
       requestLibPath: "import { request } from '@/utils/request';",
       // 或者使用在线的版本
       // schemaPath: "https://gw.alipayobjects.com/os/antfincdn/M%24jrzTTYJN/oneapi.json"
-      schemaPath: "http://localhost:8000/api.json",
+      schemaPath: "http://localhost:8004/api.json",
       mock: false,
       projectName: "uniauthService",
     },
